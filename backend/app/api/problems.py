@@ -1,5 +1,6 @@
 """Problems API endpoints."""
 
+import logging
 from typing import List
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -8,7 +9,7 @@ from app.models.db import get_db
 from app.services.problem_service import ProblemService
 from app.schemas.problem import ProblemListResponse, ProblemDetailResponse
 
-
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -24,8 +25,10 @@ async def get_problems(
     Returns:
         Dictionary with problems list, total count, and pagination info
     """
+    logger.info(f"Fetching problems - page: {page}, page_size: {page_size}")
     service = ProblemService(db)
     problems, total, total_pages = service.get_problems(page=page, page_size=page_size)
+    logger.info(f"Found {total} problems, returning page {page}/{total_pages}")
 
     return {
         "problems": problems,
@@ -53,6 +56,9 @@ async def get_problem(
     Raises:
         404: If problem not found
     """
+    logger.info(f"Fetching problem {problem_id}")
     service = ProblemService(db)
-    return service.get_problem_by_id(problem_id)
+    problem = service.get_problem_by_id(problem_id)
+    logger.info(f"Problem {problem_id} retrieved successfully")
+    return problem
 

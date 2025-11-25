@@ -1,0 +1,92 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: qa_arena_postgres
+    environment:
+      POSTGRES_USER: qa_arena_user
+      POSTGRES_PASSWORD: qa_arena_password
+      POSTGRES_DB: qa_arena
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qa_arena_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - qa_arena_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: qa_arena_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - qa_arena_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qa_arena_backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
+      REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      DEBUG: ${DEBUG:-True}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - qa_arena_network
+    volumes:
+      - ./backend:/app
+      - ./backend/logs:/app/logs
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qa_arena_celery_worker
+    environment:
+      DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
+      REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      DEBUG: ${DEBUG:-True}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - qa_arena_network
+    volumes:
+      - ./backend:/app
+      - ./backend/logs:/app/logs
+    command: celery -A app.core.celery_app worker --loglevel=info
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  qa_arena_network:
+    driver: bridge
+

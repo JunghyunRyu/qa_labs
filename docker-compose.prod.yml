@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: qa_arena_postgres_prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-qa_arena_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-qa_arena}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qa_arena_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - qa_arena_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: qa_arena_redis_prod
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - qa_arena_network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qa_arena_backend_prod
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
+      REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      DEBUG: ${DEBUG:-False}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - qa_arena_network
+    restart: unless-stopped
+    volumes:
+      - ./backend/logs:/app/logs
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qa_arena_celery_worker_prod
+    command: celery -A app.core.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
+      REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      DEBUG: ${DEBUG:-False}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - qa_arena_network
+    restart: unless-stopped
+    volumes:
+      - ./backend/logs:/app/logs
+
+  nginx:
+    image: nginx:alpine
+    container_name: qa_arena_nginx_prod
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - backend
+    networks:
+      - qa_arena_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  qa_arena_network:
+    driver: bridge
+
