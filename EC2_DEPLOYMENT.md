@@ -136,7 +136,7 @@ CORS_ORIGINS=["https://yourdomain.com"]
 
 # OpenAI API Configuration
 OPENAI_API_KEY=<your_openai_api_key>
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-5-mini-2025-08-07
 
 # Nginx Configuration
 NGINX_HTTP_PORT=80

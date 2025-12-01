@@ -1,8 +1,8 @@
 """Problem schemas."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Literal
 
 
 class ProblemBase(BaseModel):
@@ -62,6 +62,14 @@ class ProblemGenerateRequest(BaseModel):
     skills_to_assess: List[str] = []
     difficulty: str = "Easy"
     problem_style: str = "unit_test_for_single_function"
+    use_reasoning: bool = Field(
+        default=True,
+        description="Reasoning 모델 사용 여부. True면 o3-mini 등 고급 추론 모델 사용"
+    )
+    reasoning_effort: Optional[Literal["low", "medium", "high"]] = Field(
+        default="high",
+        description="Reasoning effort level. use_reasoning=True일 때만 적용됨"
+    )
 
 
 class BuggyImplementationCreate(BaseModel):

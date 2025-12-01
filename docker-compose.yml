@@ -44,7 +44,7 @@ services:
       DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
       REDIS_URL: redis://redis:6379/0
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini-2025-08-07}
       DEBUG: ${DEBUG:-True}
       CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
     depends_on:
@@ -68,7 +68,7 @@ services:
       DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
       REDIS_URL: redis://redis:6379/0
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini-2025-08-07}
       DEBUG: ${DEBUG:-True}
     depends_on:
       postgres:

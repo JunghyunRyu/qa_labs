@@ -47,6 +47,8 @@ async def ai_generate_problem(
             skills_to_assess=request.skills_to_assess,
             difficulty=request.difficulty,
             problem_style=request.problem_style,
+            use_reasoning=request.use_reasoning,
+            reasoning_effort=request.reasoning_effort,
         )
         return result
     except ValueError as e:

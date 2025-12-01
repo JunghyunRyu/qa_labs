@@ -1,0 +1,39 @@
+{
+  "function_signature": "def is_valid_password_length(password: str) -> bool:",
+  "golden_code": "def is_valid_password_length(password: str) -> bool:\n    '''\n    Validate that the given password string has a length between 8 and 20 characters, inclusive.\n\n    The length is computed using Python's len() built-in and counts all\n    characters exactly as they appear, including whitespace, repeated\n    characters, and any non-ASCII characters.\n\n    If password is not a string, a TypeError is raised with the message\n    'password must be a string'.\n\n    This function only validates length; it does not check any other\n    password rules such as character complexity.\n    '''\n    if not isinstance(password, str):\n        raise TypeError('password must be a string')\n    length = len(password)\n    return 8 <= length <= 20\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "하한 경계값 off-by-one 오류: 길이가 7인 비밀번호를 허용한다. 예) '1234567' 에 대해 True를 반환해야 하지만 잘못된 구현에서는 True가 된다.",
+      "buggy_code": "def is_valid_password_length(password: str) -> bool:\n    '''\n    Validate that the given password string has a length between 8 and 20 characters, inclusive.\n\n    The length is computed using Python's len() built-in and counts all\n    characters exactly as they appear, including whitespace, repeated\n    characters, and any non-ASCII characters.\n\n    If password is not a string, a TypeError is raised with the message\n    'password must be a string'.\n\n    This function only validates length; it does not check any other\n    password rules such as character complexity.\n    '''\n    if not isinstance(password, str):\n        raise TypeError('password must be a string')\n    length = len(password)\n    # BUG: 하한을 7로 잘못 설정하여 길이 7인 비밀번호를 허용한다.\n    return 7 <= length <= 20\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "상한 경계값 off-by-one 오류: 길이가 정확히 20인 비밀번호를 거부한다. 예) 길이 20인 문자열에 대해 False를 반환한다.",
+      "buggy_code": "def is_valid_password_length(password: str) -> bool:\n    '''\n    Validate that the given password string has a length between 8 and 20 characters, inclusive.\n\n    The length is computed using Python's len() built-in and counts all\n    characters exactly as they appear, including whitespace, repeated\n    characters, and any non-ASCII characters.\n\n    If password is not a string, a TypeError is raised with the message\n    'password must be a string'.\n\n    This function only validates length; it does not check any other\n    password rules such as character complexity.\n    '''\n    if not isinstance(password, str):\n        raise TypeError('password must be a string')\n    length = len(password)\n    # BUG: 상한을 20 미만으로 잘못 설정하여 길이 20인 비밀번호를 거부한다.\n    return 8 <= length < 20\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "길이 계산 전에 strip()을 사용하여 앞뒤 공백을 제거한다. 예) '1234567 ' (뒤에 공백 포함, 총 길이 8)는 유효해야 하지만 strip 후 길이 7이 되어 False가 된다. 공백만으로 이루어진 8자 비밀번호도 잘못 처리된다.",
+      "buggy_code": "def is_valid_password_length(password: str) -> bool:\n    '''\n    Validate that the given password string has a length between 8 and 20 characters, inclusive.\n\n    The length is computed after stripping leading and trailing whitespace,\n    which is NOT what the specification requires.\n\n    If password is not a string, a TypeError is raised with the message\n    'password must be a string'.\n    '''\n    if not isinstance(password, str):\n        raise TypeError('password must be a string')\n    # BUG: 앞뒤 공백을 제거한 후 길이를 계산한다.\n    trimmed = password.strip()\n    length = len(trimmed)\n    return 8 <= length <= 20\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "서로 다른 문자 개수만 세어 길이를 판단한다. 예) 'aaaaaaaa' (같은 문자 8개)는 실제 길이 8이므로 유효해야 하지만, 서로 다른 문자가 1개라서 False를 반환한다.",
+      "buggy_code": "def is_valid_password_length(password: str) -> bool:\n    '''\n    Validate that the given password string has a length between 8 and 20 characters.\n\n    BUG: Uses the number of distinct characters instead of the real length.\n\n    If password is not a string, a TypeError is raised with the message\n    'password must be a string'.\n    '''\n    if not isinstance(password, str):\n        raise TypeError('password must be a string')\n    # BUG: 실제 길이가 아니라 서로 다른 문자 수를 사용한다.\n    unique_length = len(set(password))\n    return 8 <= unique_length <= 20\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 비밀번호 길이 검증 함수 테스트\n\n한 서비스에서 회원 가입 시 비밀번호 길이 규칙을 다음과 같이 정의했습니다.\n\n- 비밀번호는 **8자 이상 20자 이하**이어야 한다.\n- 길이는 파이썬의 `len()` 함수를 기준으로 하며,\n  - 공백(스페이스, 탭 등)도 **그대로 문자로 센다**.\n  - 같은 문자가 반복되어도 **모두 길이에 포함**된다.\n  - 한글, 이모지 등 멀티바이트 문자도 `len()` 기준으로 1글자로 센다.\n- 비밀번호가 문자열이 아닌 값이 들어오면 `TypeError`를 발생시키며,\n  메시지는 `\"password must be a string\"` 이어야 한다.\n- 이 함수는 **길이만** 검증하며, 대소문자/숫자/특수문자 규칙 등은 검사하지 않는다.\n\n이 규칙을 구현한 함수 `is_valid_password_length(password: str) -> bool` 에 대해\npytest 기반 단위 테스트를 작성하는 것이 당신의 역할입니다.\n\n### 함수 동작\n- 입력:\n  - `password`: 비밀번호로 사용할 값. 정상적인 경우 문자열이어야 한다.\n- 반환값:\n  - 길이가 8 이상 20 이하이면 `True`\n  - 그 외 길이면 `False`\n  - 문자열이 아니라면 `TypeError` 예외 발생\n\n### 정상 동작 예시\n- `is_valid_password_length(\"abcd1234\")` → `True` (길이 8)\n- `is_valid_password_length(\"a\" * 20)` → `True` (길이 20)\n- `is_valid_password_length(\"short\")` → `False` (길이 5)\n- `is_valid_password_length(\"a\" * 21)` → `False` (길이 21)\n\n다음과 같은 경우도 사양에 맞게 동작해야 합니다.\n- 앞/뒤에 공백이 포함된 비밀번호 (공백도 길이에 포함)\n- 공백만으로 이루어진 비밀번호\n- 같은 문자가 반복된 비밀번호 (예: `\"aaaaaaaa\"`)\n- 문자열이 아닌 입력 (예: 정수, 리스트 등)\n\n### 테스트에서 특히 신경 쓸 점\n- **경계값 분석 (Boundary Value Analysis)**\n  - 최소/최대 길이 주변: 7, 8, 9, 19, 20, 21 길이의 비밀번호를 집중적으로 테스트\n  - 아주 짧은 값 (빈 문자열, 길이 1) 과 매우 긴 값 (예: 길이 100) 도 케이스로 포함\n- **문자열 검증 (String Validation)**\n  - 앞/뒤에 공백이 있는 문자열에서 공백이 길이에 제대로 포함되는지 확인\n  - 공백만으로 구성된 문자열도 규칙대로 처리되는지 확인\n  - 같은 문자가 반복된 문자열에서 길이가 올바르게 계산되는지 확인\n  - 문자열이 아닌 값에 대해 올바른 예외(`TypeError`)가 발생하는지 확인\n\n여러 개의 buggy 구현이 준비되어 있으며, 일부는 경계값을 잘못 처리하고,\n일부는 문자열 길이 계산 방식을 잘못 사용합니다.\n\n### 수험자에게 주어진 과제\n- `pytest` 를 사용하여 `is_valid_password_length` 함수에 대한 테스트 코드를 작성하세요.\n- 가능한 한 다양한 **경계값**과 **문자열 패턴**(공백, 반복 문자 등)을 포함해\n  버그가 있는 구현들을 최대한 많이 탐지해야 합니다.\n- 제공된 골든 구현과 일치하는 동작을 기준으로 테스트를 설계한다고 생각하고 작성하세요.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_password_length\n\n\ndef test_min_boundary_length():\n    # TODO: 길이 7, 8, 9 등의 비밀번호에 대해 경계값을 테스트하세요.\n    # 예: 8자는 허용, 7자는 거부되어야 합니다.\n    pass\n\n\ndef test_max_boundary_length():\n    # TODO: 길이 19, 20, 21 등의 비밀번호에 대해 경계값을 테스트하세요.\n    # 예: 20자는 허용, 21자는 거부되어야 합니다.\n    pass\n\n\ndef test_whitespace_and_repeated_characters():\n    # TODO: 다음과 같은 문자열들을 테스트하세요.\n    #  - 앞/뒤에 공백이 있는 문자열 (공백 포함 길이 기준)\n    #  - 공백만으로 이루어진 문자열\n    #  - 동일 문자가 반복된 문자열 (예: \"aaaaaaaa\")\n    pass\n\n\ndef test_non_string_input_type():\n    # TODO: 비문자열 입력(list, int 등)에 대해 TypeError가 발생하는지 테스트하세요.\n    #  - 예외 타입과 메시지가 사양과 일치하는지 확인하는 것을 고려해 보세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "boundary value analysis",
+    "string validation",
+    "string",
+    "password",
+    "pytest",
+    "unit-test",
+    "qa"
+  ],
+  "difficulty": "Easy"
+}

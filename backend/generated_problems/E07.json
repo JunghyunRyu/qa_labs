@@ -1,0 +1,39 @@
+{
+  "function_signature": "def safe_divide(numerator: float, denominator: float) -> float:",
+  "golden_code": "def safe_divide(numerator: float, denominator: float) -> float:\n    '''Safely divide two numeric values.\n\n    Accepts int or float arguments only and rejects other types.\n    Raises ZeroDivisionError with a clear message instead of relying on Python's default.\n\n    :param numerator: dividend, must be int or float\n    :param denominator: divisor, must be int or float and not zero\n    :return: floating point result of numerator / denominator\n    :raises TypeError: if numerator or denominator is not int or float\n    :raises ZeroDivisionError: if denominator is zero, with message 'denominator must not be zero'\n    '''\n    allowed_types = (int, float)\n    if not isinstance(numerator, allowed_types) or not isinstance(denominator, allowed_types):\n        raise TypeError('numerator and denominator must be int or float')\n    if denominator == 0:\n        # Handles both 0 and 0.0\n        raise ZeroDivisionError('denominator must not be zero')\n    return numerator / denominator\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "float()로 강제 변환을 시도하면서, 변환 가능한 문자열(예: '10')은 예외 없이 계산하고, 변환 불가능한 값은 ValueError를 던져 TypeError 사양과 다르게 동작함.",
+      "buggy_code": "def safe_divide(numerator: float, denominator: float) -> float:\n    '''Buggy version: tries to coerce values to float and uses ValueError instead of TypeError.\n\n    - 문자열 '10' 같은 값은 허용되어 버리고,\n    - 리스트나 딕셔너리 등은 ValueError를 발생시켜 명세와 다른 예외 타입을 사용한다.\n    '''\n    try:\n        num = float(numerator)\n        den = float(denominator)\n    except (TypeError, ValueError):\n        # Wrong exception type compared to the spec (should be TypeError)\n        raise ValueError('numerator and denominator must be int or float')\n    if den == 0:\n        raise ZeroDivisionError('denominator must not be zero')\n    return num / den\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "0으로 나누기 전에 분모를 직접 검사하지 않고 바로 나눗셈을 수행하여, ZeroDivisionError 메시지가 Python 기본값('division by zero', 'float division by zero')로 나와 명세된 메시지와 달라짐.",
+      "buggy_code": "def safe_divide(numerator: float, denominator: float) -> float:\n    '''Buggy version: relies on Python's built-in ZeroDivisionError message.\n\n    분모를 0인지 확인하지 않고 바로 나누기를 수행한다.\n    따라서 ZeroDivisionError는 발생하지만 메시지는 'denominator must not be zero'가 아니다.\n    '''\n    allowed_types = (int, float)\n    if not isinstance(numerator, allowed_types) or not isinstance(denominator, allowed_types):\n        raise TypeError('numerator and denominator must be int or float')\n    # Missing explicit zero check; ZeroDivisionError will have a different message.\n    return numerator / denominator\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "denominator <= 0 조건을 사용하여 분모가 0뿐 아니라 음수일 때도 ZeroDivisionError를 던지는 off-by-one 스타일 오류.",
+      "buggy_code": "def safe_divide(numerator: float, denominator: float) -> float:\n    '''Buggy version: incorrectly rejects negative denominators as if they were zero.\n\n    분모가 0 이하(<= 0)인 경우 모두 ZeroDivisionError를 발생시키므로\n    예를 들어 safe_divide(10, -2)는 -5.0을 반환해야 하지만 예외가 발생한다.\n    '''\n    allowed_types = (int, float)\n    if not isinstance(numerator, allowed_types) or not isinstance(denominator, allowed_types):\n        raise TypeError('numerator and denominator must be int or float')\n    if denominator <= 0:\n        # Too strict: should only reject exactly zero.\n        raise ZeroDivisionError('denominator must not be zero')\n    return numerator / denominator\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "잘못된 타입이나 0 분모에서 예외를 던지지 않고 None 또는 0.0을 반환하여 호출 측에서 오류를 감지하기 어렵게 만드는 예외 삼키기(silent failure) 버그.",
+      "buggy_code": "def safe_divide(numerator: float, denominator: float) -> float:\n    '''Buggy version: silently returns fallback values instead of raising.\n\n    - 타입이 잘못되면 TypeError를 던지지 않고 None을 반환한다.\n    - 분모가 0이면 ZeroDivisionError 대신 0.0을 반환한다.\n    '''\n    allowed_types = (int, float)\n    if not isinstance(numerator, allowed_types) or not isinstance(denominator, allowed_types):\n        # Wrong: should raise TypeError according to the spec.\n        return None  # type: ignore[return-value]\n    if denominator == 0:\n        # Wrong: should raise ZeroDivisionError according to the spec.\n        return 0.0\n    return numerator / denominator\n",
+      "weight": 5
+    }
+  ],
+  "description_md": "## 문제 설명\n\n결제/정산 서비스에서 금액을 인원 수로 나누거나, 환율/할인율을 계산할 때 나눗셈 연산은 매우 자주 사용됩니다. 이때 외부 API나 사용자 입력으로부터 들어오는 값이 항상 올바르다고 가정할 수 없기 때문에, **0으로 나누기**나 **잘못된 타입 입력**에 대해 안정적으로 예외를 처리하는 것이 중요합니다.\n\n이번 과제에서는 다음과 같은 사양을 가진 `safe_divide` 함수를 테스트합니다.\n\n```text\nsafe_divide(numerator: float, denominator: float) -> float\n```\n\n### 함수 동작\n- `numerator`, `denominator`는 **정수(int) 또는 실수(float)** 여야 합니다.\n- 둘 중 하나라도 int/float가 아니면 **TypeError**를 발생시켜야 합니다.\n  - 예외 메시지: `'numerator and denominator must be int or float'`\n- `denominator`가 `0` (또는 `0.0`)이면 **ZeroDivisionError**를 발생시켜야 합니다.\n  - 예외 메시지: `'denominator must not be zero'`\n- 위 조건을 모두 만족하면 `numerator / denominator`의 결과를 `float`로 반환합니다.\n\n### 정상 동작 예시\n- `safe_divide(10, 2) -> 5.0`\n- `safe_divide(7.5, 2.5) -> 3.0`\n\n### 예외 동작 예시 (의도된 사양)\n- `safe_divide(10, 0)`\n  - `ZeroDivisionError` 발생\n  - 메시지: `'denominator must not be zero'`\n- `safe_divide('10', 2)`\n  - `TypeError` 발생\n  - 메시지: `'numerator and denominator must be int or float'`\n\n### 테스트 시 고려해야 할 포인트(힌트)\n- **0으로 나누기**:\n  - `0` 뿐 아니라 `0.0`과 같이 실수형 0에 대해서도 동일하게 예외가 처리되는지 확인해 보세요.\n  - 예외의 **타입**뿐 아니라 **메시지 내용**도 사양과 일치하는지 검증해 보세요.\n- **잘못된 타입 입력**:\n  - 문자열, 리스트, 딕셔너리, `None` 등 다양한 타입을 전달했을 때 올바르게 `TypeError`가 발생하는지 확인해 보세요.\n  - 숫자로 보이지만 문자열인 값(예: `'10'`)도 허용되면 안 됩니다.\n- **정상 케이스와 경계 케이스**를 모두 포함:\n  - 음수 분자/분모, 소수점이 있는 값 등에서도 예외 없이 정상적으로 계산되는지 확인해 보세요.\n- 일부 구현은 예외를 던지는 대신 **None이나 0과 같은 값으로 숨기려 할 수 있습니다.** 반드시 `pytest.raises` 등을 사용해 **예외가 실제로 발생하는지**를 검증해 보세요.\n\n### 여러분이 할 일\n- `safe_divide` 함수에 대해 **pytest 기반 단위 테스트 코드**를 작성하세요.\n- 정상 동작과 함께, 위에서 언급한 다양한 **에러 상황**에 대해\n  - 어떤 **예외 타입**이\n  - 어떤 **메시지**와 함께\n  - 언제 발생해야 하는지\n  철저하게 검증하는 테스트를 작성해 주세요.\n- 제공된 여러 개의 버그 구현 중 최대한 많은 구현이 테스트에서 실패하도록 만드는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import safe_divide\n\n\ndef test_normal_division():\n    # TODO: 정상적인 나눗셈 결과가 올바르게 반환되는지 테스트하세요.\n    # 예: 10 / 2 -> 5.0, 음수/실수 조합 등도 포함해 볼 수 있습니다.\n    pass\n\n\ndef test_zero_denominator_raises_zero_division_error():\n    # TODO: 분모가 0 또는 0.0일 때 ZeroDivisionError가 발생하는지 테스트하세요.\n    # pytest.raises를 사용해 예외 타입과 메시지('denominator must not be zero')를 함께 검증해 보세요.\n    pass\n\n\ndef test_invalid_type_raises_type_error():\n    # TODO: 문자열, 리스트, None 등 int/float가 아닌 값을 전달했을 때\n    # TypeError가 발생하고, 메시지가 'numerator and denominator must be int or float'\n    # 인지 확인하는 테스트를 작성하세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "python",
+    "pytest",
+    "unit-test",
+    "error handling",
+    "exception testing",
+    "math",
+    "division"
+  ],
+  "difficulty": "Easy"
+}

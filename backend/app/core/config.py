@@ -25,7 +25,9 @@ class Settings(BaseSettings):
 
     # LLM / AI
     OPENAI_API_KEY: Optional[str] = None
-    OPENAI_MODEL: str = "gpt-4o-mini"  # 기본 모델 (비용 효율적)
+    OPENAI_MODEL: str = "gpt-5-mini"  # 기본 모델 (비용 효율적)
+    OPENAI_REASONING_MODEL: str = "gpt-5.1"  # Reasoning 모델 (문제 생성용)
+    OPENAI_REASONING_EFFORT: str = "high"  # Reasoning effort: none, low, medium, high
 
     class Config:
         env_file = ".env"

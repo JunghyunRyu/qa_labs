@@ -1,0 +1,37 @@
+{
+  "function_signature": "def calculate_grade(score: int) -> str:",
+  "golden_code": "def calculate_grade(score: int) -> str:\n    '''\n    Calculate a letter grade (A, B, C, D, F) from a numeric exam score.\n\n    The score must be an integer between 0 and 100 inclusive.\n\n    Mapping:\n    - 90 to 100 -> 'A'\n    - 80 to 89  -> 'B'\n    - 70 to 79  -> 'C'\n    - 60 to 69  -> 'D'\n    - 0 to 59   -> 'F'\n\n    Raises:\n        TypeError: if score is not an int.\n        ValueError: if score is outside 0 to 100 inclusive.\n    '''\n    if not isinstance(score, int):\n        raise TypeError('score must be an integer')\n    if score < 0 or score > 100:\n        raise ValueError('score must be between 0 and 100 inclusive')\n\n    if score >= 90:\n        return 'A'\n    elif score >= 80:\n        return 'B'\n    elif score >= 70:\n        return 'C'\n    elif score >= 60:\n        return 'D'\n    else:\n        return 'F'",
+  "buggy_implementations": [
+    {
+      "bug_description": "경계값 60, 70, 80, 90 에서 등급이 한 단계 낮게 계산되는 off-by-one 오류. 예: score=90 일 때 기대는 'A' 이지만 'B' 를 반환함.",
+      "buggy_code": "def calculate_grade(score: int) -> str:\n    '''\n    Buggy version: off-by-one at grade boundaries (uses > instead of >=).\n    '''\n    if not isinstance(score, int):\n        raise TypeError('score must be an integer')\n    if score < 0 or score > 100:\n        raise ValueError('score must be between 0 and 100 inclusive')\n\n    if score > 90:\n        return 'A'\n    elif score > 80:\n        return 'B'\n    elif score > 70:\n        return 'C'\n    elif score > 60:\n        return 'D'\n    else:\n        return 'F'",
+      "weight": 5
+    },
+    {
+      "bug_description": "음수 점수에 대해 ValueError 를 발생시키지 않고 F 등급으로 처리함. 예: score=-5 인 경우 예외 대신 'F' 를 반환함.",
+      "buggy_code": "def calculate_grade(score: int) -> str:\n    '''\n    Buggy version: does not validate negative scores as invalid.\n    '''\n    if not isinstance(score, int):\n        raise TypeError('score must be an integer')\n    # Only checks upper bound; negative scores will be treated as valid 'F' grades.\n    if score > 100:\n        raise ValueError('score must be between 0 and 100 inclusive')\n\n    if score >= 90:\n        return 'A'\n    elif score >= 80:\n        return 'B'\n    elif score >= 70:\n        return 'C'\n    elif score >= 60:\n        return 'D'\n    else:\n        return 'F'",
+      "weight": 3
+    },
+    {
+      "bug_description": "실패 등급(F)의 경계가 잘못되어 60 점이 F 로 계산됨. 즉, 0~60 이 F, 61~69 가 D 로 처리됨.",
+      "buggy_code": "def calculate_grade(score: int) -> str:\n    '''\n    Buggy version: failing grade threshold is shifted by one point.\n    60 should be a 'D' but is treated as 'F'.\n    '''\n    if not isinstance(score, int):\n        raise TypeError('score must be an integer')\n    if score < 0 or score > 100:\n        raise ValueError('score must be between 0 and 100 inclusive')\n\n    if score >= 90:\n        return 'A'\n    elif score >= 80:\n        return 'B'\n    elif score >= 70:\n        return 'C'\n    elif score > 60:\n        return 'D'\n    else:\n        return 'F'",
+      "weight": 3
+    },
+    {
+      "bug_description": "정수가 아닌 실수 점수를 허용하며, TypeError 를 발생시키지 않고 등급을 계산함. 예: score=89.5 를 B 로 계산하지만, 요구사항상 TypeError 가 발생해야 함.",
+      "buggy_code": "def calculate_grade(score: int) -> str:\n    '''\n    Buggy version: allows floats by coercing numeric types instead of enforcing int only.\n    '''\n    # Accept both int and float; attempt to coerce other numeric-like types.\n    if isinstance(score, bool):\n        # Still reject bool explicitly, since it is a subclass of int.\n        raise TypeError('score must be an integer')\n    if not isinstance(score, (int, float)):\n        raise TypeError('score must be an integer')\n    # Coerce to int, which changes the behaviour for non-integer scores.\n    numeric_score = int(score)\n    if numeric_score < 0 or numeric_score > 100:\n        raise ValueError('score must be between 0 and 100 inclusive')\n\n    if numeric_score >= 90:\n        return 'A'\n    elif numeric_score >= 80:\n        return 'B'\n    elif numeric_score >= 70:\n        return 'C'\n    elif numeric_score >= 60:\n        return 'D'\n    else:\n        return 'F'",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n온라인 시험 시스템에서는 학생의 점수에 따라 등급을 계산하는 공통 모듈을 사용합니다. 이 모듈이 잘못 동작하면 성적표 전체가 잘못 산출되므로, 등급 계산 로직을 신뢰할 수 있어야 합니다.\n\n이 과제에서 여러분은 다음 시그니처를 가지는 함수 calculate_grade 를 테스트해야 합니다.\n\n- 입력: 0 이상 100 이하의 정수 점수 score\n- 출력: 한 글자의 문자열 등급 (A, B, C, D, F)\n\n등급 규칙은 다음과 같습니다.\n- 90 이상 100 이하 -> A\n- 80 이상 89 이하 -> B\n- 70 이상 79 이하 -> C\n- 60 이상 69 이하 -> D\n- 0 이상 59 이하  -> F\n\n추가 제약 사항:\n- score 가 int 가 아니면 TypeError 를 발생시켜야 합니다.\n- score 가 0 미만이거나 100 초과이면 ValueError 를 발생시켜야 합니다.\n\n예시:\n- calculate_grade(95) -> 'A'\n- calculate_grade(72) -> 'C'\n\n이 함수는 여러 개의 서로 다른 버그 구현과 함께 채점 시스템에 사용됩니다. 여러분의 목표는 pytest 를 사용해 다양한 입력 구간을 테스트하고, 잘못된 구현을 최대한 많이 잡아내는 것입니다.\n\n특히 다음과 같은 테스트 아이디어를 고민해 보세요.\n- 각 등급 구간에 대해 대표 값을 하나씩 골라 검증하기 (동등 분할)\n- 경계값 0, 59, 60, 69, 70, 79, 80, 89, 90, 100 에 대한 결과 확인\n- 0 미만, 100 초과 점수에 대한 예외 처리 확인\n- 정수가 아닌 입력 (예: 89.5, 문자열, None 등)에 대한 예외 처리 확인\n\n해야 할 일:\n- pytest 기반 테스트 파일을 작성하고, 위의 등급 규칙과 예외 조건을 만족하는지 검증하는 테스트 케이스를 구성하십시오.\n- 가능한 한 많은 잘못된 구현을 실패시키도록, 동등 분할과 경계값 중심으로 테스트를 설계해 보세요.",
+  "initial_test_template": "import pytest\nfrom target import calculate_grade\n\ndef test_each_grade_partition():\n    # TODO: 각 등급 구간(F, D, C, B, A)에 대해 대표 점수를 하나씩 선택해 기대 등급을 검증하세요.\n    pass\n\ndef test_boundary_scores():\n    # TODO: 0, 59, 60, 69, 70, 79, 80, 89, 90, 100 과 같은 경계 점수에서 올바른 등급이 나오는지 확인하세요.\n    pass\n\ndef test_invalid_scores_and_types():\n    # TODO: 0 미만, 100 초과 점수와 정수가 아닌 입력에 대해 적절한 예외(TypeError, ValueError)가 발생하는지 확인하세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "equivalence partitioning",
+    "grade calculation",
+    "integer-range",
+    "education",
+    "unit-test"
+  ],
+  "difficulty": "Easy"
+}

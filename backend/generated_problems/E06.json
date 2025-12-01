@@ -1,0 +1,40 @@
+{
+  "function_signature": "def calculate_shipping_fee(order_amount: float) -> int:",
+  "golden_code": "def calculate_shipping_fee(order_amount: float) -> int:\n    '''Calculate shipping fee based on the order amount.\n\n    Business rules:\n    - order_amount must be non-negative, otherwise a ValueError is raised.\n    - 0 <= order_amount < 20_000: base shipping fee 3_000\n    - 20_000 <= order_amount < 50_000: discounted shipping fee 1_500\n    - order_amount >= 50_000: free shipping (0)\n\n    The function returns the shipping fee as an integer number of currency units.\n    No rounding is applied beyond comparing the raw float value.\n    '''\n    if order_amount < 0:\n        raise ValueError('order_amount must be non-negative')\n\n    if order_amount < 20_000:\n        return 3000\n    elif order_amount < 50_000:\n        return 1500\n    else:\n        return 0\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "무료 배송 경계값(50_000 포함)을 잘못 구현하여 주문 금액이 정확히 50_000일 때 0원이 아닌 1_500원을 반환한다.",
+      "buggy_code": "def calculate_shipping_fee(order_amount: float) -> int:\n    '''Calculate shipping fee based on the order amount.\n\n    Buggy version: free shipping threshold is handled incorrectly.\n    '''\n    if order_amount < 0:\n        raise ValueError('order_amount must be non-negative')\n\n    if order_amount < 20_000:\n        return 3000\n    elif order_amount <= 50_000:  # BUG: should be < 50_000, so 50_000 becomes discounted instead of free\n        return 1500\n    else:\n        return 0\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "음수 주문 금액에 대해 ValueError를 던지지 않고 0원으로 보정하여 기본 배송비를 계산해 버린다.",
+      "buggy_code": "def calculate_shipping_fee(order_amount: float) -> int:\n    '''Calculate shipping fee based on the order amount.\n\n    Buggy version: negative amounts are clamped instead of rejected.\n    '''\n    if order_amount < 0:\n        # BUG: silently treat negative amounts as zero instead of raising.\n        order_amount = 0.0\n\n    if order_amount < 20_000:\n        return 3000\n    elif order_amount < 50_000:\n        return 1500\n    else:\n        return 0\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "기본 구간(0~20_000 미만)과 할인 구간(20_000 이상~50_000 미만)의 배송비 금액을 서로 바꿔서 적용한다.",
+      "buggy_code": "def calculate_shipping_fee(order_amount: float) -> int:\n    '''Calculate shipping fee based on the order amount.\n\n    Buggy version: base and discounted fees are swapped.\n    '''\n    if order_amount < 0:\n        raise ValueError('order_amount must be non-negative')\n\n    if order_amount < 20_000:\n        # BUG: should return 3000 for this range\n        return 1500\n    elif order_amount < 50_000:\n        # BUG: should return 1500 for this range\n        return 3000\n    else:\n        return 0\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "기본 배송비 구간의 상한을 포함(<= 20_000)으로 처리하여 주문 금액이 정확히 20_000일 때도 기본 배송비 3_000원이 나오도록 구현되어 있다.",
+      "buggy_code": "def calculate_shipping_fee(order_amount: float) -> int:\n    '''Calculate shipping fee based on the order amount.\n\n    Buggy version: the boundary at 20_000 is implemented as inclusive for the base tier.\n    '''\n    if order_amount < 0:\n        raise ValueError('order_amount must be non-negative')\n\n    if order_amount <= 20_000:  # BUG: should be < 20_000 so that 20_000 is discounted\n        return 3000\n    elif order_amount < 50_000:\n        return 1500\n    else:\n        return 0\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n전자상거래 스타트업에서 주문 금액에 따라 배송비를 다르게 부과하는 정책을 운영하고 있습니다. 백엔드 팀에서 `calculate_shipping_fee` 함수를 구현해 두었지만, 여러 버전의 코드 중 일부에 미묘한 버그가 섞여 있을 수 있습니다. 당신의 역할은 **pytest 기반 테스트 코드**를 작성하여 잘못된 구현들을 최대한 많이 잡아내는 것입니다.\n\n### 함수 설명\n\n```python\ncalculate_shipping_fee(order_amount: float) -> int\n```\n\n- `order_amount`: 주문 결제 금액 (원 단위, `float` 사용, 음수는 허용되지 않음)\n- 반환값: 배송비 금액 (원 단위, `int`)\n\n배송비 정책은 다음과 같습니다.\n\n- 주문 금액이 **0원 이상 20,000원 미만**: 기본 배송비 **3,000원**\n- 주문 금액이 **20,000원 이상 50,000원 미만**: 할인 배송비 **1,500원**\n- 주문 금액이 **50,000원 이상**: **무료 배송 (0원)**\n- 주문 금액이 **음수**인 경우: 잘못된 입력으로 간주하고 `ValueError` 예외를 발생시켜야 합니다.\n\n### 동작 예시\n\n- `calculate_shipping_fee(15_000.0)` → `3000`\n- `calculate_shipping_fee(20_000.0)` → `1500`\n- `calculate_shipping_fee(50_000.0)` → `0`\n\n### 테스트 아이디어 (힌트)\n\n이 문제는 **동등 분할(equivalence partitioning)**을 활용해 테스트를 설계하는 연습을 목표로 합니다. 다음과 같은 관점으로 입력 값을 나누어 보세요.\n\n- 유효한 주문 금액 범위 안에서의 여러 구간\n  - 기본 배송비 구간: 예) 0원 이상 20,000원 미만\n  - 할인 배송비 구간: 예) 20,000원 이상 50,000원 미만\n  - 무료 배송 구간: 예) 50,000원 이상\n- 유효하지 않은 입력 구간\n  - 음수 주문 금액: 적절한 예외(`ValueError`)가 발생하는지 확인\n\n각 구간(동등 분할)에 대해 **대표 값 한두 개**를 선택해서 테스트하는 것뿐 아니라, 다음과 같은 **경계에 가까운 값**도 고민해 보세요.\n\n- 구간의 시작값과 끝값 근처: `0`, `19_999`, `20_000`, `49_999`, `50_000` 등\n- 예외 상황: `-1`, `-0.01` 등\n\n여러 개의 잘못된 구현 코드가 준비되어 있으며, 일부는 특정 구간에서만 잘못된 배송비를 계산하거나, 예외를 던지지 않는 등 실제 서비스에서 발생할 법한 실수를 포함하고 있습니다.\n\n### 수행할 작업\n\n- 제공된 `calculate_shipping_fee` 함수에 대해 **pytest 기반 유닛 테스트 코드**를 작성하세요.\n- **목표**는 동등 분할과 구간별 대표값, 그리고 경계값을 적절히 선택하여, 준비된 버그 구현들을 최대한 많이 실패시키는 것입니다.\n- 함수 자체를 수정하거나 새로 구현하지 말고, **오직 테스트 코드만 작성**해야 합니다.\n\n테스트를 충분히 세분화하고 명확한 단언(assert)을 작성하여, 정책에 맞지 않는 배송비 계산이나 예외 처리 누락을 정확히 검출해 보세요.",
+  "initial_test_template": "import pytest\nfrom target import calculate_shipping_fee\n\n\ndef test_free_shipping_partition():\n    # TODO: 무료 배송 구간(예: 50_000 이상)에 해당하는 대표 주문 금액을 선택하고\n    # 반환되는 배송비가 0인지 검증하세요.\n    pass\n\n\ndef test_discounted_shipping_partition():\n    # TODO: 할인 배송비 구간(20_000 이상 50_000 미만)에 해당하는 주문 금액들을 선택해\n    # 항상 1_500원이 나오는지, 여러 값을 동등 분할 관점에서 검증하세요.\n    pass\n\n\ndef test_base_shipping_and_invalid_partition():\n    # TODO: 기본 배송비 구간(0 이상 20_000 미만)에 대한 대표 값들과\n    # 음수 주문 금액(유효하지 않은 입력)에 대한 동작을 함께 검증하세요.\n    # - 정상 구간: 배송비 금액 확인\n    # - 음수 입력: ValueError 예외 발생 여부 확인\n    pass\n\n\ndef test_boundaries_between_partitions():\n    # TODO: 0, 20_000, 50_000과 같이 구간이 바뀌는 경계 값들을 테스트하여\n    # 각 금액이 올바른 배송비 구간에 속하는지 확인하세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "equivalence partitioning",
+    "shipping cost",
+    "pricing",
+    "qa",
+    "testing",
+    "unit-test",
+    "pytest",
+    "python"
+  ],
+  "difficulty": "Easy"
+}
