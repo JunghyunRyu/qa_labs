@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.models.problem import Problem
-
+from app.schemas.problem import ProblemCreate
 
 class ProblemRepository:
     """Repository for Problem model."""
@@ -61,3 +61,23 @@ class ProblemRepository:
         """
         return self.db.query(Problem).filter(Problem.slug == slug).first()
 
+    def create(self, problem_in: ProblemCreate) -> Problem:
+        """
+        Create a new Problem row.
+
+        Note: buggy_implementations 저장은 나중에 별도 로직으로 확장해도 됨.
+        """
+        problem = Problem(
+            slug=problem_in.slug,
+            title=problem_in.title,
+            description_md=problem_in.description_md,
+            function_signature=problem_in.function_signature,
+            golden_code=problem_in.golden_code,
+            difficulty=problem_in.difficulty,
+            skills=problem_in.skills,  # JSON 컬럼이면 리스트 그대로, Text면 ",".join(...) 해야 함
+        )
+
+        self.db.add(problem)
+        self.db.commit()
+        self.db.refresh(problem)
+        return problem

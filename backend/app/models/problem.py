@@ -21,7 +21,7 @@ class Problem(Base):
     golden_code = Column(Text, nullable=False)
     difficulty = Column(
         String(20),
-        CheckConstraint("difficulty IN ('Easy', 'Medium', 'Hard')"),
+        CheckConstraint("difficulty IN ('Very Easy', 'Easy', 'Medium', 'Hard')"),
         nullable=False,
     )
     skills = Column(JSONB)

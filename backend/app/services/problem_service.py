@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.repositories.problem_repository import ProblemRepository
 from app.models.problem import Problem
-from app.schemas.problem import ProblemListResponse, ProblemDetailResponse
+from app.schemas.problem import ProblemListResponse, ProblemDetailResponse, ProblemCreate
 
 
 class ProblemService:
@@ -16,6 +16,25 @@ class ProblemService:
         """Initialize service with database session."""
         self.repository = ProblemRepository(db)
 
+    def create_problem(self, problem_in: ProblemCreate) -> ProblemDetailResponse:
+        """
+        Create a new problem and return its detail.
+        """
+        problem = self.repository.create(problem_in)
+
+        return ProblemDetailResponse(
+            id=problem.id,
+            slug=problem.slug,
+            title=problem.title,
+            description_md=problem.description_md,
+            function_signature=problem.function_signature,
+            golden_code=problem.golden_code,
+            difficulty=problem.difficulty,
+            skills=problem.skills,
+            created_at=problem.created_at,
+        )    
+    
+    
     def get_problems(
         self, page: int = 1, page_size: int = 10
     ) -> Tuple[List[ProblemListResponse], int, int]:
@@ -48,6 +67,7 @@ class ProblemService:
                 title=p.title,
                 difficulty=p.difficulty,
                 skills=p.skills,
+                description_md=p.description_md,  # Include description for preview
             )
             for p in problems
         ]

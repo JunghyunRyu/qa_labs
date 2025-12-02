@@ -40,6 +40,7 @@ class ProblemListResponse(BaseModel):
     title: str
     difficulty: str
     skills: Optional[List[str]] = None
+    description_md: Optional[str] = None  # For preview in list view
 
     model_config = {"from_attributes": True}
 

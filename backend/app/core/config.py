@@ -1,7 +1,9 @@
 """Application configuration."""
 
+import json
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -21,7 +23,23 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from environment variable."""
+        if isinstance(v, str):
+            # Try to parse as JSON first
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+            # If not JSON, split by comma
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # LLM / AI
     OPENAI_API_KEY: Optional[str] = None

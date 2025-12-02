@@ -13,6 +13,37 @@ def log(message):
 
 # 문제 정의
 PROBLEMS_TO_GENERATE = [
+    # Very Easy - 기초 테스트 (VE01-VE05)
+    {
+        "id": "VE01",
+        "goal": "두 숫자를 더하는 add 함수 테스트. 가장 기본적인 덧셈 함수(def add(a, b) -> int)를 테스트하는 초보자용 문제. 버그는 단순한 것들: +를 -로 잘못 쓴 경우, 순서가 바뀐 경우 등.",
+        "skills": ["basic testing", "simple arithmetic"],
+        "difficulty": "Very Easy",
+    },
+    {
+        "id": "VE02",
+        "goal": "숫자가 짝수인지 확인하는 is_even 함수 테스트. def is_even(n) -> bool 함수를 테스트하는 초보자용 문제. 버그: 홀수를 반환하는 경우, 0을 잘못 처리하는 경우 등.",
+        "skills": ["basic testing", "boolean logic"],
+        "difficulty": "Very Easy",
+    },
+    {
+        "id": "VE03",
+        "goal": "숫자가 양수인지 확인하는 is_positive 함수 테스트. def is_positive(n) -> bool 함수를 테스트하는 초보자용 문제. 버그: 0을 양수로 처리, 음수 판단 오류 등.",
+        "skills": ["basic testing", "comparison operators"],
+        "difficulty": "Very Easy",
+    },
+    {
+        "id": "VE04",
+        "goal": "두 숫자 중 큰 값을 반환하는 max_of_two 함수 테스트. def max_of_two(a, b) -> int 함수를 테스트하는 초보자용 문제. 버그: min을 반환, 같은 값일 때 오류 등.",
+        "skills": ["basic testing", "comparison"],
+        "difficulty": "Very Easy",
+    },
+    {
+        "id": "VE05",
+        "goal": "문자열 길이를 반환하는 get_length 함수 테스트. def get_length(s: str) -> int 함수를 테스트하는 초보자용 문제. 버그: 빈 문자열에서 1 반환, 길이+1 반환 등.",
+        "skills": ["basic testing", "string basics"],
+        "difficulty": "Very Easy",
+    },
     # Easy - 경계값 분석 (E01-E03)
     {
         "id": "E01",

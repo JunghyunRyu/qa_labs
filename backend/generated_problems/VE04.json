@@ -1,0 +1,39 @@
+{
+  "title": "두 정수 중 더 큰 값을 반환하는 max_of_two 테스트",
+  "function_signature": "def max_of_two(a: int, b: int) -> int:",
+  "golden_code": "def max_of_two(a: int, b: int) -> int:\n    '''Return the larger of two integer values.\n\n    The function compares a and b and returns the greater integer.\n    If both values are equal, that value is returned.\n    Negative integers are supported as normal.\n    '''\n    return a if a >= b else b\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "두 값 중 더 작은 값을 반환하는 논리 오류 (min 동작). 예: max_of_two(3, 10) 이 3을 반환.",
+      "buggy_code": "def max_of_two(a: int, b: int) -> int:\n    '''Return the larger of two integer values.\n\n    BUGGY VERSION: mistakenly returns the smaller value.\n    '''\n    # 잘못된 비교: 실제로는 항상 더 작은 값을 선택한다.\n    return a if a <= b else b\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "두 값이 같은 경우 0을 반환하는 경계값 처리 오류. 예: max_of_two(7, 7) 이 0을 반환.",
+      "buggy_code": "def max_of_two(a: int, b: int) -> int:\n    '''Return the larger of two integer values.\n\n    BUGGY VERSION: treats equal values as a special case wrongly.\n    '''\n    if a == b:\n        # 잘못된 동작: 동등한 값이어도 그 값을 반환해야 하지만 0을 반환한다.\n        return 0\n    return a if a > b else b\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "음수를 포함한 비교에서 절댓값으로 비교하여 잘못된 결과를 반환. 예: max_of_two(-10, 3) 이 -10을 반환.",
+      "buggy_code": "def max_of_two(a: int, b: int) -> int:\n    '''Return the larger of two integer values.\n\n    BUGGY VERSION: compares absolute values instead of real values.\n    '''\n    # 절댓값을 기준으로 비교하기 때문에 음수 처리에 오류가 발생한다.\n    if abs(a) >= abs(b):\n        return a\n    else:\n        return b\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "두 번째 값이 더 큰 경우 그 값에 1을 더한 값을 반환하는 off-by-one 오류. 예: max_of_two(3, 10) 이 11을 반환.",
+      "buggy_code": "def max_of_two(a: int, b: int) -> int:\n    '''Return the larger of two integer values.\n\n    BUGGY VERSION: adds 1 to the second value when it is larger.\n    '''\n    if a >= b:\n        return a\n    else:\n        # 잘못된 동작: b 대신 b + 1을 반환한다.\n        return b + 1\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n한 주문 처리 시스템에서 두 개의 후보 값 중 더 큰 값을 선택해야 하는 상황이 자주 발생합니다. 예를 들어, 두 개의 배송 옵션 중 더 긴 예상 배송일, 두 개의 재고 수량 중 더 큰 수량 등을 비교할 때 사용할 수 있는 간단한 유틸리티 함수가 필요합니다.\n\n이 문제에서 여러분은 `max_of_two` 함수를 테스트해야 합니다. 이 함수는 두 개의 정수 값을 입력받아, 그 중 더 큰 값을 반환하는 역할을 합니다.\n\n### 함수 설명\n- 함수 이름: `max_of_two`\n- 시그니처: `def max_of_two(a: int, b: int) -> int:`\n- 매개변수:\n  - `a`: 첫 번째 정수 값\n  - `b`: 두 번째 정수 값\n- 반환값:\n  - `a`와 `b` 중 더 큰 정수 값을 반환합니다.\n  - 두 값이 같다면 그 값 자체를 반환합니다.\n  - 음수도 일반적인 정수와 동일하게 비교합니다.\n\n### 동작 예시\n```text\nmax_of_two(3, 10) -> 10\nmax_of_two(-5, -2) -> -2\nmax_of_two(7, 7) -> 7\nmax_of_two(-3, 4) -> 4\n```\n\n### 테스트 시 고려해야 할 사항 (힌트)\n- 기본적인 비교:\n  - 작은 양수와 큰 양수를 넣었을 때 올바른 값이 나오는지 확인하세요.\n- 동일한 값:\n  - 두 입력 값이 같은 경우, 그 값을 그대로 반환하는지 확인해 보세요.\n- 음수와 혼합된 경우:\n  - 둘 다 음수인 경우\n  - 하나는 음수, 하나는 양수인 경우\n  에서도 정확히 더 큰 값을 반환하는지 테스트해 보세요.\n- 결과 값 검증:\n  - 반환된 값이 단순히 '둘 중 하나'가 아니라, 정말로 더 큰 값인지 확인해 보세요.\n\n이 문제는 기본적인 단위 테스트 작성과 단순 비교 연산 검증 능력을 평가하기 위한 매우 쉬운 수준의 연습 문제입니다. 하지만 구현에는 여러 가지 단순하지만 흔한 실수가 숨겨져 있습니다. 다양한 입력 조합을 사용하는 테스트 케이스를 작성하여 이러한 버그 구현들을 최대한 많이 찾아내야 합니다.\n\n### 여러분이 할 일\n- 제공된 `max_of_two` 함수에 대해 `pytest` 기반의 테스트 코드를 작성하세요.\n- 정상 동작 예시와 위의 힌트를 참고하여 다양한 경우를 테스트해 보세요.\n- 작성한 테스트가 정확한 구현(golden code)에서는 모두 통과하지만, 제공된 여러 버그 구현들에서는 일부 또는 전부 실패하도록 만드는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import max_of_two\n\n\ndef test_basic_positive_numbers():\n    # TODO: 기본적인 양수 비교 (예: 작은 수, 큰 수) 에 대한 검증을 추가하세요.\n    # 예: 첫 번째가 더 작을 때, 두 번째가 더 작을 때 등\n    pass\n\n\ndef test_equal_numbers():\n    # TODO: 두 값이 같은 경우 올바른 값이 반환되는지 테스트를 작성하세요.\n    # 같은 양수, 같은 음수 등 다양한 동일 값 케이스를 고려해 보세요.\n    pass\n\n\ndef test_negative_and_mixed_numbers():\n    # TODO: 둘 다 음수일 때, 하나는 음수 하나는 양수일 때의 동작을 검증하세요.\n    # 비교 연산이 절댓값이 아니라 실제 값 기준으로 이루어지는지 확인해 보세요.\n    pass\n",
+  "tags": [
+    "very easy",
+    "basic testing",
+    "comparison",
+    "integer",
+    "unit-test",
+    "pytest",
+    "beginner"
+  ],
+  "difficulty": "Very Easy"
+}

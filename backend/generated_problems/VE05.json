@@ -1,0 +1,40 @@
+{
+  "title": "문자열 길이 반환 함수 get_length 테스트",
+  "function_signature": "def get_length(s: str) -> int:",
+  "golden_code": "def get_length(s: str) -> int:\n    '''Return the exact number of characters in the given string `s`.\n\n    The length is counted exactly like Python's built-in len():\n    - Every character, including spaces, line breaks, and emojis, counts as 1.\n    - The empty string returns 0.\n    - If a non-string is given, TypeError is raised.\n    '''\n    if not isinstance(s, str):\n        raise TypeError(\"s must be a string\")\n    return len(s)\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "빈 문자열은 0을 반환하지만, 그 외 모든 문자열에 대해 실제 길이보다 1 크게 반환하는 off-by-one 버그.",
+      "buggy_code": "def get_length(s: str) -> int:\n    '''Buggy: adds 1 for any non-empty string.''' \n    if not isinstance(s, str):\n        raise TypeError(\"s must be a string\")\n    if s == \"\":\n        return 0\n    return len(s) + 1\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "빈 문자열(\"\")에 대해 0이 아니라 1을 반환하는 경계값 처리 버그. 그 외 문자열은 올바르게 길이를 반환함.",
+      "buggy_code": "def get_length(s: str) -> int:\n    '''Buggy: empty string returns 1 instead of 0.''' \n    if not isinstance(s, str):\n        raise TypeError(\"s must be a string\")\n    if s == \"\":\n        return 1\n    return len(s)\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "앞뒤 공백을 strip()으로 제거한 뒤 길이를 계산하여, 공백이 포함된 문자열의 길이가 잘못 계산되는 버그.",
+      "buggy_code": "def get_length(s: str) -> int:\n    '''Buggy: strips leading/trailing whitespace before counting.''' \n    if not isinstance(s, str):\n        raise TypeError(\"s must be a string\")\n    return len(s.strip())\n",
+      "weight": 2
+    },
+    {
+      "bug_description": "영문자/숫자(isalnum)만 세고 공백, 구두점, 이모지 등은 모두 무시하여 문자열 길이가 실제보다 작게 나오는 버그.",
+      "buggy_code": "def get_length(s: str) -> int:\n    '''Buggy: counts only alphanumeric characters.''' \n    if not isinstance(s, str):\n        raise TypeError(\"s must be a string\")\n    return sum(1 for ch in s if ch.isalnum())\n",
+      "weight": 5
+    }
+  ],
+  "description_md": "## 문제 설명\n\n한 메신저/채팅 서비스에서, 서버는 각 메시지의 **문자 개수**를 정확히 기록해야 합니다. 이 길이 정보는 글자 수 제한(예: 최대 200자) 체크, 요금 계산, 서버 통계 등에 사용됩니다.\n\n이때 사용하는 함수가 `get_length` 입니다. 이 함수가 잘못 동작하면,\n- 빈 문자열 메시지를 잘못 처리하거나,\n- 공백이 포함된 메시지의 길이를 잘못 세거나,\n- 특정 문자만 세는 등의 문제가 생길 수 있습니다.\n\n여러분의 역할은 이 함수를 **pytest 기반 단위 테스트**로 충분히 검증해서, 준비된 여러 개의 버그 구현들을 최대한 많이 찾아내는 것입니다.\n\n---\n\n### 함수 설명\n\n```python\ndef get_length(s: str) -> int:\n```\n\n- **입력**: `s` — 길이를 구할 문자열 (Python `str` 타입)\n- **반환값**: `s`에 포함된 **문자의 개수** (`int`)\n  - Python 내장 함수 `len(s)`와 **정확히 같은 값**을 반환해야 합니다.\n  - 공백(스페이스, 탭, 줄바꿈 등), 이모지, 특수 문자도 **모두 1글자씩**으로 계산합니다.\n  - 빈 문자열 `\"\"` 의 길이는 `0`이어야 합니다.\n  - 문자열이 아닌 값이 들어오면 `TypeError`를 발생시킵니다.\n\n### 동작 예시\n\n```python\nget_length(\"hello\")        # 5\nget_length(\"\")             # 0\nget_length(\"안녕\")          # 2\nget_length(\" hi \")         # 4  (앞뒤 공백 포함)\n```\n\n---\n\n### 테스트에서 고려해야 할 점 (힌트)\n\n- **기본 동작**\n  - 일반적인 단어, 문장에 대해 `len(s)`와 결과가 같은지 확인해 보세요.\n- **경계값/간단한 경우**\n  - 빈 문자열 `\"\"`에 대해 올바르게 `0`을 반환하는지.\n  - 한 글자짜리 문자열(예: `\"a\"`, `\"가\"`, 이모지 하나 등)에서 올바른 값을 반환하는지.\n- **공백 및 특수 문자**\n  - 문자열 앞뒤에 공백이 있는 경우 (예: `\" hi \"`)에도 공백이 **길이에 포함**되는지.\n  - 공백만 있는 문자열(예: `\"   \"`)의 길이가 `len(\"   \")`와 같은지.\n  - 공백, 숫자, 기호, 한글/영문이 섞인 문자열에서 길이가 정확한지.\n- **문자열 이외의 입력** (선택)\n  - `None`, 정수, 리스트 등 문자열이 아닌 값이 들어왔을 때 `TypeError`가 발생하는지.\n\n이 문제는 **기본적인 단위 테스트 작성 연습**과 **문자열 길이에 대한 이해**를 평가하기 위한 매우 쉬운 수준의 문제입니다. 다양한 입력 예시를 직접 생각해 보고, `len(s)`와 결과를 비교하는 방식으로 테스트 케이스를 설계해 보세요.\n\n---\n\n### 수험자가 해야 할 일\n\n- 제공된 `get_length` 함수에 대해 **pytest 기반 테스트 코드**를 작성하세요.\n- 가능한 한 다양한 문자열 입력에 대한 테스트를 만들어, 준비된 여러 버그 구현들이 테스트를 통과하지 못하도록 해야 합니다.\n- 즉, 여러분의 테스트는 **정상 구현(golden code)** 는 통과시키고, **버그가 있는 구현들**은 최대한 많이 실패시키는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import get_length\n\n\ndef test_basic_non_empty_string():\n    # TODO: 길이가 1 이상인 일반 문자열에 대해\n    # get_length(s) 가 len(s) 와 동일한 값을 반환하는지 확인하세요.\n    pass\n\n\ndef test_empty_string():\n    # TODO: 빈 문자열(\"\")에 대해 0을 반환하는지 확인하세요.\n    # 특히 \"길이에 +1\" 을 더하는 구현이나, 빈 문자열에서 1을 반환하는 구현을 잡아낼 수 있어야 합니다.\n    pass\n\n\ndef test_strings_with_whitespace_and_special_chars():\n    # TODO: 앞뒤 공백, 공백만 있는 문자열, 특수문자/이모지가 포함된 문자열에 대해\n    # get_length(s) 와 len(s) 가 항상 동일한지 확인하는 테스트를 작성하세요.\n    pass\n\n\ndef test_non_string_input_type_error():\n    # TODO(선택): 정수, 리스트, None 등 문자열이 아닌 입력에 대해\n    # TypeError 가 발생하는지 확인하는 테스트를 작성해 보세요.\n    pass\n",
+  "tags": [
+    "very easy",
+    "qa",
+    "testing",
+    "unit-test",
+    "pytest",
+    "string",
+    "basic testing",
+    "string basics"
+  ],
+  "difficulty": "Very Easy"
+}

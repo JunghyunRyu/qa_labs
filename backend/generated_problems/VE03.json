@@ -1,0 +1,39 @@
+{
+  "title": "양수 판별 함수 is_positive 테스트",
+  "function_signature": "def is_positive(n: int) -> bool:",
+  "golden_code": "def is_positive(n: int) -> bool:\n    \"\"\"Return True if the given integer is strictly positive.\n\n    A number is considered positive only if it is greater than 0.\n    Zero (0) and all negative integers are not positive.\n\n    Examples:\n        is_positive(3) -> True\n        is_positive(0) -> False\n        is_positive(-1) -> False\n    \"\"\"\n    return n > 0\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "0을 양수로 잘못 처리함. n >= 0 비교를 사용하여 is_positive(0)이 True를 반환함.",
+      "buggy_code": "def is_positive(n: int) -> bool:\n    \"\"\"버그: 0을 양수로 잘못 간주한다.\"\"\"\n    return n >= 0\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "절댓값을 사용하여 음수도 양수로 잘못 처리함. 0을 제외한 모든 정수에 대해 True를 반환함.",
+      "buggy_code": "def is_positive(n: int) -> bool:\n    \"\"\"버그: 절댓값을 사용해 0이 아닌 모든 수(음수 포함)를 양수로 간주한다.\"\"\"\n    return abs(n) > 0\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "정수의 진리값(truthiness)을 사용하여 0만 False, 나머지 양수/음수를 모두 True로 처리함.",
+      "buggy_code": "def is_positive(n: int) -> bool:\n    \"\"\"버그: 0만 False, 음수/양수를 모두 True로 잘못 처리한다.\"\"\"\n    if n:\n        return True\n    return False\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "부호 판단을 완전히 반대로 구현함. 음수일 때만 True를 반환하고, 0과 양수는 모두 False를 반환함.",
+      "buggy_code": "def is_positive(n: int) -> bool:\n    \"\"\"버그: 음수만 양수로 잘못 간주하고, 양수/0은 False를 반환한다.\"\"\"\n    return n < 0\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n간편 송금, 포인트 충전, 결제 금액 검증 등에서는 사용자가 입력한 금액이 **양수인지** 확인하는 기본 검증 로직이 필요합니다. 이 검증이 잘못되면, 0원 결제나 음수 금액(환불, 취소 등)이 잘못 처리될 수 있습니다.\n\n이번 과제에서는 다음 함수를 테스트하는 역할을 맡게 됩니다.\n\n- 함수 이름: `is_positive`\n- 시그니처: `def is_positive(n: int) -> bool:`\n- 역할: 정수 `n`이 **엄밀한 의미의 양수(> 0)** 인지 판별합니다.\n\n### 함수 동작\n- `n`이 0보다 크면 `True`를 반환합니다.\n- `n`이 0이거나 음수이면 `False`를 반환합니다.\n\n### 예시\n```text\nis_positive(10) -> True\nis_positive(1)  -> True\nis_positive(0)  -> False\nis_positive(-3) -> False\n```\n\n### 테스트에서 고민해야 할 점 (힌트)\n- `0`은 양수가 아닙니다. **경계값**인 0에 대해 특별히 확인해 보세요.\n- 여러 양수(예: 1, 2, 100 등)에 대해 일관되게 `True`를 반환하는지 확인해 보세요.\n- 여러 음수(예: -1, -2, -100 등)에 대해 항상 `False`를 반환하는지 확인해 보세요.\n- 파이썬에서 정수의 비교 연산(`>`, `>=`, `<` 등)과 진리값(0이 아닌 정수는 모두 True) 동작 차이도 함께 생각해 보세요.\n\n### 수험자가 해야 할 일\n- `pytest`를 사용하여 `is_positive` 함수를 검증하는 **테스트 코드**를 작성하세요.\n- 양수, 0, 음수에 대한 다양한 입력을 포함해, 비교 연산이 잘못 사용된 구현들을 최대한 많이 잡아낼 수 있도록 테스트를 설계해 보세요.\n- 플랫폼에서는 여러분이 작성한 테스트를 여러 가지 숨겨진 구현(정상 구현 + 버그 구현들)에 대해 실행하여, 얼마나 많은 버그를 발견했는지 평가합니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_positive\n\n\ndef test_positive_numbers():\n    # TODO: 여러 양수 값(예: 1, 2, 10 등)에 대해 True가 반환되는지 확인하세요.\n    # 예: assert is_positive(1) is True\n    pass\n\n\ndef test_zero_boundary():\n    # TODO: 경계값인 0에 대해 False가 반환되는지 확인하세요.\n    # 비교 연산(>, >=)이 잘못 사용되었는 경우를 잡을 수 있어야 합니다.\n    pass\n\n\ndef test_negative_numbers():\n    # TODO: 여러 음수 값(예: -1, -2, -10 등)에 대해 항상 False가 반환되는지 확인하세요.\n    # 음수를 양수처럼 처리하는 구현을 잡아낼 수 있도록 테스트를 작성하세요.\n    pass\n",
+  "tags": [
+    "very easy",
+    "qa",
+    "testing",
+    "unit-test",
+    "integer",
+    "comparison operators",
+    "basic testing"
+  ],
+  "difficulty": "Very Easy"
+}

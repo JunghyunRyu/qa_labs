@@ -21,6 +21,7 @@ class BuggyImplementationSchema(BaseModel):
 class GeneratedProblemSchema(BaseModel):
     """Schema for generated problem."""
 
+    title: str
     function_signature: str
     golden_code: str
     buggy_implementations: List[BuggyImplementationSchema]
@@ -64,18 +65,24 @@ def get_system_prompt(testing_framework: str = "pytest", language: str = "python
 출력은 반드시 **유효한 JSON 객체 하나만** 문자열 형태로 반환한다.
 
 생성해야 할 항목:
-1. function_signature
+1. title
+   - 문제의 제목을 간결하고 명확하게 생성한다.
+   - 문제 목록에서 표시될 짧은 제목 (최대 200자 권장)
+   - 함수 이름이나 문제의 핵심 내용을 반영하되, 너무 길지 않게 작성한다.
+   - 예: "나이 검증 함수 테스트", "리스트 합계 경계값 분석", "이메일 형식 검증"
+
+2. function_signature
    - 테스트 대상 함수의 시그니처 (예: "def sum_list(values: list[int]) -> int:")
    - 타입 힌트를 포함하고, 간결한 하나의 함수만 정의한다.
    - I/O(파일, 네트워크, print, input 등)나 랜덤성, 시간 의존성은 사용하지 않는다.
 
-2. golden_code
+3. golden_code
    - function_signature와 완전히 동일한 시그니처를 가진, 정상 동작하는 구현 코드 (완전한 함수 코드)
    - {language} 문법으로 실행 가능해야 한다.
    - 함수에 짧은 docstring을 포함하여 동작과 주요 경계/예외를 설명한다.
    - 부수 효과(side effect)를 최소화하고 순수 함수에 가깝게 작성한다.
 
-3. buggy_implementations
+4. buggy_implementations
    - 최소 3개, 최대 5개의 버그 구현을 포함한다.
    - 각 항목은 다음 필드를 가진다:
      - bug_description: 어떤 유형의 버그인지, 어떤 입력/케이스에서 드러나는지 간단 명료하게 설명
@@ -90,7 +97,7 @@ def get_system_prompt(testing_framework: str = "pytest", language: str = "python
        - "api response validation": 필수 필드 누락, 상태코드/형식 검증 누락 등
    - 가능한 한 서로 다른 유형의 실수를 포함하여, 다양한 테스트 아이디어가 필요하도록 만든다.
 
-4. description_md
+5. description_md
    - Markdown 형식의 문제 설명 문자열.
    - 포함해야 할 내용:
      - 짧은 비즈니스/도메인 맥락 (왜 이 함수를 테스트해야 하는지)
@@ -100,7 +107,7 @@ def get_system_prompt(testing_framework: str = "pytest", language: str = "python
      - 수험자가 해야 할 일: '{testing_framework} 기반 테스트 코드를 작성해 버그 구현들을 최대한 많이 탐지하라'는 지시
    - skills_to_assess를 자연스러운 문장으로 드러내되, 특정 buggy_implementation 내용을 직접적으로 폭로하지 않는다.
 
-5. initial_test_template
+6. initial_test_template
    - {testing_framework} 기반 초기 테스트 템플릿 코드 (문자열).
    - 포함해야 할 것:
      - 필요한 import (예: "import {testing_framework}", "from target import function_name")
@@ -109,7 +116,7 @@ def get_system_prompt(testing_framework: str = "pytest", language: str = "python
        예) 경계값 분석 → test_min_boundary, test_max_boundary 등
    - 실제 정답 테스트 케이스(올바른 assert)는 포함하지 않는다. 힌트 수준의 주석만 제공한다.
 
-6. tags
+7. tags
    - 문자열 리스트.
    - 포함 권장:
      - difficulty (예: "easy", "medium", "hard")
@@ -166,6 +173,7 @@ def build_user_prompt(
 다음 JSON 형식으로 정확히 응답하세요 (예시는 형식 참고용이며, 값은 상황에 맞게 채우세요):
 
 {{
+  "title": "문제 제목 (간결하고 명확하게)",
   "function_signature": "def function_name(params: type) -> return_type:",
   "golden_code": "완전한 함수 코드 (여러 줄 가능, \\n 으로 줄바꿈)",
   "buggy_implementations": [
