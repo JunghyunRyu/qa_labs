@@ -14,9 +14,7 @@ interface FeedbackDisplayProps {
 
 export default function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">AI 피드백</h3>
-
+    <div className="space-y-6">
       {/* Summary */}
       <div>
         <h4 className="text-md font-medium text-gray-800 mb-2">요약</h4>

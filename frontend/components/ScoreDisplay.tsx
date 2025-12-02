@@ -17,9 +17,8 @@ export default function ScoreDisplay({
       : null;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div>
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">점수</h3>
         <div className="text-4xl font-bold text-blue-600">{score}</div>
         <div className="text-sm text-gray-600 mt-1">/ 100점</div>
       </div>

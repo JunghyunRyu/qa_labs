@@ -1,6 +1,6 @@
 """Problem repository."""
 
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -61,21 +61,32 @@ class ProblemRepository:
         """
         return self.db.query(Problem).filter(Problem.slug == slug).first()
 
-    def create(self, problem_in: ProblemCreate) -> Problem:
+    def create(self, problem_in: Union[Problem, ProblemCreate]) -> Problem:
         """
         Create a new Problem row.
 
+        Args:
+            problem_in: Either a Problem ORM instance or ProblemCreate schema
+
+        Returns:
+            Created Problem instance
+
         Note: buggy_implementations 저장은 나중에 별도 로직으로 확장해도 됨.
         """
-        problem = Problem(
-            slug=problem_in.slug,
-            title=problem_in.title,
-            description_md=problem_in.description_md,
-            function_signature=problem_in.function_signature,
-            golden_code=problem_in.golden_code,
-            difficulty=problem_in.difficulty,
-            skills=problem_in.skills,  # JSON 컬럼이면 리스트 그대로, Text면 ",".join(...) 해야 함
-        )
+        # If already a Problem instance, just add and commit
+        if isinstance(problem_in, Problem):
+            problem = problem_in
+        else:
+            # If ProblemCreate schema, create Problem instance
+            problem = Problem(
+                slug=problem_in.slug,
+                title=problem_in.title,
+                description_md=problem_in.description_md,
+                function_signature=problem_in.function_signature,
+                golden_code=problem_in.golden_code,
+                difficulty=problem_in.difficulty,
+                skills=problem_in.skills,  # JSON 컬럼이면 리스트 그대로, Text면 ",".join(...) 해야 함
+            )
 
         self.db.add(problem)
         self.db.commit()

@@ -52,7 +52,8 @@ export default function AdminProblemNewPage() {
       const defaultSlug = result.function_signature
         .match(/def\s+(\w+)/)?.[1] || "problem";
       setSlug(defaultSlug);
-      setTitle(result.function_signature.replace("def ", "").replace(":", ""));
+      // AI가 생성한 title이 있으면 사용, 없으면 함수 시그니처에서 추출
+      setTitle(result.title || result.function_signature.replace("def ", "").replace(":", ""));
     } catch (err: unknown) {
       let errorMessage = "문제 생성에 실패했습니다.";
       if (err instanceof ApiError) {

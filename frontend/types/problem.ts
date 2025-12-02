@@ -18,6 +18,7 @@ export interface ProblemListItem {
   title: string;
   difficulty: "Easy" | "Medium" | "Hard";
   skills?: string[];
+  description_md?: string;  // For preview in list view
 }
 
 export interface ProblemListResponse {
