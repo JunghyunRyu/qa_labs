@@ -1,8 +1,8 @@
 /** Problems API client tests */
 
 import { getProblems, getProblem } from '../problems';
-import { get } from '../../api';
-import { ApiError } from '../../api';
+import { get } from '@/lib/api';
+import { ApiError } from '@/lib/api';
 import type { Problem, ProblemListResponse } from '@/types/problem';
 
 jest.mock('../../api');
