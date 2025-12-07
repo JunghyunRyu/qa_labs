@@ -1,6 +1,6 @@
 """Submission model."""
 
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -13,6 +13,12 @@ class Submission(Base):
     """Submission model."""
 
     __tablename__ = "submissions"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('PENDING', 'RUNNING', 'SUCCESS', 'FAILURE', 'ERROR')",
+            name='submissions_status_check'
+        ),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)

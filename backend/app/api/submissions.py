@@ -61,7 +61,10 @@ async def create_submission(
     Returns:
         Created submission
     """
-    logger.info(f"Creating submission for problem {submission_data.problem_id}")
+    logger.info(
+        f"[SUBMISSION_CREATE_START] problem_id={submission_data.problem_id} "
+        f"code_length={len(submission_data.code)}"
+    )
     # TODO: Get user_id from authentication when implemented
     # For now, use default user
     user = get_or_create_default_user(db)
@@ -70,7 +73,7 @@ async def create_submission(
     problem_repo = ProblemRepository(db)
     problem = problem_repo.get_by_id(submission_data.problem_id)
     if not problem:
-        logger.warning(f"Problem {submission_data.problem_id} not found")
+        logger.warning(f"[SUBMISSION_CREATE_ERROR] problem_id={submission_data.problem_id} reason=problem_not_found")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Problem with id {submission_data.problem_id} not found",
@@ -87,18 +90,26 @@ async def create_submission(
     
     submission_repo = SubmissionRepository(db)
     submission = submission_repo.create(submission)
-    logger.info(f"Submission {submission.id} created successfully")
+    logger.info(
+        f"[SUBMISSION_CREATED] submission_id={submission.id} "
+        f"user_id={user.id} problem_id={submission_data.problem_id} status=PENDING"
+    )
     
     # Celery Task 발행
     try:
         process_submission_task.delay(str(submission.id))
-        logger.info(f"Submission {submission.id} queued for processing")
+        logger.info(f"[SUBMISSION_QUEUED] submission_id={submission.id}")
     except Exception as e:
         # Task 발행 실패 시 에러 상태로 업데이트
-        logger.error(f"Failed to queue submission {submission.id}: {e}", exc_info=True)
+        logger.error(
+            f"[SUBMISSION_QUEUE_ERROR] submission_id={submission.id} "
+            f"error_type={type(e).__name__} error_message={str(e)}",
+            exc_info=True
+        )
         submission.status = "ERROR"
         submission.execution_log = {"error": f"Failed to queue task: {str(e)}"}
         submission_repo.update(submission)
+        logger.info(f"[STATUS_CHANGE] submission_id={submission.id} status=PENDING->ERROR")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to queue submission task: {str(e)}",

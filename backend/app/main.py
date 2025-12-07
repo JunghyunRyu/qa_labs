@@ -29,9 +29,24 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     logger.warning(
         f"HTTP {exc.status_code} error: {exc.detail} - Path: {request.url.path}"
     )
+    
+    # 에러 타입 결정
+    error_type = "http_error"
+    if exc.status_code == 404:
+        error_type = "not_found"
+    elif exc.status_code == 400:
+        error_type = "bad_request"
+    elif exc.status_code == 401:
+        error_type = "unauthorized"
+    elif exc.status_code == 403:
+        error_type = "forbidden"
+    
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.detail},
+        content={
+            "detail": exc.detail,
+            "type": error_type,
+        },
     )
 
 
@@ -43,23 +58,46 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors()},
+        content={
+            "detail": exc.errors(),
+            "type": "validation_error",
+        },
     )
 
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """일반 예외 핸들러."""
-    logger.error(
-        f"Unhandled exception: {exc} - Path: {request.url.path}",
-        exc_info=True,
-    )
+    # 프로덕션에서는 상세한 에러 정보를 로그에만 기록
+    error_id = None
+    if not settings.DEBUG:
+        import uuid
+        error_id = str(uuid.uuid4())[:8]
+        logger.error(
+            f"Unhandled exception [ID: {error_id}]: {type(exc).__name__}: {str(exc)} - "
+            f"Path: {request.url.path}",
+            exc_info=True,
+        )
+    else:
+        # DEBUG 모드에서는 상세 정보 로깅
+        logger.error(
+            f"Unhandled exception: {type(exc).__name__}: {str(exc)} - "
+            f"Path: {request.url.path}",
+            exc_info=True,
+        )
+    
+    # 프로덕션에서는 일반적인 메시지만 반환
+    detail_message = "Internal server error. Please try again later."
+    if settings.DEBUG:
+        detail_message = f"{type(exc).__name__}: {str(exc)}"
+    elif error_id:
+        detail_message = f"Internal server error (Error ID: {error_id}). Please try again later."
+    
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            "detail": "Internal server error. Please try again later."
-            if not settings.DEBUG
-            else str(exc)
+            "detail": detail_message,
+            "type": "internal_server_error",
         },
     )
 

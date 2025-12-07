@@ -23,38 +23,68 @@ class DockerService:
     def __init__(self):
         """Docker 클라이언트 초기화."""
         try:
-            # Windows 환경에서 환경변수 문제 해결
             import platform
             import os
             
-            if platform.system() == "Windows":
-                # Windows에서는 DOCKER_HOST 환경변수를 제거하고 기본값 사용
+            # 컨테이너 내부에서 실행 중인지 확인
+            is_in_container = os.path.exists("/.dockerenv") or os.environ.get("DOCKER_CONTAINER") == "true"
+            
+            # DOCKER_HOST 환경변수 확인
+            docker_host = os.environ.get("DOCKER_HOST")
+            
+            # Windows 환경에서 호스트에서 실행 중인 경우
+            if platform.system() == "Windows" and not is_in_container:
+                # Windows 호스트에서는 named pipe 사용
+                try:
+                    self.client = docker.DockerClient(base_url="npipe:////./pipe/docker_engine")
+                    self.client.ping()
+                    logger.info("Docker 클라이언트 초기화 성공 (Windows named pipe)")
+                except Exception:
+                    # 실패 시 기본값 사용
+                    self.client = docker.from_env()
+                    logger.info("Docker 클라이언트 초기화 성공 (from_env)")
+            # 컨테이너 내부에서 실행 중인 경우
+            elif is_in_container:
+                # 컨테이너 내부에서는 Docker 소켓 사용
+                # Windows Docker Desktop에서는 DOCKER_HOST가 잘못 설정될 수 있으므로 정리
                 original_docker_host = os.environ.pop("DOCKER_HOST", None)
                 original_docker_tls = os.environ.pop("DOCKER_TLS_VERIFY", None)
                 original_docker_cert = os.environ.pop("DOCKER_CERT_PATH", None)
                 
                 try:
-                    # Windows에서는 named pipe를 명시적으로 사용
+                    # 먼저 Unix 소켓 시도
                     try:
-                        self.client = docker.DockerClient(base_url="npipe:////./pipe/docker_engine")
-                        # 연결 테스트
+                        self.client = docker.DockerClient(base_url="unix:///var/run/docker.sock")
                         self.client.ping()
-                    except Exception:
-                        # named pipe 실패 시 기본값 사용
+                        logger.info("Docker 클라이언트 초기화 성공 (Unix socket)")
+                    except Exception as e:
+                        # Unix 소켓 실패 시 환경변수 없이 from_env 시도
+                        logger.warning(f"Unix socket 연결 실패: {e}, from_env 시도")
                         self.client = docker.from_env()
+                        self.client.ping()
+                        logger.info("Docker 클라이언트 초기화 성공 (from_env)")
                 finally:
-                    # 원래 값 복원 (다른 프로세스에 영향 주지 않도록)
+                    # 원래 환경변수 복원 (다른 프로세스에 영향 주지 않도록)
                     if original_docker_host:
                         os.environ["DOCKER_HOST"] = original_docker_host
                     if original_docker_tls:
                         os.environ["DOCKER_TLS_VERIFY"] = original_docker_tls
                     if original_docker_cert:
                         os.environ["DOCKER_CERT_PATH"] = original_docker_cert
+            # Linux/Mac 호스트에서 실행 중인 경우
             else:
                 self.client = docker.from_env()
+                logger.info("Docker 클라이언트 초기화 성공 (from_env)")
+                
         except Exception as e:
-            logger.error(f"Docker 클라이언트 초기화 실패: {e}")
-            raise
+            error_msg = (
+                f"Docker 클라이언트 초기화 실패: {type(e).__name__}: {str(e)}. "
+                f"환경: Windows={platform.system() == 'Windows'}, "
+                f"컨테이너 내부={is_in_container}, "
+                f"DOCKER_HOST={docker_host or 'None'}"
+            )
+            logger.error(error_msg)
+            raise RuntimeError(f"Docker 클라이언트를 초기화할 수 없습니다: {str(e)}") from e
 
     def create_container(
         self,
@@ -117,8 +147,15 @@ class DockerService:
         except Exception as e:
             # 에러 발생 시 임시 디렉토리 정리
             self._cleanup_temp_dir(temp_path)
-            logger.error(f"컨테이너 생성 실패: {e}")
-            raise
+            error_msg = (
+                f"Judge 컨테이너 생성 실패: {type(e).__name__}: {str(e)}. "
+                f"이미지: {JUDGE_IMAGE}, 타임아웃: {timeout}초"
+            )
+            logger.error(error_msg)
+            raise RuntimeError(
+                f"Judge 컨테이너를 생성할 수 없습니다. "
+                f"이미지 '{JUDGE_IMAGE}'가 존재하는지 확인하세요: {str(e)}"
+            ) from e
 
     def run_container(
         self,
@@ -157,8 +194,16 @@ class DockerService:
                 exit_code = result.get("StatusCode", -1)
             except Exception as e:
                 # 타임아웃 발생
-                logger.warning(f"컨테이너 실행 타임아웃: {container.id}")
-                container.kill()
+                timeout_msg = (
+                    f"Judge 컨테이너 실행 타임아웃: 컨테이너 ID={container.id[:12]}, "
+                    f"타임아웃={timeout}초, 에러={type(e).__name__}: {str(e)}"
+                )
+                logger.warning(timeout_msg)
+                try:
+                    container.kill()
+                    logger.info(f"타임아웃으로 인해 컨테이너 강제 종료: {container.id[:12]}")
+                except Exception as kill_error:
+                    logger.error(f"컨테이너 강제 종료 실패: {container.id[:12]}, 에러: {kill_error}")
                 exit_code = -1
 
             execution_time = time.time() - start_time
@@ -191,12 +236,17 @@ class DockerService:
 
         except Exception as e:
             execution_time = time.time() - start_time
-            logger.error(f"컨테이너 실행 실패: {container.id}, 에러: {e}")
+            error_msg = (
+                f"Judge 컨테이너 실행 중 예외 발생: 컨테이너 ID={container.id[:12]}, "
+                f"에러 타입={type(e).__name__}, 에러 메시지={str(e)}, "
+                f"실행 시간={execution_time:.2f}초"
+            )
+            logger.error(error_msg, exc_info=True)
             return {
                 "success": False,
                 "exit_code": -1,
                 "stdout": "",
-                "stderr": str(e),
+                "stderr": f"컨테이너 실행 실패: {type(e).__name__}: {str(e)}",
                 "execution_time": execution_time,
                 "logs": "",
             }
@@ -229,7 +279,10 @@ class DockerService:
                 logger.debug(f"컨테이너 정리 완료: {container.id}")
 
         except Exception as e:
-            logger.warning(f"컨테이너 정리 중 에러: {e}")
+            logger.warning(
+                f"컨테이너 정리 중 에러 발생: 컨테이너 ID={container.id[:12] if container else 'None'}, "
+                f"에러 타입={type(e).__name__}, 에러 메시지={str(e)}"
+            )
 
     def _cleanup_temp_dir(self, temp_path: Path):
         """임시 디렉토리를 정리합니다."""
@@ -240,7 +293,10 @@ class DockerService:
                 shutil.rmtree(temp_path)
                 logger.debug(f"임시 디렉토리 정리 완료: {temp_path}")
         except Exception as e:
-            logger.warning(f"임시 디렉토리 정리 중 에러: {e}")
+            logger.warning(
+                f"임시 디렉토리 정리 중 에러 발생: 경로={temp_path}, "
+                f"에러 타입={type(e).__name__}, 에러 메시지={str(e)}"
+            )
 
     def run_pytest(
         self,
@@ -272,12 +328,16 @@ class DockerService:
             return result
 
         except Exception as e:
-            logger.error(f"pytest 실행 실패: {e}")
+            error_msg = (
+                f"pytest 실행 실패: {type(e).__name__}: {str(e)}. "
+                f"타임아웃: {timeout}초"
+            )
+            logger.error(error_msg, exc_info=True)
             return {
                 "success": False,
                 "exit_code": -1,
                 "stdout": "",
-                "stderr": str(e),
+                "stderr": f"pytest 실행 중 오류 발생: {type(e).__name__}: {str(e)}",
                 "execution_time": 0.0,
                 "logs": "",
             }

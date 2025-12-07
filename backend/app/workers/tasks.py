@@ -12,7 +12,14 @@ from app.services.submission_service import SubmissionService
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,  # 기본 재시도 지연 시간 (초) - retry_backoff와 함께 사용
+    retry_backoff=True,  # 지수 백오프 활성화
+    retry_backoff_max=600,  # 최대 재시도 간격 (10분)
+    retry_jitter=True,  # 재시도 시간 랜덤화 (thundering herd 문제 방지)
+)
 def process_submission_task(self, submission_id: str) -> None:
     """
     Celery task to process a submission.
@@ -35,12 +42,14 @@ def process_submission_task(self, submission_id: str) -> None:
             exc_info=True,
         )
         # 재시도 로직
+        # retry_backoff=True로 인해 Celery가 자동으로 지수 백오프 계산
+        # retry_jitter=True로 인해 재시도 시간에 랜덤 요소 추가
         if self.request.retries < self.max_retries:
             logger.info(
                 f"Retrying task for submission {submission_uuid} "
                 f"(attempt {self.request.retries + 1}/{self.max_retries})"
             )
-            raise self.retry(exc=e, countdown=60)  # 60초 후 재시도
+            raise self.retry(exc=e)
         else:
             logger.error(
                 f"Max retries reached for submission {submission_uuid}. "

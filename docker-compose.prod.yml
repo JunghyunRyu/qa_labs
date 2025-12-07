@@ -1,4 +1,5 @@
-version: '3.8'
+version: "3.8"
+
 
 services:
   postgres:
@@ -50,6 +51,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    ports:
+      - "8001:8000"
     networks:
       - qa_arena_network
     restart: unless-stopped
@@ -68,6 +71,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini-2025-08-07}
       DEBUG: ${DEBUG:-False}
+      DOCKER_HOST: unix:///var/run/docker.sock
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,6 +82,23 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+    container_name: qa_arena_frontend_prod
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+    ports:
+      - "3000:3000"
+    networks:
+      - qa_arena_network
+    restart: unless-stopped
 
   nginx:
     image: nginx:alpine
@@ -89,8 +110,11 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - nginx_logs:/var/log/nginx
+      - ./nginx/webroot:/var/www/certbot     
+      - /etc/letsencrypt:/etc/letsencrypt:ro 
     depends_on:
       - backend
+      - frontend
     networks:
       - qa_arena_network
     restart: unless-stopped

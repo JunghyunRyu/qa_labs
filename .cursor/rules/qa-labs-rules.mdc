@@ -3,7 +3,11 @@ alwaysApply: true
 ---
 
 1. 짧은 개발과 테스트를 이어서 목표를 이어가는 방식으로 개발을 진행한다. 
-2. 개발의 순서는 @docs/qa-arena-milestones.md에 [x]가 되어있지 않은 것부터 시작한다.
-3. 항상 @docs/qa-arena-spec.md 문서를 세션이 시작할 때 확인하여 개발 사양에 대한 전체적인 흐름을 파악한다.
-4. 200줄 이상의 개발을 진행해야 할 경우 세팅이 'Use Allowlist'이더라도 사용자의 확인을 요청한다.
+   - task가 완료되면 의미가 있는 결과를 도출해내는 테스트를 진행한다.
+   - taks가 완료되면 commit을 진행한다.
+   - milestone이 완료되면 push를 진행한다.
+2. 항상 @docs/qa-arena-spec.md 문서를 세션이 시작할 때 확인하여 개발 사양에 대한 전체적인 흐름을 파악한다.
+3. 개발의 순서는 @docs/technical-todos-v*.md에 [x]가 되어있지 않은 것부터 시작한다.
+4. 개발을 진행할 때에는 @docs/qa-arena-technical-todos.md 파일을 무조건 먼저 확인한다./
+5. 200줄 이상의 개발을 진행해야 할 경우 세팅이 'Use Allowlist'이더라도 사용자의 확인을 요청한다.
 

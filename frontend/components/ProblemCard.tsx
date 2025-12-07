@@ -2,15 +2,31 @@
 
 import Link from "next/link";
 import type { ProblemListItem } from "@/types/problem";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface ProblemCardProps {
   problem: ProblemListItem;
 }
 
-const difficultyColors = {
-  Easy: "bg-green-100 text-green-800 border-green-200",
-  Medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  Hard: "bg-red-100 text-red-800 border-red-200",
+const difficultyConfig = {
+  Easy: {
+    colors: "bg-green-100 text-green-800 border-green-300",
+    icon: <TrendingDown className="w-3 h-3" />,
+    label: "쉬움",
+    gradient: "from-green-50 to-emerald-50",
+  },
+  Medium: {
+    colors: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    icon: <Minus className="w-3 h-3" />,
+    label: "보통",
+    gradient: "from-yellow-50 to-amber-50",
+  },
+  Hard: {
+    colors: "bg-red-100 text-red-800 border-red-300",
+    icon: <TrendingUp className="w-3 h-3" />,
+    label: "어려움",
+    gradient: "from-red-50 to-rose-50",
+  },
 };
 
 export default function ProblemCard({ problem }: ProblemCardProps) {
@@ -46,6 +62,8 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
 
   const preview = extractPreview(problem.description_md);
 
+  const difficulty = difficultyConfig[problem.difficulty];
+
   return (
     <Link 
       href={`/problems/${problem.id}`}
@@ -53,19 +71,18 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
       aria-label={`${displayTitle} 문제 보기`}
       tabIndex={0}
     >
-      <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 md:p-6 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 cursor-pointer h-full flex flex-col border border-gray-100 min-h-[200px] sm:min-h-[220px] md:min-h-[240px]">
+      <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 md:p-6 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.colors.split(' ')[2]} min-h-[200px] sm:min-h-[220px] md:min-h-[240px]`}>
         {/* 제목과 난이도 배지 */}
         <div className="flex items-start justify-between mb-3 gap-2">
           <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 flex-1 pr-2 line-clamp-2 leading-snug">
             {displayTitle}
           </h3>
           <span
-            className={`px-2 sm:px-2.5 py-1 rounded-full text-xs font-semibold border shrink-0 whitespace-nowrap ${
-              difficultyColors[problem.difficulty]
-            }`}
-            aria-label={`난이도: ${problem.difficulty}`}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border-2 shrink-0 whitespace-nowrap flex items-center gap-1.5 ${difficulty.colors} shadow-sm`}
+            aria-label={`난이도: ${difficulty.label}`}
           >
-            {problem.difficulty}
+            {difficulty.icon}
+            <span>{difficulty.label}</span>
           </span>
         </div>
         

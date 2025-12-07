@@ -230,11 +230,28 @@ from target import ${functionName}
     return null;
   }
 
-  const difficultyColors = {
-    Easy: "bg-green-100 text-green-800 border-green-200",
-    Medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    Hard: "bg-red-100 text-red-800 border-red-200",
+  const difficultyConfig = {
+    Easy: {
+      colors: "bg-green-100 text-green-800 border-green-300",
+      icon: "📉",
+      label: "쉬움",
+      gradient: "from-green-50 to-emerald-50",
+    },
+    Medium: {
+      colors: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      icon: "➖",
+      label: "보통",
+      gradient: "from-yellow-50 to-amber-50",
+    },
+    Hard: {
+      colors: "bg-red-100 text-red-800 border-red-300",
+      icon: "📈",
+      label: "어려움",
+      gradient: "from-red-50 to-rose-50",
+    },
   };
+
+  const difficulty = difficultyConfig[problem.difficulty];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -266,11 +283,12 @@ from target import ${functionName}
               </div>
             </div>
             <span
-              className={`px-4 py-2 rounded-full text-sm font-semibold border shrink-0 ${
-                difficultyColors[problem.difficulty]
+              className={`px-4 py-2 rounded-lg text-sm font-bold border-2 shrink-0 flex items-center gap-2 shadow-sm ${
+                difficulty.colors
               }`}
             >
-              {problem.difficulty}
+              <span className="text-base">{difficulty.icon}</span>
+              <span>{difficulty.label}</span>
             </span>
           </div>
           

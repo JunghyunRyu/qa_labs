@@ -73,6 +73,8 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     username VARCHAR(50) NOT NULL,
+    password_hash VARCHAR(255),           -- v1.0에서 추가 (인증 시스템 구현 시)
+    role VARCHAR(20) DEFAULT 'user',      -- v1.0에서 추가 (user, admin)
     created_at TIMESTAMP DEFAULT NOW()
 );
 ```
@@ -87,8 +89,9 @@ CREATE TABLE problems (
     description_md TEXT NOT NULL,
     function_signature TEXT NOT NULL,
     golden_code TEXT NOT NULL,
-    difficulty VARCHAR(20) CHECK (difficulty IN ('Easy', 'Medium', 'Hard')),
+    difficulty VARCHAR(20) CHECK (difficulty IN ('Very Easy', 'Easy', 'Medium', 'Hard')),
     skills JSONB,                -- 예: ["boundary", "exception", "negative_values"]
+    ai_assist BOOLEAN DEFAULT FALSE,  -- v0.3에서 추가 (AI 사용 허용 여부)
     created_at TIMESTAMP DEFAULT NOW()
 );
 ```
@@ -120,6 +123,7 @@ CREATE TABLE submissions (
     total_mutants INTEGER,
     execution_log JSONB,
     feedback_json JSONB,
+    ai_usage_notes TEXT,       -- v0.3에서 추가 (AI 사용 내역, AI-Assist 모드에서 필수)
     created_at TIMESTAMP DEFAULT NOW()
 );
 ```

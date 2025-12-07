@@ -4,77 +4,162 @@ import type { Submission } from "@/types/problem";
 import SubmissionStatus from "./SubmissionStatus";
 import ScoreDisplay from "./ScoreDisplay";
 import FeedbackDisplay from "./FeedbackDisplay";
+import { AlertCircle, FileText, Sparkles } from "lucide-react";
 
 interface SubmissionResultProps {
   submission: Submission;
 }
 
 export default function SubmissionResult({ submission }: SubmissionResultProps) {
+  // FAILURE 상태일 때 Golden Code 테스트 실패 정보 추출
+  const getFailureInfo = () => {
+    if (submission.status !== "FAILURE" || !submission.execution_log) return null;
+    
+    const golden = (submission.execution_log as any)?.golden;
+    if (!golden) return null;
+
+    return {
+      exitCode: golden.exit_code,
+      stdout: golden.stdout || "",
+      stderr: golden.stderr || "",
+      logs: golden.logs || "",
+    };
+  };
+
+  const failureInfo = getFailureInfo();
+
   return (
     <div className="space-y-6">
       {/* Status - Always shown */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">제출 상태</h3>
-        <SubmissionStatus status={submission.status} />
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-900">제출 상태</h3>
+        </div>
+        <SubmissionStatus status={submission.status} createdAt={submission.created_at} />
       </div>
 
       {/* Score - Always shown in the same location */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">점수</h3>
-        {(submission.status === "SUCCESS" || submission.status === "FAILURE") ? (
+      {(submission.status === "SUCCESS" || submission.status === "FAILURE") && (
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="text-2xl">📊</span>
+            채점 결과
+          </h3>
           <ScoreDisplay
             score={submission.score}
             killedMutants={submission.killed_mutants}
             totalMutants={submission.total_mutants}
           />
-        ) : (
-          <div className="text-gray-500 text-sm">채점 중...</div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* FAILURE 상태 상세 정보 */}
+      {submission.status === "FAILURE" && failureInfo && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="w-5 h-5 text-orange-600" />
+            <h3 className="text-lg font-semibold text-orange-900">테스트 실패 상세</h3>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-orange-800 mb-2">
+                Golden Code 테스트가 실패했습니다.
+              </p>
+              <p className="text-sm text-orange-700">
+                작성하신 테스트 코드가 정상 구현을 통과시키지 못했습니다. 
+                테스트 케이스를 다시 확인해주세요.
+              </p>
+            </div>
+            
+            {failureInfo.stderr && (
+              <details className="mt-4">
+                <summary className="cursor-pointer text-sm font-medium text-orange-800 hover:text-orange-900 mb-2">
+                  에러 출력 보기
+                </summary>
+                <div className="mt-2 bg-white rounded p-3 border border-orange-200">
+                  <pre className="text-xs text-red-700 whitespace-pre-wrap overflow-x-auto font-mono">
+                    {failureInfo.stderr}
+                  </pre>
+                </div>
+              </details>
+            )}
+
+            {failureInfo.logs && (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm font-medium text-orange-800 hover:text-orange-900 mb-2">
+                  실행 로그 보기
+                </summary>
+                <div className="mt-2 bg-white rounded p-3 border border-orange-200">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap overflow-x-auto font-mono">
+                    {failureInfo.logs}
+                  </pre>
+                </div>
+              </details>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Error Message - Shown when status is ERROR */}
       {submission.status === "ERROR" && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-red-800 mb-2">채점 에러</h4>
-          <p className="text-sm text-red-700 mb-2">
-            채점 중 오류가 발생했습니다. 코드를 확인하고 다시 제출해주세요.
-          </p>
-          {submission.execution_log && (
-            <details className="mt-2">
-              <summary className="cursor-pointer text-xs text-red-600 hover:text-red-800">
-                상세 에러 정보 보기
-              </summary>
-              <pre className="mt-2 text-xs text-red-700 whitespace-pre-wrap overflow-x-auto">
-                {JSON.stringify(submission.execution_log, null, 2)}
-              </pre>
-            </details>
-          )}
+        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <h4 className="text-lg font-semibold text-red-800">채점 에러</h4>
+          </div>
+          <div className="space-y-3">
+            <p className="text-sm text-red-700">
+              채점 중 오류가 발생했습니다. 코드를 확인하고 다시 제출해주세요.
+            </p>
+            {submission.execution_log && (
+              <details className="mt-4">
+                <summary className="cursor-pointer text-sm font-medium text-red-600 hover:text-red-800 mb-2">
+                  상세 에러 정보 보기
+                </summary>
+                <div className="mt-2 bg-white rounded p-3 border border-red-200">
+                  <pre className="text-xs text-red-700 whitespace-pre-wrap overflow-x-auto font-mono">
+                    {JSON.stringify(submission.execution_log, null, 2)}
+                  </pre>
+                </div>
+              </details>
+            )}
+          </div>
         </div>
       )}
 
       {/* AI Feedback - Always shown in the same location */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">AI 피드백</h3>
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-purple-600" />
+          <h3 className="text-lg font-semibold text-gray-900">AI 피드백</h3>
+        </div>
         {submission.feedback_json ? (
           <FeedbackDisplay feedback={submission.feedback_json as any} />
         ) : (
-          <div className="text-gray-500 text-sm">
-            {submission.status === "SUCCESS" || submission.status === "FAILURE"
-              ? "피드백을 생성하는 중..."
-              : "채점 완료 후 피드백이 표시됩니다."}
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-3"></div>
+            <p className="text-sm text-gray-600">
+              {submission.status === "SUCCESS" || submission.status === "FAILURE"
+                ? "AI가 피드백을 생성하고 있습니다..."
+                : "채점 완료 후 피드백이 표시됩니다."}
+            </p>
           </div>
         )}
       </div>
 
       {/* Execution Log (optional, collapsed by default) */}
-      {submission.execution_log && (
-        <details className="bg-gray-50 rounded-lg p-4">
-          <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
-            실행 로그 보기
+      {submission.execution_log && submission.status !== "FAILURE" && (
+        <details className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+          <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            실행 로그 보기 (디버깅용)
           </summary>
-          <pre className="mt-3 text-xs text-gray-600 whitespace-pre-wrap overflow-x-auto">
-            {JSON.stringify(submission.execution_log, null, 2)}
-          </pre>
+          <div className="mt-3 bg-white rounded p-3 border border-gray-200">
+            <pre className="text-xs text-gray-600 whitespace-pre-wrap overflow-x-auto font-mono">
+              {JSON.stringify(submission.execution_log, null, 2)}
+            </pre>
+          </div>
         </details>
       )}
     </div>
