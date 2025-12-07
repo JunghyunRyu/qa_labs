@@ -1,6 +1,7 @@
 /** API client utilities */
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "").trim() || "http://localhost:8000";
+const API_BASE_URL =
+  (process.env.NEXT_PUBLIC_API_URL || "").trim() || "/api";
 
 export class ApiError extends Error {
   constructor(
