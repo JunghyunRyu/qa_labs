@@ -2,7 +2,7 @@
 
 import { post } from "@/lib/api";
 
-const ADMIN_ENDPOINT = "/api/admin";
+const ADMIN_ENDPOINT = "/admin";
 
 export interface ProblemGenerateRequest {
   goal: string;

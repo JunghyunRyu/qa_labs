@@ -3,7 +3,7 @@
 import { post, get } from "@/lib/api";
 import type { Submission, SubmissionCreate } from "@/types/problem";
 
-const SUBMISSIONS_ENDPOINT = "/api/v1/submissions";
+const SUBMISSIONS_ENDPOINT = "/v1/submissions";
 
 /**
  * Create a new submission

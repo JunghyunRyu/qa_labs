@@ -3,7 +3,7 @@
 import { get } from "@/lib/api";
 import type { Problem, ProblemListResponse } from "@/types/problem";
 
-const PROBLEMS_ENDPOINT = "/api/v1/problems";
+const PROBLEMS_ENDPOINT = "/v1/problems";
 
 /**
  * Get paginated list of problems

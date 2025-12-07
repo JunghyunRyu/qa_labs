@@ -36,7 +36,7 @@ describe('Problems API', () => {
 
       const result = await getProblems();
 
-      expect(mockGet).toHaveBeenCalledWith('/api/v1/problems?page=1&page_size=10');
+      expect(mockGet).toHaveBeenCalledWith('/v1/problems?page=1&page_size=10');
       expect(result).toEqual(mockResponse);
     });
 
@@ -53,7 +53,7 @@ describe('Problems API', () => {
 
       const result = await getProblems(2, 20);
 
-      expect(mockGet).toHaveBeenCalledWith('/api/v1/problems?page=2&page_size=20');
+      expect(mockGet).toHaveBeenCalledWith('/v1/problems?page=2&page_size=20');
       expect(result).toEqual(mockResponse);
     });
 
@@ -84,7 +84,7 @@ describe('Problems API', () => {
 
       const result = await getProblem(1);
 
-      expect(mockGet).toHaveBeenCalledWith('/api/v1/problems/1');
+      expect(mockGet).toHaveBeenCalledWith('/v1/problems/1');
       expect(result).toEqual(mockProblem);
     });
 
