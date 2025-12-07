@@ -31,11 +31,19 @@ async function apiRequest<T>(
   });
 
   if (!response.ok) {
+    // Response body를 복제하여 여러 번 읽을 수 있도록 함
+    const clonedResponse = response.clone();
     let errorData: unknown;
     try {
       errorData = await response.json();
     } catch {
-      errorData = await response.text();
+      // JSON 파싱 실패 시 텍스트로 읽기
+      try {
+        errorData = await clonedResponse.text();
+      } catch {
+        // 텍스트 읽기도 실패하면 빈 객체
+        errorData = { detail: response.statusText };
+      }
     }
     throw new ApiError(response.status, response.statusText, errorData);
   }

@@ -64,6 +64,9 @@ out/
 build/
 .vercel
 
+# cursor
+.cursor/
+
 # Docker
 *.log
 
