@@ -2,8 +2,7 @@
 
 > 작성일: 2025-01-27  
 > 기반 문서: `qa-arena-spec.md`, `qa-arena-milestones.md`  
-> 목적: 마일스톤 기준 기술적 구현 항목 정리  
-> 참고: 비즈니스/전략적 TODO는 `ToDoList.md` 참고
+> 목적: 마일스톤 기준 기술적 구현 항목 정리
 
 ---
 
@@ -607,8 +606,6 @@
 
 - [프로젝트 사양서](qa-arena-spec.md) - 상세 기술 사양
 - [마일스톤 진행 상황](qa-arena-milestones.md) - 개발 진행 상황
-- [비즈니스 TODO](ToDoList.md) - 비즈니스/전략적 TODO
-- [프로젝트 상태](PROJECT_STATUS.md) - 현재 구현 상태
 
 
 

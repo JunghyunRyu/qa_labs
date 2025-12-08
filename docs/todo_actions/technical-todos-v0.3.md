@@ -3,7 +3,7 @@
 > 작성일: 2025-01-27  
 > 목표: AI 사용을 전제로 한 평가 모드 구현  
 > 환경: EC2 (13.125.154.68, Ubuntu, /home/ubuntu/qa_labs)  
-> 관련 문서: [qa-arena-spec.md](qa-arena-spec.md), [ToDoList.md](ToDoList.md)
+> 관련 문서: [qa-arena-spec.md](qa-arena-spec.md)
 
 ---
 
@@ -541,5 +541,4 @@ v0.3 완료 후 다음 마일스톤으로 진행:
 ## 참고 문서
 
 - [프로젝트 사양서](qa-arena-spec.md)
-- [비즈니스 TODO](ToDoList.md) - AI-Assist 모드 컨셉 참고
 
