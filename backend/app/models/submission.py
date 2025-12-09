@@ -35,6 +35,7 @@ class Submission(Base):
     total_mutants = Column(Integer)
     execution_log = Column(JSONB)
     feedback_json = Column(JSONB)
+    progress = Column(JSONB)  # {"step": "testing_buggy", "current": 2, "total": 4, "percent": 50}
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

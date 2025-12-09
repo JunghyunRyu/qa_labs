@@ -88,6 +88,11 @@ class SubmissionService:
 
         # 상태를 RUNNING으로 변경
         submission.status = "RUNNING"
+        submission.progress = {
+            "step": "initializing",
+            "message": "채점 준비 중...",
+            "percent": 10
+        }
         self.submission_repo.update(submission)
         logger.info(f"[STATUS_CHANGE] submission_id={submission_id} status=PENDING->RUNNING")
 
@@ -108,6 +113,12 @@ class SubmissionService:
             mutants = self.buggy_repo.get_by_problem_id(problem.id)
 
             # 3. Golden Code로 pytest 실행
+            submission.progress = {
+                "step": "testing_golden",
+                "message": "정답 코드 테스트 중...",
+                "percent": 20
+            }
+            self.submission_repo.update(submission)
             logger.info(
                 f"[GOLDEN_TEST_START] submission_id={submission_id} "
                 f"problem_id={problem.id} problem_title={problem.title}"
@@ -195,7 +206,16 @@ class SubmissionService:
             killed = 0
             mutant_logs = []
 
-            for mutant in mutants:
+            for idx, mutant in enumerate(mutants):
+                submission.progress = {
+                    "step": "testing_buggy",
+                    "current": idx + 1,
+                    "total": len(mutants),
+                    "message": f"버그 구현 {idx+1}/{len(mutants)} 테스트 중...",
+                    "percent": 20 + (70 * (idx + 1) // len(mutants))
+                }
+                self.submission_repo.update(submission)
+
                 mutant_result = self.judge_service.test_buggy_code(
                     buggy_code=mutant.buggy_code,
                     user_test_code=submission.code,
@@ -231,6 +251,12 @@ class SubmissionService:
             )
 
             # 8. AI 피드백 생성
+            submission.progress = {
+                "step": "generating_feedback",
+                "message": "AI 피드백 생성 중...",
+                "percent": 95
+            }
+            self.submission_repo.update(submission)
             logger.info(f"[AI_FEEDBACK_START] submission_id={submission_id}")
             try:
                 feedback = generate_feedback(
