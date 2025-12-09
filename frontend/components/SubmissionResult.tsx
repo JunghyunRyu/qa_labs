@@ -4,6 +4,9 @@ import type { Submission } from "@/types/problem";
 import SubmissionStatus from "./SubmissionStatus";
 import ScoreDisplay from "./ScoreDisplay";
 import FeedbackDisplay from "./FeedbackDisplay";
+import TestResultsList from "./TestResultsList";
+import ErrorLogDisplay from "./ErrorLogDisplay";
+import { parsePytestOutput } from "@/lib/pytestParser";
 import { AlertCircle, FileText, Sparkles } from "lucide-react";
 
 interface SubmissionResultProps {
@@ -27,6 +30,14 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
   };
 
   const failureInfo = getFailureInfo();
+
+  // Parse pytest output for FAILURE status
+  const parsedGolden = submission.status === "FAILURE" && submission.execution_log
+    ? parsePytestOutput(
+        ((submission.execution_log as any)?.golden?.stdout || ""),
+        ((submission.execution_log as any)?.golden?.stderr || "")
+      )
+    : null;
 
   return (
     <div className="space-y-6">
@@ -67,11 +78,18 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
                 Golden Code 테스트가 실패했습니다.
               </p>
               <p className="text-sm text-orange-700">
-                작성하신 테스트 코드가 정상 구현을 통과시키지 못했습니다. 
+                작성하신 테스트 코드가 정상 구현을 통과시키지 못했습니다.
                 테스트 케이스를 다시 확인해주세요.
               </p>
             </div>
-            
+
+            {/* Test results breakdown */}
+            {parsedGolden?.tests && parsedGolden.tests.length > 0 && (
+              <div className="mt-4">
+                <TestResultsList tests={parsedGolden.tests} />
+              </div>
+            )}
+
             {failureInfo.stderr && (
               <details className="mt-4">
                 <summary className="cursor-pointer text-sm font-medium text-orange-800 hover:text-orange-900 mb-2">
@@ -108,23 +126,7 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
             <AlertCircle className="w-5 h-5 text-red-600" />
             <h4 className="text-lg font-semibold text-red-800">채점 에러</h4>
           </div>
-          <div className="space-y-3">
-            <p className="text-sm text-red-700">
-              채점 중 오류가 발생했습니다. 코드를 확인하고 다시 제출해주세요.
-            </p>
-            {submission.execution_log && (
-              <details className="mt-4">
-                <summary className="cursor-pointer text-sm font-medium text-red-600 hover:text-red-800 mb-2">
-                  상세 에러 정보 보기
-                </summary>
-                <div className="mt-2 bg-white rounded p-3 border border-red-200">
-                  <pre className="text-xs text-red-700 whitespace-pre-wrap overflow-x-auto font-mono">
-                    {JSON.stringify(submission.execution_log, null, 2)}
-                  </pre>
-                </div>
-              </details>
-            )}
-          </div>
+          <ErrorLogDisplay executionLog={submission.execution_log} />
         </div>
       )}
 
