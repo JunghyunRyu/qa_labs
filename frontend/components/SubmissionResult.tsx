@@ -130,25 +130,25 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
         </div>
       )}
 
-      {/* AI Feedback - Always shown in the same location */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200 p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-purple-600" />
-          <h3 className="text-lg font-semibold text-gray-900">AI 피드백</h3>
-        </div>
-        {submission.feedback_json ? (
-          <FeedbackDisplay feedback={submission.feedback_json as any} />
-        ) : (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-3"></div>
-            <p className="text-sm text-gray-600">
-              {submission.status === "SUCCESS" || submission.status === "FAILURE"
-                ? "AI가 피드백을 생성하고 있습니다..."
-                : "채점 완료 후 피드백이 표시됩니다."}
-            </p>
+      {/* AI Feedback - Only shown for SUCCESS status */}
+      {submission.status === "SUCCESS" && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-purple-600" />
+            <h3 className="text-lg font-semibold text-gray-900">AI 피드백</h3>
           </div>
-        )}
-      </div>
+          {submission.feedback_json ? (
+            <FeedbackDisplay feedback={submission.feedback_json as any} />
+          ) : (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-3"></div>
+              <p className="text-sm text-gray-600">
+                AI가 피드백을 생성하고 있습니다...
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Execution Log (optional, collapsed by default) */}
       {submission.execution_log && submission.status !== "FAILURE" && (
