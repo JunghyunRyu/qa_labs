@@ -108,6 +108,99 @@ PROBLEMS_TO_GENERATE = [
         "skills": ["string manipulation", "data formatting"],
         "difficulty": "Easy",
     },
+    # Easy 보강 (E11-E15)
+    {
+        "id": "E11",
+        "goal": "문자열 길이 검증 함수 테스트. 문자열의 길이가 최소/최대 범위 내에 있는지 검증하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["string validation", "boundary testing"],
+        "difficulty": "Easy",
+    },
+    {
+        "id": "E12",
+        "goal": "리스트 정렬 검증 함수 테스트. 정수 리스트를 오름차순으로 정렬하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["list operations", "sorting"],
+        "difficulty": "Easy",
+    },
+    {
+        "id": "E13",
+        "goal": "딕셔너리 키 존재 확인 함수 테스트. 딕셔너리에 특정 키가 존재하는지 확인하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["dictionary operations", "key validation"],
+        "difficulty": "Easy",
+    },
+    {
+        "id": "E14",
+        "goal": "불린 값 반환 함수 테스트. 문자열이 대문자로만 이루어져 있는지 확인하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["boolean logic", "string analysis"],
+        "difficulty": "Easy",
+    },
+    {
+        "id": "E15",
+        "goal": "간단한 수학 연산 함수 테스트. 두 숫자의 평균을 계산하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["arithmetic operations", "basic math"],
+        "difficulty": "Easy",
+    },
+    # Medium - 상태 기반 및 조합 테스트 (M01-M05)
+    {
+        "id": "M01",
+        "goal": "쇼핑 카트 클래스의 상태 변화를 테스트하는 문제. add_item(name, price, quantity), remove_item(name), get_total(), clear() 메서드를 가진 ShoppingCart 클래스를 테스트하는 문제를 만들어주세요.",
+        "skills": ["state-based testing", "class testing", "object lifecycle"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M02",
+        "goal": "할인 계산기 함수에 대한 조합 테스트 문제. 가격, 할인율, 쿠폰 적용 여부를 입력받아 최종 가격을 계산하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["combinatorial testing", "discount logic", "multi-parameter"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M03",
+        "goal": "중첩된 딕셔너리 구조 검증 함수 테스트. 사용자 정보(이름, 이메일, 주소{도시, 우편번호})를 담은 딕셔너리를 검증하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["data structure testing", "nested structures", "validation"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M04",
+        "goal": "API 응답 JSON 검증 함수 테스트. status, data, error 필드를 가진 API 응답 딕셔너리의 구조를 검증하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["API validation", "JSON structure", "response handling"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M05",
+        "goal": "날짜 범위 검증 함수 테스트. 시작일과 종료일을 입력받아 예약 가능 여부를 판단하는 함수를 테스트하는 문제를 만들어주세요. 과거 날짜, 너무 먼 미래, 시작일이 종료일보다 늦은 경우 등을 처리해야 합니다.",
+        "skills": ["date validation", "business logic", "complex conditions"],
+        "difficulty": "Medium",
+    },
+    # Hard - 복잡한 비즈니스 로직 (H01-H05)
+    {
+        "id": "H01",
+        "goal": "가격 계산 엔진 함수에 대한 복잡한 비즈니스 로직 테스트. 상품 가격, 수량, 회원 등급(일반/실버/골드), 시즌 할인, 쿠폰, 배송비를 모두 고려하여 최종 결제 금액을 계산하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["complex business logic", "pricing rules", "multiple conditions"],
+        "difficulty": "Hard",
+    },
+    {
+        "id": "H02",
+        "goal": "데이터 변환 파이프라인 함수 테스트. CSV 형식의 문자열을 입력받아 파싱 → 검증 → 정규화 → 딕셔너리 리스트로 변환하는 다단계 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["data transformation", "pipeline testing", "multi-step processing"],
+        "difficulty": "Hard",
+    },
+    {
+        "id": "H03",
+        "goal": "부동소수점 경계값 분석 테스트 문제. 온도 단위 변환(섭씨↔화씨) 함수의 정밀도 및 경계값을 테스트하는 문제를 만들어주세요. 소수점 정밀도, 극값, 반올림 오차 등을 고려해야 합니다.",
+        "skills": ["floating point precision", "boundary analysis", "numeric accuracy"],
+        "difficulty": "Hard",
+    },
+    {
+        "id": "H04",
+        "goal": "예외 처리 체인 테스트 문제. 사용자 입력 검증 → 데이터베이스 조회 → 비즈니스 로직 실행 → 결과 반환의 각 단계에서 발생할 수 있는 다양한 예외를 처리하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["exception handling", "error propagation", "multi-layer validation"],
+        "difficulty": "Hard",
+    },
+    {
+        "id": "H05",
+        "goal": "워크플로우 통합 함수 테스트 문제. 주문 생성(validate_order) → 재고 확인(check_inventory) → 결제 처리(process_payment) → 배송 준비(prepare_shipping)의 전체 워크플로우를 통합하는 함수를 테스트하는 문제를 만들어주세요.",
+        "skills": ["workflow testing", "integration testing", "multi-function coordination"],
+        "difficulty": "Hard",
+    },
 ]
 
 def generate_problem(problem_def):
