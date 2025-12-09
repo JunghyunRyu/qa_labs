@@ -1,0 +1,38 @@
+{
+  "title": "필수 딕셔너리 키 존재 확인 함수 테스트",
+  "function_signature": "def has_required_keys(data: dict, required_keys: list[str]) -> bool:",
+  "golden_code": "def has_required_keys(data: dict, required_keys: list[str]) -> bool:\n    \"\"\"Return True if all required keys exist in the given dictionary.\n\n    This function is used to validate that an input payload (e.g., a JSON-like\n    dictionary) contains all the required fields before further processing.\n\n    Rules:\n    - If `required_keys` is empty, return True (no required keys to check).\n    - All required keys must be present as keys of `data`.\n    - Extra keys in `data` are allowed and do not affect the result.\n    - Keys are compared exactly (case-sensitive, no trimming or coercion).\n    - If `data` is not a dict or `required_keys` is not a list/iterable of\n      hashable values, Python's usual exceptions may be raised.\n    \"\"\"\n    if not isinstance(data, dict):\n        raise TypeError(\"data must be a dict\")\n\n    # Normalize required_keys to a list-like iterable; we still trust caller\n    # to pass strings, but we don't transform values.\n    try:\n        for key in required_keys:\n            if key not in data:\n                return False\n    except TypeError:\n        # required_keys is not iterable (e.g., None or int)\n        raise TypeError(\"required_keys must be an iterable of keys\")\n\n    return True\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "어떤 하나의 필수 키라도 존재하면 True를 반환하는 논리 오류 (모든 키가 아닌, 일부 키만 있는 경우에 잘못 True). dictionary operations와 key validation의 기본 이해 필요.",
+      "buggy_code": "def has_required_keys(data: dict, required_keys: list[str]) -> bool:\n    \"\"\"BUGGY: Returns True if any one of the required keys exists.\n\n    Logical bug: should require *all* keys, but this implementation\n    passes as soon as a single key is found.\n    \"\"\"\n    if not isinstance(data, dict):\n        raise TypeError(\"data must be a dict\")\n\n    try:\n        for key in required_keys:\n            if key in data:\n                return True\n    except TypeError:\n        raise TypeError(\"required_keys must be an iterable of keys\")\n\n    # If no key matched or there were no required keys, returns False,\n    # which is also wrong for the empty required_keys case.\n    return False\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "필수 키 목록이 비어 있을 때 False를 반환하는 경계값 처리 오류. required_keys=[]인 경우 항상 True여야 하는 요구사항 위반.",
+      "buggy_code": "def has_required_keys(data: dict, required_keys: list[str]) -> bool:\n    \"\"\"BUGGY: Treats empty required_keys as invalid and returns False.\n\n    Boundary bug: an empty list of required keys should mean that\n    there is nothing to validate, so the result should be True.\n    \"\"\"\n    if not isinstance(data, dict):\n        raise TypeError(\"data must be a dict\")\n\n    # Wrong handling: assumes empty required_keys means failure.\n    try:\n        if not required_keys:\n            return False\n        for key in required_keys:\n            if key not in data:\n                return False\n    except TypeError:\n        raise TypeError(\"required_keys must be an iterable of keys\")\n\n    return True\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "딕셔너리의 값에 필수 키 문자열이 포함되어 있으면 존재한다고 잘못 판단하는 오류. 키와 값을 구분하지 못하는 dictionary operations 이해 부족.",
+      "buggy_code": "def has_required_keys(data: dict, required_keys: list[str]) -> bool:\n    \"\"\"BUGGY: Checks both keys and values for the required key names.\n\n    Bug: considers a required key satisfied if its string appears as\n    any *value* in the dictionary, not strictly as a key.\n    \"\"\"\n    if not isinstance(data, dict):\n        raise TypeError(\"data must be a dict\")\n\n    try:\n        dict_keys = set(data.keys())\n        dict_values = set(data.values())\n        for key in required_keys:\n            # Incorrect: checks values as well.\n            if key not in dict_keys and key not in dict_values:\n                return False\n    except TypeError:\n        raise TypeError(\"required_keys must be an iterable of keys\")\n\n    return True\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "키 비교 시 소문자로 변환하여 대소문자를 무시하는 오류. 요구사항은 키를 정확히(case-sensitive) 비교해야 함.",
+      "buggy_code": "def has_required_keys(data: dict, required_keys: list[str]) -> bool:\n    \"\"\"BUGGY: Performs case-insensitive key comparison.\n\n    Bug: converts both dict keys and required_keys to lowercase before\n    comparison, so 'UserId' and 'userid' are treated as the same key.\n    \"\"\"\n    if not isinstance(data, dict):\n        raise TypeError(\"data must be a dict\")\n\n    try:\n        lower_key_map = {str(k).lower(): k for k in data.keys()}\n        for key in required_keys:\n            # Incorrect: compares case-insensitively.\n            if str(key).lower() not in lower_key_map:\n                return False\n    except TypeError:\n        raise TypeError(\"required_keys must be an iterable of keys\")\n\n    return True\n",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n어플리케이션에서 외부로부터 JSON 형태의 데이터를 받을 때, 실제 처리 로직에 들어가기 전에 **필수 필드가 모두 존재하는지** 확인하는 것은 매우 중요합니다. 누락된 필드가 있으면 이후 로직에서 `KeyError`가 발생하거나, 잘못된 데이터가 저장될 수 있습니다.\n\n이 문제에서는 이러한 상황을 단순화하여, **딕셔너리에 특정 필수 키들이 모두 존재하는지 검사하는 함수** `has_required_keys` 를 테스트합니다.\n\n### 함수 설명\n\n```python\nhas_required_keys(data: dict, required_keys: list[str]) -> bool\n```\n\n- `data`: 외부에서 들어온 요청 데이터를 나타내는 딕셔너리입니다.\n- `required_keys`: 반드시 존재해야 하는 키 이름들의 리스트입니다.\n- 반환값:\n  - `True`: `required_keys`에 포함된 모든 키가 `data`의 키로 존재하는 경우\n  - `False`: 하나라도 존재하지 않는 키가 있는 경우\n\n추가 규칙:\n- `required_keys`가 빈 리스트인 경우, 검사할 필수 키가 없으므로 `True`를 반환해야 합니다.\n- `data`에 필수 키 이외의 추가 키가 있어도 상관 없습니다.\n- 키 비교는 정확하게 이루어지며, 대소문자를 구분합니다. (`\"userId\"`와 `\"userid\"`는 다른 키입니다.)\n\n### 동작 예시\n\n```python\nhas_required_keys({\"id\": 1, \"name\": \"Alice\"}, [\"id\", \"name\"]) == True\nhas_required_keys({\"id\": 1, \"name\": \"Alice\"}, [\"id\", \"email\"]) == False\nhas_required_keys({\"id\": 1, \"name\": \"Alice\"}, []) == True\nhas_required_keys({\"ID\": 1}, [\"id\"]) == False  # 대소문자 다름\n```\n\n### 테스트 아이디어 힌트\n\n아래와 같은 관점에서 다양한 테스트 케이스를 설계해 보세요.\n\n- **dictionary operations**\n  - 필수 키가 모두 있는 경우 / 일부만 있는 경우 / 전혀 없는 경우\n  - 딕셔너리에 여분의 키가 더 있어도 결과가 변하지 않아야 함\n  - 키와 값이 같은 문자열을 포함하는 경우 (예: `{\"email\": \"email\"}`)에도 키 기준으로만 검증해야 함\n- **key validation (키 검증)**\n  - `required_keys`가 **빈 리스트**인 경우의 처리\n  - 키의 **대소문자**가 다른 경우 (case-sensitive 동작 확인)\n  - 필수 키가 하나일 때, 여러 개일 때 등 다양한 조합\n\n이 함수의 여러 **버그 구현**이 별도의 모듈에 숨겨져 있다고 가정합니다. 여러분의 목표는:\n\n1. `has_required_keys`의 올바른 동작을 기준으로\n2. 위에서 언급한 다양한 상황을 커버하는 **pytest 기반 단위 테스트 코드**를 작성하여\n3. 준비된 버그 구현들을 가능한 한 많이 실패시키는 것입니다.\n\n즉, \"대충 돌아가는\" 수준이 아니라, **딕셔너리 키 존재 여부와 관련된 세밀한 조건들을 모두 검증**할 수 있는 테스트를 설계해 보세요.\n",
+  "initial_test_template": "import pytest\nfrom target import has_required_keys\n\n\n# 기본 동작: 모든 필수 키가 존재하는 경우와 일부만 존재하는 경우를 나눠서 테스트\ndef test_all_required_keys_present():\n    # TODO: data에 모든 필수 키가 포함된 경우 True를 반환하는지 검증\n    pass\n\n\ndef test_some_required_keys_missing():\n    # TODO: 필수 키 중 하나라도 누락된 경우 False를 반환하는지 검증\n    pass\n\n\n# key validation 관점: 대소문자, 빈 required_keys 등 경계 케이스 테스트\ndef test_empty_required_keys_returns_true():\n    # TODO: required_keys가 비어 있을 때 True를 반환하는지 확인\n    pass\n\n\ndef test_case_sensitivity_of_keys():\n    # TODO: 같은 철자지만 대소문자가 다른 키를 구분하는지 확인\n    pass\n\n\ndef test_values_with_same_text_as_keys_do_not_count():\n    # TODO: 딕셔너리 값에 필수 키 문자열이 있어도 키로 없으면 False가 되는지 확인\n    pass\n",
+  "tags": [
+    "easy",
+    "dictionary operations",
+    "key validation",
+    "python",
+    "unit-test",
+    "pytest"
+  ],
+  "difficulty": "Easy"
+}

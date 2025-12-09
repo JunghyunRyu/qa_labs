@@ -26,6 +26,7 @@ env/
 .venv
 
 # IDE
+.vs/
 .vscode/
 .idea/
 *.swp
@@ -79,5 +80,4 @@ nginx/**/*.local
 nginx/**/*.local.*
 
 docker-compose.override.yml
-backend/generated_problems/*.json
 *.tsbuildinfo

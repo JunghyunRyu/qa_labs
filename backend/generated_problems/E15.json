@@ -1,0 +1,38 @@
+{
+  "title": "두 숫자의 평균 계산 함수 테스트",
+  "function_signature": "def calculate_average(a: float, b: float) -> float:",
+  "golden_code": "def calculate_average(a: float, b: float) -> float:\n    \"\"\"Calculate the arithmetic mean of two numeric values.\n\n    This function is intended for simple business calculations where\n    the average of two measurements, scores, or prices is required.\n\n    Rules:\n    - Both inputs are treated as real numbers (int or float).\n    - The result is the arithmetic mean: (a + b) / 2.\n    - The function does not round the result; callers can round if needed.\n    - Works for positive, zero, and negative values.\n\n    Examples:\n    >>> calculate_average(10, 20)\n    15.0\n    >>> calculate_average(-2.0, 2.0)\n    0.0\n    \"\"\"\n    # Convert to float to ensure consistent float output\n    fa = float(a)\n    fb = float(b)\n    return (fa + fb) / 2.0\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "합을 나누지 않고 단순 합을 반환하는 버그. 어떤 a, b에서도 평균이 아니라 a + b를 반환함.",
+      "buggy_code": "def calculate_average(a: float, b: float) -> float:\n    \"\"\"BUGGY: Returns the sum instead of the average.\n\n    This implementation mistakenly returns a + b without dividing by 2.\n    \"\"\"\n    fa = float(a)\n    fb = float(b)\n    # BUG: forgot to divide by 2\n    return fa + fb\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "두 수의 평균 대신 첫 번째 인자만 반환. a와 b가 다를 때 모두 잘못된 결과를 줌.",
+      "buggy_code": "def calculate_average(a: float, b: float) -> float:\n    \"\"\"BUGGY: Ignores the second value and just returns the first.\n\n    This incorrectly treats the first argument as the \"average\".\n    \"\"\"\n    fa = float(a)\n    # BUG: completely ignores b\n    return fa\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "음수 입력이 하나라도 있으면 절댓값을 취해 평균을 계산. 음수/양수 조합에서 잘못된 결과 발생.",
+      "buggy_code": "def calculate_average(a: float, b: float) -> float:\n    \"\"\"BUGGY: Uses absolute values when any input is negative.\n\n    This breaks arithmetic correctness for ranges that include negatives.\n    \"\"\"\n    fa = float(a)\n    fb = float(b)\n    # BUG: force non-negative values when any is negative\n    if fa < 0 or fb < 0:\n        fa = abs(fa)\n        fb = abs(fb)\n    return (fa + fb) / 2.0\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "정수 나눗셈을 사용하여 소수 부분을 잘라냄. 파이썬 3에서는 의도적으로 int로 캐스팅해서 오류를 유발.",
+      "buggy_code": "def calculate_average(a: float, b: float) -> float:\n    \"\"\"BUGGY: Truncates the average to an integer value.\n\n    This implementation incorrectly discards the fractional part\n    by converting to int before returning.\n    \"\"\"\n    fa = float(a)\n    fb = float(b)\n    avg = (fa + fb) / 2.0\n    # BUG: cast to int, then back to float, losing precision\n    return float(int(avg))\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n어떤 서비스에서는 두 개의 측정값(예: 두 번 측정한 온도, 두 명이 평가한 점수, 두 기간의 수익 등)의 **산술 평균**을 자주 계산합니다. 이 평균 값은 다음 단계의 비즈니스 로직(경고 알림, 등급 산정, 할인율 계산 등)에 그대로 사용되므로, 작은 산술 오류라도 누적되면 큰 문제를 일으킬 수 있습니다.\n\n당신에게 주어진 함수 `calculate_average(a, b)`는 두 숫자의 평균을 계산하는 역할을 합니다.\n\n### 함수 설명\n- 입력:\n  - `a: float` — 첫 번째 값 (정수나 실수 모두 허용)\n  - `b: float` — 두 번째 값 (정수나 실수 모두 허용)\n- 출력:\n  - `float` — 두 값의 산술 평균 `(a + b) / 2` (반올림 없이 실제 평균 값)\n\n### 동작 예시\n```python\ncalculate_average(10, 20)    # 15.0\ncalculate_average(-2.0, 2.0) # 0.0\ncalculate_average(1, 2)      # 1.5\n```\n\n### 테스트에서 고려해야 할 점 (힌트)\n- 두 값이 같을 때와 다를 때 결과가 어떻게 나오는지 확인해 보세요.\n- 정수와 실수가 섞인 경우, 결과 타입과 값이 올바른지 점검해 보세요.\n- 음수, 0, 양수가 섞여 있을 때 평균이 수학적으로 맞는지 확인해 보세요.\n- 소수 부분이 있는 평균(예: 1.5, 2.75 등)에서 값이 잘리는(truncate) 문제는 없는지 살펴보세요.\n\n이 문제에는 여러 개의 **버그가 있는 구현**이 숨어 있으며, 이 함수가 **산술적으로 올바른 평균**을 항상 반환하는지 확인하는 테스트를 작성하는 것이 목표입니다.\n\n### 당신이 할 일\n- `pytest`를 사용하여 `calculate_average` 함수에 대한 **단위 테스트 코드**를 작성하세요.\n- 다양한 입력 조합을 만들어 **산술 연산(arithmetic operations)**과 **기본 수학적 성질**이 제대로 지켜지는지 검증해 보세요.\n- 가능한 한 많은 버그 구현을 실패시키고, 정답 구현(`golden_code`)은 통과시키는 테스트를 설계해 보세요.\n",
+  "initial_test_template": "import pytest\nfrom target import calculate_average\n\n\ndef test_simple_positive_values():\n    # TODO: 간단한 양수 두 개의 평균이 수학적으로 올바른지 검증하세요.\n    # 예: 10과 20의 평균 등\n    pass\n\n\ndef test_fractional_result():\n    # TODO: 평균이 소수가 되는 경우를 테스트하여 truncation/반올림 오류를 잡아보세요.\n    # 예: (1, 2) -> 1.5 와 같이 소수 부분이 유지되는지 확인\n    pass\n\n\ndef test_negative_and_mixed_values():\n    # TODO: 음수, 0, 양수가 섞인 입력에서 평균이 수학적으로 맞는지 검증하세요.\n    # 예: (-2, 2), (-5, -3) 등의 케이스를 고려해 보세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "arithmetic operations",
+    "basic math",
+    "unit-test",
+    "python",
+    "number"
+  ],
+  "difficulty": "Easy"
+}

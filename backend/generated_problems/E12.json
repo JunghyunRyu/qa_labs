@@ -1,0 +1,39 @@
+{
+  "title": "주문 금액 리스트 오름차순 정렬 검증",
+  "function_signature": "def sort_order_amounts(amounts: list[int]) -> list[int]:",
+  "golden_code": "from typing import List\n\n\ndef sort_order_amounts(amounts: list[int]) -> list[int]:\n    \"\"\"Return a new list of order amounts sorted in ascending order.\n\n    This function simulates a back-office validation step where a list\n    of order amounts (in cents) must be sorted to detect anomalies\n    (e.g., sudden spikes). The original input list must NOT be modified.\n\n    Rules:\n    - The input is a list of integers (can be empty).\n    - Negative values are allowed (e.g., refunds or adjustments).\n    - The function returns a *new* list with the same elements\n      sorted in non-decreasing (ascending) order.\n    - Duplicated amounts must be preserved.\n\n    Examples\n    --------\n    >>> sort_order_amounts([300, 100, 200])\n    [100, 200, 300]\n    >>> sort_order_amounts([5, 5, 3])\n    [3, 5, 5]\n    >>> sort_order_amounts([])\n    []\n    \"\"\"\n    # Use built-in sorted to avoid mutating the input list.\n    return sorted(amounts)",
+  "buggy_implementations": [
+    {
+      "bug_description": "입력 리스트를 제자리 정렬하여 원본을 변경하는 버그. 리스트 연산, 변경 가능 객체에 대한 이해 필요.",
+      "buggy_code": "from typing import List\n\n\ndef sort_order_amounts(amounts: list[int]) -> list[int]:\n    \"\"\"Incorrectly sorts the list in-place and returns the same object.\n\n    Mutates the input list instead of returning a new sorted list.\n    This breaks callers that rely on the original order being preserved.\n    \"\"\"\n    # In-place sort mutates the original list\n    amounts.sort()\n    return amounts",
+      "weight": 5
+    },
+    {
+      "bug_description": "음수(환불) 금액을 0으로 고정한 뒤 정렬하는 버그. 특정 값 범위(음수) 파티션 처리 오류.",
+      "buggy_code": "from typing import List\n\n\ndef sort_order_amounts(amounts: list[int]) -> list[int]:\n    \"\"\"Sorts amounts but incorrectly clamps negative values to zero.\n\n    This loses information about refunds/adjustments and changes\n    the multiset of values.\n    \"\"\"\n    normalized: list[int] = []\n    for a in amounts:\n        if a < 0:\n            # BUG: business logic should allow negative amounts\n            normalized.append(0)\n        else:\n            normalized.append(a)\n    return sorted(normalized)",
+      "weight": 4
+    },
+    {
+      "bug_description": "중복 값을 하나로 줄여버리는 버그. 정렬은 되지만 리스트 연산과 데이터 보존 요구사항을 위반.",
+      "buggy_code": "from typing import List\n\n\ndef sort_order_amounts(amounts: list[int]) -> list[int]:\n    \"\"\"Sorts the amounts but incorrectly removes duplicates.\n\n    Returns a sorted list of unique amounts instead of preserving\n    all occurrences.\n    \"\"\"\n    # BUG: set removes duplicates\n    unique_amounts = set(amounts)\n    return sorted(unique_amounts)",
+      "weight": 3
+    },
+    {
+      "bug_description": "내림차순 정렬 후 그대로 반환하는 버그. 정렬 방향(오름/내림)에 대한 이해 필요.",
+      "buggy_code": "from typing import List\n\n\ndef sort_order_amounts(amounts: list[int]) -> list[int]:\n    \"\"\"Sorts in descending order instead of ascending.\n\n    Returns a new list but the order is reversed (largest first),\n    which violates the ascending-order requirement.\n    \"\"\"\n    # BUG: reverse=True makes it descending\n    return sorted(amounts, reverse=True)",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n온라인 쇼핑몰의 백오피스 시스템에서는 하루 동안 발생한 주문 금액(센트 단위)을 분석하여 이상 거래를 탐지합니다. 이때, 주문 금액 리스트를 **오름차순으로 정렬**해 두면 급격한 증가 구간이나 비정상적인 패턴을 쉽게 찾을 수 있습니다.\n\n이 문제에서 여러분이 테스트해야 할 함수는 `sort_order_amounts`입니다. 이 함수는 **정수 리스트**를 입력받아, **오름차순(작은 값부터 큰 값 순서)**으로 정렬된 **새로운 리스트**를 반환해야 합니다.\n\n### 함수 설명\n\n```python\ndef sort_order_amounts(amounts: list[int]) -> list[int]:\n    \"\"\"Return a new list of order amounts sorted in ascending order.\"\"\"\n```\n\n- `amounts`\n  - 주문 금액 리스트 (정수)\n  - 값은 양수/0/음수 모두 가능 (예: 환불, 조정 금액 등)\n  - 빈 리스트도 올 수 있음\n- 반환값\n  - 입력 리스트와 동일한 값들을 포함하되, **오름차순으로 정렬된 새로운 리스트**\n  - 입력 리스트의 원본 순서나 내용은 변경되지 않아야 함 (불변성 보장)\n  - 중복 값이 있다면 그대로 모두 유지되어야 함\n\n### 동작 예시\n\n- `sort_order_amounts([300, 100, 200])` → `[100, 200, 300]`\n- `sort_order_amounts([5, 5, 3])` → `[3, 5, 5]`\n- `sort_order_amounts([])` → `[]`\n- `sort_order_amounts([0, -100, 50])` → `[-100, 0, 50]`\n\n### 테스트에서 고려해야 할 포인트\n\n다음과 같은 관점에서 다양한 테스트 케이스를 설계해 보세요.\n\n- **리스트 연산 및 정렬(list operations, sorting)**\n  - 일반적인 정렬: 이미 정렬된 리스트, 역순 리스트, 랜덤 순서 리스트\n  - **중복 값**이 있는 경우, 중복이 그대로 유지되는지\n  - **음수/0/양수**가 섞여 있는 경우에도 올바르게 오름차순 정렬되는지\n  - **빈 리스트**, 요소가 **1개만 있는 리스트** 같은 간단한 케이스\n- **불변성 및 데이터 보존**\n  - 함수 호출 후 원본 리스트가 변경되지 않았는지 (참조 비교, 값 비교 모두 고려)\n  - 정렬 결과 리스트가 **같은 값(multiset)** 을 보존하는지 (값 개수가 줄거나 늘지 않는지)\n- **정렬 방향**\n  - 결과가 진짜로 **오름차순**인지, 실수로 내림차순이 아닌지\n\n이 문제에는 의도적으로 여러 개의 잘못된 구현(버그 버전)이 준비되어 있습니다. 여러분의 목표는:\n\n1. 제공된 `sort_order_amounts` 함수에 대해\n2. `pytest`를 사용해 **충분한 단위 테스트를 작성**하고\n3. 가능한 많은 버그 구현이 테스트에서 실패하도록 만드는 것입니다.\n\n즉, 단순히 기본적인 정렬만 확인하는 것이 아니라, 리스트 조작과 정렬 결과에 대한 다양한 관점을 가진 테스트를 설계해 보세요.",
+  "initial_test_template": "import pytest\n\nfrom target import sort_order_amounts\n\n\ndef test_basic_sorting():\n    # TODO: 간단한 정렬 케이스 (이미 섞여 있는 양수 리스트)\n    # - 반환값이 오름차순인지 확인\n    # - 입력 리스트가 기대한 값과 별도로 잘 정렬되었는지 확인\n    pass\n\n\ndef test_stability_and_duplicates():\n    # TODO: 중복 값을 포함한 리스트를 테스트하세요.\n    # - 예: [5, 5, 3, 3, 3]\n    # - 정렬 결과에 중복 값이 그대로 유지되는지(assert count or full list)\n    pass\n\n\ndef test_negative_zero_and_small_lists():\n    # TODO: 음수, 0, 양수가 섞인 리스트와 빈 리스트 / 원소 1개 리스트를 테스트하세요.\n    # - 오름차순 정렬 여부\n    # - 데이터가 변경(클램핑, 누락 등)되지 않는지\n    pass\n\n\ndef test_does_not_mutate_input():\n    # TODO: 함수 호출 전후로 입력 리스트가 변경되지 않는지 확인하세요.\n    # - 함수 반환값과 입력 리스트를 비교해, 원본이 그대로인지 테스트\n    pass\n",
+  "tags": [
+    "easy",
+    "qa",
+    "testing",
+    "unit-test",
+    "list operations",
+    "sorting",
+    "python"
+  ],
+  "difficulty": "Easy"
+}

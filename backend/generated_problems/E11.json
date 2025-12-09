@@ -1,0 +1,39 @@
+{
+  "title": "문자열 길이 범위 검증 함수 테스트",
+  "function_signature": "def is_valid_length(value: str, min_length: int, max_length: int) -> bool:",
+  "golden_code": "def is_valid_length(value: str, min_length: int, max_length: int) -> bool:\n    \"\"\"Validate that the given string's length is within the inclusive [min_length, max_length] range.\n\n    Rules:\n    - Returns True if len(value) is between min_length and max_length, inclusive.\n    - Returns False otherwise.\n    - If min_length or max_length is negative, they are considered invalid and the function returns False.\n    - If min_length is greater than max_length, the range is invalid and the function returns False.\n\n    This function is intended for typical user input validation scenarios,\n    such as validating usernames, titles, or short descriptions.\n    \"\"\"\n    # Basic parameter validation\n    if min_length < 0 or max_length < 0:\n        return False\n    if min_length > max_length:\n        return False\n\n    length = len(value)\n    return min_length <= length <= max_length\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "상한을 배타적으로 처리하는 off-by-one 버그: len(value) == max_length인 경우에도 False를 반환함. (경계값 max 테스트 필요)",
+      "buggy_code": "def is_valid_length(value: str, min_length: int, max_length: int) -> bool:\n    \"\"\"BUGGY: Rejects strings with length exactly equal to max_length.\n\n    Intended to validate if the length is in [min_length, max_length],\n    but incorrectly treats max_length as exclusive.\n    \"\"\"\n    if min_length < 0 or max_length < 0:\n        return False\n    if min_length > max_length:\n        return False\n\n    length = len(value)\n    # BUG: should be \"<= max_length\" instead of \"< max_length\"\n    return min_length <= length < max_length\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "하한을 배타적으로 처리하는 off-by-one 버그: len(value) == min_length인 경우에도 False를 반환함. (경계값 min 테스트 필요)",
+      "buggy_code": "def is_valid_length(value: str, min_length: int, max_length: int) -> bool:\n    \"\"\"BUGGY: Rejects strings with length exactly equal to min_length.\n\n    Intended to validate if the length is in [min_length, max_length],\n    but incorrectly treats min_length as exclusive.\n    \"\"\"\n    if min_length < 0 or max_length < 0:\n        return False\n    if min_length > max_length:\n        return False\n\n    length = len(value)\n    # BUG: should be \"min_length <= length\" instead of \"min_length < length\"\n    return min_length < length <= max_length\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "음수 min/max 길이를 허용하는 버그: min_length 또는 max_length가 음수인 경우에도 길이 비교를 수행하여 잘못된 True를 반환할 수 있음. (파라미터 검증, 경계 테스트 필요)",
+      "buggy_code": "def is_valid_length(value: str, min_length: int, max_length: int) -> bool:\n    \"\"\"BUGGY: Does not reject negative min_length/max_length.\n\n    Negative bounds should make the validation fail, but this version\n    simply uses them in the length comparison.\n    \"\"\"\n    # BUG: missing validation for negative bounds\n    if min_length > max_length:\n        return False\n\n    length = len(value)\n    return min_length <= length <= max_length\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "빈 문자열 처리 버그: min_length가 0이 아닌데도 빈 문자열을 무조건 True로 처리함. (특정 문자열 파티션 테스트 필요)",
+      "buggy_code": "def is_valid_length(value: str, min_length: int, max_length: int) -> bool:\n    \"\"\"BUGGY: Always accepts empty strings regardless of min_length.\n\n    This causes incorrect behavior when min_length > 0.\n    \"\"\"\n    if min_length < 0 or max_length < 0:\n        return False\n    if min_length > max_length:\n        return False\n\n    # BUG: special-casing empty strings incorrectly\n    if value == \"\":\n        return True\n\n    length = len(value)\n    return min_length <= length <= max_length\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n어플리케이션에서 사용자 입력(예: 닉네임, 제목, 간단한 설명)을 받을 때는 문자열 길이를 적절한 범위 안에서 제한해야 합니다. 너무 짧거나 너무 긴 입력은 서비스 품질과 보안에 문제를 줄 수 있기 때문에, 길이 검증 로직을 꼼꼼히 테스트하는 것이 중요합니다.\n\n이 문제에서는 문자열의 길이가 최소/최대 범위 안에 있는지를 검사하는 `is_valid_length` 함수를 테스트합니다.\n\n### 함수 설명\n\n```python\nis_valid_length(value: str, min_length: int, max_length: int) -> bool\n```\n\n- `value`: 검증할 문자열\n- `min_length`: 허용되는 최소 길이 (포함, 최소 경계값)\n- `max_length`: 허용되는 최대 길이 (포함, 최대 경계값)\n\n**정상 동작 규칙(의도된 동작):**\n- 문자열의 길이 `len(value)`가 `min_length` 이상 **그리고** `max_length` 이하이면 `True`를 반환합니다.\n- 그 외의 경우에는 `False`를 반환합니다.\n- `min_length` 또는 `max_length`가 음수이면 잘못된 설정으로 보고 `False`를 반환해야 합니다.\n- `min_length`가 `max_length`보다 큰 경우에도 잘못된 범위 설정으로 보고 `False`를 반환해야 합니다.\n\n### 예시\n\n```python\nis_valid_length(\"abc\", 1, 5)   # 길이 3, 범위 [1, 5] -> True\nis_valid_length(\"hello\", 5, 5) # 길이 5, 범위 [5, 5] -> True (경계값 포함)\nis_valid_length(\"\", 0, 10)     # 길이 0, 범위 [0, 10] -> True\nis_valid_length(\"\", 1, 10)     # 길이 0, 최소 1 -> False\n```\n\n### 테스트에서 고민해 볼 점들\n\n이 문제는 특히 **문자열 검증(string validation)** 과 **경계값 분석(boundary testing)** 능력을 평가하기 위해 설계되었습니다. 테스트 코드를 작성할 때 다음과 같은 경우들을 고려해 보세요.\n\n- 최소/최대 길이 경계 바로 주변 값\n  - `len(value) == min_length`\n  - `len(value) == max_length`\n  - `len(value) == min_length - 1`, `len(value) == max_length + 1`\n- 빈 문자열 `\"\"` 이 허용되는 경우와 허용되지 않는 경우\n  - 예: `min_length == 0` vs `min_length > 0`\n- 매우 짧은/긴 문자열 대신, 길이가 명확히 계산 가능한 문자열을 사용하여 테스트(예: \"a\" * 5)\n- 파라미터 설정이 잘못된 경우\n  - `min_length` 또는 `max_length`가 음수인 경우\n  - `min_length > max_length` 인 경우\n\n### 수험자의 과제\n\n- 제공된 `is_valid_length` 함수에 대해 **pytest 기반 유닛 테스트 코드**를 작성하세요.\n- 숨겨진 여러 개의 버그 구현들이 있으며, 당신의 테스트가 이들 중 최대한 많이 실패하도록 만드는 것이 목표입니다.\n- 다양한 문자열 길이와 파라미터 조합을 사용하여, **경계값**과 **대표적인 정상/비정상 입력 파티션**을 충분히 커버하는 테스트를 작성해 보세요.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_length\n\n# TODO: 경계값 분석을 위한 테스트들을 작성하세요.\n\n\ndef test_min_boundary_inclusive():\n    # TODO: len(value) == min_length 인 경우 True/False를 확인하는 테스트를 작성하세요.\n    # string validation + boundary testing\n    pass\n\n\ndef test_max_boundary_inclusive():\n    # TODO: len(value) == max_length 인 경우 True/False를 확인하는 테스트를 작성하세요.\n    # 상한 경계값이 포함되는지 확인\n    pass\n\n\ndef test_out_of_range_lengths():\n    # TODO: 길이가 min_length보다 1 작거나, max_length보다 1 큰 문자열에 대해 False가 되는지 테스트하세요.\n    pass\n\n\ndef test_invalid_parameters():\n    # TODO: min_length < 0, max_length < 0, min_length > max_length 등의 조합을 테스트하세요.\n    pass\n\n\ndef test_empty_string_cases():\n    # TODO: 빈 문자열에 대해 min_length가 0일 때와 0보다 클 때를 구분해 테스트하세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "string",
+    "validation",
+    "boundary value analysis",
+    "string validation",
+    "pytest",
+    "unit-test"
+  ],
+  "difficulty": "Easy"
+}

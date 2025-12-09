@@ -1,0 +1,38 @@
+{
+  "title": "대문자 전용 문자열 검증 함수 테스트",
+  "function_signature": "def is_all_uppercase(value: str) -> bool:",
+  "golden_code": "def is_all_uppercase(value: str) -> bool:\n    \"\"\"Return True if the given string should be considered \"all uppercase\".\n\n    Rules:\n    - At least one alphabetic character must be present.\n    - All alphabetic characters must be in A-Z (ASCII uppercase).\n    - Non-alphabetic characters (digits, spaces, punctuation, symbols) are allowed\n      and are ignored for the uppercase check.\n    - Empty strings or strings with no letters at all return False.\n\n    Examples:\n    - \"HELLO\" -> True\n    - \"HELLO!! 123\" -> True\n    - \"Hello\" -> False\n    - \"1234\" -> False (no letters)\n    - \"\" -> False\n    \"\"\"\n    has_alpha = False\n    for ch in value:\n        if ch.isalpha():\n            has_alpha = True\n            if not ch.isupper():\n                return False\n    return has_alpha\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "알파벳이 하나도 없는 문자열(예: \"1234\", \"!!!\")을 모두 True로 반환함. \"적어도 하나의 대문자\"라는 논리를 빠뜨린 불리언 로직 오류.",
+      "buggy_code": "def is_all_uppercase(value: str) -> bool:\n    \"\"\"BUG: Returns True when there are no alphabetic characters at all.\n\n    Treats any string without lowercase letters as all-uppercase,\n    even if it has no letters.\n    \"\"\"\n    for ch in value:\n        if ch.isalpha() and not ch.isupper():\n            return False\n    # BUG: should ensure at least one alphabetic character exists\n    return True\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "비알파벳 문자(공백, 숫자, 특수문자 등)를 허용하지 않고, 이런 문자가 포함되면 False를 반환하는 문자열 분석 오류.",
+      "buggy_code": "def is_all_uppercase(value: str) -> bool:\n    \"\"\"BUG: Non-alphabetic characters cause failure.\n\n    Only pure A-Z strings are considered valid; digits, spaces,\n    and punctuation incorrectly make the function return False.\n    \"\"\"\n    has_alpha = False\n    for ch in value:\n        if not ch.isalpha():\n            # BUG: non-letters should be ignored instead of failing\n            return False\n        has_alpha = True\n        if not ch.isupper():\n            return False\n    return has_alpha\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "빈 문자열을 True로 간주하거나, 모든 문자를 무조건 isupper로만 체크해 알파벳이 없는 문자열(예: \"1234\")을 True로 처리하는 불리언 로직/문자열 분석 오류.",
+      "buggy_code": "def is_all_uppercase(value: str) -> bool:\n    \"\"\"BUG: Uses value.isupper() directly and ignores the need for letters.\n\n    This means \"\" and \"1234\" both return False/True inconsistently with the spec.\n    \"\"\"\n    # BUG: str.isupper() returns False for empty string but True for \"123\" is False.\n    # More importantly, it does not enforce \"at least one alphabetic char\" separately,\n    # and its definition of uppercase is slightly different from the spec.\n    return value.isupper()\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "첫 글자만 검사하고 나머지 글자를 무시하여, 이후에 소문자가 등장해도 True를 반환하는 부분 순회 버그.",
+      "buggy_code": "def is_all_uppercase(value: str) -> bool:\n    \"\"\"BUG: Only checks the first alphabetic character and ignores the rest.\"\"\"\n    has_alpha = False\n    for ch in value:\n        if ch.isalpha():\n            has_alpha = True\n            # BUG: return after checking only the first alphabetic char\n            return ch.isupper()\n    return has_alpha\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n한 온라인 문서 편집 서비스에서는 사용자가 입력한 문자열이 **완전히 대문자로만 구성된 문장인지**를 검사해, 제목 스타일을 자동으로 추천하는 기능을 제공합니다.\n\n이를 위해 `is_all_uppercase`라는 함수를 사용하며, 이 함수가 잘못 동작하면 제목이 엉뚱하게 추천되거나, 전혀 추천되지 않는 문제가 발생할 수 있습니다. 따라서 다양한 입력에 대해 신뢰할 수 있도록 충분한 단위 테스트가 필요합니다.\n\n### 함수 설명\n\n```python\ndef is_all_uppercase(value: str) -> bool:\n    \"\"\"문자열이 규칙에 따라 \"대문자 전용\"인지 여부를 반환합니다.\"\"\"\n```\n\n규칙은 다음과 같습니다.\n\n- 문자열 안에 **알파벳 문자가 최소 1개 이상** 있어야 합니다.\n- 모든 **알파벳 문자**는 `A`~`Z` 범위의 **대문자**여야 합니다.\n- 숫자, 공백, 느낌표/물음표 등의 **비알파벳 문자**는 있어도 되며, 대문자 여부 판단에서는 **무시**됩니다.\n- 알파벳이 전혀 없거나, 빈 문자열인 경우에는 `False`를 반환해야 합니다.\n\n### 동작 예시\n\n- `is_all_uppercase(\"HELLO\")` -> `True`\n- `is_all_uppercase(\"HELLO!! 123\")` -> `True`\n- `is_all_uppercase(\"Hello\")` -> `False` (소문자 `e` 포함)\n- `is_all_uppercase(\"1234\")` -> `False` (알파벳 없음)\n- `is_all_uppercase(\"\")` -> `False` (빈 문자열)\n\n### 테스트 시 고려할 점 (힌트)\n\n- **boolean logic**:\n  - 최소 한 글자 이상 알파벳이 있어야 한다는 조건이 올바르게 구현되었는지.\n  - 하나라도 소문자가 섞이면 반드시 `False`가 되는지.\n  - \"조건을 하나라도 만족하지 못하면 False\"라는 논리가 제대로 적용되는지.\n- **string analysis**:\n  - 숫자, 공백, 특수문자가 포함된 경우 어떻게 처리되는지.\n  - 알파벳이 전혀 없는 문자열(숫자만, 기호만 등)과 대문자/소문자가 섞인 문자열을 구분하는지.\n  - 문자열 길이(빈 문자열, 한 글자, 여러 글자)에 따른 동작 차이가 없는지.\n\n이 문제에서 여러 개의 버그 버전 구현이 준비되어 있으며, 당신은 어떤 구현이 주어져도 잘못된 동작을 찾아낼 수 있는 **pytest 기반 테스트 코드**를 작성해야 합니다.\n\n### 당신이 할 일\n\n- 제공된 `is_all_uppercase` 함수에 대해 **pytest**를 사용하여 테스트 코드를 작성하세요.\n- 다양한 입력 케이스를 설계하여,\n  - 대문자만 있는 경우,\n  - 소문자가 섞인 경우,\n  - 숫자/특수문자/공백이 포함된 경우,\n  - 알파벳이 전혀 없는 경우,\n  - 빈 문자열 등\n  여러 상황에서 기대되는 불린 결과를 검증하세요.\n- 목표는 준비된 **버그 구현들을 최대한 많이 실패시키는 테스트 세트**를 만드는 것입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_all_uppercase\n\n# boolean logic 및 string analysis 관점에서 다양한 케이스를 설계해 보세요.\n\n\ndef test_simple_all_uppercase():\n    # TODO: 순수 대문자만 있는 단순한 문자열이 True를 반환하는지 확인\n    pass\n\n\ndef test_mixed_case_letters():\n    # TODO: 대문자와 소문자가 섞인 문자열에서 False가 나오는지 확인\n    # 예: 앞은 대문자, 중간/뒤에 소문자가 포함된 경우를 포함\n    pass\n\n\ndef test_non_alpha_ignored_but_requires_letter():\n    # TODO: 숫자/기호/공백이 포함되더라도, 대문자만 있으면 True인지 확인\n    # TODO: 알파벳이 전혀 없는 문자열(숫자만, 기호만 등)은 False가 되는지 확인\n    pass\n\n\ndef test_edge_cases_empty_and_single_char():\n    # TODO: 빈 문자열, 한 글자(대문자/소문자) 입력에 대한 기대 결과를 검증\n    pass\n",
+  "tags": [
+    "easy",
+    "boolean logic",
+    "string analysis",
+    "unit-test",
+    "python",
+    "text-validation"
+  ],
+  "difficulty": "Easy"
+}
