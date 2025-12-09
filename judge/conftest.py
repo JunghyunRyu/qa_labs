@@ -4,6 +4,9 @@
 pytest 자체의 동작에는 영향을 주지 않습니다.
 """
 
+# target.py를 테스트 수집에서 제외 (test_로 시작하는 함수가 있어도 테스트로 인식하지 않음)
+collect_ignore = ["target.py"]
+
 # 보안 제한은 pytest_collection_modifyitems hook을 통해 적용됩니다.
 # 이렇게 하면 pytest 자체의 내부 모듈 임포트는 허용하면서
 # 사용자 테스트 코드의 위험한 임포트만 차단할 수 있습니다.

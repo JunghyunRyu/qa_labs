@@ -20,6 +20,22 @@ logger = logging.getLogger(__name__)
 class SubmissionService:
     """Service for processing submissions."""
 
+    # Golden Code 자체 오류를 나타내는 키워드들
+    GOLDEN_CODE_ERROR_KEYWORDS = [
+        "ImportError",
+        "ModuleNotFoundError",
+        "SyntaxError",
+        "IndentationError",
+        "NameError",
+        "AttributeError",
+        "TypeError: ",  # 공백 포함하여 일반 assert와 구분
+        "cannot import name",
+        "No module named",
+        "invalid syntax",
+        "unexpected indent",
+        "expected an indented block",
+    ]
+
     def __init__(self, db: Session):
         """Initialize service with database session."""
         self.db = db
@@ -27,6 +43,33 @@ class SubmissionService:
         self.problem_repo = ProblemRepository(db)
         self.buggy_repo = BuggyImplementationRepository(db)
         self.judge_service = JudgeService()
+
+    def _is_golden_code_error(self, logs: str) -> bool:
+        """
+        로그에서 Golden Code 자체의 오류인지 판단합니다.
+        
+        Golden Code 오류: ImportError, SyntaxError 등 코드 자체가 실행 불가한 경우
+        사용자 테스트 실패: AssertionError 등 테스트 로직 실패
+        
+        Args:
+            logs: pytest 실행 로그
+            
+        Returns:
+            Golden Code 자체 오류이면 True, 아니면 False
+        """
+        if not logs:
+            return False
+        
+        # Golden Code 오류 키워드 검사
+        for keyword in self.GOLDEN_CODE_ERROR_KEYWORDS:
+            if keyword in logs:
+                # target.py (Golden Code 파일)에서 발생한 오류인지 확인
+                # test_user.py에서 발생한 것은 사용자 테스트 문제
+                if "target.py" in logs and keyword in logs:
+                    logger.debug(f"Golden Code 오류 감지: {keyword}")
+                    return True
+        
+        return False
 
     def process_submission(self, submission_id: UUID) -> None:
         """
@@ -74,19 +117,74 @@ class SubmissionService:
                 user_test_code=submission.code,
             )
 
-            # 4. 실패 시 FAILURE 상태로 저장 및 종료
+            # 4. 실패 시 처리 (ERROR vs FAILURE 구분)
             if not golden_result.get("all_tests_passed", False):
                 exit_code = golden_result.get("exit_code", -1)
-                logger.warning(
-                    f"[GOLDEN_TEST_FAILED] submission_id={submission_id} "
-                    f"exit_code={exit_code} reason=golden_code_tests_failed"
-                )
-                submission.status = "FAILURE"
-                submission.score = 0
-                submission.execution_log = {"golden": golden_result}
-                self.submission_repo.update(submission)
-                logger.info(f"[STATUS_CHANGE] submission_id={submission_id} status=RUNNING->FAILURE")
-                logger.info(f"[GRADING_COMPLETE] submission_id={submission_id} status=FAILURE score=0")
+                execution_time = golden_result.get("execution_time", 0)
+                logs = golden_result.get("logs", "") or golden_result.get("stdout", "") or ""
+                
+                # ERROR 조건 판단:
+                # 1. 타임아웃 (exit_code == -1, execution_time >= 4.5초)
+                # 2. Golden Code 자체 실행 불가 (ImportError, SyntaxError 등)
+                # 3. Docker/시스템 오류 (exit_code == -1)
+                is_timeout = exit_code == -1 and execution_time >= 4.5
+                is_golden_code_error = self._is_golden_code_error(logs)
+                is_system_error = exit_code == -1 and not is_timeout
+                
+                if is_timeout or is_golden_code_error or is_system_error:
+                    # ERROR: 시스템 오류 또는 Golden Code 자체 문제
+                    if is_timeout:
+                        logger.warning(
+                            f"[GOLDEN_TEST_TIMEOUT] submission_id={submission_id} "
+                            f"execution_time={execution_time:.2f}s reason=execution_timeout"
+                        )
+                        golden_result["error_type"] = "timeout"
+                        golden_result["error_message"] = (
+                            f"테스트 실행 시간 초과 ({execution_time:.2f}초). "
+                            f"무한 루프나 과도한 연산이 있는지 확인하세요."
+                        )
+                    elif is_golden_code_error:
+                        logger.error(
+                            f"[GOLDEN_CODE_ERROR] submission_id={submission_id} "
+                            f"reason=golden_code_execution_failed"
+                        )
+                        golden_result["error_type"] = "golden_code_error"
+                        golden_result["error_message"] = (
+                            "Golden Code 실행 중 오류가 발생했습니다. "
+                            "문제 정의를 확인해주세요."
+                        )
+                    else:
+                        logger.error(
+                            f"[SYSTEM_ERROR] submission_id={submission_id} "
+                            f"exit_code={exit_code} reason=system_error"
+                        )
+                        golden_result["error_type"] = "system_error"
+                        golden_result["error_message"] = "시스템 오류가 발생했습니다."
+                    
+                    submission.status = "ERROR"
+                    submission.score = 0
+                    submission.execution_log = {"golden": golden_result}
+                    self.submission_repo.update(submission)
+                    logger.info(f"[STATUS_CHANGE] submission_id={submission_id} status=RUNNING->ERROR")
+                    logger.info(f"[GRADING_COMPLETE] submission_id={submission_id} status=ERROR")
+                else:
+                    # FAILURE: 사용자 테스트가 Golden Code에서 실패
+                    logger.warning(
+                        f"[GOLDEN_TEST_FAILED] submission_id={submission_id} "
+                        f"exit_code={exit_code} reason=user_test_failed_on_golden"
+                    )
+                    golden_result["error_type"] = "test_failure"
+                    golden_result["error_message"] = (
+                        "사용자 테스트가 Golden Code(정답 코드)에서 실패했습니다. "
+                        "테스트 로직을 확인해주세요."
+                    )
+                    
+                    submission.status = "FAILURE"
+                    submission.score = 0
+                    submission.execution_log = {"golden": golden_result}
+                    self.submission_repo.update(submission)
+                    logger.info(f"[STATUS_CHANGE] submission_id={submission_id} status=RUNNING->FAILURE")
+                    logger.info(f"[GRADING_COMPLETE] submission_id={submission_id} status=FAILURE score=0")
                 return
 
             # 5. 성공 시 각 Mutant에 대해 pytest 실행

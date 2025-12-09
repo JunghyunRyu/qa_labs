@@ -131,7 +131,7 @@ class DockerService:
             # 컨테이너 생성
             container = self.client.containers.create(
                 image=JUDGE_IMAGE,
-                command=["pytest", "-q", "--disable-warnings", "--maxfail=1", "test_user.py"],
+                command=["pytest", "-q", "--disable-warnings", "--maxfail=1", "--ignore=target.py", "test_user.py"],
                 volumes=volumes,
                 network_disabled=True,  # 네트워크 비활성화 (보안)
                 mem_limit="128m",  # 메모리 제한

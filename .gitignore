@@ -70,3 +70,10 @@ build/
 # Docker
 *.log
 
+# Nginx local config files
+nginx/**/*.local
+nginx/**/*.local.*
+
+docker-compose.override.yml
+backend/generated_problems/*.json
+*.tsbuildinfo
