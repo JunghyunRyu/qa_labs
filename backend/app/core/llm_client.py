@@ -37,14 +37,14 @@ class LLMClient:
         reasoning_effort: Optional[ReasoningEffort] = "none",
     ) -> str:
         """
-        GPT-5.1 Responses API를 사용하여 completion 생성.
+        Chat Completions API를 사용하여 completion 생성.
 
         Args:
             system_prompt: System prompt
             user_prompt: User prompt
-            temperature: Temperature for generation (reasoning_effort="none"일 때만 적용)
+            temperature: Temperature for generation
             max_tokens: Maximum tokens to generate
-            reasoning_effort: Reasoning effort (기본값: "none" - 빠른 응답)
+            reasoning_effort: Reasoning effort (현재는 무시됨, 호환성 위해 유지)
 
         Returns:
             Generated text
@@ -57,35 +57,25 @@ class LLMClient:
             raise ValueError("OPENAI_API_KEY is not set. Cannot use LLM features.")
 
         try:
-            # GPT-5.1 Responses API는 system message를 지원하지 않으므로 
-            # system prompt를 input에 포함
-            combined_prompt = f"""[System Instructions]
-{system_prompt}
+            logger.info(f"Using Chat Completions API: model={self.model}")
 
-[User Request]
-{user_prompt}"""
-
-            logger.info(f"Using GPT-5.1 Responses API: model={self.model}, effort={reasoning_effort}")
-
-            # GPT-5.1 Responses API 사용
+            # Chat Completions API 사용
             api_params = {
                 "model": self.model,
-                "input": combined_prompt,
-                "reasoning": {"effort": reasoning_effort},
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                "temperature": temperature,
             }
-            
-            # reasoning_effort가 "none"일 때만 temperature 지원
-            if reasoning_effort == "none" and temperature != 0.7:
-                # GPT-5.1은 temperature를 직접 지원하지 않음, verbosity로 대체
-                pass
-            
+
             # max_tokens가 설정된 경우
             if max_tokens is not None:
-                api_params["max_output_tokens"] = max_tokens
+                api_params["max_tokens"] = max_tokens
 
-            response = self.client.responses.create(**api_params)
+            response = self.client.chat.completions.create(**api_params)
 
-            return response.output_text or ""
+            return response.choices[0].message.content or ""
 
         except OpenAIAPIError as e:
             logger.error(f"OpenAI API error: {e}")
@@ -147,21 +137,17 @@ class LLMClient:
         verbosity: Optional[Literal["low", "medium", "high"]] = None,
     ) -> str:
         """
-        GPT-5.1 Reasoning 모델을 사용하여 completion 생성.
-        
-        GPT-5.1은 복잡한 추론이 필요한 작업에 적합합니다.
+        Reasoning 모델을 사용하여 completion 생성.
+
+        복잡한 추론이 필요한 작업에 적합합니다.
         문제 생성과 같은 고품질 출력이 필요한 경우 사용합니다.
 
         Args:
-            system_prompt: System prompt (reasoning 모델에서는 user prompt에 포함됨)
+            system_prompt: System prompt
             user_prompt: User prompt
-            reasoning_effort: Reasoning effort level (none, low, medium, high)
-                              - none: 낮은 지연시간, GPT-5.1 기본값
-                              - low: 빠른 응답
-                              - medium: 균형
-                              - high: 깊은 추론 (문제 생성에 권장)
-            model: 사용할 모델 (기본값: gpt-5.1)
-            verbosity: 출력 상세도 (low, medium, high)
+            reasoning_effort: Reasoning effort level (현재는 무시됨, 호환성 위해 유지)
+            model: 사용할 모델 (기본값: reasoning model)
+            verbosity: 출력 상세도 (현재는 무시됨, 호환성 위해 유지)
 
         Returns:
             Generated text
@@ -177,49 +163,17 @@ class LLMClient:
         effort = reasoning_effort or self.reasoning_effort
 
         try:
-            # GPT-5.1 Responses API는 system message를 지원하지 않으므로 
-            # system prompt를 input에 포함
-            combined_prompt = f"""[System Instructions]
-{system_prompt}
+            logger.info(f"Using Chat Completions API: model={use_model}")
 
-[User Request]
-{user_prompt}"""
-
-            logger.info(f"Using GPT-5.1 Responses API: model={use_model}, effort={effort}")
-
-            # GPT-5.1 Responses API 사용
-            # https://platform.openai.com/docs/guides/latest-model
-            api_params = {
-                "model": use_model,
-                "input": combined_prompt,
-                "reasoning": {"effort": effort},
-            }
-            
-            # verbosity 옵션 추가 (선택적)
-            if verbosity:
-                api_params["text"] = {"verbosity": verbosity}
-
-            response = self.client.responses.create(**api_params)
-
-            return response.output_text or ""
-
-        except AttributeError:
-            # responses API가 없는 경우 chat.completions 사용 (fallback)
-            logger.warning(
-                "GPT-5.1 Responses API not available, falling back to chat.completions"
+            # Chat Completions API 사용
+            response = self.client.chat.completions.create(
+                model=use_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
             )
-            try:
-                response = self.client.chat.completions.create(
-                    model=use_model,
-                    messages=[
-                        {"role": "user", "content": combined_prompt},
-                    ],
-                    # GPT-5.1 reasoning 모델은 temperature 파라미터를 지원하지 않음
-                )
-                return response.choices[0].message.content or ""
-            except OpenAIAPIError as e:
-                logger.error(f"OpenAI API error (fallback): {e}")
-                raise RuntimeError(f"LLM API call failed: {str(e)}")
+            return response.choices[0].message.content or ""
 
         except OpenAIAPIError as e:
             logger.error(f"OpenAI API error: {e}")
