@@ -1,14 +1,15 @@
 /** Submission status display component */
 
 import { useEffect, useState } from "react";
-import type { Submission } from "@/types/problem";
+import type { Submission, SubmissionProgress } from "@/types/problem";
 
 interface SubmissionStatusProps {
   status: Submission["status"];
   createdAt?: string;
+  progress?: SubmissionProgress;
 }
 
-export default function SubmissionStatus({ status, createdAt }: SubmissionStatusProps) {
+export default function SubmissionStatus({ status, createdAt, progress }: SubmissionStatusProps) {
   const [elapsedTime, setElapsedTime] = useState<string>("");
   const statusConfig = {
     PENDING: {
@@ -96,11 +97,33 @@ export default function SubmissionStatus({ status, createdAt }: SubmissionStatus
         </span>
       </div>
       {(status === "PENDING" || status === "RUNNING") && (
-        <div className="ml-7 space-y-1">
+        <div className="ml-7 space-y-3">
           <p className="text-sm text-gray-600">{config.message}</p>
+
+          {/* Progress bar */}
+          {status === "RUNNING" && progress && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">{progress.message}</span>
+                <span className="text-gray-500">{progress.percent}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                  style={{ width: `${progress.percent}%` }}
+                ></div>
+              </div>
+              {progress.current !== undefined && progress.total !== undefined && (
+                <p className="text-xs text-gray-500">
+                  {progress.current} / {progress.total} 완료
+                </p>
+              )}
+            </div>
+          )}
+
           {elapsedTime && (
             <p className="text-xs text-gray-500">
-              경과 시간: {elapsedTime} (2초마다 상태 확인 중)
+              경과 시간: {elapsedTime}
             </p>
           )}
         </div>

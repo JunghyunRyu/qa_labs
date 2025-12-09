@@ -37,9 +37,10 @@ export default function SubmissionResultPanel({
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">채점 결과</h3>
           <div className="py-8">
-            <SubmissionStatus 
+            <SubmissionStatus
               status={submission?.status || "PENDING"}
               createdAt={submission?.created_at}
+              progress={submission?.progress}
             />
           </div>
         </div>

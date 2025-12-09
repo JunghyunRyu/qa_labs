@@ -29,6 +29,14 @@ export interface ProblemListResponse {
   total_pages: number;
 }
 
+export interface SubmissionProgress {
+  step: "initializing" | "testing_golden" | "testing_buggy" | "generating_feedback";
+  message: string;
+  percent: number;
+  current?: number;
+  total?: number;
+}
+
 export interface Submission {
   id: string;
   user_id: string;
@@ -40,6 +48,7 @@ export interface Submission {
   total_mutants?: number;
   execution_log?: Record<string, unknown>;
   feedback_json?: Record<string, unknown>;
+  progress?: SubmissionProgress;
   created_at: string;
 }
 
