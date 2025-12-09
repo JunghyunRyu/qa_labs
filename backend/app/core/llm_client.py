@@ -2,7 +2,6 @@
 
 import json
 import logging
-import requests
 from typing import Optional, Dict, Any, Literal
 from openai import OpenAI
 from openai import APIError as OpenAIAPIError
@@ -240,6 +239,7 @@ class LLMClient:
         system_prompt: str,
         user_prompt: str,
         model: Optional[str] = None,
+        reasoning_effort: Optional[ReasoningEffort] = None,
     ) -> str:
         """
         Responses API를 사용하여 completion 생성.
@@ -248,9 +248,10 @@ class LLMClient:
         구조화된 출력과 reasoning trace를 제공합니다.
 
         Args:
-            system_prompt: System prompt
-            user_prompt: User prompt
+            system_prompt: System prompt (instructions)
+            user_prompt: User prompt (input)
             model: 사용할 모델 (기본값: reasoning model)
+            reasoning_effort: Reasoning effort level (none, low, medium, high)
 
         Returns:
             Generated text
@@ -259,43 +260,43 @@ class LLMClient:
             ValueError: If API key is not set
             RuntimeError: If API call fails
         """
-        if not settings.OPENAI_API_KEY:
+        if not self.client:
             raise ValueError("OPENAI_API_KEY is not set. Cannot use LLM features.")
 
         use_model = model or self.reasoning_model
+        effort = reasoning_effort or self.reasoning_effort
 
         try:
-            logger.info(f"Using Responses API: model={use_model}")
+            logger.info(f"Using Responses API: model={use_model}, effort={effort}")
 
-            # HTTP POST 요청
-            response = requests.post(
-                "https://api.openai.com/v1/responses",
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
-                },
-                json={
-                    "model": use_model,
-                    "input": f"{system_prompt}\n\n{user_prompt}",
-                },
-                timeout=120,  # 2분 타임아웃
-            )
+            # Responses API 파라미터 구성
+            api_params = {
+                "model": use_model,
+                "instructions": system_prompt,
+                "input": user_prompt,
+            }
 
-            response.raise_for_status()
-            result = response.json()
+            # reasoning_effort가 "none"이 아닌 경우에만 reasoning 설정 추가
+            if effort and effort != "none":
+                api_params["reasoning"] = {"effort": effort}
 
-            # 응답 파싱: 배열의 첫 번째 항목에서 output_text 추출
-            if isinstance(result, list) and len(result) > 0:
-                content_items = result[0].get("content", [])
-                for item in content_items:
-                    if item.get("type") == "output_text":
-                        return item.get("text", "")
+            # SDK를 사용하여 Responses API 호출
+            response = self.client.responses.create(**api_params)
+
+            # 응답에서 텍스트 추출
+            if response.output and len(response.output) > 0:
+                # 마지막 output이 message인 경우
+                for output_item in reversed(response.output):
+                    if hasattr(output_item, 'content') and output_item.content:
+                        for content_item in output_item.content:
+                            if hasattr(content_item, 'text'):
+                                return content_item.text
 
             logger.warning("Responses API returned empty or invalid response")
             return ""
 
-        except requests.RequestException as e:
-            logger.error(f"Responses API HTTP error: {e}", exc_info=True)
+        except OpenAIAPIError as e:
+            logger.error(f"Responses API error: {e}", exc_info=True)
             raise RuntimeError(f"Responses API call failed: {str(e)}")
         except Exception as e:
             logger.error(f"Unexpected error in Responses API call: {e}", exc_info=True)
@@ -306,6 +307,7 @@ class LLMClient:
         system_prompt: str,
         user_prompt: str,
         model: Optional[str] = None,
+        reasoning_effort: Optional[ReasoningEffort] = None,
     ) -> Dict[str, Any]:
         """
         Responses API를 사용하여 JSON 응답 생성.
@@ -316,6 +318,7 @@ class LLMClient:
             system_prompt: System prompt (should instruct to return JSON)
             user_prompt: User prompt
             model: 사용할 모델 (기본값: gpt-5.1)
+            reasoning_effort: Reasoning effort level (none, low, medium, high)
 
         Returns:
             Parsed JSON as dictionary
@@ -328,6 +331,7 @@ class LLMClient:
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             model=model,
+            reasoning_effort=reasoning_effort,
         )
 
         # Try to extract JSON from response (might be wrapped in markdown code blocks)
