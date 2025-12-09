@@ -26,8 +26,10 @@ redis==5.0.1
 # Utilities
 python-multipart==0.0.6
 
-# Docker (6.1.3 - docker-py 7.x has http+docker scheme compatibility issues)
+# Docker SDK
 docker==6.1.3
+requests==2.31.0
+requests-unixsocket>=0.3.0  # unix socket용 어댑터
 
 # LLM / AI
 openai==1.12.0
