@@ -2,6 +2,7 @@
 
 import json
 import logging
+import requests
 from typing import Optional, Dict, Any, Literal
 from openai import OpenAI
 from openai import APIError as OpenAIAPIError
@@ -231,6 +232,118 @@ class LLMClient:
             return json.loads(response_text)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response (reasoning): {e}")
+            logger.error(f"Response text: {response_text[:500]}")
+            raise ValueError(f"Failed to parse JSON response: {str(e)}")
+
+    def generate_with_responses_api(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: Optional[str] = None,
+    ) -> str:
+        """
+        Responses API를 사용하여 completion 생성.
+
+        GPT-5.1과 같은 reasoning 모델에 최적화된 API입니다.
+        구조화된 출력과 reasoning trace를 제공합니다.
+
+        Args:
+            system_prompt: System prompt
+            user_prompt: User prompt
+            model: 사용할 모델 (기본값: reasoning model)
+
+        Returns:
+            Generated text
+
+        Raises:
+            ValueError: If API key is not set
+            RuntimeError: If API call fails
+        """
+        if not settings.OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY is not set. Cannot use LLM features.")
+
+        use_model = model or self.reasoning_model
+
+        try:
+            logger.info(f"Using Responses API: model={use_model}")
+
+            # HTTP POST 요청
+            response = requests.post(
+                "https://api.openai.com/v1/responses",
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+                },
+                json={
+                    "model": use_model,
+                    "input": f"{system_prompt}\n\n{user_prompt}",
+                },
+                timeout=120,  # 2분 타임아웃
+            )
+
+            response.raise_for_status()
+            result = response.json()
+
+            # 응답 파싱: 배열의 첫 번째 항목에서 output_text 추출
+            if isinstance(result, list) and len(result) > 0:
+                content_items = result[0].get("content", [])
+                for item in content_items:
+                    if item.get("type") == "output_text":
+                        return item.get("text", "")
+
+            logger.warning("Responses API returned empty or invalid response")
+            return ""
+
+        except requests.RequestException as e:
+            logger.error(f"Responses API HTTP error: {e}", exc_info=True)
+            raise RuntimeError(f"Responses API call failed: {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error in Responses API call: {e}", exc_info=True)
+            raise RuntimeError(f"Unexpected error in Responses API call: {str(e)}")
+
+    def generate_json_with_responses_api(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        model: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Responses API를 사용하여 JSON 응답 생성.
+
+        고품질 구조화된 출력이 필요한 경우 사용합니다 (예: AI 피드백 생성).
+
+        Args:
+            system_prompt: System prompt (should instruct to return JSON)
+            user_prompt: User prompt
+            model: 사용할 모델 (기본값: gpt-5.1)
+
+        Returns:
+            Parsed JSON as dictionary
+
+        Raises:
+            ValueError: If API key is not set or JSON parsing fails
+            RuntimeError: If API call fails
+        """
+        response_text = self.generate_with_responses_api(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            model=model,
+        )
+
+        # Try to extract JSON from response (might be wrapped in markdown code blocks)
+        response_text = response_text.strip()
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+        response_text = response_text.strip()
+
+        try:
+            return json.loads(response_text)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON response (Responses API): {e}")
             logger.error(f"Response text: {response_text[:500]}")
             raise ValueError(f"Failed to parse JSON response: {str(e)}")
 

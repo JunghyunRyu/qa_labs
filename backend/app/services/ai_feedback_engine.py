@@ -163,11 +163,10 @@ def generate_feedback(
             execution_log=execution_log or {},
         )
 
-        # LLM 호출
-        response = llm_client.generate_json(
+        # LLM 호출 (Responses API 사용)
+        response = llm_client.generate_json_with_responses_api(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            temperature=0.7,
         )
 
         # JSON 스키마 검증
