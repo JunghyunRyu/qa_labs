@@ -104,7 +104,8 @@ class DockerService:
             (생성된 Docker 컨테이너 객체, 임시 디렉토리 경로) 튜플
         """
         # 임시 디렉토리 생성
-        temp_dir = tempfile.mkdtemp(prefix="qa_arena_judge_")
+        # Docker-in-Docker 환경을 위해 호스트와 공유되는 경로 사용
+        temp_dir = tempfile.mkdtemp(prefix="qa_arena_judge_", dir="/tmp/qa_arena_judge")
         temp_path = Path(temp_dir)
 
         try:
