@@ -15,6 +15,28 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "QA-Arena",
   description: "AI-Assisted QA Coding Test Platform",
+  metadataBase: new URL("https://qa-arena.qalabs.kr"), // 중요!
+
+  openGraph: {
+    title: "QA-Arena",
+    description: "AI-Assisted QA Coding Test Platform",
+    url: "https://qa-arena.qalabs.kr",
+    siteName: "QA-Arena",
+    images: [
+      {
+        url: "/og_image.png", // public 폴더에 저장된 OG 이미지
+        width: 1200,
+        height: 630,
+        alt: "QA-Arena OG Image",
+      },
+    ],
+    type: "website",
+  },
+
+  // 카카오톡 대응 AL 태그
+  alternates: {
+    canonical: "https://qa-arena.qalabs.kr",
+  },
 };
 
 export default function RootLayout({
