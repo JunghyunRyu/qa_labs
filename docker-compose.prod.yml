@@ -84,6 +84,8 @@ services:
       - ./backend/logs:/app/logs
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/qa_arena_judge:/tmp/qa_arena_judge
+    group_add:
+      - "988"
 
   frontend:
     build:
