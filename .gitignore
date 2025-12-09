@@ -67,6 +67,10 @@ build/
 # cursor
 .cursor/
 
+# Claude Code environment-specific configs
+.claude/config.json
+.claude/config.local.json
+
 # Docker
 *.log
 

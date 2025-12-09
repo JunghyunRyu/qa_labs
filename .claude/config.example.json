@@ -1,0 +1,8 @@
+{
+  "ec2": {
+    "ip": "YOUR_EC2_PUBLIC_IP",
+    "ssh_key_path": "~/.ssh/your_key.pem",
+    "user": "ubuntu",
+    "project_path": "~/qa_labs"
+  }
+}
