@@ -35,5 +35,6 @@
     "comparison operators",
     "basic testing"
   ],
-  "difficulty": "Very Easy"
+  "difficulty": "Very Easy",
+  "strong_test_code": "import pytest\nfrom target import is_positive\n\n\ndef test_positive_numbers():\n    # 양수는 True\n    assert is_positive(1) is True\n    assert is_positive(10) is True\n    assert is_positive(100) is True\n\n\ndef test_zero_boundary():\n    # 0은 양수가 아님 - n >= 0 버그 잡기\n    assert is_positive(0) is False\n\n\ndef test_negative_numbers():\n    # 음수는 False - abs() 버그, truthiness 버그, 반전 버그 잡기\n    assert is_positive(-1) is False\n    assert is_positive(-10) is False\n    assert is_positive(-100) is False\n"
 }

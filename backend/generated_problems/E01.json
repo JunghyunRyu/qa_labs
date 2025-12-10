@@ -35,5 +35,6 @@
     "pytest",
     "qa"
   ],
-  "difficulty": "Easy"
+  "difficulty": "Easy",
+  "strong_test_code": "import pytest\nfrom target import is_valid_age\n\n\ndef test_boundary_values():\n    # 경계값 - off-by-one 버그 잡기\n    assert is_valid_age(0) is True      # 하한 경계 포함\n    assert is_valid_age(150) is True    # 상한 경계 포함\n    assert is_valid_age(-1) is False    # 하한 바로 아래\n    assert is_valid_age(151) is False   # 상한 바로 위\n\n\ndef test_typical_valid_ages():\n    assert is_valid_age(1) is True\n    assert is_valid_age(30) is True\n    assert is_valid_age(149) is True\n\n\ndef test_upper_limit_120_bug():\n    # 상한 120 버그 잡기 (121~150이 유효해야 함)\n    assert is_valid_age(121) is True\n    assert is_valid_age(130) is True\n    assert is_valid_age(150) is True\n\n\ndef test_or_vs_and_bug():\n    # or 연산자 버그 잡기 (범위 밖 값이 False여야 함)\n    assert is_valid_age(-100) is False\n    assert is_valid_age(200) is False\n    assert is_valid_age(-10000) is False\n"
 }

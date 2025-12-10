@@ -35,5 +35,6 @@
     "data formatting",
     "phone-number"
   ],
-  "difficulty": "Easy"
+  "difficulty": "Easy",
+  "strong_test_code": "import pytest\nfrom target import normalize_us_phone\n\n\ndef test_simple_10_digit_number():\n    # 기본 10자리 - 그룹핑 버그 잡기\n    assert normalize_us_phone('5551234567') == '+1-555-123-4567'\n    assert normalize_us_phone('2125550000') == '+1-212-555-0000'\n\n\ndef test_11_digit_with_country_code():\n    # 11자리 번호 - 11자리 거부 버그 잡기\n    assert normalize_us_phone('15551234567') == '+1-555-123-4567'\n    assert normalize_us_phone('1-555-123-4567') == '+1-555-123-4567'\n    assert normalize_us_phone('+1 (555) 123-4567') == '+1-555-123-4567'\n\n\ndef test_various_separators():\n    # 구분자 처리\n    assert normalize_us_phone('555.123.4567') == '+1-555-123-4567'\n    assert normalize_us_phone('(555) 123-4567') == '+1-555-123-4567'\n    assert normalize_us_phone('555 123 4567') == '+1-555-123-4567'\n\n\ndef test_output_format_has_plus():\n    # + 기호 누락 버그 잡기\n    result = normalize_us_phone('5551234567')\n    assert result.startswith('+1-')\n    assert result == '+1-555-123-4567'\n\n\ndef test_invalid_country_code():\n    # 국가 코드 검증 버그 잡기\n    with pytest.raises(ValueError):\n        normalize_us_phone('+44 20 7946 0958')\n    with pytest.raises(ValueError):\n        normalize_us_phone('+2 (555) 123-4567')\n\n\ndef test_invalid_length():\n    # 잘못된 길이\n    with pytest.raises(ValueError):\n        normalize_us_phone('123456789')  # 9자리\n    with pytest.raises(ValueError):\n        normalize_us_phone('123456789012')  # 12자리\n"
 }

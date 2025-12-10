@@ -34,5 +34,6 @@
     "python",
     "pytest"
   ],
-  "difficulty": "Easy"
+  "difficulty": "Easy",
+  "strong_test_code": "import pytest\nfrom target import calculate_admission_fee\n\n\ndef test_partitions_child_teen_adult_senior():\n    # 각 나이 구간 대표값 - 기본 가격 버그 잡기\n    assert calculate_admission_fee(5) == 5000    # 어린이 50% 할인\n    assert calculate_admission_fee(15) == 7000   # 청소년 30% 할인\n    assert calculate_admission_fee(30) == 10000  # 성인 할인 없음\n    assert calculate_admission_fee(70) == 6000   # 노인 40% 할인\n\n\ndef test_age_boundaries():\n    # 경계값 - off-by-one 버그 잡기\n    assert calculate_admission_fee(12) == 5000   # 어린이 경계 (포함)\n    assert calculate_admission_fee(13) == 7000   # 청소년 시작\n    assert calculate_admission_fee(18) == 7000   # 청소년 경계 (포함)\n    assert calculate_admission_fee(19) == 10000  # 성인 시작\n    assert calculate_admission_fee(64) == 10000  # 성인 경계 (포함)\n    assert calculate_admission_fee(65) == 6000   # 노인 시작\n\n\ndef test_teen_discount_rate():\n    # 청소년 할인율 버그 잡기 (30% 할인 = 7000원)\n    assert calculate_admission_fee(14) == 7000\n    assert calculate_admission_fee(16) == 7000\n    assert calculate_admission_fee(17) == 7000\n\n\ndef test_invalid_ages():\n    # 범위 검증 버그 잡기\n    with pytest.raises(ValueError):\n        calculate_admission_fee(-1)\n    with pytest.raises(ValueError):\n        calculate_admission_fee(121)\n    with pytest.raises(ValueError):\n        calculate_admission_fee(-100)\n"
 }

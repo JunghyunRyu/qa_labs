@@ -35,5 +35,6 @@
     "python",
     "pytest"
   ],
-  "difficulty": "Very Easy"
+  "difficulty": "Very Easy",
+  "strong_test_code": "import pytest\nfrom target import add\n\n\ndef test_add_positive_numbers():\n    # 기본 양수 덧셈 - 비대칭 값으로 a+a 버그 잡기\n    assert add(3, 5) == 8\n    assert add(1, 7) == 8\n    assert add(10, 3) == 13\n\n\ndef test_add_with_negative_numbers():\n    # 음수 포함 - abs() 버그 잡기\n    assert add(-2, 5) == 3\n    assert add(5, -3) == 2\n    assert add(-3, -4) == -7\n\n\ndef test_add_with_zero():\n    # 0 포함 - 0 반환 버그 잡기\n    assert add(0, 7) == 7\n    assert add(5, 0) == 5\n    assert add(0, 0) == 0\n\n\ndef test_add_subtraction_bug():\n    # a - b != a + b인 케이스로 뺄셈 버그 잡기\n    assert add(5, 3) == 8  # 뺄셈이면 2가 됨\n    assert add(10, 2) == 12  # 뺄셈이면 8이 됨\n"
 }
