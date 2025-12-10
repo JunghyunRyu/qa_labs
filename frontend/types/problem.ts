@@ -7,7 +7,7 @@ export interface Problem {
   description_md: string;
   function_signature: string;
   golden_code: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
   skills?: string[];
   created_at: string;
 }
@@ -16,7 +16,7 @@ export interface ProblemListItem {
   id: number;
   slug: string;
   title: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
   skills?: string[];
   description_md?: string;  // For preview in list view
 }

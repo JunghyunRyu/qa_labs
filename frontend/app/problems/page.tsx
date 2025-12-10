@@ -12,7 +12,7 @@ import Error from "@/components/Error";
 import Link from "next/link";
 import { Search, Filter, X } from "lucide-react";
 
-type DifficultyFilter = "All" | "Easy" | "Medium" | "Hard";
+type DifficultyFilter = "All" | "Very Easy" | "Easy" | "Medium" | "Hard";
 type SortOption = "newest" | "oldest" | "difficulty-asc" | "difficulty-desc";
 
 export default function ProblemsPage() {
@@ -87,10 +87,10 @@ export default function ProblemsPage() {
     const sorted = [...filtered].sort((a, b) => {
       switch (sortOption) {
         case "difficulty-asc":
-          const difficultyOrder = { Easy: 1, Medium: 2, Hard: 3 };
+          const difficultyOrder = { "Very Easy": 0, Easy: 1, Medium: 2, Hard: 3 };
           return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
         case "difficulty-desc":
-          const difficultyOrderDesc = { Easy: 1, Medium: 2, Hard: 3 };
+          const difficultyOrderDesc = { "Very Easy": 0, Easy: 1, Medium: 2, Hard: 3 };
           return difficultyOrderDesc[b.difficulty] - difficultyOrderDesc[a.difficulty];
         case "oldest":
           return a.id - b.id;
@@ -217,7 +217,7 @@ export default function ProblemsPage() {
                 난이도
               </label>
               <div className="flex flex-wrap gap-2">
-                {(["All", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => (
+                {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => (
                   <button
                     key={diff}
                     onClick={() => setDifficultyFilter(diff)}
@@ -228,7 +228,7 @@ export default function ProblemsPage() {
                     }`}
                     aria-pressed={difficultyFilter === diff}
                   >
-                    {diff === "All" ? "전체" : diff}
+                    {diff === "All" ? "전체" : diff === "Very Easy" ? "아주쉬움" : diff}
                   </button>
                 ))}
               </div>

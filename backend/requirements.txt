@@ -34,3 +34,6 @@ requests-unixsocket>=0.3.0  # unix socket용 어댑터
 # LLM / AI
 openai
 
+# Scheduler (for worker monitoring)
+apscheduler>=3.10.0
+

@@ -88,11 +88,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: celery -A app.core.celery_app worker --loglevel=info
 
-  celery_beat:
+  worker_monitor:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: qa_arena_celery_beat
+    container_name: qa_arena_worker_monitor
     environment:
       DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
       REDIS_URL: redis://redis:6379/0
@@ -110,7 +110,7 @@ services:
     volumes:
       - ./backend:/app
       - ./backend/logs:/app/logs
-    command: celery -A app.core.celery_app beat --loglevel=info
+    command: python -m app.workers.monitor_scheduler
 
 volumes:
   postgres_data:

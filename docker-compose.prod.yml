@@ -87,12 +87,12 @@ services:
     group_add:
       - "988"
 
-  celery_beat:
+  worker_monitor:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: qa_arena_celery_beat_prod
-    command: celery -A app.core.celery_app beat --loglevel=info
+    container_name: qa_arena_worker_monitor_prod
+    command: python -m app.workers.monitor_scheduler
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
