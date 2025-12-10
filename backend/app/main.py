@@ -10,7 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.api import problems, submissions, admin
+from app.api import problems, submissions, admin, health
 
 # 로깅 설정
 setup_logging()
@@ -154,6 +154,12 @@ app.include_router(
     admin.router,
     prefix="/api/admin",
     tags=["admin"],
+)
+
+app.include_router(
+    health.router,
+    prefix="/healthz",
+    tags=["health"],
 )
 
 

@@ -87,6 +87,30 @@ services:
     group_add:
       - "988"
 
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qa_arena_celery_beat_prod
+    command: celery -A app.core.celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
+      REDIS_URL: redis://redis:6379/0
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      SLACK_ALERT_ENABLED: ${SLACK_ALERT_ENABLED:-true}
+      SLACK_ALERT_ON_RECOVERY: ${SLACK_ALERT_ON_RECOVERY:-true}
+      ENVIRONMENT: production
+      WORKER_MONITOR_ENABLED: "true"
+      DEBUG: ${DEBUG:-False}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - qa_arena_network
+    restart: unless-stopped
+    volumes:
+      - ./backend/logs:/app/logs
+
   frontend:
     build:
       context: ./frontend

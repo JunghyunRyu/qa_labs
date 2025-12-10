@@ -88,6 +88,30 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: celery -A app.core.celery_app worker --loglevel=info
 
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qa_arena_celery_beat
+    environment:
+      DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
+      REDIS_URL: redis://redis:6379/0
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      SLACK_ALERT_ENABLED: ${SLACK_ALERT_ENABLED:-false}
+      SLACK_ALERT_ON_RECOVERY: ${SLACK_ALERT_ON_RECOVERY:-true}
+      ENVIRONMENT: development
+      WORKER_MONITOR_ENABLED: ${WORKER_MONITOR_ENABLED:-true}
+      DEBUG: ${DEBUG:-True}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - qa_arena_network
+    volumes:
+      - ./backend:/app
+      - ./backend/logs:/app/logs
+    command: celery -A app.core.celery_app beat --loglevel=info
+
 volumes:
   postgres_data:
   redis_data:

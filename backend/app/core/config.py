@@ -47,6 +47,20 @@ class Settings(BaseSettings):
     OPENAI_REASONING_MODEL: str = "gpt-5.1"  # Reasoning 모델 (문제 생성용)
     OPENAI_REASONING_EFFORT: str = "high"  # Reasoning effort: none, low, medium, high
 
+    # Worker Monitoring
+    WORKER_MONITOR_ENABLED: bool = True
+    WORKER_MONITOR_INTERVAL_SECONDS: int = 30
+    WORKER_DOWN_THRESHOLD: int = 3  # 연속 N회 미응답시 Down 판정
+    WORKER_HEARTBEAT_TIMEOUT: int = 10  # Inspect 타임아웃 (초)
+
+    # Slack Alert
+    SLACK_WEBHOOK_URL: Optional[str] = None
+    SLACK_ALERT_ENABLED: bool = False
+    SLACK_ALERT_ON_RECOVERY: bool = True  # 복구 시 알림 여부
+
+    # Environment
+    ENVIRONMENT: str = "development"  # development, staging, production
+
     class Config:
         env_file = ".env"
         case_sensitive = True

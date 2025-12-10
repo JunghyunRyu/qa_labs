@@ -1,6 +1,9 @@
 """Celery application configuration."""
 
+from datetime import timedelta
+
 from celery import Celery
+
 from app.core.config import settings
 
 # Redis URL에서 broker와 backend URL 생성
@@ -23,7 +26,7 @@ celery_app = Celery(
     "qa_arena",
     broker=redis_broker,
     backend=redis_backend,
-    include=["app.workers.tasks"],
+    include=["app.workers.tasks", "app.workers.monitoring_tasks"],
 )
 
 # Celery 설정
@@ -38,5 +41,15 @@ celery_app.conf.update(
     task_soft_time_limit=240,  # 4분 소프트 타임아웃
     worker_prefetch_multiplier=1,
     worker_max_tasks_per_child=50,
+    # Worker 이벤트 활성화 (모니터링용)
+    worker_send_task_events=True,
+    task_send_sent_event=True,
+    # Beat 스케줄 설정
+    beat_schedule={
+        "check-worker-health": {
+            "task": "app.workers.monitoring_tasks.check_worker_health",
+            "schedule": timedelta(seconds=settings.WORKER_MONITOR_INTERVAL_SECONDS),
+        },
+    },
 )
 
