@@ -9,7 +9,7 @@ import redis
 
 from app.services.worker_monitor import WorkerMonitor, WorkerStatus
 from app.core.config import settings
-from app.core.database import SessionLocal
+from app.models.db import SessionLocal
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
