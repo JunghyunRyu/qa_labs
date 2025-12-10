@@ -231,6 +231,12 @@ from target import ${functionName}
   }
 
   const difficultyConfig = {
+    "Very Easy": {
+      colors: "bg-blue-100 text-blue-800 border-blue-300",
+      icon: "📉",
+      label: "아주쉬움",
+      gradient: "from-blue-50 to-cyan-50",
+    },
     Easy: {
       colors: "bg-green-100 text-green-800 border-green-300",
       icon: "📉",

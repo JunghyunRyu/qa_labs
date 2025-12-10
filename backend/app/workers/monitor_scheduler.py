@@ -98,8 +98,8 @@ def check_worker_health():
             except Exception as e:
                 logger.error(f"[ALERT_SEND_ERROR] Failed to send down alert: {e}")
 
-        # 모든 Worker Down 알림
-        if states and all(monitor.is_worker_down(s) for s in states.values()):
+        # 모든 Worker Down 알림 (새로 Down된 Worker가 있을 때만)
+        if down_workers and states and all(monitor.is_worker_down(s) for s in states.values()):
             try:
                 notifier.send_all_workers_down_alert_sync()
             except Exception as e:
