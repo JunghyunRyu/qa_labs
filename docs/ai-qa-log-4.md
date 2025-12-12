@@ -1,11 +1,3 @@
----
-title: "EC2 인스턴스를 말려먹고 다시 세운 기록: 사이드 프로젝트도 결국 운영이다"
-date: 2025-12-12 09:00:00 +0900
-layout: post
-categories: [infra, aws, qa-labs-arena]
-tags: [aws, ec2, docker, devops, incident-response, side-project]
----
-
 # EC2 인스턴스를 말려먹고 다시 세운 기록  
 사이드 프로젝트도 결국 운영이다
 
