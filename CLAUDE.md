@@ -1,9 +1,7 @@
----
-description: QA Labs 프로젝트의 개발 워크플로우, 브랜치 전략, 환경 설정에 대한 핵심 규칙
-alwaysApply: true
----
-
 # 개발 워크플로우
+
+> ⚠ AI / 코드 어시스턴트와 함께 작업할 때는, 항상 `@docs/specs/AI_SAFETY_PROTOCOLS.md`를 먼저 읽고 그 규칙을 준수한다. 특히 Docker, DB, 인프라 관련 변경은 해당 문서의 **절대 금지 사항**을 위반하지 않도록 한다.
+
 
 ## 1. 반복적 개발 및 테스트 사이클
 짧은 개발과 테스트를 반복하여 목표를 달성하는 방식으로 개발을 진행한다.
@@ -17,7 +15,6 @@ alwaysApply: true
 
 - **세션 시작 시**: `@docs/specs/qa-arena-spec.md` 문서를 확인하여 개발 사양의 전체 흐름을 파악한다.
 - **개발 시작 전**: `@docs/todo_actions/qa-arena-technical-todos.md` 파일을 반드시 먼저 확인한다.
-- **작업 순서**: `@docs/todo_actions/technical-todos-v*.md` 파일에서 `[x]`로 체크되지 않은 항목부터 시작한다.
 - **에러 처리 시**: `@docs/specs/ERROR_HANDLING.md` 문서를 참조하여 일관된 에러 처리 방식을 적용한다.
 - **배포 작업 시**: `@docs/specs/deployment.md` 문서의 절차를 따른다.
 - **운영/인시던트 대응 시**: `@docs/specs/operations.md` 문서를 참조한다.
@@ -38,7 +35,6 @@ alwaysApply: true
 ## 개발 환경
 - **로컬 개발 환경**: Windows
 - **프로덕션 배포 환경**: EC2 (Linux)
-- **EC2 없이 작업 가능한 항목**: `@docs/todo_actions/WORK_WITHOUT_EC2.md` 문서를 참조하여 EC2 환경이 준비되지 않은 경우에도 진행 가능한 작업을 우선 처리한다.
 
 ## 인코딩 처리
 - 한글 인코딩 이슈를 방지하기 위해 항상 주의한다.
@@ -72,29 +68,6 @@ alwaysApply: true
 - Docker Compose 명령어: `docker-compose` 또는 `docker compose`
 - 환경에 따라 다를 수 있음
 
-# 자주 사용하는 명령어 패턴
-
-## 제출 테스트
-```bash
-# 1. 테스트 코드 파일로 저장
-cat > /tmp/test_code.py << 'EOF'
-[테스트 코드]
-EOF
-
-# 2. JSON 파일 생성
-cat > /tmp/submission.json << 'EOF'
-{
-  "problem_id": 1,
-  "code": "[이스케이프된 코드]"
-}
-EOF
-
-# 3. 제출
-curl -X POST http://localhost:8001/api/v1/submissions \
-  -H "Content-Type: application/json" \
-  -d @/tmp/submission.json
-```
-
 ## 배포 후 확인
 ```bash
 # 컨테이너 상태
@@ -105,29 +78,6 @@ docker compose -f docker-compose.prod.yml logs -f celery_worker
 
 # 로그 확인 (최근 N줄)
 docker compose -f docker-compose.prod.yml logs celery_worker | tail -100
-```
-
-# 트러블슈팅 가이드
-
-## Docker 볼륨 마운트 문제
-**증상**: `ERROR: file or directory not found: test_user.py`
-
-**원인**: Docker-in-Docker 환경에서 볼륨 경로 불일치
-
-**해결**:
-1. 호스트에 공유 디렉토리 생성: `/tmp/qa_arena_judge`
-2. `docker-compose.yml`에 볼륨 추가
-3. 코드에서 임시 파일 생성 시 공유 경로 사용
-
-## Git 싱크 충돌
-**증상**: `error: Your local changes would be overwritten by merge`
-
-**원인**: 서버에서 파일 직접 수정
-
-**해결**:
-```bash
-git stash  # 변경사항 임시 저장
-git pull origin main  # 최신 코드 가져오기
 ```
 
 # Claude Code 통합

@@ -2,7 +2,6 @@
 # QA-Arena – AI-Assisted QA Coding Test Platform Spec
 
 > Version: 0.1 (Draft)  
-> Author: Julian (+ AI Copilot)  
 > Scope: MVP + AI 통합 구조 설계
 
 ---
@@ -42,6 +41,10 @@
   - Docker 기반 샌드박스 컨테이너 내에서 pytest 실행
   - Golden Code / Buggy Code 교체, 결과 로그 수집
 
+- **Worker Health Monitor**
+  - 별도 컨테이너에서 주기적으로 Celery Worker 상태 및 Health Check 엔드포인트를 점검
+  - 이상 징후(워커 미응답 등)를 로그로 남기고, 향후 알림 시스템 연계 가능
+
 - **AI Services**
   - `AI Problem Designer` (문제 자동 생성 보조)
   - `AI Feedback Engine` (채점 결과 → 자연어 피드백 변환)
@@ -51,7 +54,7 @@
   - (옵션) S3/Blob: 대형 코드 스니펫 / 로그 백업
 
 - **Infra**
-  - AWS EC2, Nginx, systemd
+  - AWS EC2, Docker Compose, Nginx
   - Redis: Celery broker + result backend
 
 ### 2.2. High-Level Request Flow

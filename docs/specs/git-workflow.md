@@ -78,12 +78,12 @@ git push origin main
 ## 5. 프로덕션 EC2 배포 루틴
 
 ```bash
-ssh ubuntu@<prod-ip>
+ssh -i ~/.ssh/my_proton_key.pem ubuntu@qa-arena.qalabs.kr
 cd ~/qa_labs
 git fetch origin
 git switch main
 git pull origin main
-docker-compose -f docker-compose.prod.yml --env-file .env up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 ```
 
 ---
@@ -133,4 +133,14 @@ docker-compose -f docker-compose.prod.yml --env-file .env up -d --build
 
 ---
 
-이 문서는 `docs/git-workflow.md` 또는 README에 포함하여 사용할 수 있습니다.
+## 10. AI / 코드 어시스턴트와 함께 사용할 때
+- 인프라 관련 파일은 **AI가 직접 덮어쓰지 않도록** 한다:
+  - `docker-compose.prod.yml`
+  - `nginx/qa_arena.conf`
+  - 프로덕션 `.env`
+- 위 파일들에 대한 변경은:
+  1. 변경 이유와 영향을 먼저 정리하고
+  2. PR 또는 직접 편집으로 사람이 검토/적용한다.
+- AI에게 Git / 배포 관련 작업을 시킬 때는 항상 다음을 선행한다:
+  - "이 작업이 `docs/specs/AI_SAFETY_PROTOCOLS.md`의 금지 사항에 해당하지 않는지 먼저 확인해줘."
+- 프로덕션에서 **볼륨 삭제 명령**(`docker compose down -v`, `docker volume rm`, `docker volume prune`)은 제안하거나 실행하지 않는다.
