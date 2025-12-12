@@ -2,7 +2,7 @@
 
 $KEY = 'C:\pem\my_proton_key.pem'
 $USER = 'ubuntu'
-$HOSTNAME = '15.164.221.173'
+$HOSTNAME = '3.38.179.33 '
 
 Write-Host "EC2 서비스 재시작 중..." -ForegroundColor Cyan
 

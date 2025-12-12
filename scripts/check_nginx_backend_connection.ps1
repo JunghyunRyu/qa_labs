@@ -2,7 +2,7 @@
 
 $KEY = 'C:\pem\my_proton_key.pem'
 $USER = 'ubuntu'
-$HOSTNAME = '15.164.221.173'
+$HOSTNAME = '3.38.179.33 '
 
 Write-Host "Nginx와 백엔드 연결 확인 중..." -ForegroundColor Cyan
 

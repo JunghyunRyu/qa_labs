@@ -2,7 +2,7 @@
 
 $KEY = 'C:\pem\my_proton_key.pem'
 $USER = 'ubuntu'
-$HOSTNAME = '15.164.221.173'
+$HOSTNAME = '3.38.179.33 '
 
 Write-Host "502 에러 진단 중..." -ForegroundColor Cyan
 
