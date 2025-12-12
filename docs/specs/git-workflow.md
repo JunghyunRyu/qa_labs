@@ -78,7 +78,7 @@ git push origin main
 ## 5. 프로덕션 EC2 배포 루틴
 
 ```bash
-ssh -i ~/.ssh/my_proton_key.pem ubuntu@qa-arena.qalabs.kr
+ssh -i C:\pem\my_proton_key.pem ubuntu@3.38.179.33
 cd ~/qa_labs
 git fetch origin
 git switch main

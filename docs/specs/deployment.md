@@ -17,7 +17,7 @@ Defines the official and quick deployment flows for the QA-Arena production envi
 
 ## 1. EC2 접속
 ```bash
-ssh -i ~/.ssh/my_proton_key.pem ubuntu@qa-arena.qalabs.kr
+ssh -i C:\pem\my_proton_key.pem ubuntu@3.38.179.33
 ```
 
 ## 2. 프로젝트 디렉터리로 이동
@@ -60,7 +60,7 @@ curl -I https://qa-arena.qalabs.kr -k
 > ⚠ DB 스키마/마이그레이션 변경이 없는, 순수 코드 변경 배포용이다.
 
 ```bash
-ssh -i ~/.ssh/my_proton_key.pem ubuntu@qa-arena.qalabs.kr \
+ssh -i C:\pem\my_proton_key.pem ubuntu@3.38.179.33 \
   "cd ~/qa_labs && \
    git switch main && git pull origin main && \
    docker compose -f docker-compose.prod.yml --env-file .env up -d --build && \
