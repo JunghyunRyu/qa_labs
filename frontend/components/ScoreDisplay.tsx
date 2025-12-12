@@ -72,7 +72,7 @@ export default function ScoreDisplay({
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-              <span className="text-gray-600">Mutant Kill: {score - 30}점</span>
+              <span className="text-gray-600">결함 검출: {score - 30}점</span>
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function ScoreDisplay({
           <div className="flex items-center gap-2 mb-3">
             <Target className="w-5 h-5 text-gray-600" />
             <h4 className="text-sm font-semibold text-gray-700">
-              Mutant Kill Ratio
+              결함 검출률
             </h4>
           </div>
           
@@ -123,11 +123,11 @@ export default function ScoreDisplay({
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-600">
-                  Kill된 Mutant: <span className="font-semibold text-gray-900">{killedMutants}</span>
+                  발견된 결함: <span className="font-semibold text-gray-900">{killedMutants}건</span>
                 </span>
               </div>
               <span className="text-gray-500">
-                전체: <span className="font-semibold">{totalMutants}</span>
+                전체: <span className="font-semibold">{totalMutants}건</span>
               </span>
             </div>
 

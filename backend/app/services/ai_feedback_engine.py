@@ -24,7 +24,7 @@ class FeedbackSchema(BaseModel):
 # Prompt 템플릿
 SYSTEM_PROMPT = """너는 시니어 QA 코치이다.
 
-아래는 한 수강생이 작성한 pytest 테스트 코드와, 그 테스트를 돌린 결과(점수, mutant kill ratio, pytest 로그)이다.
+아래는 한 수강생이 작성한 pytest 테스트 코드와, 그 테스트를 돌린 결과(점수, 결함 검출률, pytest 로그)이다.
 
 이 수강생에게 건설적이고 도움이 되는 피드백을 제공하라. 피드백은 다음 형식으로 제공해야 한다:
 
@@ -80,9 +80,9 @@ def build_user_prompt(
         
         mutants_log = execution_log.get("mutants", [])
         if mutants_log:
-            pytest_output += "Mutant 테스트 결과:\n"
+            pytest_output += "결함 코드 테스트 결과:\n"
             for i, mutant_log in enumerate(mutants_log[:3], 1):  # 처음 3개만 표시
-                pytest_output += f"Mutant {i}: {mutant_log.get('stdout', '')[:200]}...\n"
+                pytest_output += f"결함 {i}: {mutant_log.get('stdout', '')[:200]}...\n"
 
     return f"""[문제 정보]
 제목: {problem_title}
@@ -96,8 +96,8 @@ def build_user_prompt(
 
 [채점 결과]
 점수: {score}/100
-Killed Mutants: {killed_mutants}/{total_mutants}
-Kill Ratio: {kill_ratio:.2%}
+발견된 결함: {killed_mutants}건 / 전체: {total_mutants}건
+결함 검출률: {kill_ratio:.2%}
 
 [실행 로그]
 {pytest_output if pytest_output else "실행 로그 없음"}
