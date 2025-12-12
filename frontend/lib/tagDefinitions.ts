@@ -204,8 +204,8 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   },
 };
 
-// 난이도 값 (태그에서 제외)
-const DIFFICULTY_TAGS = ["Very Easy", "Easy", "Medium", "Hard"];
+// 난이도 값 (태그에서 제외) - 소문자로 비교
+const DIFFICULTY_TAGS = ["very easy", "easy", "medium", "hard"];
 
 /**
  * 태그 slug 배열을 TagViewModel 배열로 변환
@@ -215,7 +215,7 @@ const DIFFICULTY_TAGS = ["Very Easy", "Easy", "Medium", "Hard"];
  */
 export function toTagViewModels(slugs: string[]): TagViewModel[] {
   return slugs
-    .filter((slug) => !DIFFICULTY_TAGS.includes(slug))
+    .filter((slug) => !DIFFICULTY_TAGS.includes(slug.toLowerCase()))
     .map((slug) => {
       const def = TAG_DEFINITIONS[slug.toLowerCase()];
       if (def && !def.hidden) {

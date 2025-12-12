@@ -8,7 +8,6 @@ import { Code2, FileText } from "lucide-react";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
-import { toTagViewModels, sliceTags } from "@/lib/tagDefinitions";
 import { useSubmit } from "@/hooks/useSubmit";
 import type { Problem, Submission } from "@/types/problem";
 import Loading from "@/components/Loading";
@@ -22,6 +21,7 @@ import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
 import BookmarkButton from "@/components/BookmarkButton";
 import CopyButton from "@/components/CopyButton";
 import ProblemSidebar from "@/components/ProblemSidebar";
+import TagChips from "@/components/TagChips";
 import Link from "next/link";
 
 export default function ProblemDetailPage() {
@@ -352,28 +352,7 @@ from target import ${functionName}
           </div>
           
           {/* Tags */}
-          {(() => {
-            const tagModels = toTagViewModels(problem.skills || []);
-            const { visible, hiddenCount } = sliceTags(tagModels, 6);
-            if (visible.length === 0) return null;
-            return (
-              <div className="flex flex-wrap gap-2">
-                {visible.map((tag) => (
-                  <span
-                    key={tag.slug}
-                    className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600"
-                  >
-                    {tag.labelKo}
-                  </span>
-                ))}
-                {hiddenCount > 0 && (
-                  <span className="px-3 py-1 bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 rounded-md text-xs border border-gray-200 dark:border-gray-600">
-                    +{hiddenCount}
-                  </span>
-                )}
-              </div>
-            );
-          })()}
+          <TagChips tags={problem.skills || []} maxVisible={6} size="md" />
 
           {/* CTA Buttons */}
           <ProblemCTA
