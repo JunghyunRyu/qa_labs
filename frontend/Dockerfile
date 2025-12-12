@@ -5,7 +5,7 @@
     
     # 패키지 정보 먼저 복사 후 설치
     COPY package.json package-lock.json ./
-    RUN npm ci
+    RUN npm ci --legacy-peer-deps
     
     # 나머지 소스 복사
     COPY . .
