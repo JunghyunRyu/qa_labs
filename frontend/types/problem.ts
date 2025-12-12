@@ -29,6 +29,27 @@ export interface ProblemListResponse {
   total_pages: number;
 }
 
+export interface BookmarkedProblemItem {
+  id: number;
+  slug: string;
+  title: string;
+  difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
+  skills?: string[];
+  bookmarked_at: string;
+}
+
+export interface BookmarkedProblemListResponse {
+  problems: BookmarkedProblemItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface BookmarkStatusResponse {
+  is_bookmarked: boolean;
+}
+
 export interface SubmissionProgress {
   step: "initializing" | "testing_golden" | "testing_buggy" | "generating_feedback";
   message: string;

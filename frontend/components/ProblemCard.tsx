@@ -1,8 +1,11 @@
 /** Problem card component */
 
+"use client";
+
 import Link from "next/link";
 import type { ProblemListItem } from "@/types/problem";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import BookmarkButton from "./BookmarkButton";
 
 interface ProblemCardProps {
   problem: ProblemListItem;
@@ -89,13 +92,16 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
           <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 dark:text-gray-100 flex-1 pr-2 line-clamp-2 leading-snug">
             {displayTitle}
           </h3>
-          <span
-            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border-2 shrink-0 whitespace-nowrap flex items-center gap-1.5 ${difficulty.colors} shadow-sm`}
-            aria-label={`난이도: ${difficulty.label}`}
-          >
-            {difficulty.icon}
-            <span>{difficulty.label}</span>
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <BookmarkButton problemId={problem.id} size="sm" />
+            <span
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border-2 whitespace-nowrap flex items-center gap-1.5 ${difficulty.colors} shadow-sm`}
+              aria-label={`난이도: ${difficulty.label}`}
+            >
+              {difficulty.icon}
+              <span>{difficulty.label}</span>
+            </span>
+          </div>
         </div>
 
         {/* 문제 설명 미리보기 */}

@@ -10,12 +10,14 @@ import ProblemCard from "@/components/ProblemCard";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import Link from "next/link";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, Bookmark } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 type DifficultyFilter = "All" | "Very Easy" | "Easy" | "Medium" | "Hard";
 type SortOption = "newest" | "oldest" | "difficulty-asc" | "difficulty-desc";
 
 export default function ProblemsPage() {
+  const { isAuthenticated } = useAuth();
   const [data, setData] = useState<ProblemListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -151,15 +153,28 @@ export default function ProblemsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">문제 목록</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          총 {data.total}개의 문제가 있습니다.
-          {hasActiveFilters && (
-            <span className="ml-2 text-blue-600 dark:text-blue-400">
-              (필터링 결과: {filteredAndSortedProblems.length}개)
-            </span>
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">문제 목록</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              총 {data.total}개의 문제가 있습니다.
+              {hasActiveFilters && (
+                <span className="ml-2 text-blue-600 dark:text-blue-400">
+                  (필터링 결과: {filteredAndSortedProblems.length}개)
+                </span>
+              )}
+            </p>
+          </div>
+          {isAuthenticated && (
+            <Link
+              href="/problems/bookmarked"
+              className="flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/60 transition-colors text-sm font-medium"
+            >
+              <Bookmark className="w-4 h-4" />
+              북마크한 문제
+            </Link>
           )}
-        </p>
+        </div>
       </div>
 
       {/* 검색 및 필터 섹션 */}

@@ -4,8 +4,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import { Code2, FileText, ChevronDown } from "lucide-react";
+import { Code2, FileText } from "lucide-react";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
@@ -16,6 +15,10 @@ import Error from "@/components/Error";
 import CodeEditor from "@/components/CodeEditor";
 import SubmissionResultPanel from "@/components/SubmissionResultPanel";
 import ProblemDescription from "@/components/ProblemDescription";
+import Breadcrumb from "@/components/Breadcrumb";
+import ProblemCTA from "@/components/ProblemCTA";
+import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
+import BookmarkButton from "@/components/BookmarkButton";
 import Link from "next/link";
 
 export default function ProblemDetailPage() {
@@ -28,6 +31,9 @@ export default function ProblemDetailPage() {
   const [code, setCode] = useState("");
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [isScoringDrawerOpen, setIsScoringDrawerOpen] = useState(false);
+  const [isEditorVisible, setIsEditorVisible] = useState(false);
+  const editorSectionRef = useRef<HTMLDivElement | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
@@ -212,8 +218,30 @@ from target import ${functionName}
     }
   );
 
+  // IntersectionObserver로 에디터 영역 가시성 감지
+  useEffect(() => {
+    const editorSection = editorSectionRef.current;
+    if (!editorSection) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsEditorVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.1, // 10% 이상 보이면 visible
+        rootMargin: "-100px 0px 0px 0px", // 헤더 높이 고려
+      }
+    );
+
+    observer.observe(editorSection);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [problem]); // problem 로드 후 observer 설정
+
   const scrollToEditor = () => {
-    const editorElement = document.getElementById("code-editor");
+    const editorElement = editorSectionRef.current;
     if (editorElement) {
       editorElement.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -278,14 +306,13 @@ from target import ${functionName}
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <Link
-          href="/problems"
-          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-4 inline-block"
-        >
-          ← 문제 목록으로 돌아가기
-        </Link>
-      </div>
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "문제 목록", href: "/problems" },
+          { label: problem.title || `문제 #${problem.id}` },
+        ]}
+      />
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-colors">
         {/* Header with Title */}
@@ -305,14 +332,17 @@ from target import ${functionName}
                 )}
               </div>
             </div>
-            <span
-              className={`px-4 py-2 rounded-lg text-sm font-bold border-2 shrink-0 flex items-center gap-2 shadow-sm ${
-                difficulty.colors
-              }`}
-            >
-              <span className="text-base">{difficulty.icon}</span>
-              <span>{difficulty.label}</span>
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <BookmarkButton problemId={problem.id} size="md" showLabel />
+              <span
+                className={`px-4 py-2 rounded-lg text-sm font-bold border-2 flex items-center gap-2 shadow-sm ${
+                  difficulty.colors
+                }`}
+              >
+                <span className="text-base">{difficulty.icon}</span>
+                <span>{difficulty.label}</span>
+              </span>
+            </div>
           </div>
           
           {/* Tags */}
@@ -328,6 +358,16 @@ from target import ${functionName}
               ))}
             </div>
           )}
+
+          {/* CTA Buttons */}
+          <ProblemCTA
+            onScrollToEditor={scrollToEditor}
+            onOpenScoring={() => setIsScoringDrawerOpen(true)}
+            isEditorVisible={isEditorVisible}
+            onSubmit={handleSubmit}
+            isSubmitting={submitting}
+            canSubmit={!!code.trim()}
+          />
         </div>
 
         {/* Function Signature */}
@@ -345,19 +385,10 @@ from target import ${functionName}
 
         {/* Description */}
         <div className="mb-6">
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4" />
-              문제 설명
-            </h2>
-            <button
-              onClick={scrollToEditor}
-              className="mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-            >
-              <ChevronDown className="w-4 h-4" />
-              테스트 코드 작성하러 내려가기
-            </button>
-          </div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4">
+            <FileText className="w-4 h-4" />
+            문제 설명
+          </h2>
           <ProblemDescription description_md={problem.description_md} />
         </div>
 
@@ -375,7 +406,11 @@ from target import ${functionName}
       </div>
 
       {/* Code Editor and Submission */}
-      <div id="code-editor" className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-colors">
+      <div
+        ref={editorSectionRef}
+        id="code-editor"
+        className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-colors"
+      >
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
           테스트 코드 작성
         </h2>
@@ -392,7 +427,7 @@ from target import ${functionName}
         <button
           onClick={handleSubmit}
           disabled={submitting || !code.trim()}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2 select-none"
+          className="px-6 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2 select-none"
         >
           {submitting && (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -407,6 +442,12 @@ from target import ${functionName}
         isSubmitting={submitting}
         submissionError={submissionError}
         onRetry={handleSubmit}
+      />
+
+      {/* Scoring Method Drawer */}
+      <ScoringMethodDrawer
+        isOpen={isScoringDrawerOpen}
+        onClose={() => setIsScoringDrawerOpen(false)}
       />
     </div>
   );
