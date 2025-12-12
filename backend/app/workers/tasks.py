@@ -6,10 +6,14 @@ import logging
 from sqlalchemy.orm import Session
 
 from app.core.celery_app import celery_app
+from app.core.sentry import init_sentry, capture_exception_with_context
 from app.models.db import SessionLocal
 from app.services.submission_service import SubmissionService
 
 logger = logging.getLogger(__name__)
+
+# Celery Worker에서도 Sentry 초기화
+init_sentry()
 
 
 @celery_app.task(
@@ -37,6 +41,25 @@ def process_submission_task(self, submission_id: str) -> None:
         service.process_submission(submission_uuid)
         logger.info(f"Successfully processed submission: {submission_uuid}")
     except Exception as e:
+        # Sentry에 에러 보고 (컨텍스트 포함)
+        capture_exception_with_context(
+            e,
+            context={
+                "celery_task": {
+                    "task_id": self.request.id,
+                    "task_name": self.name,
+                    "submission_id": str(submission_uuid),
+                    "retries": self.request.retries,
+                    "max_retries": self.max_retries,
+                }
+            },
+            tags={
+                "task_name": "process_submission_task",
+                "submission_id": str(submission_uuid),
+                "retry_count": str(self.request.retries),
+            }
+        )
+
         logger.error(
             f"Error in Celery task for submission {submission_uuid}: {e}",
             exc_info=True,
@@ -73,4 +96,3 @@ def process_submission_task(self, submission_id: str) -> None:
                 )
     finally:
         db.close()
-

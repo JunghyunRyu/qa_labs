@@ -1,6 +1,7 @@
 """QA-Arena FastAPI application."""
 
 import logging
+import uuid
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,11 +11,15 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import settings
 from app.core.logging import setup_logging
+from app.core.sentry import init_sentry, capture_exception_with_context
 from app.api import problems, submissions, admin, health
 
 # 로깅 설정
 setup_logging()
 logger = logging.getLogger(__name__)
+
+# Sentry 초기화 (로깅 설정 후)
+init_sentry()
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -29,7 +34,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     logger.warning(
         f"HTTP {exc.status_code} error: {exc.detail} - Path: {request.url.path}"
     )
-    
+
     # 에러 타입 결정
     error_type = "http_error"
     if exc.status_code == 404:
@@ -40,7 +45,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         error_type = "unauthorized"
     elif exc.status_code == 403:
         error_type = "forbidden"
-    
+
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -68,36 +73,53 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """일반 예외 핸들러."""
-    # 프로덕션에서는 상세한 에러 정보를 로그에만 기록
-    error_id = None
+    # 에러 ID 생성
+    error_id = str(uuid.uuid4())[:8]
+
+    # Sentry에 에러 보고
+    sentry_event_id = capture_exception_with_context(
+        exc,
+        context={
+            "request": {
+                "method": request.method,
+                "url": str(request.url),
+                "path": request.url.path,
+                "error_id": error_id,
+            }
+        },
+        tags={
+            "error_type": "unhandled_exception",
+            "endpoint": request.url.path,
+        }
+    )
+
+    # 로깅
     if not settings.DEBUG:
-        import uuid
-        error_id = str(uuid.uuid4())[:8]
         logger.error(
-            f"Unhandled exception [ID: {error_id}]: {type(exc).__name__}: {str(exc)} - "
-            f"Path: {request.url.path}",
+            f"Unhandled exception [ID: {error_id}] [Sentry: {sentry_event_id}]: "
+            f"{type(exc).__name__}: {str(exc)} - Path: {request.url.path}",
             exc_info=True,
         )
     else:
-        # DEBUG 모드에서는 상세 정보 로깅
         logger.error(
             f"Unhandled exception: {type(exc).__name__}: {str(exc)} - "
             f"Path: {request.url.path}",
             exc_info=True,
         )
-    
+
     # 프로덕션에서는 일반적인 메시지만 반환
     detail_message = "Internal server error. Please try again later."
     if settings.DEBUG:
         detail_message = f"{type(exc).__name__}: {str(exc)}"
-    elif error_id:
+    else:
         detail_message = f"Internal server error (Error ID: {error_id}). Please try again later."
-    
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "detail": detail_message,
             "type": "internal_server_error",
+            "error_id": error_id,
         },
     )
 
@@ -110,7 +132,7 @@ async def log_requests(request: Request, call_next):
 
     start_time = time.time()
     logger.info(f"Request: {request.method} {request.url.path}")
-    
+
     try:
         response = await call_next(request)
         process_time = time.time() - start_time

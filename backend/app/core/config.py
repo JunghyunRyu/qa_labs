@@ -61,6 +61,12 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"  # development, staging, production
 
+    # Sentry Error Tracking
+    SENTRY_DSN: Optional[str] = None
+    SENTRY_ENABLED: bool = False
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 성능 추적 샘플링 비율 (10%)
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 프로파일 샘플링 비율 (10%)
+
     class Config:
         env_file = ".env"
         case_sensitive = True
