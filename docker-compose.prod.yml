@@ -46,6 +46,17 @@ services:
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini-2025-08-07}
       DEBUG: ${DEBUG:-False}
       CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+      # GitHub OAuth
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-https://qa-arena.qalabs.kr/api/v1/auth/github/callback}
+      # JWT Settings
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      # Cookie Settings
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-lax}
     depends_on:
       postgres:
         condition: service_healthy
