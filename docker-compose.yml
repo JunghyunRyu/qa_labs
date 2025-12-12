@@ -86,6 +86,8 @@ services:
       # 대신 호스트의 Docker 데몬에 TCP로 연결하거나 다른 방법 사용 필요
       # Linux 환경에서는 정상 작동
       - /var/run/docker.sock:/var/run/docker.sock
+      # Docker-in-Docker용 임시 파일 공유 디렉토리
+      - /tmp/qa_arena_judge:/tmp/qa_arena_judge
     command: celery -A app.core.celery_app worker --loglevel=info
 
   worker_monitor:
