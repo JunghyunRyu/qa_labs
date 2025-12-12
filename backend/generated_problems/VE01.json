@@ -1,40 +1,40 @@
 {
-  "title": "두 정수 덧셈 add 함수 테스트",
-  "function_signature": "def add(a: int, b: int) -> int:",
-  "golden_code": "def add(a: int, b: int) -> int:\n    \"\"\"Return the sum of two integer-like numbers a and b.\n\n    This helper is used in a simple billing system where counts, item quantities,\n    or credits need to be added together.\n\n    Both positive and negative values are allowed, and 0 should behave as the\n    neutral element (adding 0 does not change the other value).\n\n    Parameters\n    ----------\n    a: int\n        First value.\n    b: int\n        Second value.\n\n    Returns\n    -------\n    int\n        The arithmetic sum a + b.\n    \"\"\"\n    return a + b\n",
+  "title": "결제 금액 합산 add 함수 테스트",
+  "function_signature": "def add(amount_a: int, amount_b: int) -> int:",
+  "golden_code": "def add(amount_a: int, amount_b: int) -> int:\n    \"\"\"Return the arithmetic sum of two integer amounts.\n\n    This helper is used to aggregate signed integer adjustments in a billing system\n    (e.g., base charge + discount, or refund adjustments). Negative values are valid\n    and must be added normally.\n\n    Args:\n        amount_a: First signed integer amount.\n        amount_b: Second signed integer amount.\n\n    Returns:\n        The arithmetic sum (amount_a + amount_b).\n\n    Notes:\n        - Negative values are allowed.\n        - Zero should behave normally.\n        - This function is intentionally simple and should be deterministic.\n    \"\"\"\n    return amount_a + amount_b\n",
   "buggy_implementations": [
     {
-      "bug_description": "덧셈 대신 뺄셈을 사용하여, 예를 들어 add(5, 3) 호출 시 8이 아닌 2를 반환함.",
-      "buggy_code": "def add(a: int, b: int) -> int:\n    \"\"\"Return the sum of two integer-like numbers a and b.\n\n    BUG: Uses subtraction instead of addition.\n    \"\"\"\n    return a - b\n",
-      "weight": 3
+      "bug_description": "음수가 포함되면 절댓값으로 바꿔 더해버림(예: -3 + 1을 4로 계산). 양수만 테스트하면 통과할 수 있어 positive/negative 값 파티션 테스트가 필요함.",
+      "buggy_code": "def add(amount_a: int, amount_b: int) -> int:\n    \"\"\"Buggy: sums absolute values instead of signed integers when negatives appear.\"\"\"\n    if amount_a < 0 or amount_b < 0:\n        return abs(amount_a) + abs(amount_b)\n    return amount_a + amount_b\n",
+      "weight": 5
     },
     {
-      "bug_description": "abs(a) + abs(b)를 반환하여 음수(할인/취소 금액 등)를 양수로 잘못 처리함. 예: add(-2, 5)에서 3이 아닌 7을 반환.",
-      "buggy_code": "def add(a: int, b: int) -> int:\n    \"\"\"Return the sum of two integer-like numbers a and b.\n\n    BUG: Converts both inputs to absolute values, so negative counts are not handled correctly.\n    \"\"\"\n    return abs(a) + abs(b)\n",
-      "weight": 3
-    },
-    {
-      "bug_description": "입력 중 하나가 0이면 항상 0을 반환하여, add(0, 7)에서 7이 아닌 0을 반환하는 등 0의 중립 원소 성질을 깨뜨림.",
-      "buggy_code": "def add(a: int, b: int) -> int:\n    \"\"\"Return the sum of two integer-like numbers a and b.\n\n    BUG: Returns 0 whenever one of the inputs is 0.\n    \"\"\"\n    if a == 0 or b == 0:\n        return 0\n    return a + b\n",
-      "weight": 2
-    },
-    {
-      "bug_description": "두 번째 인자 b를 무시하고 a를 두 번 더함. 예: add(2, 5)에서 7이 아닌 4를 반환하며, a == b인 경우(add(3,3))에는 우연히 올바르게 동작함.",
-      "buggy_code": "def add(a: int, b: int) -> int:\n    \"\"\"Return the sum of two integer-like numbers a and b.\n\n    BUG: Ignores the second argument and doubles the first.\n    \"\"\"\n    return a + a\n",
+      "bug_description": "두 값의 부호가 다르면 뺄셈으로 처리함(예: 10 + (-3)을 7이 아니라 13으로 계산). 양수/음수 조합(positive+negative) 테스트로 잡을 수 있음.",
+      "buggy_code": "def add(amount_a: int, amount_b: int) -> int:\n    \"\"\"Buggy: handles mixed-sign inputs as subtraction in the wrong direction.\"\"\"\n    if (amount_a >= 0 > amount_b) or (amount_b >= 0 > amount_a):\n        return amount_a - amount_b\n    return amount_a + amount_b\n",
       "weight": 4
+    },
+    {
+      "bug_description": "음수+음수는 0으로 잘못 고정 반환함(예: -2 + -5 -> 0). 음수 영역 테스트(negative partition)와 기본적인 assert로 탐지 가능.",
+      "buggy_code": "def add(amount_a: int, amount_b: int) -> int:\n    \"\"\"Buggy: returns 0 for two negative inputs.\"\"\"\n    if amount_a < 0 and amount_b < 0:\n        return 0\n    return amount_a + amount_b\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "한쪽이 0이면 다른 값을 반환하지 않고 0을 반환함(예: 0 + 5 -> 0). 기본 테스트(0 처리)로 쉽게 탐지 가능.",
+      "buggy_code": "def add(amount_a: int, amount_b: int) -> int:\n    \"\"\"Buggy: incorrectly treats any zero operand as making the result zero.\"\"\"\n    if amount_a == 0 or amount_b == 0:\n        return 0\n    return amount_a + amount_b\n",
+      "weight": 2
     }
   ],
-  "description_md": "## 문제 설명\n\n간단한 포인트/크레딧 정산 서비스에서, 두 개의 정수 값을 더해 총합을 계산하는 `add` 헬퍼 함수를 사용합니다. 예를 들어, 기존에 보유한 포인트에 이번 결제에서 적립된 포인트를 더하거나, 취소(-값)가 포함된 합계를 구할 때 사용됩니다.\n\n이 함수는 두 개의 정수 `a`, `b`를 입력으로 받아, 이 둘의 합을 정수로 반환해야 합니다. 양수, 음수, 0 모두 올바르게 처리되어야 하며, 0은 덧셈의 중립 원소로 동작해야 합니다.\n\n### 함수 시그니처\n\n- `def add(a: int, b: int) -> int:`\n\n### 기대 동작 예시\n\n- `add(3, 5) -> 8`\n- `add(-2, 5) -> 3`\n- `add(0, 7) -> 7`\n\n### 테스트에서 고려해야 할 사항\n\n이 문제는 **기초적인 단위 테스트 작성 연습**을 위한 것입니다. 구현은 단순하지만, 의도적으로 다양한 초보자 실수가 섞인 버전들이 준비되어 있습니다. pytest 기반의 테스트 코드를 작성해 다음과 같은 상황들을 꼭 다뤄 보세요.\n\n- 기본적인 양수 덧셈이 제대로 되는지\n- 음수가 포함된 경우에도 합이 올바른지 (예: 할인, 취소 금액 등)\n- 0이 포함된 경우 (예: `add(0, x)`, `add(x, 0)`)가 정확한지\n- 두 인자가 서로 다른 값일 때도 올바르게 계산되는지 (한 인자만 사용하는 실수를 잡기 위함)\n\n여기서 다루는 핵심 역량은 다음과 같습니다.\n\n- `pytest`를 사용한 **기본 단위 테스트 작성 능력**\n- 간단한 **산술 연산(덧셈)에 대한 이해와 검증**\n\n### 수험자에게 주어진 과제\n\n제공된 `add` 함수를 대상으로, `pytest`를 사용해 다음을 목표로 하는 테스트 코드를 작성하세요.\n\n1. 정상 동작(양수, 음수, 0 조합)을 충분히 검증하는 테스트\n2. 다양한 입력 조합을 통해, 준비된 여러 버그 구현들을 최대한 많이 탐지하는 테스트\n\n실제 채점 환경에서는 여러 \"버그 버전\"의 `add` 함수가 여러분의 테스트를 통과할 수 있는지 검사합니다. 가능한 한 많은 잘못된 구현을 걸러낼 수 있도록, 간단하지만 꼼꼼한 테스트 케이스를 설계해 보세요.",
-  "initial_test_template": "import pytest\nfrom target import add\n\n\ndef test_add_positive_numbers():\n    # TODO: 기본 양수 덧셈이 올바른지 여러 조합으로 테스트하세요.\n    # 예: 대칭/비대칭 값 (a != b)을 모두 포함하도록 케이스를 만들면 좋습니다.\n    pass\n\n\ndef test_add_with_negative_numbers():\n    # TODO: 음수가 포함된 경우(한쪽 또는 양쪽이 음수인 경우)에 합이 올바른지 테스트하세요.\n    # 절댓값으로 처리해버리는 잘못된 구현을 잡을 수 있는지 생각해 보세요.\n    pass\n\n\ndef test_add_with_zero():\n    # TODO: 0이 포함된 경우(add(0, x), add(x, 0))에도 결과가 기대대로 나오는지 테스트하세요.\n    # 0을 항상 반환하거나, 중립 원소로 취급하지 않는 버그를 잡을 수 있어야 합니다.\n    pass\n",
+  "description_md": "## 문제 설명\n\n결제/정산 시스템에서는 여러 금액 조정값을 합산하는 작은 유틸리티 함수가 자주 사용됩니다. 예를 들어, **기본 결제 금액 + 할인(음수) + 추가 과금(양수)** 같은 값들을 합쳐 최종 금액을 계산해야 합니다.\n\n이 문제에서는 두 정수 금액을 더하는 `add` 함수가 주어집니다. 구현에는 의도적인 버그가 숨어 있을 수 있으므로, 수험자는 `pytest`로 테스트를 작성해 최대한 많은 버그를 찾아내야 합니다.\n\n### 함수 역할\n- 함수명: `add`\n- 입력:\n  - `amount_a: int` 첫 번째 정수 금액(음수 가능)\n  - `amount_b: int` 두 번째 정수 금액(음수 가능)\n- 출력:\n  - `int`: 두 값의 산술 덧셈 결과\n\n### 정상 동작 예시\n- `add(10, 5) -> 15`\n- `add(10, -3) -> 7`\n\n### 테스트 힌트(아이디어)\n- **양수 + 양수**, **음수 + 음수**, **양수 + 음수** 조합을 각각 테스트해 보세요. (값의 부호에 따른 파티션)\n- `0`이 포함되는 케이스도 고려해 보세요.\n- 테스트는 단순한 assert 기반으로도 충분하지만, 케이스를 늘리기 위해 `pytest.mark.parametrize`를 사용해도 좋습니다.\n\n### 수험자가 해야 할 일\n- `pytest` 기반 테스트 코드를 작성하여, 주어진 `add` 함수 구현들 중 버그가 있는 구현을 최대한 많이 실패(fail)시키세요.\n- 올바른 구현(golden behavior)은 통과(pass)해야 합니다.\n",
+  "initial_test_template": "import pytest\nfrom target import add\n\n\ndef test_add_positive_values():\n    # TODO (basic testing): 양수 + 양수 기본 덧셈 케이스를 여러 개 확인하세요.\n    # 예: 작은 수, 큰 수 등\n    pass\n\n\ndef test_add_negative_values():\n    # TODO (positive/negative values): 음수 + 음수 케이스를 확인하세요.\n    # 예: -1 + -1, -10 + -3 등\n    pass\n\n\ndef test_add_mixed_sign_values():\n    # TODO (positive/negative values): 양수 + 음수(또는 음수 + 양수) 조합을 확인하세요.\n    # 예: 10 + (-3), (-3) + 10, 1 + (-1) 등\n    pass\n\n\ndef test_add_with_zero():\n    # TODO (basic testing): 0이 포함될 때도 정상적으로 더해지는지 확인하세요.\n    # 예: 0 + 5, 5 + 0, 0 + (-5)\n    pass\n",
   "tags": [
     "very easy",
-    "basic testing",
-    "simple arithmetic",
     "unit-test",
-    "math",
-    "python",
-    "pytest"
+    "pytest",
+    "basic testing",
+    "positive/negative values",
+    "integer",
+    "billing"
   ],
   "difficulty": "Very Easy",
-  "strong_test_code": "import pytest\nfrom target import add\n\n\ndef test_add_positive_numbers():\n    # 기본 양수 덧셈 - 비대칭 값으로 a+a 버그 잡기\n    assert add(3, 5) == 8\n    assert add(1, 7) == 8\n    assert add(10, 3) == 13\n\n\ndef test_add_with_negative_numbers():\n    # 음수 포함 - abs() 버그 잡기\n    assert add(-2, 5) == 3\n    assert add(5, -3) == 2\n    assert add(-3, -4) == -7\n\n\ndef test_add_with_zero():\n    # 0 포함 - 0 반환 버그 잡기\n    assert add(0, 7) == 7\n    assert add(5, 0) == 5\n    assert add(0, 0) == 0\n\n\ndef test_add_subtraction_bug():\n    # a - b != a + b인 케이스로 뺄셈 버그 잡기\n    assert add(5, 3) == 8  # 뺄셈이면 2가 됨\n    assert add(10, 2) == 12  # 뺄셈이면 8이 됨\n"
+  "problem_id": "VE01"
 }
