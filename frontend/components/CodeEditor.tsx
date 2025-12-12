@@ -2,8 +2,10 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
-import Editor from "@monaco-editor/react";
+import { useRef } from "react";
+import Editor, { Monaco } from "@monaco-editor/react";
+import { useTheme } from "next-themes";
+import { registerPythonCompletions } from "@/lib/monacoConfig";
 
 interface CodeEditorProps {
   value: string;
@@ -13,6 +15,9 @@ interface CodeEditorProps {
   language?: string;
 }
 
+// Track if completions have been registered
+let completionsRegistered = false;
+
 export default function CodeEditor({
   value,
   onChange,
@@ -21,10 +26,19 @@ export default function CodeEditor({
   language = "python",
 }: CodeEditorProps) {
   const editorRef = useRef<any>(null);
+  const { resolvedTheme } = useTheme();
+
+  const handleEditorWillMount = (monaco: Monaco) => {
+    // Register Python completions only once
+    if (!completionsRegistered && language === "python") {
+      registerPythonCompletions(monaco);
+      completionsRegistered = true;
+    }
+  };
 
   const handleEditorDidMount = (editor: any) => {
     editorRef.current = editor;
-    // Python 언어 설정
+    // Python language settings
     if (language === "python") {
       editor.updateOptions({
         minimap: { enabled: false },
@@ -36,15 +50,19 @@ export default function CodeEditor({
     }
   };
 
+  // Determine Monaco theme based on resolved theme
+  const monacoTheme = resolvedTheme === "dark" ? "vs-dark" : "vs-light";
+
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden">
+    <div className="border border-[var(--card-border)] rounded-lg overflow-hidden transition-colors">
       <Editor
         height={height}
         language={language}
         value={value}
         onChange={onChange}
+        beforeMount={handleEditorWillMount}
         onMount={handleEditorDidMount}
-        theme="vs-light"
+        theme={monacoTheme}
         options={{
           readOnly,
           minimap: { enabled: false },
@@ -55,6 +73,10 @@ export default function CodeEditor({
           wordWrap: "on",
           tabSize: 4,
           insertSpaces: true,
+          quickSuggestions: true,
+          suggestOnTriggerCharacters: true,
+          acceptSuggestionOnEnter: "on",
+          snippetSuggestions: "top",
         }}
       />
     </div>

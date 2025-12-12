@@ -151,11 +151,11 @@ export default function ProblemsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">문제 목록</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">문제 목록</h1>
+        <p className="text-gray-600 dark:text-gray-400">
           총 {data.total}개의 문제가 있습니다.
           {hasActiveFilters && (
-            <span className="ml-2 text-blue-600">
+            <span className="ml-2 text-blue-600 dark:text-blue-400">
               (필터링 결과: {filteredAndSortedProblems.length}개)
             </span>
           )}
@@ -163,16 +163,16 @@ export default function ProblemsPage() {
       </div>
 
       {/* 검색 및 필터 섹션 */}
-      <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-6 transition-colors">
         {/* 검색바 */}
         <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
           <input
             type="text"
             placeholder="문제 제목, 슬러그, 태그로 검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm md:text-base"
             aria-label="문제 검색"
           />
         </div>
@@ -181,7 +181,7 @@ export default function ProblemsPage() {
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-sm md:text-base"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm md:text-base"
             aria-expanded={showFilters}
             aria-label="필터 표시/숨기기"
             aria-controls="filter-panel"
@@ -198,7 +198,7 @@ export default function ProblemsPage() {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
               aria-label="필터 초기화"
             >
               <X className="w-4 h-4" />
@@ -210,10 +210,10 @@ export default function ProblemsPage() {
 
         {/* 필터 패널 */}
         {showFilters && (
-          <div id="filter-panel" className="border-t border-gray-200 pt-4 space-y-4">
+          <div id="filter-panel" className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
             {/* 난이도 필터 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 난이도
               </label>
               <div className="flex flex-wrap gap-2">
@@ -224,7 +224,7 @@ export default function ProblemsPage() {
                     className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
                       difficultyFilter === diff
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                     }`}
                     aria-pressed={difficultyFilter === diff}
                   >
@@ -237,7 +237,7 @@ export default function ProblemsPage() {
             {/* 태그 필터 */}
             {availableTags.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   태그
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -248,7 +248,7 @@ export default function ProblemsPage() {
                       className={`px-2 md:px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                         selectedTags.includes(tag)
                           ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                       }`}
                       aria-pressed={selectedTags.includes(tag)}
                     >
@@ -261,13 +261,13 @@ export default function ProblemsPage() {
 
             {/* 정렬 옵션 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 정렬
               </label>
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
+                className="w-full md:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm md:text-base"
                 aria-label="정렬 옵션"
               >
                 <option value="newest">최신순</option>
@@ -281,8 +281,8 @@ export default function ProblemsPage() {
       </div>
 
       {filteredAndSortedProblems.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-600">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center transition-colors">
+          <p className="text-gray-600 dark:text-gray-400">
             {hasActiveFilters
               ? "필터 조건에 맞는 문제가 없습니다."
               : "등록된 문제가 없습니다."}
@@ -310,18 +310,18 @@ export default function ProblemsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 md:px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="px-3 md:px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 aria-label="이전 페이지"
               >
                 이전
               </button>
-              <span className="px-3 md:px-4 py-2 text-gray-700 text-sm md:text-base" aria-current="page">
+              <span className="px-3 md:px-4 py-2 text-gray-700 dark:text-gray-300 text-sm md:text-base" aria-current="page">
                 {page} / {data.total_pages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))}
                 disabled={page === data.total_pages}
-                className="px-3 md:px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="px-3 md:px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 aria-label="다음 페이지"
               >
                 다음
@@ -334,7 +334,7 @@ export default function ProblemsPage() {
       <div className="mt-8">
         <Link
           href="/"
-          className="text-blue-600 hover:text-blue-800 transition-colors"
+          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
         >
           ← 홈으로 돌아가기
         </Link>

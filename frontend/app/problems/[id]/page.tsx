@@ -234,7 +234,7 @@ from target import ${functionName}
         <div className="mt-4">
           <Link
             href="/problems"
-            className="text-blue-600 hover:text-blue-800 transition-colors"
+            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
           >
             ← 문제 목록으로 돌아가기
           </Link>
@@ -249,25 +249,25 @@ from target import ${functionName}
 
   const difficultyConfig = {
     "Very Easy": {
-      colors: "bg-blue-100 text-blue-800 border-blue-300",
+      colors: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700",
       icon: "📉",
       label: "아주쉬움",
       gradient: "from-blue-50 to-cyan-50",
     },
     Easy: {
-      colors: "bg-green-100 text-green-800 border-green-300",
+      colors: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700",
       icon: "📉",
       label: "쉬움",
       gradient: "from-green-50 to-emerald-50",
     },
     Medium: {
-      colors: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      colors: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700",
       icon: "➖",
       label: "보통",
       gradient: "from-yellow-50 to-amber-50",
     },
     Hard: {
-      colors: "bg-red-100 text-red-800 border-red-300",
+      colors: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700",
       icon: "📈",
       label: "어려움",
       gradient: "from-red-50 to-rose-50",
@@ -281,25 +281,25 @@ from target import ${functionName}
       <div className="mb-6">
         <Link
           href="/problems"
-          className="text-blue-600 hover:text-blue-800 transition-colors mb-4 inline-block"
+          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-4 inline-block"
         >
           ← 문제 목록으로 돌아가기
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-colors">
         {/* Header with Title */}
-        <div className="border-b border-gray-200 pb-6 mb-6">
+        <div className="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold text-gray-900 mb-3">
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                 {problem.title || `문제 #${problem.id}`}
               </h1>
-              <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                 <span>ID: {problem.id}</span>
                 {problem.slug && (
                   <>
-                    <span className="text-gray-300">•</span>
+                    <span className="text-gray-300 dark:text-gray-600">•</span>
                     <span className="font-mono text-xs">{problem.slug}</span>
                   </>
                 )}
@@ -321,7 +321,7 @@ from target import ${functionName}
               {problem.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="px-3 py-1 bg-gray-50 text-gray-700 rounded-md text-xs border border-gray-200"
+                  className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600"
                 >
                   {skill}
                 </span>
@@ -332,12 +332,12 @@ from target import ${functionName}
 
         {/* Function Signature */}
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-4">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4">
             <Code2 className="w-4 h-4" />
             함수 시그니처
           </h2>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <code className="text-gray-800 font-mono text-sm">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <code className="text-gray-800 dark:text-gray-200 font-mono text-sm">
               {problem.function_signature}
             </code>
           </div>
@@ -346,13 +346,13 @@ from target import ${functionName}
         {/* Description */}
         <div className="mb-6">
           <div className="mb-4">
-            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
               <FileText className="w-4 h-4" />
               문제 설명
             </h2>
             <button
               onClick={scrollToEditor}
-              className="mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+              className="mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
             >
               <ChevronDown className="w-4 h-4" />
               테스트 코드 작성하러 내려가기
@@ -363,11 +363,11 @@ from target import ${functionName}
 
         {/* Golden Code (for reference, hidden by default) */}
         <details className="mt-6">
-          <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900">
+          <summary className="cursor-pointer text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
             정답 코드 보기 (참고용)
           </summary>
-          <div className="mt-3 bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <pre className="text-xs text-gray-800 font-mono overflow-x-auto">
+          <div className="mt-3 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <pre className="text-xs text-gray-800 dark:text-gray-200 font-mono overflow-x-auto">
               <code>{problem.golden_code}</code>
             </pre>
           </div>
@@ -375,8 +375,8 @@ from target import ${functionName}
       </div>
 
       {/* Code Editor and Submission */}
-      <div id="code-editor" className="mt-8 bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div id="code-editor" className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-colors">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
           테스트 코드 작성
         </h2>
 
