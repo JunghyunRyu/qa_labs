@@ -36,8 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(() => {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    window.location.href = `${apiBaseUrl}/api/v1/auth/github/login`;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+    window.location.href = `${apiBaseUrl}/v1/auth/github/login`;
   }, []);
 
   const logout = useCallback(async () => {
