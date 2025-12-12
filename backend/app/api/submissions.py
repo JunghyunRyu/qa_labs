@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.rate_limiter import limiter
+from app.core.dependencies import get_current_user
 from app.models.db import get_db
 from app.models.submission import Submission
 from app.models.user import User
@@ -19,59 +20,32 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_or_create_default_user(db: Session) -> User:
-    """
-    Get or create a default user for testing purposes.
-    
-    TODO: Remove this when authentication is implemented.
-    
-    Args:
-        db: Database session
-        
-    Returns:
-        Default user
-    """
-    # 기본 사용자 이메일로 찾기
-    default_email = "test@qa-arena.local"
-    user = db.query(User).filter(User.email == default_email).first()
-    
-    if not user:
-        # 없으면 생성
-        user = User(
-            email=default_email,
-            username="test_user",
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    
-    return user
-
-
 @router.post("", response_model=SubmissionResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit(settings.RATE_LIMIT_SUBMISSIONS)
 async def create_submission(
     request: Request,
     submission_data: SubmissionCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Create a new submission.
-    
+
+    Requires authentication.
+
     Args:
         submission_data: Submission data
         db: Database session
-        
+        current_user: Authenticated user
+
     Returns:
         Created submission
     """
     logger.info(
         f"[SUBMISSION_CREATE_START] problem_id={submission_data.problem_id} "
-        f"code_length={len(submission_data.code)}"
+        f"code_length={len(submission_data.code)} user_id={current_user.id}"
     )
-    # TODO: Get user_id from authentication when implemented
-    # For now, use default user
-    user = get_or_create_default_user(db)
+    user = current_user
     
     # 문제 존재 확인
     problem_repo = ProblemRepository(db)

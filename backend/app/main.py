@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.sentry import init_sentry, capture_exception_with_context
-from app.api import problems, submissions, admin, health
+from app.api import problems, submissions, admin, health, auth
 
 # 로깅 설정
 setup_logging()
@@ -208,6 +208,12 @@ app.include_router(
     health.router,
     prefix="/healthz",
     tags=["health"],
+)
+
+app.include_router(
+    auth.router,
+    prefix="/api/v1/auth",
+    tags=["auth"],
 )
 
 

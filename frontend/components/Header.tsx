@@ -1,5 +1,5 @@
 /**
- * Header component with theme toggle and navigation
+ * Header component with theme toggle, navigation, and authentication
  */
 
 "use client";
@@ -7,9 +7,13 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/AuthContext";
+import LoginButton from "./LoginButton";
+import UserMenu from "./UserMenu";
 
 export default function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { isAuthenticated, isLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   // Avoid hydration mismatch
@@ -39,8 +43,9 @@ export default function Header() {
           </Link>
         </nav>
 
-        {/* Theme Toggle */}
-        <div className="flex items-center space-x-2">
+        {/* Right side: Theme Toggle + Auth */}
+        <div className="flex items-center space-x-4">
+          {/* Theme Toggle */}
           {mounted ? (
             <button
               onClick={toggleTheme}
@@ -90,6 +95,14 @@ export default function Header() {
           ) : (
             // Placeholder to prevent layout shift
             <div className="w-9 h-9" />
+          )}
+
+          {/* Auth Section */}
+          {mounted && !isLoading && (
+            isAuthenticated ? <UserMenu /> : <LoginButton />
+          )}
+          {mounted && isLoading && (
+            <div className="w-8 h-8 rounded-full bg-[var(--card-background)] animate-pulse" />
           )}
         </div>
       </div>

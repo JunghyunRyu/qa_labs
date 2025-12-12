@@ -77,6 +77,22 @@ class Settings(BaseSettings):
     RATE_LIMIT_ADMIN: str = "2/minute"  # Admin endpoints (AI generation)
     RATE_LIMIT_ADMIN_CREATE: str = "5/minute"  # Admin problem creation
 
+    # GitHub OAuth
+    GITHUB_CLIENT_ID: Optional[str] = None
+    GITHUB_CLIENT_SECRET: Optional[str] = None
+    GITHUB_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/github/callback"
+
+    # JWT Settings
+    JWT_SECRET_KEY: str = "change-this-secret-key-in-production-min-32-chars"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # Cookie Settings
+    COOKIE_DOMAIN: Optional[str] = None  # None for localhost, set for production
+    COOKIE_SECURE: bool = False  # True in production (HTTPS only)
+    COOKIE_SAMESITE: str = "lax"  # "strict", "lax", or "none"
+
     class Config:
         env_file = ".env"
         case_sensitive = True

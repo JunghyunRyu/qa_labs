@@ -43,3 +43,6 @@ sentry-sdk[fastapi,celery]==1.39.1
 
 # Rate Limiting
 slowapi==0.1.9
+
+# Authentication
+python-jose[cryptography]==3.3.0
