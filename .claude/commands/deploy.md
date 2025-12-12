@@ -6,8 +6,7 @@ description: EC2에 QA Labs 프로젝트를 배포합니다 (git pull + docker c
 
 다음 단계를 수행하여 EC2에 최신 코드를 배포합니다:
 
-1. `.claude/config.json` 또는 `.claude/config.local.json` 파일에서 EC2 설정 정보를 읽어옵니다
-   - config.local.json이 있으면 우선 사용 (환경별 설정)
+1. `.claude/config.json` 파일에서 EC2 설정 정보를 읽어옵니다   
    - 없으면 config.json 사용
 
 2. EC2에 SSH로 접속하여 다음을 순서대로 실행:

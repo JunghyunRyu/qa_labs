@@ -81,3 +81,5 @@ nginx/**/*.local.*
 
 docker-compose.override.yml
 *.tsbuildinfo
+
+qa_arena_20251212_105747.dump

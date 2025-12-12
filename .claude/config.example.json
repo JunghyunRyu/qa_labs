@@ -1,6 +1,6 @@
 {
   "ec2": {
-    "ip": "15.164.221.173",
+    "ip": "3.38.179.33 ",
     "ssh_key_path": "C:\\pem\\my_proton_key.pem",
     "user": "ubuntu",
     "project_path": "~/qa_labs"

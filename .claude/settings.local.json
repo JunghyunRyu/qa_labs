@@ -12,7 +12,8 @@
       "mcp__serena__list_memories",
       "mcp__serena__read_memory",
       "Bash(ls:*)",
-      "mcp__serena__think_about_collected_information"
+      "mcp__serena__think_about_collected_information",
+      "Bash(PYTHONIOENCODING=utf-8 python:*)"
     ],
     "deny": [],
     "ask": []
