@@ -46,9 +46,11 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
   // description_md에서 첫 문장 추출 (마크다운 제거)
   const extractPreview = (description_md?: string): string => {
     if (!description_md) return "";
-    
+
     // 마크다운 헤더 제거
     let text = description_md.replace(/^#+\s+/gm, "");
+    // "문제 설명" 텍스트 제거 (헤더 제거 후 남는 텍스트)
+    text = text.replace(/^문제\s*설명\s*/gm, "");
     // 마크다운 강조 제거
     text = text.replace(/\*\*/g, "").replace(/\*/g, "");
     // 코드 블록 제거
