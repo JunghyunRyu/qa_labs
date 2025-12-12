@@ -35,5 +35,6 @@
     "sorting",
     "python"
   ],
-  "difficulty": "Easy"
+  "difficulty": "Easy",
+  "strong_test_code": "import pytest\nfrom target import sort_order_amounts\n\n\ndef test_does_not_mutate_input():\n    \"\"\"Bug 1: In-place sort mutates original list\"\"\"\n    original = [300, 100, 200]\n    original_copy = original.copy()\n    result = sort_order_amounts(original)\n    assert original == original_copy, \"Original list should not be mutated\"\n    assert result is not original, \"Should return a new list, not the same object\"\n\n\ndef test_negative_values_preserved():\n    \"\"\"Bug 2: Negative values should not be clamped to 0\"\"\"\n    result = sort_order_amounts([-100, 50, -200, 0])\n    assert -200 in result\n    assert -100 in result\n    assert result == [-200, -100, 0, 50]\n\n\ndef test_duplicates_preserved():\n    \"\"\"Bug 3: Duplicates should not be removed\"\"\"\n    result = sort_order_amounts([5, 5, 3, 3, 3])\n    assert len(result) == 5\n    assert result.count(5) == 2\n    assert result.count(3) == 3\n    assert result == [3, 3, 3, 5, 5]\n\n\ndef test_ascending_order():\n    \"\"\"Bug 4: Should be ascending not descending\"\"\"\n    result = sort_order_amounts([300, 100, 200])\n    assert result == [100, 200, 300]\n    assert result[0] < result[-1]\n\n\ndef test_empty_and_single():\n    \"\"\"Edge cases: empty and single element lists\"\"\"\n    assert sort_order_amounts([]) == []\n    assert sort_order_amounts([42]) == [42]\n"
 }

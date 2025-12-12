@@ -391,7 +391,16 @@ class SubmissionClient:
                 timeout=self.request_timeout,
             )
             resp.raise_for_status()
-            problems = resp.json()
+            data = resp.json()
+
+            # API 응답이 {"problems": [...]} 형식인 경우 처리
+            if isinstance(data, dict) and "problems" in data:
+                problems = data["problems"]
+            elif isinstance(data, list):
+                problems = data
+            else:
+                print(f"[WARNING] Unexpected API response format: {type(data)}")
+                return None
 
             for problem in problems:
                 if problem.get("title") == title:

@@ -45,12 +45,11 @@ from scripts.validation_utils import (
 # Configuration
 # =============================================================================
 
-# 샘플 문제 목록 (난이도별)
+# 샘플 문제 목록 (DB에 등록된 문제들)
+# DB에는 E11-E15(Easy)와 H01-H05(Hard)만 등록됨
 SAMPLE_PROBLEMS = [
-    "VE01", "VE03",           # Very Easy: 2개
-    "E01", "E05", "E10",      # Easy: 3개
-    "M01", "M03",             # Medium: 2개
-    "H01", "H03",             # Hard: 2개
+    "E11", "E12", "E13",      # Easy: 3개
+    "H01", "H03",             # Hard: 2개 (strong_test_code 있음)
 ]
 
 # 테스트 시나리오 정의
@@ -66,8 +65,8 @@ SCENARIOS = {
         "min_score": 30,
     },
     "syntax_error": {
-        "description": "문법 오류 - ERROR 상태 기대",
-        "expected_status": "ERROR",
+        "description": "문법 오류 - FAILURE 상태 기대 (컴파일 에러)",
+        "expected_status": "FAILURE",
     },
     "import_error": {
         "description": "Import 오류 - ERROR 상태 기대",

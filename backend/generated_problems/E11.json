@@ -35,5 +35,6 @@
     "pytest",
     "unit-test"
   ],
-  "difficulty": "Easy"
+  "difficulty": "Easy",
+  "strong_test_code": "import pytest\nfrom target import is_valid_length\n\n\ndef test_max_boundary_exact():\n    \"\"\"Bug 1: len == max_length should be True (< vs <=)\"\"\"\n    assert is_valid_length(\"abcde\", 1, 5) == True  # len=5, max=5\n    assert is_valid_length(\"a\" * 10, 5, 10) == True  # len=10, max=10\n\n\ndef test_min_boundary_exact():\n    \"\"\"Bug 2: len == min_length should be True (> vs >=)\"\"\"\n    assert is_valid_length(\"a\", 1, 5) == True  # len=1, min=1\n    assert is_valid_length(\"abc\", 3, 10) == True  # len=3, min=3\n\n\ndef test_negative_bounds_rejected():\n    \"\"\"Bug 3: Negative min/max should return False\"\"\"\n    assert is_valid_length(\"abc\", -1, 5) == False\n    assert is_valid_length(\"abc\", 1, -5) == False\n    assert is_valid_length(\"abc\", -1, -5) == False\n\n\ndef test_empty_string_with_nonzero_min():\n    \"\"\"Bug 4: Empty string with min>0 should return False\"\"\"\n    assert is_valid_length(\"\", 1, 10) == False\n    assert is_valid_length(\"\", 5, 10) == False\n\n\ndef test_empty_string_with_zero_min():\n    \"\"\"Empty string with min=0 should return True\"\"\"\n    assert is_valid_length(\"\", 0, 10) == True\n    assert is_valid_length(\"\", 0, 0) == True\n\n\ndef test_invalid_range():\n    \"\"\"min > max should return False\"\"\"\n    assert is_valid_length(\"abc\", 10, 5) == False\n"
 }
