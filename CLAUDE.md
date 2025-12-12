@@ -14,7 +14,6 @@
 개발 전반에 걸쳐 프로젝트 문서를 참조하여 일관성을 유지한다.
 
 - **세션 시작 시**: `@docs/specs/qa-arena-spec.md` 문서를 확인하여 개발 사양의 전체 흐름을 파악한다.
-- **개발 시작 전**: `@docs/todo_actions/qa-arena-technical-todos.md` 파일을 반드시 먼저 확인한다.
 - **에러 처리 시**: `@docs/specs/ERROR_HANDLING.md` 문서를 참조하여 일관된 에러 처리 방식을 적용한다.
 - **배포 작업 시**: `@docs/specs/deployment.md` 문서의 절차를 따른다.
 - **운영/인시던트 대응 시**: `@docs/specs/operations.md` 문서를 참조한다.
