@@ -1,15 +1,16 @@
 /** Structured Problem Description Component */
 
 import ReactMarkdown from "react-markdown";
-import { 
-  FileText, 
-  Code2, 
-  Lightbulb, 
-  CheckCircle, 
-  XCircle, 
+import {
+  FileText,
+  Code2,
+  Lightbulb,
+  CheckCircle,
+  XCircle,
   Target,
   Info
 } from "lucide-react";
+import CopyButton from "./CopyButton";
 
 interface ProblemDescriptionProps {
   description_md: string;
@@ -201,18 +202,21 @@ export default function ProblemDescription({ description_md }: ProblemDescriptio
                   code: ({ children, className, ...props }) => {
                     const match = /language-(\w+)/.exec(className || '');
                     const language = match ? match[1] : '';
-                    
+
                     if (className) {
                       // 코드 블록
+                      const codeText = String(children).replace(/\n$/, '');
                       return (
-                        <div className="my-4 bg-gray-900 rounded-lg overflow-hidden border border-gray-700">
-                          {language && (
-                            <div className="bg-gray-800 px-4 py-2 border-b border-gray-700">
-                              <span className="text-xs text-gray-400 font-mono uppercase">
-                                {language}
-                              </span>
-                            </div>
-                          )}
+                        <div className="my-4 bg-gray-900 rounded-lg overflow-hidden border border-gray-700 group">
+                          <div className="flex items-center justify-between bg-gray-800 px-4 py-2 border-b border-gray-700">
+                            <span className="text-xs text-gray-400 font-mono uppercase">
+                              {language || 'code'}
+                            </span>
+                            <CopyButton
+                              text={codeText}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            />
+                          </div>
                           <div className="p-4 overflow-x-auto">
                             <pre className="text-sm text-gray-100 font-mono leading-relaxed">
                               <code {...props} className={className}>

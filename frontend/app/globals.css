@@ -6,7 +6,7 @@
   --card-background: #ffffff;
   --card-border: #e5e7eb;
   --muted: #6b7280;
-  --accent: #3b82f6;
+  --accent: #0ea5e9;  /* Electric Blue */
 }
 
 .dark {
@@ -15,7 +15,7 @@
   --card-background: #1a1a1a;
   --card-border: #374151;
   --muted: #9ca3af;
-  --accent: #60a5fa;
+  --accent: #38bdf8;  /* Electric Blue (light variant) */
 }
 
 @theme inline {

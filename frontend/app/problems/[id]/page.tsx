@@ -19,6 +19,8 @@ import Breadcrumb from "@/components/Breadcrumb";
 import ProblemCTA from "@/components/ProblemCTA";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
 import BookmarkButton from "@/components/BookmarkButton";
+import CopyButton from "@/components/CopyButton";
+import ProblemSidebar from "@/components/ProblemSidebar";
 import Link from "next/link";
 
 export default function ProblemDetailPage() {
@@ -305,7 +307,7 @@ from target import ${functionName}
   const difficulty = difficultyConfig[problem.difficulty];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Breadcrumb */}
       <Breadcrumb
         items={[
@@ -314,7 +316,10 @@ from target import ${functionName}
         ]}
       />
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-colors">
+      <div className="flex gap-8">
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-colors">
         {/* Header with Title */}
         <div className="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
           <div className="flex items-start justify-between mb-4">
@@ -376,10 +381,14 @@ from target import ${functionName}
             <Code2 className="w-4 h-4" />
             함수 시그니처
           </h2>
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 group relative">
             <code className="text-gray-800 dark:text-gray-200 font-mono text-sm">
               {problem.function_signature}
             </code>
+            <CopyButton
+              text={problem.function_signature}
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </div>
         </div>
 
@@ -393,14 +402,18 @@ from target import ${functionName}
         </div>
 
         {/* Golden Code (for reference, hidden by default) */}
-        <details className="mt-6">
+        <details className="mt-6 group/details">
           <summary className="cursor-pointer text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
             정답 코드 보기 (참고용)
           </summary>
-          <div className="mt-3 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="mt-3 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 relative group">
             <pre className="text-xs text-gray-800 dark:text-gray-200 font-mono overflow-x-auto">
               <code>{problem.golden_code}</code>
             </pre>
+            <CopyButton
+              text={problem.golden_code}
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </div>
         </details>
       </div>
@@ -436,13 +449,27 @@ from target import ${functionName}
         </button>
       </div>
 
-      {/* Submission Result - Always rendered in the same location */}
-      <SubmissionResultPanel
-        submission={submission}
-        isSubmitting={submitting}
-        submissionError={submissionError}
-        onRetry={handleSubmit}
-      />
+          {/* Submission Result - Always rendered in the same location */}
+          <SubmissionResultPanel
+            submission={submission}
+            isSubmitting={submitting}
+            submissionError={submissionError}
+            onRetry={handleSubmit}
+          />
+        </main>
+
+        {/* Sidebar - Desktop only */}
+        <ProblemSidebar
+          difficulty={problem.difficulty}
+          tags={problem.skills || []}
+          onScrollToEditor={scrollToEditor}
+          onOpenScoring={() => setIsScoringDrawerOpen(true)}
+          isEditorVisible={isEditorVisible}
+          onSubmit={handleSubmit}
+          isSubmitting={submitting}
+          canSubmit={!!code.trim()}
+        />
+      </div>
 
       {/* Scoring Method Drawer */}
       <ScoringMethodDrawer
