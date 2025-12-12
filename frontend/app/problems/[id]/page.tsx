@@ -192,7 +192,7 @@ from target import ${functionName}
     doSubmit,
     {
       debounceMs: 2000, // 2초 디바운스
-      onError: (err) => {
+      onError: (err: unknown) => {
         let errorMessage = "제출에 실패했습니다.";
         if (err instanceof ApiError) {
           // 429 Rate Limit 에러 특별 처리
@@ -202,10 +202,10 @@ from target import ${functionName}
             const errorData = err.data as { detail?: string } | undefined;
             errorMessage = errorData?.detail || err.message;
           }
-        } else if (err instanceof Error) {
-          errorMessage = err.message;
+        } else if (err instanceof globalThis.Error) {
+          errorMessage = (err as globalThis.Error).message;
         } else if (err && typeof err === "object" && "message" in err) {
-          errorMessage = String(err.message);
+          errorMessage = String((err as { message: unknown }).message);
         }
         setSubmissionError(errorMessage);
       },
