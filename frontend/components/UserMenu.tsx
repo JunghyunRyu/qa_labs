@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { History, Bookmark } from "lucide-react";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
@@ -54,6 +56,26 @@ export default function UserMenu() {
             <p className="text-sm font-medium">{user.username}</p>
             <p className="text-xs text-[var(--muted)]">{user.email}</p>
           </div>
+          <Link
+            href="/submissions"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-2 text-sm hover:bg-[var(--background)] transition-colors"
+          >
+            <span className="flex items-center space-x-2">
+              <History className="w-4 h-4" />
+              <span>내 제출 기록</span>
+            </span>
+          </Link>
+          <Link
+            href="/problems/bookmarked"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-2 text-sm hover:bg-[var(--background)] transition-colors"
+          >
+            <span className="flex items-center space-x-2">
+              <Bookmark className="w-4 h-4" />
+              <span>북마크한 문제</span>
+            </span>
+          </Link>
           {user.github_username && (
             <a
               href={`https://github.com/${user.github_username}`}
