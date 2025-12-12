@@ -93,6 +93,9 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = False  # True in production (HTTPS only)
     COOKIE_SAMESITE: str = "lax"  # "strict", "lax", or "none"
 
+    # Frontend URL (for OAuth callback redirect)
+    FRONTEND_URL: Optional[str] = None  # e.g., "https://qa-arena.qalabs.kr"
+
     class Config:
         env_file = ".env"
         case_sensitive = True

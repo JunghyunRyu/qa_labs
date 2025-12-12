@@ -57,6 +57,8 @@ services:
       # Cookie Settings
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       COOKIE_SAMESITE: ${COOKIE_SAMESITE:-lax}
+      # Frontend URL
+      FRONTEND_URL: ${FRONTEND_URL:-https://qa-arena.qalabs.kr}
     depends_on:
       postgres:
         condition: service_healthy

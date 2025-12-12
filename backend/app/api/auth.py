@@ -118,7 +118,7 @@ async def github_callback(
         refresh_token = create_refresh_token(user.id)
 
         # Redirect to frontend with cookies
-        frontend_url = settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else "http://localhost:3000"
+        frontend_url = getattr(settings, 'FRONTEND_URL', None) or (settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else "http://localhost:3000")
         response = Response(status_code=status.HTTP_307_TEMPORARY_REDIRECT)
         response.headers["Location"] = f"{frontend_url}/auth/callback"
 
