@@ -1,6 +1,7 @@
 "use client";
 
 import { Code2, Info } from "lucide-react";
+import { toTagViewModels, sliceTags } from "@/lib/tagDefinitions";
 
 interface ProblemSidebarProps {
   difficulty: string;
@@ -82,23 +83,33 @@ export default function ProblemSidebar({
           </div>
 
           {/* Tags */}
-          {tags.length > 0 && (
-            <div className="mb-5">
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                태그
-              </span>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-md"
-                  >
-                    {tag}
-                  </span>
-                ))}
+          {(() => {
+            const tagModels = toTagViewModels(tags);
+            const { visible, hiddenCount } = sliceTags(tagModels, 4);
+            if (visible.length === 0) return null;
+            return (
+              <div className="mb-5">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  태그
+                </span>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {visible.map((tag) => (
+                    <span
+                      key={tag.slug}
+                      className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-md"
+                    >
+                      {tag.labelKo}
+                    </span>
+                  ))}
+                  {hiddenCount > 0 && (
+                    <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-xs rounded-md">
+                      +{hiddenCount}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Divider */}
           <div className="border-t border-gray-200 dark:border-gray-700 my-4" />

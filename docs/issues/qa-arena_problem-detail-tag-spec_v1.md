@@ -252,12 +252,14 @@ function toTagViewModel(slugs: string[], defs: Record<string, TagDefinition>) {
   - `page.tsx`에서 태그 전달 시 난이도 값 필터링 추가
 
 ### AC-03 태그 분류
-- [ ] 태그 칩이 카테고리(ENV/CONCEPT/DOMAIN/CONTEXT) 순서로 정렬되어 노출된다.
-  - TagDefinitionMap 도입 필요
+- [x] 태그 칩이 카테고리(ENV/CONCEPT/DOMAIN/CONTEXT) 순서로 정렬되어 노출된다.
+  - `frontend/lib/tagDefinitions.ts` 생성 (TagDefinitionMap + 분류/정렬 함수)
+  - `page.tsx`, `ProblemSidebar.tsx`에서 `toTagViewModels()` 사용
 
 ### AC-04 태그 접기
-- [ ] 태그가 많아도 화면이 과밀해지지 않으며 `+N`으로 접힌다.
-  - 최대 노출 개수 제한 + 접기 UI 구현 필요
+- [x] 태그가 많아도 화면이 과밀해지지 않으며 `+N`으로 접힌다.
+  - `sliceTags()` 함수로 최대 노출 개수 제한 (헤더: 6개, 사이드바: 4개)
+  - 초과분 `+N` 칩으로 표시
 
 ### AC-05 CTA 정확성
 - [x] "코드 작성" 문구가 "테스트 작성"으로 변경되어 사용자 행동과 일치한다.
