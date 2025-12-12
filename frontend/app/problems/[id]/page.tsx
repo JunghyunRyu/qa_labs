@@ -162,13 +162,15 @@ from target import ${functionName}
   }, [submission]);
 
   // Submission function wrapped in useCallback for useSubmit
-  const doSubmit = useCallback(async () => {
+  const doSubmit = useCallback(async (): Promise<Submission> => {
     if (!problem) {
-      throw new Error("문제 정보가 없습니다.");
+      const err = new globalThis.Error("문제 정보가 없습니다.");
+      throw err;
     }
 
     if (!code.trim()) {
-      throw new Error("코드를 입력해주세요.");
+      const err = new globalThis.Error("코드를 입력해주세요.");
+      throw err;
     }
 
     // 이전 폴링 상태 초기화
