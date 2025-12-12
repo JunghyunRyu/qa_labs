@@ -351,16 +351,20 @@ from target import ${functionName}
           </div>
           
           {/* Tags */}
-          {problem.skills && problem.skills.length > 0 && (
+          {problem.skills && problem.skills.filter(
+            (skill) => !["Very Easy", "Easy", "Medium", "Hard"].includes(skill)
+          ).length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {problem.skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600"
-                >
-                  {skill}
-                </span>
-              ))}
+              {problem.skills
+                .filter((skill) => !["Very Easy", "Easy", "Medium", "Hard"].includes(skill))
+                .map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600"
+                  >
+                    {skill}
+                  </span>
+                ))}
             </div>
           )}
 
@@ -461,7 +465,9 @@ from target import ${functionName}
         {/* Sidebar - Desktop only */}
         <ProblemSidebar
           difficulty={problem.difficulty}
-          tags={problem.skills || []}
+          tags={(problem.skills || []).filter(
+            (skill) => !["Very Easy", "Easy", "Medium", "Hard"].includes(skill)
+          )}
           onScrollToEditor={scrollToEditor}
           onOpenScoring={() => setIsScoringDrawerOpen(true)}
           isEditorVisible={isEditorVisible}

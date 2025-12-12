@@ -27,7 +27,7 @@ export default function ProblemCTA({
     }
   };
 
-  const primaryLabel = isEditorVisible ? "채점하기" : "코드 작성 시작";
+  const primaryLabel = isEditorVisible ? "채점하기" : "테스트 작성 시작";
   const primaryDisabled = isEditorVisible && (!canSubmit || isSubmitting);
 
   return (

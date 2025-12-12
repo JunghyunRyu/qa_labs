@@ -17,19 +17,24 @@ const difficultyConfig: Record<
   string,
   { label: string; color: string; bgColor: string }
 > = {
-  easy: {
+  "Very Easy": {
+    label: "아주쉬움",
+    color: "text-blue-800 dark:text-blue-300",
+    bgColor: "bg-blue-100 dark:bg-blue-900/30",
+  },
+  Easy: {
     label: "쉬움",
-    color: "text-green-700 dark:text-green-400",
+    color: "text-green-800 dark:text-green-300",
     bgColor: "bg-green-100 dark:bg-green-900/30",
   },
-  medium: {
+  Medium: {
     label: "보통",
-    color: "text-yellow-700 dark:text-yellow-400",
+    color: "text-yellow-800 dark:text-yellow-300",
     bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
   },
-  hard: {
+  Hard: {
     label: "어려움",
-    color: "text-red-700 dark:text-red-400",
+    color: "text-red-800 dark:text-red-300",
     bgColor: "bg-red-100 dark:bg-red-900/30",
   },
 };
@@ -44,7 +49,7 @@ export default function ProblemSidebar({
   isSubmitting,
   canSubmit,
 }: ProblemSidebarProps) {
-  const diffConfig = difficultyConfig[difficulty] || difficultyConfig.medium;
+  const diffConfig = difficultyConfig[difficulty] || difficultyConfig.Medium;
 
   const handlePrimaryClick = () => {
     if (isEditorVisible) {
@@ -54,7 +59,7 @@ export default function ProblemSidebar({
     }
   };
 
-  const primaryLabel = isEditorVisible ? "채점하기" : "코드 작성 시작";
+  const primaryLabel = isEditorVisible ? "채점하기" : "테스트 작성 시작";
   const primaryDisabled = isEditorVisible && (!canSubmit || isSubmitting);
 
   return (
