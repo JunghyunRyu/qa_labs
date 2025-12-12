@@ -41,11 +41,13 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
-    # LLM / AI
+    # LLM / AI - GPT-5.2 업그레이드 (2024.12)
     OPENAI_API_KEY: Optional[str] = None
-    OPENAI_MODEL: str = "gpt-5-mini"  # 기본 모델 (비용 효율적)
-    OPENAI_REASONING_MODEL: str = "gpt-5.1"  # Reasoning 모델 (문제 생성용)
-    OPENAI_REASONING_EFFORT: str = "high"  # Reasoning effort: none, low, medium, high
+    OPENAI_MODEL: str = "gpt-5.2"  # 기본 모델 (gpt-5-mini → gpt-5.2)
+    OPENAI_REASONING_MODEL: str = "gpt-5.2"  # Reasoning 모델 (gpt-5.1 → gpt-5.2)
+    OPENAI_REASONING_EFFORT: str = "medium"  # Reasoning effort: none, low, medium, high, xhigh
+    OPENAI_DEFAULT_VERBOSITY: str = "medium"  # GPT-5.2 verbosity: low, medium, high
+    OPENAI_COMPACTION_ENABLED: bool = True  # GPT-5.2 컨텍스트 압축 기능
 
     # Worker Monitoring
     WORKER_MONITOR_ENABLED: bool = True

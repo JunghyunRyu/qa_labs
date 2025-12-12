@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, List, Optional, Literal
 from pydantic import BaseModel, ValidationError
 
-from app.core.llm_client import llm_client, ReasoningEffort
+from app.core.llm_client import llm_client, ReasoningEffort, Verbosity
 
 logger = logging.getLogger(__name__)
 
@@ -208,10 +208,15 @@ def generate_problem(
     difficulty: str = "Easy",
     problem_style: str = "unit_test_for_single_function",
     use_reasoning: bool = True,
-    reasoning_effort: Optional[ReasoningEffort] = "high",
+    reasoning_effort: Optional[ReasoningEffort] = None,
+    verbosity: Optional[Verbosity] = "high",
 ) -> Dict[str, Any]:
     """
     Generate a problem using AI.
+
+    GPT-5.2 최적화:
+    - Hard 문제는 xhigh 추론 레벨 자동 적용
+    - verbosity로 buggy_implementations 상세도 제어
 
     Args:
         goal: Problem goal/description
@@ -221,9 +226,9 @@ def generate_problem(
         difficulty: Difficulty level (Easy, Medium, Hard)
         problem_style: Problem style
         use_reasoning: Reasoning 모델 사용 여부 (기본값: True)
-                       True면 o3-mini 등 reasoning 모델 사용, False면 일반 모델 사용
-        reasoning_effort: Reasoning effort level (low, medium, high)
-                          use_reasoning=True일 때만 적용됨
+        reasoning_effort: Reasoning effort level (none, low, medium, high, xhigh)
+                          None이면 난이도에 따라 자동 설정
+        verbosity: 출력 상세도 (low, medium, high) - 기본값: high
 
     Returns:
         Generated problem dictionary
@@ -234,6 +239,15 @@ def generate_problem(
     """
     if skills_to_assess is None:
         skills_to_assess = []
+
+    # GPT-5.2: 난이도별 reasoning_effort 자동 설정
+    if reasoning_effort is None:
+        effort_map = {
+            "Easy": "high",
+            "Medium": "high",
+            "Hard": "xhigh",  # Hard 문제는 xhigh로 최고 품질
+        }
+        reasoning_effort = effort_map.get(difficulty, "high")
 
     try:
         user_prompt = build_user_prompt(
@@ -254,13 +268,15 @@ def generate_problem(
         # Reasoning 모델 사용 여부에 따라 다른 LLM 호출
         if use_reasoning:
             logger.info(
-                f"Using reasoning model with effort={reasoning_effort} "
-                f"for problem generation (difficulty={difficulty})"
+                f"Using GPT-5.2 reasoning model with effort={reasoning_effort}, "
+                f"verbosity={verbosity} for problem generation (difficulty={difficulty})"
             )
-            response = llm_client.generate_json_with_reasoning(
+            # GPT-5.2: Responses API 사용 (verbosity 지원)
+            response = llm_client.generate_json_with_responses_api(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 reasoning_effort=reasoning_effort,
+                verbosity=verbosity,
             )
         else:
             logger.info(

@@ -4,7 +4,8 @@ import logging
 from typing import Dict, Any, List
 from pydantic import BaseModel, ValidationError
 
-from app.core.llm_client import llm_client
+from app.core.llm_client import llm_client, Verbosity
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -128,9 +129,14 @@ def generate_feedback(
     total_mutants: int,
     kill_ratio: float,
     execution_log: Dict[str, Any],
+    verbosity: Optional[Verbosity] = None,
 ) -> Dict[str, Any]:
     """
     Generate feedback using AI.
+
+    GPT-5.2 최적화:
+    - 점수 기반 verbosity 자동 조절
+    - 낮은 점수일수록 더 상세한 피드백 제공
 
     Args:
         problem_title: Problem title
@@ -142,6 +148,7 @@ def generate_feedback(
         total_mutants: Total number of mutants
         kill_ratio: Kill ratio
         execution_log: Execution log
+        verbosity: 출력 상세도 (None이면 점수 기반 자동 설정)
 
     Returns:
         Feedback dictionary
@@ -150,6 +157,15 @@ def generate_feedback(
         ValueError: If validation fails or LLM call fails
         RuntimeError: If LLM API call fails
     """
+    # GPT-5.2: 점수 기반 verbosity 자동 조절
+    if verbosity is None:
+        if score < 30:
+            verbosity = "high"    # 낮은 점수: 상세한 개선 지침
+        elif score < 70:
+            verbosity = "medium"  # 중간 점수: 균형잡힌 피드백
+        else:
+            verbosity = "low"     # 높은 점수: 간결한 칭찬
+
     try:
         user_prompt = build_user_prompt(
             problem_title=problem_title,
@@ -163,10 +179,13 @@ def generate_feedback(
             execution_log=execution_log or {},
         )
 
-        # LLM 호출 (Responses API 사용)
+        logger.info(f"Generating feedback with GPT-5.2 (score={score}, verbosity={verbosity})")
+
+        # GPT-5.2: LLM 호출 (Responses API 사용 + verbosity)
         response = llm_client.generate_json_with_responses_api(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt,
+            verbosity=verbosity,
         )
 
         # JSON 스키마 검증

@@ -10,8 +10,9 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Reasoning effort 타입 정의 (GPT-5.1에서 "none" 추가)
-ReasoningEffort = Literal["none", "low", "medium", "high"]
+# GPT-5.2 타입 정의
+ReasoningEffort = Literal["none", "low", "medium", "high", "xhigh"]  # xhigh 추가
+Verbosity = Literal["low", "medium", "high"]  # 출력 상세도 타입
 
 
 class LLMClient:
@@ -27,6 +28,9 @@ class LLMClient:
         self.model = settings.OPENAI_MODEL
         self.reasoning_model = settings.OPENAI_REASONING_MODEL
         self.reasoning_effort = settings.OPENAI_REASONING_EFFORT
+        # GPT-5.2 신규 설정
+        self.default_verbosity = settings.OPENAI_DEFAULT_VERBOSITY
+        self.compaction_enabled = settings.OPENAI_COMPACTION_ENABLED
 
     def generate_completion(
         self,
@@ -240,18 +244,20 @@ class LLMClient:
         user_prompt: str,
         model: Optional[str] = None,
         reasoning_effort: Optional[ReasoningEffort] = None,
+        verbosity: Optional[Verbosity] = None,
     ) -> str:
         """
         Responses API를 사용하여 completion 생성.
 
-        GPT-5.1과 같은 reasoning 모델에 최적화된 API입니다.
-        구조화된 출력과 reasoning trace를 제공합니다.
+        GPT-5.2 최적화된 API입니다.
+        xhigh reasoning과 verbosity 제어를 지원합니다.
 
         Args:
             system_prompt: System prompt (instructions)
             user_prompt: User prompt (input)
             model: 사용할 모델 (기본값: reasoning model)
-            reasoning_effort: Reasoning effort level (none, low, medium, high)
+            reasoning_effort: Reasoning effort level (none, low, medium, high, xhigh)
+            verbosity: 출력 상세도 (low, medium, high) - GPT-5.2 신규
 
         Returns:
             Generated text
@@ -265,9 +271,10 @@ class LLMClient:
 
         use_model = model or self.reasoning_model
         effort = reasoning_effort or self.reasoning_effort
+        use_verbosity = verbosity or self.default_verbosity
 
         try:
-            logger.info(f"Using Responses API: model={use_model}, effort={effort}")
+            logger.info(f"Using Responses API: model={use_model}, effort={effort}, verbosity={use_verbosity}")
 
             # Responses API 파라미터 구성
             api_params = {
@@ -279,6 +286,10 @@ class LLMClient:
             # reasoning_effort가 "none"이 아닌 경우에만 reasoning 설정 추가
             if effort and effort != "none":
                 api_params["reasoning"] = {"effort": effort}
+
+            # GPT-5.2: verbosity 파라미터 추가
+            if use_verbosity:
+                api_params["text"] = {"verbosity": use_verbosity}
 
             # SDK를 사용하여 Responses API 호출
             response = self.client.responses.create(**api_params)
@@ -308,6 +319,7 @@ class LLMClient:
         user_prompt: str,
         model: Optional[str] = None,
         reasoning_effort: Optional[ReasoningEffort] = None,
+        verbosity: Optional[Verbosity] = None,
     ) -> Dict[str, Any]:
         """
         Responses API를 사용하여 JSON 응답 생성.
@@ -317,8 +329,9 @@ class LLMClient:
         Args:
             system_prompt: System prompt (should instruct to return JSON)
             user_prompt: User prompt
-            model: 사용할 모델 (기본값: gpt-5.1)
-            reasoning_effort: Reasoning effort level (none, low, medium, high)
+            model: 사용할 모델 (기본값: gpt-5.2)
+            reasoning_effort: Reasoning effort level (none, low, medium, high, xhigh)
+            verbosity: 출력 상세도 (low, medium, high) - GPT-5.2 신규
 
         Returns:
             Parsed JSON as dictionary
@@ -332,6 +345,7 @@ class LLMClient:
             user_prompt=user_prompt,
             model=model,
             reasoning_effort=reasoning_effort,
+            verbosity=verbosity,
         )
 
         # Try to extract JSON from response (might be wrapped in markdown code blocks)
