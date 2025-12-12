@@ -2,13 +2,14 @@
 
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { Code2, FileText, ChevronDown } from "lucide-react";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
+import { useSubmit } from "@/hooks/useSubmit";
 import type { Problem, Submission } from "@/types/problem";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
@@ -26,7 +27,6 @@ export default function ProblemDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [submission, setSubmission] = useState<Submission | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -161,39 +161,54 @@ from target import ${functionName}
     };
   }, [submission]);
 
-  const handleSubmit = async () => {
-    if (!problem) return;
+  // Submission function wrapped in useCallback for useSubmit
+  const doSubmit = useCallback(async () => {
+    if (!problem) {
+      throw new Error("문제 정보가 없습니다.");
+    }
 
     if (!code.trim()) {
-      setSubmissionError("코드를 입력해주세요.");
-      return;
+      throw new Error("코드를 입력해주세요.");
     }
 
-    try {
-      setSubmitting(true);
-      setSubmissionError(null);
-      // 이전 폴링 상태 초기화
-      pollingStartTimeRef.current = null;
-      pollingErrorCountRef.current = 0;
-      
-      const newSubmission = await createSubmission({
-        problem_id: problem.id,
-        code: code.trim(),
-      });
-      setSubmission(newSubmission);
-    } catch (err: unknown) {
-      let errorMessage = "제출에 실패했습니다.";
-      if (err instanceof ApiError) {
-        const errorData = err.data as { detail?: string } | undefined;
-        errorMessage = errorData?.detail || err.message;
-      } else if (err && typeof err === "object" && "message" in err) {
-        errorMessage = String(err.message);
-      }
-      setSubmissionError(errorMessage);
-    } finally {
-      setSubmitting(false);
+    // 이전 폴링 상태 초기화
+    pollingStartTimeRef.current = null;
+    pollingErrorCountRef.current = 0;
+    setSubmissionError(null);
+
+    const newSubmission = await createSubmission({
+      problem_id: problem.id,
+      code: code.trim(),
+    });
+
+    setSubmission(newSubmission);
+    return newSubmission;
+  }, [problem, code]);
+
+  // useSubmit hook with debounce and error handling
+  const { submit: handleSubmit, isSubmitting: submitting } = useSubmit(
+    doSubmit,
+    {
+      debounceMs: 2000, // 2초 디바운스
+      onError: (err) => {
+        let errorMessage = "제출에 실패했습니다.";
+        if (err instanceof ApiError) {
+          // 429 Rate Limit 에러 특별 처리
+          if (err.status === 429) {
+            errorMessage = "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.";
+          } else {
+            const errorData = err.data as { detail?: string } | undefined;
+            errorMessage = errorData?.detail || err.message;
+          }
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (err && typeof err === "object" && "message" in err) {
+          errorMessage = String(err.message);
+        }
+        setSubmissionError(errorMessage);
+      },
     }
-  };
+  );
 
   const scrollToEditor = () => {
     const editorElement = document.getElementById("code-editor");
@@ -375,7 +390,7 @@ from target import ${functionName}
         <button
           onClick={handleSubmit}
           disabled={submitting || !code.trim()}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2 select-none"
         >
           {submitting && (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

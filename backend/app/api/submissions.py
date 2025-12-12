@@ -2,9 +2,11 @@
 
 import logging
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
+from app.core.rate_limiter import limiter
 from app.models.db import get_db
 from app.models.submission import Submission
 from app.models.user import User
@@ -47,7 +49,9 @@ def get_or_create_default_user(db: Session) -> User:
 
 
 @router.post("", response_model=SubmissionResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit(settings.RATE_LIMIT_SUBMISSIONS)
 async def create_submission(
+    request: Request,
     submission_data: SubmissionCreate,
     db: Session = Depends(get_db),
 ):

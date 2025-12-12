@@ -6,13 +6,23 @@ const API_BASE_URL =
   (process.env.NEXT_PUBLIC_API_URL || "").trim() || "/api";
 
 export class ApiError extends Error {
+  /** Retry-After header value (for 429 errors) */
+  public retryAfter?: string;
+
   constructor(
     public status: number,
     public statusText: string,
-    public data?: unknown
+    public data?: unknown,
+    retryAfter?: string
   ) {
     super(`API Error: ${status} ${statusText}`);
     this.name = "ApiError";
+    this.retryAfter = retryAfter;
+  }
+
+  /** Check if this is a rate limit error */
+  isRateLimitError(): boolean {
+    return this.status === 429;
   }
 }
 
@@ -51,9 +61,20 @@ async function apiRequest<T>(
         }
       }
 
-      const apiError = new ApiError(response.status, response.statusText, errorData);
+      // 429 에러 시 Retry-After 헤더 읽기
+      const retryAfter = response.status === 429
+        ? response.headers.get("Retry-After") ?? undefined
+        : undefined;
+
+      const apiError = new ApiError(
+        response.status,
+        response.statusText,
+        errorData,
+        retryAfter
+      );
 
       // 5xx 에러만 Sentry에 보고 (4xx는 사용자 에러)
+      // 단, 429는 rate limit이므로 별도 처리
       if (response.status >= 500) {
         Sentry.captureException(apiError, {
           tags: {

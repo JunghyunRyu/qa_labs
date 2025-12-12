@@ -1,10 +1,11 @@
 """Admin API endpoints."""
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-# slugify is not needed for now
 
+from app.core.config import settings
+from app.core.rate_limiter import limiter
 from app.models.db import get_db
 from app.models.problem import Problem
 from app.models.buggy_implementation import BuggyImplementation
@@ -23,14 +24,17 @@ router = APIRouter()
 
 
 @router.post("/problems/ai-generate")
+@limiter.limit(settings.RATE_LIMIT_ADMIN)
 async def ai_generate_problem(
-    request: ProblemGenerateRequest,
+    request: Request,
+    problem_request: ProblemGenerateRequest,
 ):
     """
     Generate a problem using AI.
 
     Args:
-        request: Problem generation request
+        request: FastAPI request object (for rate limiting)
+        problem_request: Problem generation request
 
     Returns:
         Generated problem JSON
@@ -41,14 +45,14 @@ async def ai_generate_problem(
     """
     try:
         result = generate_problem(
-            goal=request.goal,
-            language=request.language,
-            testing_framework=request.testing_framework,
-            skills_to_assess=request.skills_to_assess,
-            difficulty=request.difficulty,
-            problem_style=request.problem_style,
-            use_reasoning=request.use_reasoning,
-            reasoning_effort=request.reasoning_effort,
+            goal=problem_request.goal,
+            language=problem_request.language,
+            testing_framework=problem_request.testing_framework,
+            skills_to_assess=problem_request.skills_to_assess,
+            difficulty=problem_request.difficulty,
+            problem_style=problem_request.problem_style,
+            use_reasoning=problem_request.use_reasoning,
+            reasoning_effort=problem_request.reasoning_effort,
         )
         return result
     except ValueError as e:
@@ -72,7 +76,9 @@ async def ai_generate_problem(
 
 
 @router.post("/problems", response_model=ProblemResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit(settings.RATE_LIMIT_ADMIN_CREATE)
 async def create_problem(
+    request: Request,
     problem_data: ProblemCreateWithBuggy,
     db: Session = Depends(get_db),
 ):

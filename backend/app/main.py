@@ -8,8 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
+from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.sentry import init_sentry, capture_exception_with_context
 from app.api import problems, submissions, admin, health
@@ -26,6 +29,29 @@ app = FastAPI(
     version=settings.APP_VERSION,
     debug=settings.DEBUG,
 )
+
+# Rate Limiter 설정
+app.state.limiter = limiter
+
+
+# Rate Limit 초과 예외 핸들러
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    """Rate limit 초과 시 일관된 형식으로 응답."""
+    logger.warning(
+        f"Rate limit exceeded: {request.client.host} - Path: {request.url.path} - "
+        f"Limit: {exc.detail}"
+    )
+    return JSONResponse(
+        status_code=429,
+        content={
+            "detail": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+            "type": "rate_limit_exceeded",
+            "retry_after": str(exc.detail),
+        },
+        headers={"Retry-After": "60"},
+    )
+
 
 # 전역 예외 핸들러
 @app.exception_handler(StarletteHTTPException)

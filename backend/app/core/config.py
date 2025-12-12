@@ -67,6 +67,14 @@ class Settings(BaseSettings):
     SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 성능 추적 샘플링 비율 (10%)
     SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 프로파일 샘플링 비율 (10%)
 
+    # Rate Limiting
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_REDIS_DB: int = 2  # Celery uses DB 0-1, rate limiting uses DB 2
+    RATE_LIMIT_DEFAULT: str = "100/minute"  # Default rate limit for all endpoints
+    RATE_LIMIT_SUBMISSIONS: str = "5/minute"  # Submissions endpoint
+    RATE_LIMIT_ADMIN: str = "2/minute"  # Admin endpoints (AI generation)
+    RATE_LIMIT_ADMIN_CREATE: str = "5/minute"  # Admin problem creation
+
     class Config:
         env_file = ".env"
         case_sensitive = True

@@ -40,3 +40,6 @@ apscheduler>=3.10.0
 
 # Error Tracking
 sentry-sdk[fastapi,celery]==1.39.1
+
+# Rate Limiting
+slowapi==0.1.9
