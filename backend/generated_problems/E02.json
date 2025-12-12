@@ -1,4 +1,5 @@
 {
+  "title": "비밀번호 길이 검증 함수 테스트",
   "function_signature": "def is_valid_password_length(password: str) -> bool:",
   "golden_code": "def is_valid_password_length(password: str) -> bool:\n    '''\n    Validate that the given password string has a length between 8 and 20 characters, inclusive.\n\n    The length is computed using Python's len() built-in and counts all\n    characters exactly as they appear, including whitespace, repeated\n    characters, and any non-ASCII characters.\n\n    If password is not a string, a TypeError is raised with the message\n    'password must be a string'.\n\n    This function only validates length; it does not check any other\n    password rules such as character complexity.\n    '''\n    if not isinstance(password, str):\n        raise TypeError('password must be a string')\n    length = len(password)\n    return 8 <= length <= 20\n",
   "buggy_implementations": [

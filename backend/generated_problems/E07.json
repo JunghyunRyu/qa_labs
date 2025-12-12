@@ -1,4 +1,5 @@
 {
+  "title": "안전한 나눗셈 함수 테스트",
   "function_signature": "def safe_divide(numerator: float, denominator: float) -> float:",
   "golden_code": "def safe_divide(numerator: float, denominator: float) -> float:\n    '''Safely divide two numeric values.\n\n    Accepts int or float arguments only and rejects other types.\n    Raises ZeroDivisionError with a clear message instead of relying on Python's default.\n\n    :param numerator: dividend, must be int or float\n    :param denominator: divisor, must be int or float and not zero\n    :return: floating point result of numerator / denominator\n    :raises TypeError: if numerator or denominator is not int or float\n    :raises ZeroDivisionError: if denominator is zero, with message 'denominator must not be zero'\n    '''\n    allowed_types = (int, float)\n    if not isinstance(numerator, allowed_types) or not isinstance(denominator, allowed_types):\n        raise TypeError('numerator and denominator must be int or float')\n    if denominator == 0:\n        # Handles both 0 and 0.0\n        raise ZeroDivisionError('denominator must not be zero')\n    return numerator / denominator\n",
   "buggy_implementations": [

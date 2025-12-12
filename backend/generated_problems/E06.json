@@ -1,4 +1,5 @@
 {
+  "title": "배송비 계산 함수 테스트",
   "function_signature": "def calculate_shipping_fee(order_amount: float) -> int:",
   "golden_code": "def calculate_shipping_fee(order_amount: float) -> int:\n    '''Calculate shipping fee based on the order amount.\n\n    Business rules:\n    - order_amount must be non-negative, otherwise a ValueError is raised.\n    - 0 <= order_amount < 20_000: base shipping fee 3_000\n    - 20_000 <= order_amount < 50_000: discounted shipping fee 1_500\n    - order_amount >= 50_000: free shipping (0)\n\n    The function returns the shipping fee as an integer number of currency units.\n    No rounding is applied beyond comparing the raw float value.\n    '''\n    if order_amount < 0:\n        raise ValueError('order_amount must be non-negative')\n\n    if order_amount < 20_000:\n        return 3000\n    elif order_amount < 50_000:\n        return 1500\n    else:\n        return 0\n",
   "buggy_implementations": [

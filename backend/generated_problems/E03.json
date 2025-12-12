@@ -1,4 +1,5 @@
 {
+  "title": "장바구니 아이템 검증 함수 테스트",
   "function_signature": "def validate_cart_items(items: list[str]) -> bool:",
   "golden_code": "def validate_cart_items(items: list[str]) -> bool:\n    '''Validate a list of shopping cart item identifiers.\n\n    The cart is considered valid when:\n    - items is a list instance\n    - the number of items is between 1 and 10 inclusive\n    - every item is a string whose stripped value is not empty\n\n    Any violation returns False. The function is designed not to raise\n    just because of invalid input types or values.\n    '''\n    if not isinstance(items, list):\n        return False\n\n    length = len(items)\n    if length < 1 or length > 10:\n        return False\n\n    for item in items:\n        if not isinstance(item, str):\n            return False\n        if item.strip() == '':\n            return False\n\n    return True\n",
   "buggy_implementations": [

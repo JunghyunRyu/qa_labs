@@ -173,11 +173,7 @@ def update_easy_problem_titles():
                 not_found_count += 1
                 continue
             
-            # Only update Easy difficulty problems
-            if problem.difficulty != "Easy":
-                print(f"⏭️  {problem_id} ({slug}) - 난이도가 Easy가 아님 ({problem.difficulty}), 건너뜀")
-                skipped_count += 1
-                continue
+            # Process all difficulties (removed Easy-only restriction)
             
             # Get title from JSON first, if not available extract from description
             title = data.get('title')

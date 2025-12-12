@@ -1,4 +1,5 @@
 {
+  "title": "점수 등급 계산 함수 테스트",
   "function_signature": "def calculate_grade(score: int) -> str:",
   "golden_code": "def calculate_grade(score: int) -> str:\n    '''\n    Calculate a letter grade (A, B, C, D, F) from a numeric exam score.\n\n    The score must be an integer between 0 and 100 inclusive.\n\n    Mapping:\n    - 90 to 100 -> 'A'\n    - 80 to 89  -> 'B'\n    - 70 to 79  -> 'C'\n    - 60 to 69  -> 'D'\n    - 0 to 59   -> 'F'\n\n    Raises:\n        TypeError: if score is not an int.\n        ValueError: if score is outside 0 to 100 inclusive.\n    '''\n    if not isinstance(score, int):\n        raise TypeError('score must be an integer')\n    if score < 0 or score > 100:\n        raise ValueError('score must be between 0 and 100 inclusive')\n\n    if score >= 90:\n        return 'A'\n    elif score >= 80:\n        return 'B'\n    elif score >= 70:\n        return 'C'\n    elif score >= 60:\n        return 'D'\n    else:\n        return 'F'",
   "buggy_implementations": [
