@@ -4,12 +4,13 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Code2, FileText, Info } from "lucide-react";
+import { Code2, FileText, Info, Bot } from "lucide-react";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
 import { useSubmit } from "@/hooks/useSubmit";
 import type { Problem, Submission } from "@/types/problem";
+import type { AIChatMode } from "@/types/ai";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import CodeEditor from "@/components/CodeEditor";
@@ -22,6 +23,8 @@ import BookmarkButton from "@/components/BookmarkButton";
 import CopyButton from "@/components/CopyButton";
 import ProblemStickyPanel from "@/components/ProblemStickyPanel";
 import ProblemMobileDrawer from "@/components/ProblemMobileDrawer";
+import AICoachPanel from "@/components/AICoachPanel";
+import AICoachMobileDrawer from "@/components/AICoachMobileDrawer";
 import TagChips from "@/components/TagChips";
 import Link from "next/link";
 
@@ -38,6 +41,17 @@ export default function ProblemDetailPage() {
   const [isScoringDrawerOpen, setIsScoringDrawerOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
+  const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);
+  const [aiMode, setAiMode] = useState<AIChatMode>(() => {
+    // Load from localStorage on initial render
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ai_coach_mode");
+      if (saved === "COACH" || saved === "OFF") {
+        return saved;
+      }
+    }
+    return "OFF";
+  });
   const editorSectionRef = useRef<HTMLDivElement | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -270,6 +284,12 @@ from target import ${functionName}
     }
   };
 
+  // Persist AI mode to localStorage
+  const handleAIModeChange = useCallback((mode: AIChatMode) => {
+    setAiMode(mode);
+    localStorage.setItem("ai_coach_mode", mode);
+  }, []);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -474,17 +494,31 @@ from target import ${functionName}
           />
         </main>
 
-        {/* Sticky Panel - Desktop only */}
-        <ProblemStickyPanel
-          problem={problem}
-          latestSubmission={submission}
-          onScrollToEditor={scrollToEditor}
-          onOpenScoring={() => setIsScoringDrawerOpen(true)}
-          isEditorVisible={isEditorVisible}
-          onSubmit={handleSubmit}
-          isSubmitting={submitting}
-          canSubmit={!!code.trim()}
-        />
+        {/* Right Sidebar - Desktop only */}
+        <aside className="hidden lg:flex flex-col gap-4 w-80 shrink-0">
+          {/* Sticky Panel */}
+          <ProblemStickyPanel
+            problem={problem}
+            latestSubmission={submission}
+            onScrollToEditor={scrollToEditor}
+            onOpenScoring={() => setIsScoringDrawerOpen(true)}
+            isEditorVisible={isEditorVisible}
+            onSubmit={handleSubmit}
+            isSubmitting={submitting}
+            canSubmit={!!code.trim()}
+          />
+
+          {/* AI Coach Panel */}
+          <div className="sticky" style={{ top: "calc(100vh - 400px)" }}>
+            <AICoachPanel
+              problemId={problemId}
+              codeContext={code}
+              mode={aiMode}
+              onModeChange={handleAIModeChange}
+              className="h-[400px]"
+            />
+          </div>
+        </aside>
       </div>
 
       {/* Scoring Method Drawer */}
@@ -501,14 +535,36 @@ from target import ${functionName}
         latestSubmission={submission}
       />
 
-      {/* Mobile trigger button */}
-      <button
-        onClick={() => setIsMobileDrawerOpen(true)}
-        className="fixed bottom-4 right-4 lg:hidden z-40 bg-sky-500 hover:bg-sky-600 text-white p-4 rounded-full shadow-lg transition-colors"
-        aria-label="문제 정보 보기"
-      >
-        <Info className="w-6 h-6" />
-      </button>
+      {/* AI Coach Mobile Drawer */}
+      <AICoachMobileDrawer
+        isOpen={isAIDrawerOpen}
+        onClose={() => setIsAIDrawerOpen(false)}
+        problemId={problemId}
+        codeContext={code}
+        mode={aiMode}
+        onModeChange={handleAIModeChange}
+      />
+
+      {/* Mobile FAB buttons */}
+      <div className="fixed bottom-4 right-4 lg:hidden z-40 flex flex-col gap-3">
+        {/* AI Coach FAB */}
+        <button
+          onClick={() => setIsAIDrawerOpen(true)}
+          className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white p-4 rounded-full shadow-lg transition-all"
+          aria-label="AI 코치"
+        >
+          <Bot className="w-6 h-6" />
+        </button>
+
+        {/* Problem Info FAB */}
+        <button
+          onClick={() => setIsMobileDrawerOpen(true)}
+          className="bg-gray-700 hover:bg-gray-800 text-white p-4 rounded-full shadow-lg transition-colors"
+          aria-label="문제 정보 보기"
+        >
+          <Info className="w-6 h-6" />
+        </button>
+      </div>
     </div>
   );
 }
