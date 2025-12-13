@@ -73,7 +73,9 @@ class Settings(BaseSettings):
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_REDIS_DB: int = 2  # Celery uses DB 0-1, rate limiting uses DB 2
     RATE_LIMIT_DEFAULT: str = "100/minute"  # Default rate limit for all endpoints
-    RATE_LIMIT_SUBMISSIONS: str = "5/minute"  # Submissions endpoint
+    RATE_LIMIT_SUBMISSIONS: str = "5/minute"  # Submissions endpoint (legacy, use GUEST/MEMBER)
+    RATE_LIMIT_GUEST_SUBMISSIONS: str = "5/minute"  # Guest submissions
+    RATE_LIMIT_MEMBER_SUBMISSIONS: str = "10/minute"  # Member submissions
     RATE_LIMIT_ADMIN: str = "2/minute"  # Admin endpoints (AI generation)
     RATE_LIMIT_ADMIN_CREATE: str = "5/minute"  # Admin problem creation
 

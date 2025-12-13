@@ -1,13 +1,14 @@
 """Submissions API endpoints."""
 
 import logging
+from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.rate_limiter import limiter
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user_optional
 from app.models.db import get_db
 from app.models.submission import Submission
 from app.models.user import User
@@ -20,33 +21,63 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def get_submission_rate_limit(request: Request) -> str:
+    """Get rate limit based on user type (guest vs member)."""
+    access_token = request.cookies.get("access_token")
+    if access_token:
+        return settings.RATE_LIMIT_MEMBER_SUBMISSIONS
+    return settings.RATE_LIMIT_GUEST_SUBMISSIONS
+
+
 @router.post("", response_model=SubmissionResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit(settings.RATE_LIMIT_SUBMISSIONS)
+@limiter.limit(get_submission_rate_limit)
 async def create_submission(
     request: Request,
     submission_data: SubmissionCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
     """
     Create a new submission.
 
-    Requires authentication.
+    Allows both authenticated users and guests.
+    - Authenticated users: submission linked to user_id
+    - Guests: submission linked to anonymous_id (from cookie)
 
     Args:
         submission_data: Submission data
         db: Database session
-        current_user: Authenticated user
+        current_user: Authenticated user (optional)
 
     Returns:
         Created submission
     """
-    logger.info(
-        f"[SUBMISSION_CREATE_START] problem_id={submission_data.problem_id} "
-        f"code_length={len(submission_data.code)} user_id={current_user.id}"
-    )
-    user = current_user
-    
+    # 회원/게스트 구분
+    if current_user:
+        user_id = current_user.id
+        anonymous_id = None
+        logger.info(
+            f"[SUBMISSION_CREATE_START] problem_id={submission_data.problem_id} "
+            f"code_length={len(submission_data.code)} user_id={user_id}"
+        )
+    else:
+        # 게스트: anonymous_id 쿠키 확인
+        anonymous_id = request.cookies.get("qa_anonymous_id")
+        if not anonymous_id:
+            logger.warning(
+                f"[SUBMISSION_CREATE_ERROR] problem_id={submission_data.problem_id} "
+                f"reason=anonymous_id_missing"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Anonymous ID cookie required for guest submission",
+            )
+        user_id = None
+        logger.info(
+            f"[SUBMISSION_CREATE_START] problem_id={submission_data.problem_id} "
+            f"code_length={len(submission_data.code)} anonymous_id={anonymous_id}"
+        )
+
     # 문제 존재 확인
     problem_repo = ProblemRepository(db)
     problem = problem_repo.get_by_id(submission_data.problem_id)
@@ -56,10 +87,11 @@ async def create_submission(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Problem with id {submission_data.problem_id} not found",
         )
-    
+
     # Submission 생성
     submission = Submission(
-        user_id=user.id,
+        user_id=user_id,
+        anonymous_id=anonymous_id,
         problem_id=submission_data.problem_id,
         code=submission_data.code,
         status="PENDING",
@@ -68,10 +100,18 @@ async def create_submission(
     
     submission_repo = SubmissionRepository(db)
     submission = submission_repo.create(submission)
-    logger.info(
-        f"[SUBMISSION_CREATED] submission_id={submission.id} "
-        f"user_id={user.id} problem_id={submission_data.problem_id} status=PENDING"
-    )
+
+    # 로그 메시지 (회원/게스트 구분)
+    if user_id:
+        logger.info(
+            f"[SUBMISSION_CREATED] submission_id={submission.id} "
+            f"user_id={user_id} problem_id={submission_data.problem_id} status=PENDING"
+        )
+    else:
+        logger.info(
+            f"[SUBMISSION_CREATED] submission_id={submission.id} "
+            f"anonymous_id={anonymous_id} problem_id={submission_data.problem_id} status=PENDING"
+        )
     
     # Celery Task 발행
     try:

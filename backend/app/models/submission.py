@@ -18,10 +18,15 @@ class Submission(Base):
             "status IN ('PENDING', 'RUNNING', 'SUCCESS', 'FAILURE', 'ERROR')",
             name='submissions_status_check'
         ),
+        CheckConstraint(
+            "user_id IS NOT NULL OR anonymous_id IS NOT NULL",
+            name='submissions_user_or_anonymous_check'
+        ),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    anonymous_id = Column(String(36), nullable=True, index=True)
     problem_id = Column(Integer, ForeignKey("problems.id"), nullable=False, index=True)
     code = Column(Text, nullable=False)
     status = Column(

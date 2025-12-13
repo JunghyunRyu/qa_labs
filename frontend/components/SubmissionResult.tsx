@@ -7,7 +7,8 @@ import FeedbackDisplay from "./FeedbackDisplay";
 import TestResultsList from "./TestResultsList";
 import ErrorLogDisplay from "./ErrorLogDisplay";
 import { parsePytestOutput } from "@/lib/pytestParser";
-import { AlertCircle, FileText, Sparkles } from "lucide-react";
+import { AlertCircle, FileText, Sparkles, Lock } from "lucide-react";
+import { Github } from "lucide-react";
 
 interface SubmissionResultProps {
   submission: Submission;
@@ -138,13 +139,33 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
             <h3 className="text-lg font-semibold text-gray-900">AI 피드백</h3>
           </div>
           {submission.feedback_json ? (
+            // 피드백이 있는 경우 (회원 제출)
             <FeedbackDisplay feedback={submission.feedback_json as any} />
-          ) : (
+          ) : submission.user_id ? (
+            // 회원인데 피드백이 없는 경우 (생성 중)
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-3"></div>
               <p className="text-sm text-gray-600">
                 AI가 피드백을 생성하고 있습니다...
               </p>
+            </div>
+          ) : (
+            // 게스트인 경우 로그인 유도
+            <div className="text-center py-8">
+              <Lock className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+              <p className="text-gray-600 mb-2 font-medium">
+                AI 피드백은 회원 전용 기능입니다
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                로그인하면 상세한 AI 코칭과 개선 제안을 받을 수 있습니다.
+              </p>
+              <a
+                href="/api/v1/auth/github/login"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <Github className="w-5 h-5" />
+                GitHub로 로그인
+              </a>
             </div>
           )}
         </div>

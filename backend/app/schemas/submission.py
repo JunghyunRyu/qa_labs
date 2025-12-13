@@ -17,7 +17,8 @@ class SubmissionResponse(BaseModel):
     """Schema for submission response."""
 
     id: UUID
-    user_id: UUID
+    user_id: Optional[UUID] = None
+    anonymous_id: Optional[str] = None
     problem_id: int
     code: str
     status: str

@@ -60,7 +60,8 @@ export interface SubmissionProgress {
 
 export interface Submission {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  anonymous_id: string | null;
   problem_id: number;
   code: string;
   status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILURE" | "ERROR";

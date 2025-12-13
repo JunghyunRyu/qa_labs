@@ -19,6 +19,7 @@ from app.core.auth import (
 from app.core.dependencies import get_current_user, get_current_user_optional
 from app.services.github_oauth import github_oauth_service
 from app.models.user import User
+from app.models.submission import Submission
 from app.schemas.auth import UserResponse, AuthStatusResponse
 
 logger = logging.getLogger(__name__)
@@ -113,6 +114,23 @@ async def github_callback(
 
         logger.info(f"User logged in: {user.email} (GitHub: {github_user.login})")
 
+        # 게스트 제출 마이그레이션: anonymous_id로 된 제출을 user_id로 연결
+        anonymous_id = request.cookies.get("qa_anonymous_id")
+        if anonymous_id:
+            migrated_count = db.query(Submission).filter(
+                Submission.anonymous_id == anonymous_id,
+                Submission.user_id.is_(None)
+            ).update({
+                "user_id": user.id,
+                "anonymous_id": None
+            })
+            if migrated_count > 0:
+                db.commit()
+                logger.info(
+                    f"[GUEST_SUBMISSIONS_MIGRATED] user_id={user.id} "
+                    f"anonymous_id={anonymous_id} count={migrated_count}"
+                )
+
         # Create JWT tokens
         access_token = create_access_token(user.id, user.email, user.username)
         refresh_token = create_refresh_token(user.id)
@@ -124,6 +142,9 @@ async def github_callback(
 
         set_auth_cookies(response, access_token, refresh_token)
         response.delete_cookie("oauth_state", path="/")
+
+        # 로그인 후 anonymous_id 쿠키 삭제 (더 이상 필요 없음)
+        response.delete_cookie("qa_anonymous_id", path="/")
 
         return response
 

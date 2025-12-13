@@ -250,37 +250,46 @@ class SubmissionService:
                 f"killed={killed} total={total_weight} kill_ratio={kill_ratio:.2f} score={score}"
             )
 
-            # 8. AI 피드백 생성
-            submission.progress = {
-                "step": "generating_feedback",
-                "message": "AI 피드백 생성 중...",
-                "percent": 95
-            }
-            self.submission_repo.update(submission)
-            logger.info(f"[AI_FEEDBACK_START] submission_id={submission_id}")
-            try:
-                feedback = generate_feedback(
-                    problem_title=problem.title,
-                    problem_description=problem.description_md,
-                    problem_skills=problem.skills or [],
-                    test_code=submission.code,
-                    score=score,
-                    killed_mutants=killed,
-                    total_mutants=total_weight,
-                    kill_ratio=kill_ratio,
-                    execution_log={
-                        "golden": golden_result,
-                        "mutants": mutant_logs,
-                    },
+            # 8. AI 피드백 생성 - 회원에게만 제공
+            if submission.user_id is not None:
+                # 회원인 경우에만 AI 피드백 생성
+                submission.progress = {
+                    "step": "generating_feedback",
+                    "message": "AI 피드백 생성 중...",
+                    "percent": 95
+                }
+                self.submission_repo.update(submission)
+                logger.info(f"[AI_FEEDBACK_START] submission_id={submission_id} user_id={submission.user_id}")
+                try:
+                    feedback = generate_feedback(
+                        problem_title=problem.title,
+                        problem_description=problem.description_md,
+                        problem_skills=problem.skills or [],
+                        test_code=submission.code,
+                        score=score,
+                        killed_mutants=killed,
+                        total_mutants=total_weight,
+                        kill_ratio=kill_ratio,
+                        execution_log={
+                            "golden": golden_result,
+                            "mutants": mutant_logs,
+                        },
+                    )
+                    logger.info(f"[AI_FEEDBACK_SUCCESS] submission_id={submission_id}")
+                except Exception as e:
+                    logger.error(
+                        f"[AI_FEEDBACK_ERROR] submission_id={submission_id} "
+                        f"error={type(e).__name__}: {str(e)}",
+                        exc_info=True
+                    )
+                    # 피드백 생성 실패해도 채점은 완료된 것으로 처리
+                    feedback = None
+            else:
+                # 게스트인 경우 AI 피드백 스킵
+                logger.info(
+                    f"[AI_FEEDBACK_SKIP] submission_id={submission_id} "
+                    f"anonymous_id={submission.anonymous_id} reason=guest_user"
                 )
-                logger.info(f"[AI_FEEDBACK_SUCCESS] submission_id={submission_id}")
-            except Exception as e:
-                logger.error(
-                    f"[AI_FEEDBACK_ERROR] submission_id={submission_id} "
-                    f"error={type(e).__name__}: {str(e)}",
-                    exc_info=True
-                )
-                # 피드백 생성 실패해도 채점은 완료된 것으로 처리
                 feedback = None
 
             # 9. 결과 DB 저장

@@ -16,6 +16,7 @@ from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.sentry import init_sentry, capture_exception_with_context
 from app.api import problems, submissions, admin, health, auth, users
+from app.middleware.anonymous import AnonymousIDMiddleware
 
 # 로깅 설정
 setup_logging()
@@ -184,6 +185,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Anonymous ID middleware for guest users
+app.add_middleware(AnonymousIDMiddleware)
 
 # Include routers
 app.include_router(
