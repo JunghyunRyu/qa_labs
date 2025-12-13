@@ -1,8 +1,8 @@
 
 # QA-Arena – AI-Assisted QA Coding Test Platform Spec
 
-> Version: 0.1 (Draft)  
-> Scope: MVP + AI 통합 구조 설계
+> Version: 0.3 (Updated 2025-12)
+> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합
 
 ---
 
@@ -30,32 +30,40 @@
   - Next.js (React + TypeScript)
   - Monaco Editor 기반 코드 에디터
   - REST API 호출로 문제 조회, 제출, 결과 조회
+  - Sentry 클라이언트 에러 모니터링
 
 - **Backend API**
   - FastAPI (Python 3.11+)
-  - 도메인 로직 / 영속성 / 인증(중기 이후) 담당
+  - 도메인 로직 / 영속성 / 인증 담당
+  - GitHub OAuth 인증 + JWT 토큰 기반 세션 관리
   - Celery Task 발행 (채점 비동기 처리)
+  - Rate Limiter (slowapi 기반)
+  - Sentry 서버 에러 모니터링
 
 - **Judge / Runner Service**
   - Celery Worker (Python)
   - Docker 기반 샌드박스 컨테이너 내에서 pytest 실행
   - Golden Code / Buggy Code 교체, 결과 로그 수집
+  - Docker-in-Docker 환경 (`/tmp/qa_arena_judge` 공유 볼륨)
 
 - **Worker Health Monitor**
   - 별도 컨테이너에서 주기적으로 Celery Worker 상태 및 Health Check 엔드포인트를 점검
-  - 이상 징후(워커 미응답 등)를 로그로 남기고, 향후 알림 시스템 연계 가능
+  - 이상 징후(워커 미응답 등) 발생 시 Slack 알림 발송
+  - 자동 복구 감지 및 알림
 
 - **AI Services**
   - `AI Problem Designer` (문제 자동 생성 보조)
   - `AI Feedback Engine` (채점 결과 → 자연어 피드백 변환)
+  - OpenAI API 기반 (gpt-5-mini 등)
 
 - **Storage**
-  - PostgreSQL: users, problems, buggy_implementations, submissions
-  - (옵션) S3/Blob: 대형 코드 스니펫 / 로그 백업
+  - PostgreSQL: users, problems, buggy_implementations, submissions, bookmarked_problems
+  - Redis: Celery broker + result backend + 캐싱
 
 - **Infra**
   - AWS EC2, Docker Compose, Nginx
-  - Redis: Celery broker + result backend
+  - Let's Encrypt SSL 인증서
+  - Sentry 에러 모니터링
 
 ### 2.2. High-Level Request Flow
 
@@ -76,9 +84,16 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     username VARCHAR(50) NOT NULL,
-    password_hash VARCHAR(255),           -- v1.0에서 추가 (인증 시스템 구현 시)
-    role VARCHAR(20) DEFAULT 'user',      -- v1.0에서 추가 (user, admin)
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- GitHub OAuth fields
+    github_id VARCHAR(50) UNIQUE,
+    github_username VARCHAR(100),
+    avatar_url VARCHAR(500),
+
+    -- Account status
+    last_login_at TIMESTAMP WITH TIME ZONE,
+    is_active BOOLEAN DEFAULT TRUE
 );
 ```
 
@@ -92,10 +107,9 @@ CREATE TABLE problems (
     description_md TEXT NOT NULL,
     function_signature TEXT NOT NULL,
     golden_code TEXT NOT NULL,
-    difficulty VARCHAR(20) CHECK (difficulty IN ('Very Easy', 'Easy', 'Medium', 'Hard')),
+    difficulty VARCHAR(20) CHECK (difficulty IN ('Very Easy', 'Easy', 'Medium', 'Hard')) NOT NULL,
     skills JSONB,                -- 예: ["boundary", "exception", "negative_values"]
-    ai_assist BOOLEAN DEFAULT FALSE,  -- v0.3에서 추가 (AI 사용 허용 여부)
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
 
@@ -117,17 +131,30 @@ CREATE TABLE buggy_implementations (
 ```sql
 CREATE TABLE submissions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
-    problem_id INTEGER REFERENCES problems(id),
+    user_id UUID NOT NULL REFERENCES users(id),
+    problem_id INTEGER NOT NULL REFERENCES problems(id),
     code TEXT NOT NULL,
-    status VARCHAR(20), -- PENDING, RUNNING, SUCCESS, FAILURE, ERROR
-    score INTEGER DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING'
+           CHECK (status IN ('PENDING', 'RUNNING', 'SUCCESS', 'FAILURE', 'ERROR')),
+    score INTEGER NOT NULL DEFAULT 0,
     killed_mutants INTEGER,
     total_mutants INTEGER,
     execution_log JSONB,
     feedback_json JSONB,
-    ai_usage_notes TEXT,       -- v0.3에서 추가 (AI 사용 내역, AI-Assist 모드에서 필수)
-    created_at TIMESTAMP DEFAULT NOW()
+    progress JSONB,            -- {"step": "testing_buggy", "current": 2, "total": 4, "percent": 50}
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### 3.5. Bookmarked Problems (북마크)
+
+```sql
+CREATE TABLE bookmarked_problems (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    problem_id INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE (user_id, problem_id)
 );
 ```
 
@@ -296,39 +323,56 @@ LLM Output → JSON 파싱 검증 → DB에 저장.
 
 ## 6. Backend API (요약 버전)
 
-### 6.1. 문제 목록 조회
+### 6.1. 인증 API (`/api/v1/auth`)
 
-- `GET /api/v1/problems`
-- Query: `page`, `page_size`
-- Response: 문제 메타데이터 목록
+- `GET /api/v1/auth/github` - GitHub OAuth 로그인 시작
+- `GET /api/v1/auth/github/callback` - GitHub OAuth 콜백 처리
+- `POST /api/v1/auth/logout` - 로그아웃
+- `GET /api/v1/auth/me` - 현재 사용자 정보 조회
+- `POST /api/v1/auth/refresh` - 토큰 갱신
 
-### 6.2. 문제 상세 조회
+### 6.2. 문제 API (`/api/v1/problems`)
 
-- `GET /api/v1/problems/{id}`
-- Response:
-  - title, description_md, function_signature
-  - initial_test_template, difficulty, tags
+- `GET /api/v1/problems` - 문제 목록 조회
+  - Query: `page`, `page_size`, `difficulty`, `skills`
+- `GET /api/v1/problems/{slug}` - 문제 상세 조회
+- `POST /api/v1/problems/{problem_id}/bookmark` - 북마크 토글
 
-### 6.3. 제출 생성
+### 6.3. 제출 API (`/api/v1/submissions`)
 
-- `POST /api/v1/submissions`
-- Body:
-  ```json
-  {
-    "problem_id": 1,
-    "code": "import pytest\nfrom target import sum_list\n..."
-  }
-  ```
-- 처리:
-  - submissions row 생성 (status=PENDING)
-  - Celery Task 발행 (`process_submission.delay(submission_id)`)
-  - `submission_id` 반환
+- `POST /api/v1/submissions` - 제출 생성
+  - Body:
+    ```json
+    {
+      "problem_id": 1,
+      "code": "import pytest\nfrom target import sum_list\n..."
+    }
+    ```
+  - 처리:
+    - submissions row 생성 (status=PENDING)
+    - Celery Task 발행 (`process_submission.delay(submission_id)`)
+    - `submission_id` 반환
 
-### 6.4. 제출 결과 조회
+- `GET /api/v1/submissions/{id}` - 제출 결과 조회
+  - Response: status, score, killed_mutants, total_mutants, feedback_json, progress
 
-- `GET /api/v1/submissions/{id}`
-- Response:
-  - status, score, killed_mutants, total_mutants, feedback_json, execution_log 일부
+- `GET /api/v1/submissions` - 사용자 제출 내역 조회
+
+### 6.4. 사용자 API (`/api/v1/users`)
+
+- `GET /api/v1/users/me` - 현재 사용자 정보
+- `GET /api/v1/users/me/submissions` - 제출 히스토리
+- `GET /api/v1/users/me/stats` - 사용자 통계
+
+### 6.5. 관리자 API (`/api/admin`)
+
+- `POST /api/admin/problems/ai-generate` - AI로 문제 생성
+- `POST /api/admin/problems` - 문제 저장
+
+### 6.6. 헬스 체크 API (`/healthz`)
+
+- `GET /healthz` - 전체 시스템 헬스 체크
+- `GET /healthz/worker` - Celery Worker 상태 확인
 
 ---
 
@@ -395,44 +439,79 @@ cd /workdir && pytest -q --disable-warnings --maxfail=1
 
 ## 9. Code Skeleton (요약)
 
-### 9.1. FastAPI 앱 구조 예시
+### 9.1. FastAPI 앱 구조
 
 ```bash
-app/
-  main.py
-  api/
-    __init__.py
-    problems.py
-    submissions.py
-    admin.py
-  services/
-    problem_service.py
-    submission_service.py
-    ai_problem_designer.py
-    ai_feedback_engine.py
-  workers/
-    tasks.py
-  models/
-    __init__.py
-    db.py
-    problem.py
-    submission.py
-  core/
-    config.py
-    logging.py
+backend/
+  app/
+    main.py                      # FastAPI 앱 진입점 + 미들웨어/예외 핸들러
+    api/
+      __init__.py
+      admin.py                   # 관리자 API (문제 생성)
+      auth.py                    # GitHub OAuth + JWT 인증
+      health.py                  # 헬스 체크 엔드포인트
+      problems.py                # 문제 CRUD
+      submissions.py             # 제출 처리
+      users.py                   # 사용자 정보
+    services/
+      ai_feedback_engine.py      # AI 피드백 생성
+      ai_problem_designer.py     # AI 문제 생성
+      docker_service.py          # Docker 컨테이너 관리
+      github_oauth.py            # GitHub OAuth 클라이언트
+      judge_service.py           # 채점 로직
+      problem_service.py         # 문제 비즈니스 로직
+      slack_notifier.py          # Slack 알림
+      submission_service.py      # 제출 비즈니스 로직
+      worker_monitor.py          # 워커 모니터링
+    repositories/
+      problem_repository.py      # 문제 데이터 접근
+      submission_repository.py   # 제출 데이터 접근
+      buggy_implementation_repository.py
+    schemas/
+      auth.py                    # 인증 Pydantic 스키마
+      problem.py                 # 문제 스키마
+      submission.py              # 제출 스키마
+      user.py                    # 사용자 스키마
+      buggy_implementation.py
+    models/
+      __init__.py
+      db.py                      # DB 연결 설정
+      user.py                    # User ORM 모델
+      problem.py                 # Problem ORM 모델
+      submission.py              # Submission ORM 모델
+      buggy_implementation.py    # BuggyImplementation ORM 모델
+      bookmarked_problem.py      # BookmarkedProblem ORM 모델
+    workers/
+      tasks.py                   # Celery 태스크 정의
+      monitor_scheduler.py       # 워커 모니터 스케줄러
+    core/
+      config.py                  # 설정 (환경 변수)
+      logging.py                 # 로깅 설정
+      celery_app.py              # Celery 앱 설정
+      rate_limiter.py            # Rate Limiter 설정
+      sentry.py                  # Sentry 설정
+  alembic/                       # DB 마이그레이션
+  tests/                         # 테스트 코드
+  Dockerfile
+  requirements.txt
 ```
 
-**app/main.py** (의사 코드):
+**app/main.py** (실제 구조):
 
 ```python
 from fastapi import FastAPI
-from app.api import problems, submissions, admin
+from app.api import problems, submissions, admin, health, auth, users
 
 app = FastAPI()
+
+# Rate Limiter, CORS, Exception Handlers 설정...
 
 app.include_router(problems.router, prefix="/api/v1/problems", tags=["problems"])
 app.include_router(submissions.router, prefix="/api/v1/submissions", tags=["submissions"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+app.include_router(health.router, prefix="/healthz", tags=["health"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 ```
 
 ### 9.2. Celery Task Skeleton

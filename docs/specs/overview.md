@@ -3,6 +3,8 @@
 ## 📌 Purpose
 This document provides a high-level overview of the QA-Arena production architecture, including service composition, routing, and operational components.
 
+> 📅 Last Updated: 2025-12
+
 ---
 
 ## 🖥️ EC2 Server Information
@@ -20,12 +22,13 @@ This document provides a high-level overview of the QA-Arena production architec
 The QA-Arena production stack consists of:
 
 ```
-postgres
-redis
-backend (FastAPI)
-celery_worker
-frontend (Next.js)
-nginx (reverse proxy & SSL)
+postgres           # PostgreSQL 15
+redis              # Redis 7 (Celery broker + result backend)
+backend            # FastAPI + JWT 인증
+celery_worker      # 채점 Worker (Docker-in-Docker)
+worker_monitor     # Worker 헬스체크 + Slack 알림
+frontend           # Next.js + Sentry
+nginx              # Reverse proxy + SSL (Let's Encrypt)
 ```
 
 ---
@@ -52,10 +55,13 @@ qa_labs/
 ---
 
 ## 🔧 Technology Stack Summary
-- **Frontend:** Next.js
-- **Backend:** FastAPI
+- **Frontend:** Next.js 14 + TypeScript + Monaco Editor
+- **Backend:** FastAPI (Python 3.11+)
+- **Authentication:** GitHub OAuth + JWT
 - **Task Queue:** Celery + Redis
-- **Database:** PostgreSQL
-- **Reverse Proxy:** Nginx
+- **Database:** PostgreSQL 15
+- **Reverse Proxy:** Nginx + Let's Encrypt SSL
+- **Monitoring:** Sentry (Frontend + Backend)
+- **Alerting:** Slack Webhook (Worker Monitor)
 - **Orchestration:** Docker Compose
 - **Hosting:** AWS EC2

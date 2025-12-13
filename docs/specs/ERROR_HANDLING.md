@@ -79,10 +79,39 @@ async def general_exception_handler(request: Request, exc: Exception):
   - 일반적인 에러 메시지만 반환
   - 에러 ID 제공 (로그 추적용)
   - 상세한 스택 트레이스는 로그에만 기록
+  - Sentry로 에러 자동 보고
 
 - **개발 모드** (`DEBUG=True`):
   - 상세한 에러 정보 반환
   - 스택 트레이스 포함
+
+### 2.5. Sentry 에러 모니터링
+
+**위치**: `backend/app/core/sentry.py`, `backend/app/main.py`
+
+#### 설정
+
+- 환경 변수: `SENTRY_DSN`
+- 프로덕션 환경에서만 활성화
+
+#### 에러 보고
+
+```python
+from app.core.sentry import capture_exception_with_context
+
+sentry_event_id = capture_exception_with_context(
+    exc,
+    context={"request": {"method": method, "url": url}},
+    tags={"error_type": "unhandled_exception"}
+)
+```
+
+#### Sentry에서 확인 가능한 정보
+
+- 에러 스택 트레이스
+- 요청 정보 (method, URL, path)
+- 에러 ID (API 응답의 `error_id`와 매칭)
+- 커스텀 태그 및 컨텍스트
 
 ---
 
@@ -319,4 +348,5 @@ grep "\[GRADING_ERROR\]" logs/app.log
 | 날짜 | 변경 내용 | 작성자 |
 |------|----------|--------|
 | 2025-12-07 | 초기 문서 생성 | AI Copilot |
+| 2025-12-13 | Sentry 에러 모니터링 섹션 추가 | AI Copilot |
 
