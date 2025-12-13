@@ -11,6 +11,7 @@ import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import Link from "next/link";
 import { Search, Filter, X, Bookmark } from "lucide-react";
+import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 type DifficultyFilter = "All" | "Very Easy" | "Easy" | "Medium" | "Hard";
@@ -105,14 +106,15 @@ export default function ProblemsPage() {
     return sorted;
   }, [data, searchQuery, difficultyFilter, selectedTags, sortOption]);
 
-  // 사용 가능한 모든 태그 추출
-  const availableTags = useMemo(() => {
+  // 사용 가능한 모든 태그 추출 (난이도 태그 제외, 한글화 적용)
+  const availableTags = useMemo((): TagViewModel[] => {
     if (!data) return [];
     const tagSet = new Set<string>();
     data.problems.forEach((problem) => {
       problem.skills?.forEach((skill) => tagSet.add(skill));
     });
-    return Array.from(tagSet).sort();
+    const allSlugs = Array.from(tagSet);
+    return toTagViewModels(allSlugs);
   }, [data]);
 
   const handleTagToggle = (tag: string) => {
@@ -232,20 +234,29 @@ export default function ProblemsPage() {
                 난이도
               </label>
               <div className="flex flex-wrap gap-2">
-                {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => (
-                  <button
-                    key={diff}
-                    onClick={() => setDifficultyFilter(diff)}
-                    className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
-                      difficultyFilter === diff
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    }`}
-                    aria-pressed={difficultyFilter === diff}
-                  >
-                    {diff === "All" ? "전체" : diff === "Very Easy" ? "아주쉬움" : diff}
-                  </button>
-                ))}
+                {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => {
+                  const difficultyLabels: Record<DifficultyFilter, string> = {
+                    All: "전체",
+                    "Very Easy": "아주쉬움",
+                    Easy: "쉬움",
+                    Medium: "보통",
+                    Hard: "어려움",
+                  };
+                  return (
+                    <button
+                      key={diff}
+                      onClick={() => setDifficultyFilter(diff)}
+                      className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
+                        difficultyFilter === diff
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      }`}
+                      aria-pressed={difficultyFilter === diff}
+                    >
+                      {difficultyLabels[diff]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -258,16 +269,16 @@ export default function ProblemsPage() {
                 <div className="flex flex-wrap gap-2">
                   {availableTags.map((tag) => (
                     <button
-                      key={tag}
-                      onClick={() => handleTagToggle(tag)}
+                      key={tag.slug}
+                      onClick={() => handleTagToggle(tag.slug)}
                       className={`px-2 md:px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                        selectedTags.includes(tag)
+                        selectedTags.includes(tag.slug)
                           ? "bg-blue-500 text-white"
                           : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                       }`}
-                      aria-pressed={selectedTags.includes(tag)}
+                      aria-pressed={selectedTags.includes(tag.slug)}
                     >
-                      {tag}
+                      {tag.labelKo}
                     </button>
                   ))}
                 </div>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { ProblemListItem } from "@/types/problem";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import BookmarkButton from "./BookmarkButton";
+import { toTagViewModels, sliceTags } from "@/lib/tagDefinitions";
 
 interface ProblemCardProps {
   problem: ProblemListItem;
@@ -114,24 +115,28 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
         )}
 
         {/* 태그 */}
-        {problem.skills && problem.skills.length > 0 && (
-          <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-auto pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700" role="list" aria-label="문제 태그">
-            {problem.skills.slice(0, 4).map((skill) => (
-              <span
-                key={skill}
-                className="px-1.5 sm:px-2 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600 whitespace-nowrap"
-                role="listitem"
-              >
-                {skill}
-              </span>
-            ))}
-            {problem.skills.length > 4 && (
-              <span className="px-1.5 sm:px-2 py-0.5 text-gray-500 dark:text-gray-400 text-xs" aria-label={`추가 태그 ${problem.skills.length - 4}개`}>
-                +{problem.skills.length - 4}
-              </span>
-            )}
-          </div>
-        )}
+        {problem.skills && problem.skills.length > 0 && (() => {
+          const tagModels = toTagViewModels(problem.skills);
+          const { visible, hiddenCount } = sliceTags(tagModels, 4);
+          return (
+            <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-auto pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700" role="list" aria-label="문제 태그">
+              {visible.map((tag) => (
+                <span
+                  key={tag.slug}
+                  className="px-1.5 sm:px-2 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600 whitespace-nowrap"
+                  role="listitem"
+                >
+                  {tag.labelKo}
+                </span>
+              ))}
+              {hiddenCount > 0 && (
+                <span className="px-1.5 sm:px-2 py-0.5 text-gray-500 dark:text-gray-400 text-xs" aria-label={`추가 태그 ${hiddenCount}개`}>
+                  +{hiddenCount}
+                </span>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </Link>
   );

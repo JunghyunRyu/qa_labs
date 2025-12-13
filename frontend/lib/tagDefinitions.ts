@@ -116,6 +116,108 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     category: "CONCEPT",
     priority: 99, // 우선순위 낮게
   },
+  "boundary analysis": {
+    slug: "boundary analysis",
+    labelKo: "경계값 분석",
+    category: "CONCEPT",
+    priority: 26,
+  },
+  "boundary value analysis": {
+    slug: "boundary value analysis",
+    labelKo: "경계값 분석",
+    category: "CONCEPT",
+    priority: 26,
+  },
+  "boundary-value": {
+    slug: "boundary-value",
+    labelKo: "경계값",
+    category: "CONCEPT",
+    priority: 26,
+  },
+  mock: {
+    slug: "mock",
+    labelKo: "모킹",
+    category: "CONCEPT",
+    priority: 28,
+  },
+  retry: {
+    slug: "retry",
+    labelKo: "재시도",
+    category: "CONCEPT",
+    priority: 29,
+  },
+  backoff: {
+    slug: "backoff",
+    labelKo: "백오프",
+    category: "CONCEPT",
+    priority: 30,
+  },
+  "state-management": {
+    slug: "state-management",
+    labelKo: "상태 관리",
+    category: "CONCEPT",
+    priority: 31,
+  },
+  "time-control": {
+    slug: "time-control",
+    labelKo: "시간 제어",
+    category: "CONCEPT",
+    priority: 32,
+  },
+  "time-mock": {
+    slug: "time-mock",
+    labelKo: "시간 모킹",
+    category: "CONCEPT",
+    priority: 33,
+  },
+  "rate-limiter": {
+    slug: "rate-limiter",
+    labelKo: "속도 제한",
+    category: "CONCEPT",
+    priority: 34,
+  },
+  "token-bucket": {
+    slug: "token-bucket",
+    labelKo: "토큰 버킷",
+    category: "CONCEPT",
+    priority: 35,
+  },
+  "log-analysis": {
+    slug: "log-analysis",
+    labelKo: "로그 분석",
+    category: "CONCEPT",
+    priority: 36,
+  },
+  monitoring: {
+    slug: "monitoring",
+    labelKo: "모니터링",
+    category: "CONCEPT",
+    priority: 37,
+  },
+  "data transformation": {
+    slug: "data transformation",
+    labelKo: "데이터 변환",
+    category: "CONCEPT",
+    priority: 38,
+  },
+  "multi-step processing": {
+    slug: "multi-step processing",
+    labelKo: "다단계 처리",
+    category: "CONCEPT",
+    priority: 39,
+  },
+  "pipeline testing": {
+    slug: "pipeline testing",
+    labelKo: "파이프라인 테스트",
+    category: "CONCEPT",
+    priority: 40,
+  },
+  "text-validation": {
+    slug: "text-validation",
+    labelKo: "텍스트 검증",
+    category: "CONCEPT",
+    priority: 41,
+  },
 
   // === DOMAIN (도메인/데이터) ===
   dictionary: {
@@ -171,6 +273,84 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     labelKo: "기본 수학",
     category: "DOMAIN",
     priority: 38,
+  },
+  "basic math": {
+    slug: "basic math",
+    labelKo: "기본 수학",
+    category: "DOMAIN",
+    priority: 38,
+  },
+  "arithmetic operations": {
+    slug: "arithmetic operations",
+    labelKo: "산술 연산",
+    category: "DOMAIN",
+    priority: 37,
+  },
+  csv: {
+    slug: "csv",
+    labelKo: "CSV",
+    category: "DOMAIN",
+    priority: 39,
+  },
+  "floating point precision": {
+    slug: "floating point precision",
+    labelKo: "부동소수점 정밀도",
+    category: "DOMAIN",
+    priority: 40,
+  },
+  "numeric accuracy": {
+    slug: "numeric accuracy",
+    labelKo: "수치 정확도",
+    category: "DOMAIN",
+    priority: 41,
+  },
+  temperature: {
+    slug: "temperature",
+    labelKo: "온도",
+    category: "DOMAIN",
+    priority: 42,
+  },
+  math: {
+    slug: "math",
+    labelKo: "수학",
+    category: "DOMAIN",
+    priority: 43,
+  },
+  statistics: {
+    slug: "statistics",
+    labelKo: "통계",
+    category: "DOMAIN",
+    priority: 44,
+  },
+  parsing: {
+    slug: "parsing",
+    labelKo: "파싱",
+    category: "DOMAIN",
+    priority: 45,
+  },
+  "string analysis": {
+    slug: "string analysis",
+    labelKo: "문자열 분석",
+    category: "DOMAIN",
+    priority: 46,
+  },
+  "string validation": {
+    slug: "string validation",
+    labelKo: "문자열 검증",
+    category: "DOMAIN",
+    priority: 47,
+  },
+  "boolean logic": {
+    slug: "boolean logic",
+    labelKo: "불리언 로직",
+    category: "DOMAIN",
+    priority: 48,
+  },
+  api: {
+    slug: "api",
+    labelKo: "API",
+    category: "DOMAIN",
+    priority: 49,
   },
 
   // === CONTEXT (실무 맥락) ===
