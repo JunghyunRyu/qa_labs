@@ -7,16 +7,37 @@ const features = [
     image: "/images/qa-scenario-card.png",
     title: "실전 버그 헌팅 시나리오",
     description: "경계값, 예외 처리 등 실무에서 자주 놓치는 버그 패턴을 학습하세요",
+    iconBg: "bg-red-100 dark:bg-red-900/30",
+    iconColor: "text-red-600 dark:text-red-400",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    ),
   },
   {
     image: "/images/auto-grading-card.png",
     title: "Mutant 기반 자동 채점",
     description: "정답 코드와 버그 코드에 테스트를 실행해 버그 탐지율로 채점합니다",
+    iconBg: "bg-amber-100 dark:bg-amber-900/30",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
   },
   {
     image: "/images/ai-code-review-card.png",
     title: "AI 코치의 맞춤 피드백",
     description: "잘한 점, 개선점, 놓친 테스트 케이스를 AI가 구체적으로 제안합니다",
+    iconBg: "bg-sky-100 dark:bg-sky-900/30",
+    iconColor: "text-sky-600 dark:text-sky-400",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+    ),
   },
 ];
 
@@ -26,6 +47,48 @@ const steps = [
   { number: "02", title: "테스트 코드 작성", description: "브라우저 에디터에서 pytest 테스트 코드를 작성하세요" },
   { number: "03", title: "버그 탐지 채점", description: "정답/버그 코드에 테스트를 실행해 탐지율을 계산합니다" },
   { number: "04", title: "AI 피드백 수령", description: "AI 코치가 잘한 점, 개선점, 추가 테스트 케이스를 제안합니다" },
+];
+
+// Target Audience 데이터
+const audiences = [
+  {
+    title: "QA 엔지니어",
+    desc: "테스트 자동화 스킬을 객관적으로 검증하고 싶은 현업 전문가",
+    iconBg: "bg-blue-100 dark:bg-blue-900/30",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    imageSrc: "/images/audience/qa-engineer.webp",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    title: "SDET 지망생",
+    desc: "pytest 기반 테스트 설계를 실전처럼 연습하고 싶은 취준생",
+    iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    imageSrc: "/images/audience/sdet.webp",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M12 14l9-5-9-5-9 5 9 5z" />
+        <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+      </svg>
+    ),
+  },
+  {
+    title: "개발팀 리드",
+    desc: "팀원의 QA 역량을 객관적으로 평가하고 싶은 매니저",
+    iconBg: "bg-purple-100 dark:bg-purple-900/30",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    imageSrc: "/images/audience/lead.webp",
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Home() {
@@ -105,38 +168,45 @@ export default function Home() {
             QA-Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            <div className="text-center p-6 rounded-xl bg-[var(--card-background)] border border-[var(--card-border)]">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-[var(--foreground)]">QA 엔지니어</h3>
-              <p className="text-[var(--muted)]">테스트 자동화 스킬을 객관적으로 검증하고 싶은 현업 전문가</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {audiences.map((a) => (
+              <div
+                key={a.title}
+                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md"
+              >
+                {/* Image area */}
+                <div className="relative h-44">
+                  <Image
+                    src={a.imageSrc}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    priority={false}
+                  />
+                  {/* readability overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-white/90 dark:to-slate-800/90" />
+                </div>
 
-            <div className="text-center p-6 rounded-xl bg-[var(--card-background)] border border-[var(--card-border)]">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                  <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-[var(--foreground)]">SDET 지망생</h3>
-              <p className="text-[var(--muted)]">pytest 기반 테스트 설계를 실전처럼 연습하고 싶은 취준생</p>
-            </div>
+                {/* Icon badge (overlap) */}
+                <div className="relative -mt-7 flex justify-center">
+                  <div className={`h-14 w-14 rounded-full ${a.iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
+                    <div className={a.iconColor}>{a.icon}</div>
+                  </div>
+                </div>
 
-            <div className="text-center p-6 rounded-xl bg-[var(--card-background)] border border-[var(--card-border)]">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+                {/* Content */}
+                <div className="px-6 pb-7 pt-4 text-center">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{a.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{a.desc}</p>
+                </div>
+
+                {/* subtle hover sheen (optional) */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
+                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
+                </div>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-[var(--foreground)]">개발팀 리드</h3>
-              <p className="text-[var(--muted)]">팀원의 QA 역량을 객관적으로 평가하고 싶은 매니저</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -152,26 +222,42 @@ export default function Home() {
           </p>
 
           {/* Feature Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group bg-[var(--card-background)] rounded-xl border border-[var(--card-border)] p-6 hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md"
               >
-                <div className="relative w-full aspect-square mb-6 rounded-lg overflow-hidden bg-slate-900">
+                {/* Image area - aspect-square 유지 */}
+                <div className="relative aspect-square">
                   <Image
                     src={feature.image}
                     alt={feature.title}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                   />
+                  {/* readability overlay - 하단만 적용 */}
+                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-[var(--foreground)]">
-                  {feature.title}
-                </h3>
-                <p className="text-[var(--muted)]">
-                  {feature.description}
-                </p>
+
+                {/* Icon badge (overlap) */}
+                <div className="relative -mt-7 flex justify-center">
+                  <div className={`h-14 w-14 rounded-full ${feature.iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
+                    <div className={feature.iconColor}>{feature.icon}</div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="px-6 pb-7 pt-4 text-center">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{feature.description}</p>
+                </div>
+
+                {/* subtle hover sheen (optional) */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
+                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
+                </div>
               </div>
             ))}
           </div>
