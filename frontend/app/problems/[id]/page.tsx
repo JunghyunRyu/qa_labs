@@ -413,8 +413,11 @@ from target import ${functionName}
 
         {/* Golden Code (for reference, hidden by default) */}
         <details className="mt-6 group/details">
-          <summary className="cursor-pointer text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
-            정답 코드 보기 (참고용)
+          <summary
+            className="cursor-pointer text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+            title="제출한 테스트는 기준 구현을 반드시 통과해야 합니다."
+          >
+            기준 구현 보기 (Reference)
           </summary>
           <div className="mt-3 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 relative group">
             <pre className="text-xs text-gray-800 dark:text-gray-200 font-mono overflow-x-auto">
