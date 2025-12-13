@@ -65,6 +65,7 @@ class AIConversationListItem(BaseModel):
     problem_title: Optional[str] = None
     mode: str
     message_count: int
+    preview: Optional[str] = None  # First user message preview (truncated)
     created_at: datetime
     updated_at: datetime
 

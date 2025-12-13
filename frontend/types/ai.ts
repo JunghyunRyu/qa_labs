@@ -42,9 +42,13 @@ export interface AIConversationListItem {
   problem_title?: string;
   mode: string;
   message_count: number;
+  preview?: string;  // First user message preview
   created_at: string;
   updated_at: string;
 }
+
+// Alias for component usage
+export type AIConversationSummary = AIConversationListItem;
 
 export interface AIConversationListResponse {
   conversations: AIConversationListItem[];

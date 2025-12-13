@@ -191,3 +191,32 @@ class AIRepository:
         return self.db.query(func.count(AIMessage.id)).filter(
             AIMessage.conversation_id == conversation_id
         ).scalar() or 0
+
+    def get_first_user_message_preview(
+        self,
+        conversation_id: UUID,
+        max_length: int = 50,
+    ) -> Optional[str]:
+        """
+        Get truncated preview of first user message in conversation.
+
+        Args:
+            conversation_id: Conversation ID
+            max_length: Maximum length of preview string
+
+        Returns:
+            Truncated first user message or None if no messages
+        """
+        message = self.db.query(AIMessage).filter(
+            AIMessage.conversation_id == conversation_id,
+            AIMessage.role == "user",
+        ).order_by(AIMessage.created_at.asc()).first()
+
+        if not message:
+            return None
+
+        content = message.content.strip()
+        if len(content) <= max_length:
+            return content
+
+        return content[:max_length].rstrip() + "..."

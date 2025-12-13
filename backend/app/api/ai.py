@@ -218,12 +218,15 @@ async def list_conversations(
     items = []
     for conv in conversations:
         message_count = ai_repo.get_message_count(conv.id)
+        # Get first user message as preview
+        preview = ai_repo.get_first_user_message_preview(conv.id, max_length=50)
         items.append(AIConversationListItem(
             id=conv.id,
             problem_id=conv.problem_id,
             problem_title=conv.problem.title if conv.problem else None,
             mode=conv.mode,
             message_count=message_count,
+            preview=preview,
             created_at=conv.created_at,
             updated_at=conv.updated_at,
         ))

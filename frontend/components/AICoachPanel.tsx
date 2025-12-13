@@ -3,10 +3,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { Bot, X, LogIn } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { sendAIMessage } from "@/lib/api/ai";
+import { sendAIMessage, getAIConversation } from "@/lib/api/ai";
 import { ApiError } from "@/lib/api";
 import AIConversationList from "./AIConversationList";
 import AIMessageInput from "./AIMessageInput";
+import AIConversationHistory from "./AIConversationHistory";
 import type { AIMessage, AIChatMode } from "@/types/ai";
 
 interface AICoachPanelProps {
@@ -30,6 +31,7 @@ export default function AICoachPanel({
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reset conversation when problem changes
@@ -38,6 +40,44 @@ export default function AICoachPanel({
     setConversationId(null);
     setError(null);
   }, [problemId]);
+
+  // Load a previous conversation
+  const handleSelectConversation = useCallback(async (selectedConversationId: string | null) => {
+    if (!selectedConversationId) {
+      // Start new conversation
+      setMessages([]);
+      setConversationId(null);
+      setError(null);
+      return;
+    }
+
+    setIsLoadingHistory(true);
+    setError(null);
+    try {
+      const conversation = await getAIConversation(selectedConversationId);
+      setConversationId(conversation.id);
+      setMessages(
+        conversation.messages.map((msg) => ({
+          id: msg.id,
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+          created_at: msg.created_at,
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+      setError("대화를 불러올 수 없습니다.");
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, []);
+
+  // Start a new conversation
+  const handleNewConversation = useCallback(() => {
+    setMessages([]);
+    setConversationId(null);
+    setError(null);
+  }, []);
 
   const handleSendMessage = useCallback(
     async (content: string) => {
@@ -173,8 +213,20 @@ export default function AICoachPanel({
         </div>
       ) : (
         <>
+          {/* Conversation History Selector - Members only */}
+          {isAuthenticated && (
+            <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+              <AIConversationHistory
+                problemId={problemId}
+                currentConversationId={conversationId}
+                onSelectConversation={handleSelectConversation}
+                onNewConversation={handleNewConversation}
+              />
+            </div>
+          )}
+
           {/* Messages */}
-          <AIConversationList messages={messages} loading={isLoading} />
+          <AIConversationList messages={messages} loading={isLoading || isLoadingHistory} />
 
           {/* Error Message */}
           {error && (
