@@ -238,6 +238,18 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     category: "DOMAIN",
     priority: 32,
   },
+  "dictionary operations": {
+    slug: "dictionary operations",
+    labelKo: "딕셔너리 연산",
+    category: "DOMAIN",
+    priority: 31,
+  },
+  "key validation": {
+    slug: "key validation",
+    labelKo: "키 검증",
+    category: "DOMAIN",
+    priority: 32,
+  },
   datetime: {
     slug: "datetime",
     labelKo: "날짜/시간",
@@ -398,7 +410,11 @@ export function toTagViewModels(slugs: string[]): TagViewModel[] {
     .filter((slug) => !DIFFICULTY_TAGS.includes(slug.toLowerCase()))
     .map((slug) => {
       const def = TAG_DEFINITIONS[slug.toLowerCase()];
-      if (def && !def.hidden) {
+      if (def) {
+        // hidden 태그는 null 반환하여 필터링
+        if (def.hidden) {
+          return null;
+        }
         return {
           slug: def.slug,
           labelKo: def.labelKo,
