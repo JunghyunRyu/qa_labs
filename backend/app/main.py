@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.sentry import init_sentry, capture_exception_with_context
-from app.api import problems, submissions, admin, health, auth, users
+from app.api import problems, submissions, admin, health, auth, users, ai
 from app.middleware.anonymous import AnonymousIDMiddleware
 
 # 로깅 설정
@@ -224,6 +224,12 @@ app.include_router(
     users.router,
     prefix="/api/v1/users",
     tags=["users"],
+)
+
+app.include_router(
+    ai.router,
+    prefix="/api/v1/ai",
+    tags=["ai"],
 )
 
 

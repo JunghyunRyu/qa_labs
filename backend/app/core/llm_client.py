@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any, Literal, List
 from openai import OpenAI
 from openai import APIError as OpenAIAPIError
 
@@ -364,6 +364,55 @@ class LLMClient:
             logger.error(f"Failed to parse JSON response (Responses API): {e}")
             logger.error(f"Response text: {response_text[:500]}")
             raise ValueError(f"Failed to parse JSON response: {str(e)}")
+
+
+    def generate_chat_completion(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+    ) -> str:
+        """
+        Generate completion using multi-turn conversation.
+
+        Args:
+            messages: List of message dicts with 'role' and 'content' keys.
+                      Roles can be 'system', 'user', or 'assistant'.
+            temperature: Temperature for generation
+            max_tokens: Maximum tokens to generate
+
+        Returns:
+            Generated text
+
+        Raises:
+            ValueError: If API key is not set
+            RuntimeError: If API call fails
+        """
+        if not self.client:
+            raise ValueError("OPENAI_API_KEY is not set. Cannot use LLM features.")
+
+        try:
+            logger.info(f"Using Chat Completions API (multi-turn): model={self.model}, messages={len(messages)}")
+
+            api_params = {
+                "model": self.model,
+                "messages": messages,
+                "temperature": temperature,
+            }
+
+            if max_tokens is not None:
+                api_params["max_tokens"] = max_tokens
+
+            response = self.client.chat.completions.create(**api_params)
+
+            return response.choices[0].message.content or ""
+
+        except OpenAIAPIError as e:
+            logger.error(f"OpenAI API error: {e}")
+            raise RuntimeError(f"LLM API call failed: {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error in LLM call: {e}", exc_info=True)
+            raise RuntimeError(f"Unexpected error in LLM call: {str(e)}")
 
 
 # Global LLM client instance
