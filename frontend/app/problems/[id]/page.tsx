@@ -422,7 +422,10 @@ from target import ${functionName}
           <CodeEditor
             value={code}
             onChange={(value) => setCode(value || "")}
-            height="300px"
+            height="350px"
+            minHeight={200}
+            maxHeight={700}
+            resizable
             language="python"
           />
         </div>
