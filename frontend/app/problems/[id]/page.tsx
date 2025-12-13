@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Code2, FileText } from "lucide-react";
+import { Code2, FileText, Info } from "lucide-react";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
@@ -20,7 +20,8 @@ import ProblemCTA from "@/components/ProblemCTA";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
 import BookmarkButton from "@/components/BookmarkButton";
 import CopyButton from "@/components/CopyButton";
-import ProblemSidebar from "@/components/ProblemSidebar";
+import ProblemStickyPanel from "@/components/ProblemStickyPanel";
+import ProblemMobileDrawer from "@/components/ProblemMobileDrawer";
 import TagChips from "@/components/TagChips";
 import Link from "next/link";
 
@@ -35,12 +36,17 @@ export default function ProblemDetailPage() {
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isScoringDrawerOpen, setIsScoringDrawerOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
   const editorSectionRef = useRef<HTMLDivElement | null>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
   const pollingErrorCountRef = useRef<number>(0);
+
+  // 폴링 지수 백오프 상수
+  const BASE_POLL_INTERVAL = 2000;  // 2초
+  const MAX_POLL_INTERVAL = 32000;  // 32초
 
   // Generate initial test template
   const getInitialTemplate = (problem: Problem): string => {
@@ -87,17 +93,17 @@ from target import ${functionName}
     fetchProblem();
   }, [problemId]);
 
-  // Polling for submission result
+  // Polling for submission result with exponential backoff
   useEffect(() => {
     // 폴링이 필요 없는 상태면 정리
     if (!submission || (submission.status !== "PENDING" && submission.status !== "RUNNING")) {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
       if (pollingTimeoutRef.current) {
         clearTimeout(pollingTimeoutRef.current);
         pollingTimeoutRef.current = null;
+      }
+      if (pollingMaxTimeoutRef.current) {
+        clearTimeout(pollingMaxTimeoutRef.current);
+        pollingMaxTimeoutRef.current = null;
       }
       pollingStartTimeRef.current = null;
       pollingErrorCountRef.current = 0;
@@ -110,62 +116,76 @@ from target import ${functionName}
       pollingErrorCountRef.current = 0;
     }
 
-    // 타임아웃 설정 (5분)
-    const POLLING_TIMEOUT = 5 * 60 * 1000; // 5분
-    pollingTimeoutRef.current = setTimeout(() => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
+    // 최대 타임아웃 설정 (5분)
+    const POLLING_MAX_TIMEOUT = 5 * 60 * 1000; // 5분
+    pollingMaxTimeoutRef.current = setTimeout(() => {
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current);
+        pollingTimeoutRef.current = null;
       }
       setSubmissionError(
         "채점이 5분 이상 지연되고 있습니다. 서버에 문제가 있을 수 있습니다. 잠시 후 다시 시도해주세요."
       );
       pollingStartTimeRef.current = null;
-    }, POLLING_TIMEOUT);
+    }, POLLING_MAX_TIMEOUT);
 
-    // 폴링 시작
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        const updatedSubmission = await getSubmission(submission.id);
-        setSubmission(updatedSubmission);
-        // 성공 시 에러 카운트 리셋
-        pollingErrorCountRef.current = 0;
-      } catch (err) {
-        pollingErrorCountRef.current += 1;
-        console.error("Failed to fetch submission:", err);
-        
-        // 연속 에러가 5회 이상이면 사용자에게 알림
-        if (pollingErrorCountRef.current >= 5) {
-          let errorMessage = "채점 결과를 가져오는 중 오류가 발생했습니다.";
-          if (err instanceof ApiError) {
-            const errorData = err.data as { detail?: string } | undefined;
-            errorMessage = errorData?.detail || err.message || errorMessage;
-          } else if (err && typeof err === "object" && "message" in err) {
-            errorMessage = String(err.message);
+    // 지수 백오프 간격 계산: 2초 → 4초 → 8초 → 16초 → 32초
+    const getBackoffInterval = (errorCount: number) => {
+      return Math.min(BASE_POLL_INTERVAL * Math.pow(2, errorCount), MAX_POLL_INTERVAL);
+    };
+
+    // 재귀적 폴링 함수
+    const scheduleNextPoll = (currentInterval: number) => {
+      pollingTimeoutRef.current = setTimeout(async () => {
+        try {
+          const updatedSubmission = await getSubmission(submission.id);
+          setSubmission(updatedSubmission);
+
+          // 성공 시 에러 카운트 리셋 및 간격 초기화
+          pollingErrorCountRef.current = 0;
+
+          // 아직 폴링이 필요하면 다음 폴링 예약 (기본 간격으로)
+          if (updatedSubmission.status === "PENDING" || updatedSubmission.status === "RUNNING") {
+            scheduleNextPoll(BASE_POLL_INTERVAL);
           }
-          setSubmissionError(errorMessage);
-          
-          // 폴링 중지
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
+        } catch (err) {
+          pollingErrorCountRef.current += 1;
+          console.error("Failed to fetch submission:", err);
+
+          // 연속 에러가 5회 이상이면 사용자에게 알림
+          if (pollingErrorCountRef.current >= 5) {
+            setSubmissionError("연결 문제가 발생했습니다. 새로고침해 주세요.");
+
+            // 폴링 중지
+            if (pollingTimeoutRef.current) {
+              clearTimeout(pollingTimeoutRef.current);
+              pollingTimeoutRef.current = null;
+            }
+            if (pollingMaxTimeoutRef.current) {
+              clearTimeout(pollingMaxTimeoutRef.current);
+              pollingMaxTimeoutRef.current = null;
+            }
+            return;
           }
-          if (pollingTimeoutRef.current) {
-            clearTimeout(pollingTimeoutRef.current);
-            pollingTimeoutRef.current = null;
-          }
+
+          // 지수 백오프로 다음 폴링 예약
+          const nextInterval = getBackoffInterval(pollingErrorCountRef.current);
+          scheduleNextPoll(nextInterval);
         }
-      }
-    }, 2000); // Poll every 2 seconds
+      }, currentInterval);
+    };
+
+    // 첫 폴링 시작 (기본 간격)
+    scheduleNextPoll(BASE_POLL_INTERVAL);
 
     return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
       if (pollingTimeoutRef.current) {
         clearTimeout(pollingTimeoutRef.current);
         pollingTimeoutRef.current = null;
+      }
+      if (pollingMaxTimeoutRef.current) {
+        clearTimeout(pollingMaxTimeoutRef.current);
+        pollingMaxTimeoutRef.current = null;
       }
     };
   }, [submission]);
@@ -451,10 +471,10 @@ from target import ${functionName}
           />
         </main>
 
-        {/* Sidebar - Desktop only */}
-        <ProblemSidebar
-          difficulty={problem.difficulty}
-          tags={problem.skills || []}
+        {/* Sticky Panel - Desktop only */}
+        <ProblemStickyPanel
+          problem={problem}
+          latestSubmission={submission}
           onScrollToEditor={scrollToEditor}
           onOpenScoring={() => setIsScoringDrawerOpen(true)}
           isEditorVisible={isEditorVisible}
@@ -469,6 +489,23 @@ from target import ${functionName}
         isOpen={isScoringDrawerOpen}
         onClose={() => setIsScoringDrawerOpen(false)}
       />
+
+      {/* Mobile Problem Info Drawer */}
+      <ProblemMobileDrawer
+        isOpen={isMobileDrawerOpen}
+        onClose={() => setIsMobileDrawerOpen(false)}
+        problem={problem}
+        latestSubmission={submission}
+      />
+
+      {/* Mobile trigger button */}
+      <button
+        onClick={() => setIsMobileDrawerOpen(true)}
+        className="fixed bottom-4 right-4 lg:hidden z-40 bg-sky-500 hover:bg-sky-600 text-white p-4 rounded-full shadow-lg transition-colors"
+        aria-label="문제 정보 보기"
+      >
+        <Info className="w-6 h-6" />
+      </button>
     </div>
   );
 }

@@ -3,6 +3,28 @@
 import type { Submission } from "@/types/problem";
 import SubmissionResult from "./SubmissionResult";
 import SubmissionStatus from "./SubmissionStatus";
+import CopyButton from "./CopyButton";
+
+/** submission ID를 표시하는 헬퍼 컴포넌트 */
+function SubmissionIdDisplay({ id }: { id: string }) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+      <span>제출 ID:</span>
+      <code
+        className="font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-700"
+        title={id}
+      >
+        {id.slice(0, 8)}...
+      </code>
+      <CopyButton
+        value={id}
+        label="제출 ID 복사"
+        size="sm"
+        className="bg-gray-100 hover:bg-gray-200 text-gray-600"
+      />
+    </div>
+  );
+}
 
 interface SubmissionResultPanelProps {
   submission: Submission | null;
@@ -36,6 +58,7 @@ export default function SubmissionResultPanel({
       <div className="mt-8 bg-white rounded-lg shadow-md p-8">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">채점 결과</h3>
+          {submission && <SubmissionIdDisplay id={submission.id} />}
           <div className="py-8">
             <SubmissionStatus
               status={submission?.status || "PENDING"}
@@ -76,6 +99,7 @@ export default function SubmissionResultPanel({
     return (
       <div className="mt-8 bg-white rounded-lg shadow-md p-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">채점 결과</h3>
+        <SubmissionIdDisplay id={submission.id} />
         <div className="space-y-4">
           <SubmissionResult submission={submission} />
           {onRetry && (
@@ -97,7 +121,8 @@ export default function SubmissionResultPanel({
   if (submission) {
     return (
       <div className="mt-8 bg-white rounded-lg shadow-md p-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">채점 결과</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">채점 결과</h3>
+        <SubmissionIdDisplay id={submission.id} />
         <SubmissionResult submission={submission} />
       </div>
     );
