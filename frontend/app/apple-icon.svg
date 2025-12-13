@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0ea5e9;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square for iOS -->
+  <rect x="0" y="0" width="180" height="180" rx="40" ry="40" fill="url(#blueGradient)"/>
+
+  <!-- Code brackets </> -->
+  <path d="M58 65 L33 90 L58 115" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M122 65 L147 90 L122 115" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Checkmark in center -->
+  <path d="M68 93 L85 110 L112 73" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
