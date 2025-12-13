@@ -21,16 +21,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_submission_rate_limit(request: Request) -> str:
-    """Get rate limit based on user type (guest vs member)."""
-    access_token = request.cookies.get("access_token")
-    if access_token:
-        return settings.RATE_LIMIT_MEMBER_SUBMISSIONS
-    return settings.RATE_LIMIT_GUEST_SUBMISSIONS
-
-
 @router.post("", response_model=SubmissionResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit(get_submission_rate_limit)
+@limiter.limit(settings.RATE_LIMIT_GUEST_SUBMISSIONS)  # 게스트 기준 (더 엄격한 제한)
 async def create_submission(
     request: Request,
     submission_data: SubmissionCreate,
