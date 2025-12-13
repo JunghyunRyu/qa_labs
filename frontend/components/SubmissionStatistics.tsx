@@ -14,6 +14,7 @@ import {
   AreaChart,
   Area,
   CartesianGrid,
+  Legend,
 } from "recharts";
 import type { UserStatisticsResponse, Difficulty } from "@/types/submission";
 import {
@@ -169,15 +170,23 @@ export default function SubmissionStatistics({
                       name === "attempted" ? "시도" : "해결",
                     ]}
                   />
+                  <Legend
+                    formatter={(value: string) => (
+                      <span style={{ color: "#9ca3af" }}>
+                        {value === "attempted" ? "시도" : "해결"}
+                      </span>
+                    )}
+                    wrapperStyle={{ paddingTop: "10px" }}
+                  />
                   <Bar
                     dataKey="attempted"
-                    fill="#6b7280"
+                    fill="#94a3b8"
                     name="attempted"
                     radius={[0, 4, 4, 0]}
                   />
                   <Bar
                     dataKey="solved"
-                    fill="#22c55e"
+                    fill="#10b981"
                     name="solved"
                     radius={[0, 4, 4, 0]}
                   />
