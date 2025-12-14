@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Bot, X, LogIn } from "lucide-react";
+import { Bot, X, LogIn, Lock } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { sendAIMessage, getAIConversation } from "@/lib/api/ai";
 import { ApiError } from "@/lib/api";
@@ -211,19 +211,37 @@ export default function AICoachPanel({
             켜기
           </button>
         </div>
+      ) : !isAuthenticated ? (
+        /* Members-only login prompt */
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <Lock className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            회원 전용 기능
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            AI 코치는 로그인 후 이용할 수 있습니다
+          </p>
+          <button
+            onClick={login}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+          >
+            <LogIn className="w-4 h-4" />
+            GitHub로 로그인
+          </button>
+        </div>
       ) : (
         <>
-          {/* Conversation History Selector - Members only */}
-          {isAuthenticated && (
-            <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-              <AIConversationHistory
-                problemId={problemId}
-                currentConversationId={conversationId}
-                onSelectConversation={handleSelectConversation}
-                onNewConversation={handleNewConversation}
-              />
-            </div>
-          )}
+          {/* Conversation History Selector */}
+          <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+            <AIConversationHistory
+              problemId={problemId}
+              currentConversationId={conversationId}
+              onSelectConversation={handleSelectConversation}
+              onNewConversation={handleNewConversation}
+            />
+          </div>
 
           {/* Messages */}
           <AIConversationList messages={messages} loading={isLoading || isLoadingHistory} />
@@ -237,24 +255,9 @@ export default function AICoachPanel({
 
           {/* Save Policy Notice */}
           <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-            {isAuthenticated ? (
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                대화 기록이 자동 저장됩니다
-              </p>
-            ) : (
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  로그인하면 대화 기록이 저장됩니다
-                </p>
-                <button
-                  onClick={login}
-                  className="inline-flex items-center gap-1 text-xs text-sky-500 hover:text-sky-600"
-                >
-                  <LogIn className="w-3 h-3" />
-                  로그인
-                </button>
-              </div>
-            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              대화 기록이 자동 저장됩니다
+            </p>
           </div>
 
           {/* Input */}

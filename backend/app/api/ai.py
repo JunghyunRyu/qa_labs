@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, get_current_user_optional
+from app.core.dependencies import get_current_user
 from app.core.rate_limiter import check_ai_rate_limit, AIRateLimitExceeded
 from app.models.db import get_db
 from app.models.user import User
@@ -33,29 +33,27 @@ async def chat(
     request: Request,
     chat_request: AIChatRequest,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Send a message to AI Coach.
 
-    Supports both guests and authenticated users.
-    - Guests: can chat but conversation history is not retrievable later
-    - Members: full conversation history available
+    Members only - requires authentication.
 
     Rate limits:
-    - Guest: 5/minute, 30/day
     - Member: 10/minute, 200/day
 
     Args:
         chat_request: Chat request data
         db: Database session
-        current_user: Authenticated user (optional)
+        current_user: Authenticated user (required)
 
     Returns:
         AI response with conversation and message IDs
 
     Raises:
-        400: If mode is OFF or anonymous_id missing for guests
+        400: If mode is OFF
+        401: If not authenticated
         404: If conversation or problem not found
         429: If rate limit exceeded
     """
@@ -66,22 +64,11 @@ async def chat(
             detail="AI mode is OFF"
         )
 
-    # Identify user/guest
-    if current_user:
-        user_id = current_user.id
-        anonymous_id = None
-    else:
-        anonymous_id = request.cookies.get("qa_anonymous_id")
-        if not anonymous_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Anonymous ID cookie required for guest"
-            )
-        user_id = None
+    user_id = current_user.id
 
     # Rate limit check
     try:
-        check_ai_rate_limit(request, current_user, anonymous_id)
+        check_ai_rate_limit(request, current_user, None)
     except AIRateLimitExceeded as e:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -110,12 +97,7 @@ async def chat(
                 detail="Conversation not found"
             )
         # Verify ownership
-        if user_id and conversation.user_id != user_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to access this conversation"
-            )
-        if anonymous_id and conversation.anonymous_id != anonymous_id:
+        if conversation.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to access this conversation"
@@ -124,7 +106,6 @@ async def chat(
         # Create new conversation
         conversation = AIConversation(
             user_id=user_id,
-            anonymous_id=anonymous_id,
             problem_id=chat_request.problem_id,
             mode=chat_request.mode.value,
         )
@@ -132,7 +113,7 @@ async def chat(
         logger.info(
             f"[AI_CHAT_NEW_CONVERSATION] conversation_id={conversation.id} "
             f"problem_id={chat_request.problem_id} "
-            f"user_id={user_id} anonymous_id={anonymous_id}"
+            f"user_id={user_id}"
         )
 
     # Get conversation history for context
@@ -172,7 +153,7 @@ async def chat(
         f"problem_id={chat_request.problem_id} "
         f"user_tokens={user_message.token_estimate} "
         f"ai_tokens={token_estimate} "
-        f"user_id={user_id} anonymous_id={anonymous_id}"
+        f"user_id={user_id}"
     )
 
     return AIChatResponse(

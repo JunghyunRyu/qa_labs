@@ -23,14 +23,15 @@ import BookmarkButton from "@/components/BookmarkButton";
 import CopyButton from "@/components/CopyButton";
 import ProblemStickyPanel from "@/components/ProblemStickyPanel";
 import ProblemMobileDrawer from "@/components/ProblemMobileDrawer";
-import AICoachPanel from "@/components/AICoachPanel";
-import AICoachMobileDrawer from "@/components/AICoachMobileDrawer";
+import AICoachModal from "@/components/AICoachModal";
 import TagChips from "@/components/TagChips";
+import { useAuth } from "@/lib/auth/AuthContext";
 import Link from "next/link";
 
 export default function ProblemDetailPage() {
   const params = useParams();
   const problemId = parseInt(params.id as string);
+  const { isAuthenticated, login } = useAuth();
 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +42,7 @@ export default function ProblemDetailPage() {
   const [isScoringDrawerOpen, setIsScoringDrawerOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
-  const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AIChatMode>(() => {
     // Load from localStorage on initial render
     if (typeof window !== "undefined") {
@@ -301,11 +302,27 @@ def test_edge_case():
     }
   };
 
-  // Persist AI mode to localStorage
+  // Persist AI mode to localStorage and control modal
   const handleAIModeChange = useCallback((mode: AIChatMode) => {
     setAiMode(mode);
     localStorage.setItem("ai_coach_mode", mode);
+    // Close modal when AI mode is turned off
+    if (mode === "OFF") {
+      setIsAIModalOpen(false);
+    }
   }, []);
+
+  // Handle sidebar toggle click - opens modal when enabled
+  const handleAIToggle = useCallback((enabled: boolean) => {
+    if (enabled) {
+      // Turn on AI mode and open modal
+      handleAIModeChange("COACH");
+      setIsAIModalOpen(true);
+    } else {
+      // Turn off AI mode (modal will be closed via handleAIModeChange)
+      handleAIModeChange("OFF");
+    }
+  }, [handleAIModeChange]);
 
   if (loading) {
     return (
@@ -524,18 +541,9 @@ def test_edge_case():
             onSubmit={handleSubmit}
             isSubmitting={submitting}
             canSubmit={!!code.trim()}
+            aiModeEnabled={aiMode === "COACH"}
+            onAiModeToggle={handleAIToggle}
           />
-
-          {/* AI Coach Panel */}
-          <div className="sticky" style={{ top: "calc(100vh - 400px)" }}>
-            <AICoachPanel
-              problemId={problemId}
-              codeContext={code}
-              mode={aiMode}
-              onModeChange={handleAIModeChange}
-              className="h-[400px]"
-            />
-          </div>
         </aside>
       </div>
 
@@ -553,10 +561,10 @@ def test_edge_case():
         latestSubmission={submission}
       />
 
-      {/* AI Coach Mobile Drawer */}
-      <AICoachMobileDrawer
-        isOpen={isAIDrawerOpen}
-        onClose={() => setIsAIDrawerOpen(false)}
+      {/* AI Coach Modal (both desktop and mobile) */}
+      <AICoachModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
         problemId={problemId}
         codeContext={code}
         mode={aiMode}
@@ -567,7 +575,10 @@ def test_edge_case():
       <div className="fixed bottom-4 right-4 lg:hidden z-40 flex flex-col gap-3">
         {/* AI Coach FAB */}
         <button
-          onClick={() => setIsAIDrawerOpen(true)}
+          onClick={() => {
+            handleAIModeChange("COACH");
+            setIsAIModalOpen(true);
+          }}
           className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white p-4 rounded-full shadow-lg transition-all"
           aria-label="AI 코치"
         >
