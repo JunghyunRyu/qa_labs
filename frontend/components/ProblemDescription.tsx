@@ -183,20 +183,20 @@ export default function ProblemDescription({ description_md }: ProblemDescriptio
                     </h3>
                   ),
                   ul: ({ children }) => (
-                    <ul className="list-disc list-inside space-y-1.5 my-3 ml-2">
+                    <ul className="list-disc list-inside space-y-1 my-2 ml-2">
                       {children}
                     </ul>
                   ),
                   ol: ({ children }) => (
-                    <ol className="list-decimal list-inside space-y-1.5 my-3 ml-2">
+                    <ol className="list-decimal list-inside space-y-0.5 my-2 ml-2 [&>li]:mb-0">
                       {children}
                     </ol>
                   ),
                   li: ({ children }) => (
-                    <li className="text-gray-700 leading-relaxed mb-1">{children}</li>
+                    <li className="text-gray-700 leading-relaxed [&>p]:inline [&>p]:mb-0">{children}</li>
                   ),
                   p: ({ children }) => (
-                    <p className="mb-3 leading-relaxed text-gray-700">{children}</p>
+                    <p className="mb-2 leading-relaxed text-gray-700 last:mb-0">{children}</p>
                   ),
                   strong: ({ children }) => (
                     <strong className="font-semibold text-gray-900">{children}</strong>
