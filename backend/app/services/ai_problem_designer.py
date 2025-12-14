@@ -1,12 +1,76 @@
 """AI Problem Designer service."""
 
 import logging
+import re
 from typing import Dict, Any, List, Optional, Literal
 from pydantic import BaseModel, ValidationError
 
 from app.core.llm_client import llm_client, ReasoningEffort, Verbosity
 
 logger = logging.getLogger(__name__)
+
+
+def sanitize_markdown(text: str) -> str:
+    """
+    마크다운 텍스트의 렌더링 문제를 수정합니다.
+
+    수정하는 패턴들:
+    1. **텍스트(괄호)** → **텍스트**(괄호) - 볼드 내 괄호 분리
+    2. *텍스트(괄호)* → *텍스트*(괄호) - 이탤릭 내 괄호 분리
+    3. `코드` 내부는 변경하지 않음
+
+    Args:
+        text: 원본 마크다운 텍스트
+
+    Returns:
+        수정된 마크다운 텍스트
+    """
+    if not text:
+        return text
+
+    # 코드 블록과 인라인 코드를 보호하기 위해 임시 치환
+    code_blocks = []
+    inline_codes = []
+
+    # 코드 블록 보호 (```...```)
+    def save_code_block(match):
+        code_blocks.append(match.group(0))
+        return f"__CODE_BLOCK_{len(code_blocks) - 1}__"
+
+    text = re.sub(r'```[\s\S]*?```', save_code_block, text)
+
+    # 인라인 코드 보호 (`...`)
+    def save_inline_code(match):
+        inline_codes.append(match.group(0))
+        return f"__INLINE_CODE_{len(inline_codes) - 1}__"
+
+    text = re.sub(r'`[^`]+`', save_inline_code, text)
+
+    # 볼드 내 괄호 패턴 수정: **텍스트(괄호)** → **텍스트**(괄호)
+    # 패턴: **로 시작, 한글/영문/숫자, 괄호 포함, **로 끝남
+    text = re.sub(
+        r'\*\*([^*\(\)]+)\(([^)]+)\)\*\*',
+        r'**\1**(\2)',
+        text
+    )
+
+    # 이탤릭 내 괄호 패턴 수정: *텍스트(괄호)* → *텍스트*(괄호)
+    # 단, **는 볼드이므로 제외
+    text = re.sub(
+        r'(?<!\*)\*([^*\(\)]+)\(([^)]+)\)\*(?!\*)',
+        r'*\1*(\2)',
+        text
+    )
+
+    # 코드 블록 복원
+    for i, block in enumerate(code_blocks):
+        text = text.replace(f"__CODE_BLOCK_{i}__", block)
+
+    # 인라인 코드 복원
+    for i, code in enumerate(inline_codes):
+        text = text.replace(f"__INLINE_CODE_{i}__", code)
+
+    return text
 
 
 # JSON 스키마 정의
@@ -106,6 +170,12 @@ def get_system_prompt(testing_framework: str = "pytest", language: str = "python
      - 다루어야 할 경계/예외 상황에 대한 힌트 (정답을 직접적으로 밝히지 말고, 테스트 아이디어를 유도하는 수준)
      - 수험자가 해야 할 일: '{testing_framework} 기반 테스트 코드를 작성해 버그 구현들을 최대한 많이 탐지하라'는 지시
    - skills_to_assess를 자연스러운 문장으로 드러내되, 특정 buggy_implementation 내용을 직접적으로 폭로하지 않는다.
+   - [마크다운 작성 규칙]
+     - 볼드(**) 또는 이탤릭(*) 내부에 괄호를 직접 포함하지 않는다.
+       잘못된 예: **불안정(flaky)**
+       올바른 예: **불안정**(flaky) 또는 `불안정(flaky)`
+     - 기술 용어나 영문 병기는 인라인 코드(`)를 사용한다.
+       예: `flaky test`, `boundary value`
 
 6. initial_test_template
    - {testing_framework} 기반 초기 테스트 템플릿 코드 (문자열).
@@ -287,6 +357,13 @@ def generate_problem(
                 user_prompt=user_prompt,
                 temperature=0.7,
             )
+
+        # 마크다운 후처리: 렌더링 문제 패턴 수정
+        if "description_md" in response:
+            original_md = response["description_md"]
+            response["description_md"] = sanitize_markdown(original_md)
+            if original_md != response["description_md"]:
+                logger.info("Sanitized markdown patterns in description_md")
 
         # JSON 스키마 검증
         try:
