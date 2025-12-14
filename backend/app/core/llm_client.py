@@ -366,6 +366,15 @@ class LLMClient:
             raise ValueError(f"Failed to parse JSON response: {str(e)}")
 
 
+    def _is_reasoning_model(self, model: str) -> bool:
+        """
+        Check if the model is a reasoning model that doesn't support temperature.
+
+        Models like gpt-5.2, o1, o3 don't support custom temperature values.
+        """
+        reasoning_prefixes = ("gpt-5", "o1", "o3")
+        return model.lower().startswith(reasoning_prefixes)
+
     def generate_chat_completion(
         self,
         messages: List[Dict[str, str]],
@@ -378,7 +387,7 @@ class LLMClient:
         Args:
             messages: List of message dicts with 'role' and 'content' keys.
                       Roles can be 'system', 'user', or 'assistant'.
-            temperature: Temperature for generation
+            temperature: Temperature for generation (ignored for reasoning models)
             max_tokens: Maximum tokens to generate
 
         Returns:
@@ -397,8 +406,11 @@ class LLMClient:
             api_params = {
                 "model": self.model,
                 "messages": messages,
-                "temperature": temperature,
             }
+
+            # Only add temperature for models that support it
+            if not self._is_reasoning_model(self.model):
+                api_params["temperature"] = temperature
 
             if max_tokens is not None:
                 api_params["max_tokens"] = max_tokens
