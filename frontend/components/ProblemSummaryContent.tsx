@@ -2,7 +2,6 @@
 
 import { CheckCircle, XCircle, Clock, Loader2, AlertTriangle, type LucideIcon } from "lucide-react";
 import TagChips from "@/components/TagChips";
-import CopyButton from "@/components/CopyButton";
 import { toTagViewModels } from "@/lib/tagDefinitions";
 import type { Problem, Submission } from "@/types/problem";
 
@@ -117,24 +116,6 @@ export default function ProblemSummaryContent({
         </div>
       )}
 
-      {/* 함수 시그니처 */}
-      <div>
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-          함수 시그니처
-        </span>
-        <div className="mt-2 flex items-start gap-2">
-          <code className="flex-1 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg text-gray-800 dark:text-gray-200 break-all">
-            {problem.function_signature}
-          </code>
-          <CopyButton
-            value={problem.function_signature}
-            label="함수 시그니처 복사"
-            size="sm"
-            className="flex-shrink-0"
-          />
-        </div>
-      </div>
-
       {/* 최신 제출 상태 */}
       {latestSubmission && (
         <div>
@@ -165,19 +146,16 @@ export default function ProblemSummaryContent({
         </div>
       )}
 
-      {/* AI 모드 토글 (M4 placeholder) */}
+      {/* AI 코치 토글 */}
       <div>
         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
           AI 코치
         </span>
         <div className="mt-2">
           <button
-            disabled={!onAiModeToggle}
             onClick={() => onAiModeToggle?.(!aiModeEnabled)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              !onAiModeToggle
-                ? "bg-gray-200 dark:bg-gray-600 cursor-not-allowed opacity-50"
-                : aiModeEnabled
+              aiModeEnabled
                 ? "bg-sky-500"
                 : "bg-gray-300 dark:bg-gray-600"
             }`}
@@ -190,7 +168,7 @@ export default function ProblemSummaryContent({
             />
           </button>
           <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-            {onAiModeToggle ? (aiModeEnabled ? "켜짐" : "꺼짐") : "준비 중"}
+            {aiModeEnabled ? "켜짐" : "꺼짐"}
           </span>
         </div>
       </div>

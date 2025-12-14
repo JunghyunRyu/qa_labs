@@ -49,11 +49,6 @@ export default function Footer() {
                   </svg>
                 </a>
               </li>
-              <li>
-                <Link href="#how-it-works" className="hover:text-white transition-colors">
-                  채점 방식
-                </Link>
-              </li>
             </ul>
           </div>
         </div>

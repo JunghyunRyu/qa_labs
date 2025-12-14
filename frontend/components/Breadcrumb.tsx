@@ -35,10 +35,11 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
                 <span
                   className={`${
                     isLast
-                      ? "text-gray-600 dark:text-gray-400 max-w-[200px] sm:max-w-[300px] md:max-w-[400px] truncate"
+                      ? "text-gray-900 dark:text-gray-100 font-medium cursor-default max-w-[200px] sm:max-w-[300px] md:max-w-[400px] truncate"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                   title={isLast ? item.label : undefined}
+                  aria-current={isLast ? "page" : undefined}
                 >
                   {item.label}
                 </span>

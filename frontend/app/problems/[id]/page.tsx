@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Code2, FileText, Info, Bot } from "lucide-react";
+import { Code2, FileText, Info, Bot, TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
@@ -67,11 +67,28 @@ export default function ProblemDetailPage() {
     // Extract function name from signature (e.g., "def sum_list(values: list[int]) -> int:" -> "sum_list")
     const functionNameMatch = problem.function_signature.match(/def\s+(\w+)/);
     const functionName = functionNameMatch ? functionNameMatch[1] : "function";
-    
+
     return `import pytest
 from target import ${functionName}
 
-# TODO: 테스트 케이스를 작성하세요.
+
+def test_basic():
+    """기본 테스트 케이스"""
+    # 정상 입력에 대한 테스트
+    # result = ${functionName}(...)  # TODO: 인자 입력
+    # assert result == ...  # TODO: 예상 결과
+    pass
+
+
+def test_edge_case():
+    """경계값/예외 테스트"""
+    # 경계값 테스트 예시
+    # assert ${functionName}([]) == 0
+
+    # 예외 테스트 예시
+    # with pytest.raises(ValueError):
+    #     ${functionName}(invalid_input)
+    pass
 `;
   };
 
@@ -321,25 +338,25 @@ from target import ${functionName}
   const difficultyConfig = {
     "Very Easy": {
       colors: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700",
-      icon: "📉",
+      icon: <TrendingDown className="w-4 h-4" aria-hidden="true" />,
       label: "아주쉬움",
       gradient: "from-blue-50 to-cyan-50",
     },
     Easy: {
       colors: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700",
-      icon: "📉",
+      icon: <TrendingDown className="w-4 h-4" aria-hidden="true" />,
       label: "쉬움",
       gradient: "from-green-50 to-emerald-50",
     },
     Medium: {
       colors: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700",
-      icon: "➖",
+      icon: <Minus className="w-4 h-4" aria-hidden="true" />,
       label: "보통",
       gradient: "from-yellow-50 to-amber-50",
     },
     Hard: {
       colors: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700",
-      icon: "📈",
+      icon: <TrendingUp className="w-4 h-4" aria-hidden="true" />,
       label: "어려움",
       gradient: "from-red-50 to-rose-50",
     },
@@ -384,8 +401,9 @@ from target import ${functionName}
                 className={`px-4 py-2 rounded-lg text-sm font-bold border-2 flex items-center gap-2 shadow-sm ${
                   difficulty.colors
                 }`}
+                aria-label={`난이도: ${difficulty.label}`}
               >
-                <span className="text-base">{difficulty.icon}</span>
+                {difficulty.icon}
                 <span>{difficulty.label}</span>
               </span>
             </div>

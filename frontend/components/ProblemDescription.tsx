@@ -1,6 +1,7 @@
 /** Structured Problem Description Component */
 
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   FileText,
   Code2,
@@ -173,6 +174,7 @@ export default function ProblemDescription({ description_md }: ProblemDescriptio
             {/* 섹션 내용 */}
             <div className="prose prose-sm max-w-none text-gray-700">
               <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   h2: () => null, // h2는 이미 섹션 제목으로 표시
                   h3: ({ children }) => (
@@ -207,9 +209,13 @@ export default function ProblemDescription({ description_md }: ProblemDescriptio
                       // 코드 블록
                       const codeText = String(children).replace(/\n$/, '');
                       return (
-                        <div className="my-4 bg-gray-900 rounded-lg overflow-hidden border border-gray-700 group">
+                        <div
+                          className="my-4 bg-gray-900 rounded-lg overflow-hidden border border-gray-700 group"
+                          role="region"
+                          aria-label={`${language || 'code'} 코드 블록`}
+                        >
                           <div className="flex items-center justify-between bg-gray-800 px-4 py-2 border-b border-gray-700">
-                            <span className="text-xs text-gray-400 font-mono uppercase">
+                            <span className="text-xs text-gray-400 font-mono uppercase" aria-hidden="true">
                               {language || 'code'}
                             </span>
                             <CopyButton

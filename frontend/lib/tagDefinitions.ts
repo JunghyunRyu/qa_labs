@@ -41,12 +41,14 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     labelKo: "Python",
     category: "ENV",
     priority: 10,
+    hidden: true,
   },
   pytest: {
     slug: "pytest",
     labelKo: "Pytest",
     category: "ENV",
     priority: 11,
+    hidden: true,
   },
   "unit-test": {
     slug: "unit-test",
