@@ -43,16 +43,7 @@ export default function ProblemDetailPage() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [aiMode, setAiMode] = useState<AIChatMode>(() => {
-    // Load from localStorage on initial render
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("ai_coach_mode");
-      if (saved === "COACH" || saved === "OFF") {
-        return saved;
-      }
-    }
-    return "OFF";
-  });
+  const [aiMode, setAiMode] = useState<AIChatMode>("OFF");  // 항상 OFF로 시작
   const editorSectionRef = useRef<HTMLDivElement | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -302,27 +293,32 @@ def test_edge_case():
     }
   };
 
-  // Persist AI mode to localStorage and control modal
+  // AI mode 변경 핸들러 (localStorage 저장 제거)
   const handleAIModeChange = useCallback((mode: AIChatMode) => {
     setAiMode(mode);
-    localStorage.setItem("ai_coach_mode", mode);
-    // Close modal when AI mode is turned off
+    // Close drawer when AI mode is turned off
     if (mode === "OFF") {
       setIsAIModalOpen(false);
     }
   }, []);
 
-  // Handle sidebar toggle click - opens modal when enabled
+  // Handle sidebar toggle click - opens drawer when enabled
   const handleAIToggle = useCallback((enabled: boolean) => {
     if (enabled) {
-      // Turn on AI mode and open modal
+      // Turn on AI mode and open drawer
       handleAIModeChange("COACH");
       setIsAIModalOpen(true);
     } else {
-      // Turn off AI mode (modal will be closed via handleAIModeChange)
+      // Turn off AI mode (drawer will be closed via handleAIModeChange)
       handleAIModeChange("OFF");
     }
   }, [handleAIModeChange]);
+
+  // 드로어 닫기 핸들러 - 드로어를 닫으면 aiMode도 OFF로 변경
+  const handleCloseAIDrawer = useCallback(() => {
+    setIsAIModalOpen(false);
+    setAiMode("OFF");
+  }, []);
 
   if (loading) {
     return (
@@ -561,10 +557,10 @@ def test_edge_case():
         latestSubmission={submission}
       />
 
-      {/* AI Coach Modal (both desktop and mobile) */}
+      {/* AI Coach Drawer (both desktop and mobile) */}
       <AICoachModal
         isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
+        onClose={handleCloseAIDrawer}
         problemId={problemId}
         codeContext={code}
         mode={aiMode}
