@@ -2,7 +2,7 @@
 
 from typing import Optional, List, Tuple, Union
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, cast, Text
 
 from app.models.problem import Problem
 from app.schemas.problem import ProblemCreate
@@ -15,22 +15,55 @@ class ProblemRepository:
         self.db = db
 
     def get_all(
-        self, skip: int = 0, limit: int = 10
+        self,
+        skip: int = 0,
+        limit: int = 10,
+        difficulty: Optional[str] = None,
+        search: Optional[str] = None,
+        tags: Optional[List[str]] = None,
     ) -> Tuple[List[Problem], int]:
         """
-        Get all problems with pagination.
+        Get all problems with pagination and optional filtering.
 
         Args:
             skip: Number of records to skip
             limit: Maximum number of records to return
+            difficulty: Filter by difficulty level (e.g., "Easy", "Medium")
+            search: Search query for title, slug, or skills
+            tags: Filter by skill tags (all tags must match)
 
         Returns:
             Tuple of (list of problems, total count)
         """
-        total = self.db.query(func.count(Problem.id)).scalar()
+        query = self.db.query(Problem)
+
+        # Apply difficulty filter
+        if difficulty:
+            query = query.filter(Problem.difficulty == difficulty)
+
+        # Apply search filter (title, slug, or skills)
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                (Problem.title.ilike(search_term))
+                | (Problem.slug.ilike(search_term))
+                | (cast(Problem.skills, Text).ilike(search_term))
+            )
+
+        # Apply tags filter (all tags must be present in skills)
+        if tags:
+            for tag in tags:
+                # Check if the tag exists in the JSON array
+                query = query.filter(
+                    cast(Problem.skills, Text).ilike(f"%{tag}%")
+                )
+
+        # Get total count for filtered results
+        total = query.count()
+
+        # Apply ordering and pagination
         problems = (
-            self.db.query(Problem)
-            .order_by(Problem.created_at.desc())
+            query.order_by(Problem.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()

@@ -36,14 +36,22 @@ class ProblemService:
     
     
     def get_problems(
-        self, page: int = 1, page_size: int = 10
+        self,
+        page: int = 1,
+        page_size: int = 10,
+        difficulty: Optional[str] = None,
+        search: Optional[str] = None,
+        tags: Optional[List[str]] = None,
     ) -> Tuple[List[ProblemListResponse], int, int]:
         """
-        Get paginated list of problems.
+        Get paginated and filtered list of problems.
 
         Args:
             page: Page number (1-indexed)
             page_size: Number of items per page
+            difficulty: Filter by difficulty level (e.g., "Easy", "Medium")
+            search: Search query for title, slug, or skills
+            tags: Filter by skill tags (all tags must match)
 
         Returns:
             Tuple of (list of problems, total count, total pages)
@@ -56,7 +64,13 @@ class ProblemService:
             page_size = 100
 
         skip = (page - 1) * page_size
-        problems, total = self.repository.get_all(skip=skip, limit=page_size)
+        problems, total = self.repository.get_all(
+            skip=skip,
+            limit=page_size,
+            difficulty=difficulty,
+            search=search,
+            tags=tags,
+        )
 
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
 

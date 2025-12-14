@@ -22,7 +22,7 @@ export default function AdminProblemsPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await getProblems(page, pageSize);
+      const result = await getProblems({ page, pageSize });
       setData(result);
     } catch (err: unknown) {
       let errorMessage = "문제 목록을 불러오는데 실패했습니다.";

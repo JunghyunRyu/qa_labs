@@ -51,7 +51,7 @@ describe('Problems API', () => {
 
       mockGet.mockResolvedValue(mockResponse);
 
-      const result = await getProblems(2, 20);
+      const result = await getProblems({ page: 2, pageSize: 20 });
 
       expect(mockGet).toHaveBeenCalledWith('/v1/problems?page=2&page_size=20');
       expect(result).toEqual(mockResponse);

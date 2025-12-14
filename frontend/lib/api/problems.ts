@@ -5,19 +5,38 @@ import type { Problem, ProblemListResponse, BookmarkedProblemListResponse, Bookm
 
 const PROBLEMS_ENDPOINT = "/v1/problems";
 
+export interface GetProblemsParams {
+  page?: number;
+  pageSize?: number;
+  difficulty?: string;
+  search?: string;
+  tags?: string[];
+}
+
 /**
- * Get paginated list of problems
+ * Get paginated and filtered list of problems
  */
 export async function getProblems(
-  page: number = 1,
-  pageSize: number = 10
+  params: GetProblemsParams = {}
 ): Promise<ProblemListResponse> {
-  const params = new URLSearchParams({
+  const { page = 1, pageSize = 10, difficulty, search, tags } = params;
+
+  const queryParams = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
   });
 
-  return get<ProblemListResponse>(`${PROBLEMS_ENDPOINT}?${params.toString()}`);
+  if (difficulty) {
+    queryParams.append("difficulty", difficulty);
+  }
+  if (search) {
+    queryParams.append("search", search);
+  }
+  if (tags && tags.length > 0) {
+    queryParams.append("tags", tags.join(","));
+  }
+
+  return get<ProblemListResponse>(`${PROBLEMS_ENDPOINT}?${queryParams.toString()}`);
 }
 
 /**

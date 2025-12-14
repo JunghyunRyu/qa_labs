@@ -2,8 +2,8 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { getProblems } from "@/lib/api/problems";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { getProblems, GetProblemsParams } from "@/lib/api/problems";
 import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
 import ProblemCard from "@/components/ProblemCard";
@@ -27,16 +27,32 @@ export default function ProblemsPage() {
   
   // 필터 및 검색 상태
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("All");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [showFilters, setShowFilters] = useState(false);
 
-  const fetchProblems = async () => {
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchProblems = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await getProblems(page, pageSize);
+      const params: GetProblemsParams = {
+        page,
+        pageSize,
+        difficulty: difficultyFilter !== "All" ? difficultyFilter : undefined,
+        search: debouncedSearchQuery.trim() || undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+      };
+      const result = await getProblems(params);
       setData(result);
     } catch (err: unknown) {
       let errorMessage = "문제 목록을 불러오는데 실패했습니다.";
@@ -50,44 +66,23 @@ export default function ProblemsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, difficultyFilter, debouncedSearchQuery, selectedTags]);
 
   useEffect(() => {
     fetchProblems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [fetchProblems]);
 
-  // 필터링 및 정렬된 문제 목록
-  const filteredAndSortedProblems = useMemo(() => {
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [difficultyFilter, selectedTags, debouncedSearchQuery]);
+
+  // 정렬된 문제 목록 (필터링은 서버에서 처리)
+  const sortedProblems = useMemo(() => {
     if (!data) return [];
 
-    let filtered: ProblemListItem[] = [...data.problems];
-
-    // 검색 필터
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (problem) =>
-          problem.title.toLowerCase().includes(query) ||
-          problem.slug.toLowerCase().includes(query) ||
-          problem.skills?.some((skill) => skill.toLowerCase().includes(query))
-      );
-    }
-
-    // 난이도 필터
-    if (difficultyFilter !== "All") {
-      filtered = filtered.filter((problem) => problem.difficulty === difficultyFilter);
-    }
-
-    // 태그 필터
-    if (selectedTags.length > 0) {
-      filtered = filtered.filter((problem) =>
-        selectedTags.every((tag) => problem.skills?.includes(tag))
-      );
-    }
-
-    // 정렬
-    const sorted = [...filtered].sort((a, b) => {
+    // 정렬 (클라이언트 사이드)
+    const sorted = [...data.problems].sort((a, b) => {
       switch (sortOption) {
         case "difficulty-asc":
           const difficultyOrder = { "Very Easy": 0, Easy: 1, Medium: 2, Hard: 3 };
@@ -104,7 +99,7 @@ export default function ProblemsPage() {
     });
 
     return sorted;
-  }, [data, searchQuery, difficultyFilter, selectedTags, sortOption]);
+  }, [data, sortOption]);
 
   // 사용 가능한 모든 태그 추출 (난이도 태그 제외, 한글화 적용)
   const availableTags = useMemo((): TagViewModel[] => {
@@ -130,7 +125,7 @@ export default function ProblemsPage() {
     setSortOption("newest");
   };
 
-  const hasActiveFilters = searchQuery || difficultyFilter !== "All" || selectedTags.length > 0;
+  const hasActiveFilters = debouncedSearchQuery || difficultyFilter !== "All" || selectedTags.length > 0;
 
   if (loading) {
     return (
@@ -159,11 +154,12 @@ export default function ProblemsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">문제 목록</h1>
             <p className="text-gray-600 dark:text-gray-400">
-              총 {data.total}개의 문제가 있습니다.
-              {hasActiveFilters && (
-                <span className="ml-2 text-blue-600 dark:text-blue-400">
-                  (필터링 결과: {filteredAndSortedProblems.length}개)
+              {hasActiveFilters ? (
+                <span className="text-blue-600 dark:text-blue-400">
+                  필터링 결과: {data.total}개
                 </span>
+              ) : (
+                `총 ${data.total}개의 문제가 있습니다.`
               )}
             </p>
           </div>
@@ -306,7 +302,7 @@ export default function ProblemsPage() {
         )}
       </div>
 
-      {filteredAndSortedProblems.length === 0 ? (
+      {sortedProblems.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center transition-colors">
           <p className="text-gray-600 dark:text-gray-400">
             {hasActiveFilters
@@ -325,7 +321,7 @@ export default function ProblemsPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8">
-            {filteredAndSortedProblems.map((problem) => (
+            {sortedProblems.map((problem) => (
               <ProblemCard key={problem.id} problem={problem} />
             ))}
           </div>
