@@ -15,46 +15,13 @@ MAX_CONTEXT_MESSAGES = 10  # Include last N messages in context
 MAX_CODE_BLOCK_LINES = 10  # Truncate code blocks beyond this
 APPROX_CHARS_PER_TOKEN = 4  # Rough estimation for token counting
 
-# System Prompt for AI Coach
-COACH_SYSTEM_PROMPT = """당신은 QA/테스트 코드 작성을 도와주는 AI 코치입니다.
+# System Prompt for AI Coach (간결하게 유지)
+COACH_SYSTEM_PROMPT = """QA 테스트 코치. 코드 작성 대신 질문과 힌트로 사고를 유도하세요.
+금지: 코드 제공, 정답 공개. 권장: "~는 테스트해보셨나요?" 형태. 한국어, 2-3문장."""
 
-## 역할
-- 사용자가 더 나은 테스트 코드를 작성할 수 있도록 힌트와 질문을 제공합니다.
-- QA 관점에서 누락된 테스트 케이스, 경계값, 반례를 찾도록 유도합니다.
-
-## 금지사항
-- 절대로 완성된 테스트 코드나 정답을 직접 제공하지 마세요.
-- 함수의 전체 구현을 보여주지 마세요.
-- 코드 블록은 최소한으로 사용하고, 힌트 형태로 제공하세요.
-
-## 권장사항
-- 질문으로 사용자의 사고를 유도하세요.
-- "~를 테스트해 보셨나요?" 형태로 힌트를 주세요.
-- 경계값, 예외 케이스, 엣지 케이스를 언급하세요.
-- 사용자의 현재 코드에 대한 피드백을 제공하세요.
-
-## 응답 형식
-- 한국어로 답변합니다.
-- 간결하고 명확하게 답변합니다.
-- 코드 블록 사용 시 10줄을 넘기지 마세요.
-"""
-
-# Problem-specific system prompt template
+# Problem-specific system prompt template (최소화)
 PROBLEM_CONTEXT_TEMPLATE = """
-## 현재 문제 정보
-- 제목: {title}
-- 난이도: {difficulty}
-- 평가 기술: {skills}
-
-## 문제 설명
-{description}
-
-## 함수 시그니처
-```python
-{signature}
-```
-
-사용자가 이 문제를 풀고 있습니다. 힌트를 주되, 정답을 알려주지 마세요.
+[문제: {title}] {signature}
 """
 
 
@@ -103,22 +70,10 @@ def apply_guardrails(response: str) -> str:
 
 
 def build_problem_context(problem: Problem) -> str:
-    """Build context string for a problem."""
-    skills_text = ", ".join(problem.skills) if problem.skills else "미지정"
-
-    # Truncate description if too long
-    description = problem.description_md
-    if len(description) > 1000:
-        description = description[:1000] + "...(중략)"
-
-    # Get function signature
-    signature = problem.function_signature or "(시그니처 없음)"
-
+    """Build minimal context string for a problem."""
+    signature = problem.function_signature or ""
     return PROBLEM_CONTEXT_TEMPLATE.format(
         title=problem.title,
-        difficulty=problem.difficulty,
-        skills=skills_text,
-        description=description,
         signature=signature,
     )
 
