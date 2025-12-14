@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.rate_limiter import limiter
+from app.core.rate_limiter import limiter, check_submission_rate_limit, SubmissionRateLimitExceeded
 from app.core.dependencies import get_current_user_optional
 from app.models.db import get_db
 from app.models.submission import Submission
@@ -22,7 +22,6 @@ router = APIRouter()
 
 
 @router.post("", response_model=SubmissionResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit(settings.RATE_LIMIT_GUEST_SUBMISSIONS)  # 게스트 기준 (더 엄격한 제한)
 async def create_submission(
     request: Request,
     submission_data: SubmissionCreate,
@@ -36,6 +35,10 @@ async def create_submission(
     - Authenticated users: submission linked to user_id
     - Guests: submission linked to anonymous_id (from cookie)
 
+    Rate limits:
+    - Guest: 5/minute, 30/day
+    - Member: 10/minute, 200/day
+
     Args:
         submission_data: Submission data
         db: Database session
@@ -43,7 +46,23 @@ async def create_submission(
 
     Returns:
         Created submission
+
+    Raises:
+        429: If rate limit exceeded
     """
+    # 회원/게스트 구분 및 레이트리밋 체크를 위한 anonymous_id 조기 추출
+    anonymous_id = request.cookies.get("qa_anonymous_id") if not current_user else None
+
+    # 게스트/회원 분리 레이트리밋 체크
+    try:
+        check_submission_rate_limit(request, current_user, anonymous_id)
+    except SubmissionRateLimitExceeded as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded: {e.limit_str}",
+            headers={"Retry-After": str(e.retry_after)},
+        )
+
     # 회원/게스트 구분
     if current_user:
         user_id = current_user.id

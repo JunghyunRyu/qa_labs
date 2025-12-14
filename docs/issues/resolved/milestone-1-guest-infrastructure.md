@@ -3,6 +3,7 @@
 **우선순위**: P0 (구조적 변경, 최우선)
 **의존성**: 없음
 **예상 작업량**: 중~대
+**상태**: ✅ 완료
 
 ---
 
@@ -33,49 +34,49 @@ async def create_submission(
 
 ### 1. [BE] anonymous_id 쿠키 발급 미들웨어 구현
 
-- [ ] **파일 생성**: `backend/app/middleware/anonymous.py`
-- [ ] **미들웨어 구현**:
+- [x] **파일 생성**: `backend/app/middleware/anonymous.py`
+- [x] **미들웨어 구현**:
   - 요청에 `qa_anonymous_id` 쿠키가 없으면 새 UUID v4 생성
   - 응답에 쿠키 설정
-- [ ] **쿠키 속성**:
+- [x] **쿠키 속성**:
   - 이름: `qa_anonymous_id`
   - 형식: UUID v4 (36자)
   - HttpOnly: True
   - SameSite: Lax
   - Secure: 프로덕션에서 True
   - 만료: 30일
-- [ ] **main.py에 미들웨어 등록**
+- [x] **main.py에 미들웨어 등록**
 
 ### 2. [DB] submissions 테이블 스키마 수정
 
-- [ ] **마이그레이션 파일 생성**: `backend/alembic/versions/xxx_add_anonymous_support.py`
-- [ ] **변경사항**:
+- [x] **마이그레이션 파일 생성**: `backend/alembic/versions/7a5b3c8d9e0f_add_guest_submission_support.py`
+- [x] **변경사항**:
   - `user_id` 컬럼을 nullable로 변경
   - `anonymous_id` 컬럼 추가 (VARCHAR(36), nullable)
   - CHECK 제약 추가: `user_id IS NOT NULL OR anonymous_id IS NOT NULL`
   - `anonymous_id` 인덱스 추가
-- [ ] **롤백 스크립트 작성**
+- [x] **롤백 스크립트 작성**
 
 ### 3. [BE] Submission 모델 수정
 
-- [ ] **파일 수정**: `backend/app/models/submission.py`
-- [ ] **변경사항**:
+- [x] **파일 수정**: `backend/app/models/submission.py`
+- [x] **변경사항**:
   ```python
   user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # nullable 변경
   anonymous_id = Column(String(36), nullable=True, index=True)  # 신규 추가
   ```
-- [ ] **__table_args__에 CHECK 제약 추가**
+- [x] **__table_args__에 CHECK 제약 추가**
 
 ### 4. [BE] Submission 스키마 수정
 
-- [ ] **파일 수정**: `backend/app/schemas/submission.py`
-- [ ] **SubmissionCreate 수정**: user_id/anonymous_id 옵션 처리
-- [ ] **SubmissionResponse 수정**: anonymous_id 필드 추가
+- [x] **파일 수정**: `backend/app/schemas/submission.py`
+- [x] **SubmissionCreate 수정**: user_id/anonymous_id 옵션 처리
+- [x] **SubmissionResponse 수정**: anonymous_id 필드 추가
 
 ### 5. [BE] Submission API 수정
 
-- [ ] **파일 수정**: `backend/app/api/submissions.py`
-- [ ] **create_submission 함수 수정**:
+- [x] **파일 수정**: `backend/app/api/submissions.py`
+- [x] **create_submission 함수 수정**:
   - `get_current_user` → `get_current_user_optional` 변경
   - 비회원 처리:
     ```python
@@ -87,39 +88,41 @@ async def create_submission(
             raise HTTPException(400, "Anonymous ID required for guest submission")
         submission.anonymous_id = anonymous_id
     ```
-- [ ] **get_submission 함수**: 변경 없음 (이미 인증 불필요)
+- [x] **get_submission 함수**: 변경 없음 (이미 인증 불필요)
 
 ### 6. [BE] 레이트리밋 게스트/회원 분리
 
-- [ ] **파일 수정**: `backend/app/core/rate_limiter.py`
-- [ ] **새 함수 생성**: `get_rate_limit_key(request, user)`
+- [x] **파일 수정**: `backend/app/core/rate_limiter.py`
+- [x] **새 함수 생성**: `get_rate_limit_key(request, user, anonymous_id)`
   - 회원: `user:{user_id}` 키 사용
   - 게스트: `guest:{ip}:{anonymous_id}` 키 사용
-- [ ] **제한 값 설정**:
+- [x] **제한 값 설정**:
   - 게스트 제출: 분당 5회, 일 30회
   - 회원 제출: 분당 10회, 일 200회
-- [ ] **config.py에 설정 추가**:
+- [x] **config.py에 설정 추가**:
   ```python
-  RATE_LIMIT_GUEST_SUBMISSIONS = "5/minute;30/day"
-  RATE_LIMIT_MEMBER_SUBMISSIONS = "10/minute;200/day"
+  RATE_LIMIT_GUEST_SUBMISSIONS = "5/minute"
+  RATE_LIMIT_GUEST_SUBMISSIONS_DAILY = "30/day"
+  RATE_LIMIT_MEMBER_SUBMISSIONS = "10/minute"
+  RATE_LIMIT_MEMBER_SUBMISSIONS_DAILY = "200/day"
   ```
 
 ### 7. [FE] anonymous_id 쿠키 처리
 
-- [ ] **파일 확인**: `frontend/lib/api.ts`
-- [ ] **credentials 설정 확인**:
+- [x] **파일 확인**: `frontend/lib/api.ts`
+- [x] **credentials 설정 확인**:
   ```typescript
   fetch(url, {
     credentials: 'include',  // 쿠키 포함 필수
     ...
   })
   ```
-- [ ] **쿠키 자동 처리 확인** (백엔드에서 발급하면 브라우저가 자동 관리)
+- [x] **쿠키 자동 처리 확인** (백엔드에서 발급하면 브라우저가 자동 관리)
 
 ### 8. [BE] 회원 전환 시 데이터 마이그레이션
 
-- [ ] **파일 수정**: `backend/app/api/auth.py` (github_callback 함수)
-- [ ] **마이그레이션 로직 추가**:
+- [x] **파일 수정**: `backend/app/api/auth.py` (github_callback 함수)
+- [x] **마이그레이션 로직 추가**:
   ```python
   # 로그인 성공 후
   anonymous_id = request.cookies.get("qa_anonymous_id")
@@ -131,34 +134,34 @@ async def create_submission(
       ).update({"user_id": user.id, "anonymous_id": None})
       db.commit()
   ```
-- [ ] **anonymous_id 쿠키 삭제** (로그인 후 불필요)
+- [x] **anonymous_id 쿠키 삭제** (로그인 후 불필요)
 
 ---
 
 ## 관련 파일
 
-| 파일 | 작업 유형 |
-|------|-----------|
-| `backend/app/middleware/anonymous.py` | 신규 생성 |
-| `backend/alembic/versions/xxx_add_anonymous_support.py` | 신규 생성 |
-| `backend/app/models/submission.py` | 수정 |
-| `backend/app/schemas/submission.py` | 수정 |
-| `backend/app/api/submissions.py` | 수정 |
-| `backend/app/core/rate_limiter.py` | 수정 |
-| `backend/app/core/config.py` | 수정 |
-| `backend/app/api/auth.py` | 수정 |
-| `backend/app/main.py` | 수정 (미들웨어 등록) |
-| `frontend/lib/api.ts` | 확인/수정 |
+| 파일 | 작업 유형 | 상태 |
+|------|-----------|------|
+| `backend/app/middleware/anonymous.py` | 신규 생성 | ✅ |
+| `backend/alembic/versions/7a5b3c8d9e0f_add_guest_submission_support.py` | 신규 생성 | ✅ |
+| `backend/app/models/submission.py` | 수정 | ✅ |
+| `backend/app/schemas/submission.py` | 수정 | ✅ |
+| `backend/app/api/submissions.py` | 수정 | ✅ |
+| `backend/app/core/rate_limiter.py` | 수정 | ✅ |
+| `backend/app/core/config.py` | 수정 | ✅ |
+| `backend/app/api/auth.py` | 수정 | ✅ |
+| `backend/app/main.py` | 수정 (미들웨어 등록) | ✅ |
+| `frontend/lib/api.ts` | 확인/수정 | ✅ |
 
 ---
 
 ## 완료 조건
 
-- [ ] 비로그인 상태에서 문제 제출 가능
-- [ ] 제출 시 `qa_anonymous_id` 쿠키가 자동 발급됨
-- [ ] 로그인 후 이전 게스트 제출이 계정에 연결됨
-- [ ] 게스트/회원별 레이트리밋 정상 동작
-- [ ] 기존 회원 제출 기능 정상 동작 (회귀 없음)
+- [x] 비로그인 상태에서 문제 제출 가능
+- [x] 제출 시 `qa_anonymous_id` 쿠키가 자동 발급됨
+- [x] 로그인 후 이전 게스트 제출이 계정에 연결됨
+- [x] 게스트/회원별 레이트리밋 정상 동작
+- [x] 기존 회원 제출 기능 정상 동작 (회귀 없음)
 
 ---
 

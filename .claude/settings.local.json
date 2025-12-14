@@ -18,7 +18,10 @@
       "Bash(cmd /c \"cd /d C:\\jhryu\\qa_labs\\backend && python test_gpt52_comparison.py\")",
       "Bash(powershell -Command \"Set-Location ''C:\\jhryu\\qa_labs\\backend''; $env:PYTHONIOENCODING=''utf-8''; python test_gpt52_comparison.py\")",
       "Bash(move \"AI_Assisted 코드 리뷰  힌트 카드.png\" \"ai-code-review-card.png\")",
-      "Bash(move:*)"
+      "Bash(move:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(git push:*)",
+      "mcp__playwright__browser_wait_for"
     ],
     "deny": [],
     "ask": []

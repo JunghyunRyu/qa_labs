@@ -31,6 +31,8 @@ class LLMClient:
         # GPT-5.2 신규 설정
         self.default_verbosity = settings.OPENAI_DEFAULT_VERBOSITY
         self.compaction_enabled = settings.OPENAI_COMPACTION_ENABLED
+        # AI Coach 전용 모델
+        self.ai_coach_model = settings.OPENAI_AI_COACH_MODEL
 
     def generate_completion(
         self,
@@ -380,6 +382,7 @@ class LLMClient:
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
+        model: Optional[str] = None,
     ) -> str:
         """
         Generate completion using multi-turn conversation.
@@ -389,6 +392,7 @@ class LLMClient:
                       Roles can be 'system', 'user', or 'assistant'.
             temperature: Temperature for generation (ignored for reasoning models)
             max_tokens: Maximum tokens to generate
+            model: Optional model override (default: self.model)
 
         Returns:
             Generated text
@@ -400,16 +404,18 @@ class LLMClient:
         if not self.client:
             raise ValueError("OPENAI_API_KEY is not set. Cannot use LLM features.")
 
+        use_model = model or self.model
+
         try:
-            logger.info(f"Using Chat Completions API (multi-turn): model={self.model}, messages={len(messages)}")
+            logger.info(f"Using Chat Completions API (multi-turn): model={use_model}, messages={len(messages)}")
 
             api_params = {
-                "model": self.model,
+                "model": use_model,
                 "messages": messages,
             }
 
             # Only add temperature for models that support it
-            if not self._is_reasoning_model(self.model):
+            if not self._is_reasoning_model(use_model):
                 api_params["temperature"] = temperature
 
             if max_tokens is not None:

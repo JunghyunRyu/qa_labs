@@ -191,10 +191,11 @@ def generate_response(
     messages.append({"role": "user", "content": user_message_with_context})
 
     try:
-        # Call LLM
+        # Call LLM with AI Coach model
         response = llm_client.generate_chat_completion(
             messages=messages,
             temperature=0.7,
+            model=llm_client.ai_coach_model,
         )
 
         # Apply guardrails

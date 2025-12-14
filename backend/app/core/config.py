@@ -81,6 +81,9 @@ class Settings(BaseSettings):
     RATE_LIMIT_ADMIN: str = "2/minute"  # Admin endpoints (AI generation)
     RATE_LIMIT_ADMIN_CREATE: str = "5/minute"  # Admin problem creation
 
+    # AI Coach
+    OPENAI_AI_COACH_MODEL: str = "gpt-5-nano"  # AI Coach 전용 모델 (경량 모델)
+
     # AI Coach Rate Limiting
     RATE_LIMIT_AI_GUEST: str = "5/minute"  # Guest AI chat per minute
     RATE_LIMIT_AI_GUEST_DAILY: str = "30/day"  # Guest AI chat per day
