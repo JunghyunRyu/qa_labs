@@ -21,7 +21,8 @@
       "Bash(move:*)",
       "Bash(docker-compose logs:*)",
       "Bash(git push:*)",
-      "mcp__playwright__browser_wait_for"
+      "mcp__playwright__browser_wait_for",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
