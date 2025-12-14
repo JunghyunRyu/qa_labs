@@ -111,8 +111,8 @@ def build_problem_context(problem: Problem) -> str:
     if len(description) > 1000:
         description = description[:1000] + "...(중략)"
 
-    # Get function signature from code template
-    signature = problem.code_template or "(시그니처 없음)"
+    # Get function signature
+    signature = problem.function_signature or "(시그니처 없음)"
 
     return PROBLEM_CONTEXT_TEMPLATE.format(
         title=problem.title,
