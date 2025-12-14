@@ -91,6 +91,44 @@ const audiences = [
   },
 ];
 
+// Sample Problems 데이터 (메인 페이지 미리보기용)
+const sampleProblems = [
+  {
+    title: "리스트 합계 경계값 테스트",
+    description: "정수 리스트를 입력받아 합을 계산하는 함수의 경계값을 테스트하세요",
+    difficulty: "Easy" as const,
+    tag: "boundary",
+    image: "/images/problems/boundary.png",
+    bugPatterns: ["off-by-one", "empty list", "negative"],
+    mutantCount: 4,
+  },
+  {
+    title: "사용자 인증 예외 테스트",
+    description: "잘못된 자격 증명과 만료된 토큰에 대한 예외 처리를 검증하세요",
+    difficulty: "Medium" as const,
+    tag: "exception",
+    image: "/images/problems/auth.png",
+    bugPatterns: ["expired token", "missing field", "invalid signature"],
+    mutantCount: 6,
+  },
+  {
+    title: "결제 금액 계산 테스트",
+    description: "할인, 쿠폰, 세금이 복합 적용되는 결제 금액 계산의 엣지 케이스를 찾아내세요",
+    difficulty: "Hard" as const,
+    tag: "edge_case",
+    image: "/images/problems/payment.png",
+    bugPatterns: ["rounding", "coupon stacking", "tax order"],
+    mutantCount: 8,
+  },
+];
+
+// 난이도별 스타일 설정
+const difficultyStyles = {
+  Easy: "bg-green-500/90 text-white",
+  Medium: "bg-yellow-500/90 text-white",
+  Hard: "bg-red-500/90 text-white",
+};
+
 export default function Home() {
   return (
     <div className="flex flex-col">
@@ -275,32 +313,74 @@ export default function Home() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-xl bg-[var(--card-background)] border border-[var(--card-border)] hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Easy</span>
-                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">boundary</span>
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-[var(--foreground)]">리스트 합계 경계값 테스트</h3>
-              <p className="text-sm text-[var(--muted)]">정수 리스트를 입력받아 합을 계산하는 함수의 경계값을 테스트하세요</p>
-            </div>
+            {sampleProblems.map((problem, index) => (
+              <div
+                key={index}
+                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-lg"
+              >
+                {/* 이미지 영역 (상단) - 160px 높이 */}
+                <div className="relative h-40">
+                  <Image
+                    src={problem.image}
+                    alt={problem.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
 
-            <div className="p-6 rounded-xl bg-[var(--card-background)] border border-[var(--card-border)] hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">Medium</span>
-                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">exception</span>
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-[var(--foreground)]">사용자 인증 예외 테스트</h3>
-              <p className="text-sm text-[var(--muted)]">잘못된 자격 증명과 만료된 토큰에 대한 예외 처리를 검증하세요</p>
-            </div>
+                  {/* Mutants 배지 (우상단 오버레이) */}
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-xs font-semibold flex items-center gap-1 shadow-sm">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    Mutants: {problem.mutantCount}
+                  </div>
 
-            <div className="p-6 rounded-xl bg-[var(--card-background)] border border-[var(--card-border)] hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Hard</span>
-                <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">edge_case</span>
+                  {/* 난이도/태그 배지 (좌하단 오버레이) */}
+                  <div className="absolute bottom-3 left-3 flex gap-2">
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full shadow-sm ${difficultyStyles[problem.difficulty]}`}>
+                      {problem.difficulty}
+                    </span>
+                    <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 shadow-sm">
+                      {problem.tag}
+                    </span>
+                  </div>
+
+                  {/* 가독성 그라데이션 */}
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+
+                {/* 콘텐츠 영역 */}
+                <div className="p-5">
+                  <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">
+                    {problem.title}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
+                    {problem.description}
+                  </p>
+
+                  {/* 버그 패턴 칩 (하단) */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {problem.bugPatterns.map((pattern, patternIndex) => (
+                      <span
+                        key={patternIndex}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        {pattern}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* hover sheen effect */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
+                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
+                </div>
               </div>
-              <h3 className="text-lg font-bold mb-2 text-[var(--foreground)]">결제 금액 계산 테스트</h3>
-              <p className="text-sm text-[var(--muted)]">할인, 쿠폰, 세금이 복합 적용되는 결제 금액 계산의 엣지 케이스를 찾아내세요</p>
-            </div>
+            ))}
           </div>
 
           <div className="text-center mt-8">
