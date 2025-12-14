@@ -115,7 +115,7 @@ export default function Home() {
           <p className="text-xl sm:text-2xl text-white/90 font-medium">
             QA 엔지니어를 위한 AI 코딩 테스트 플랫폼
           </p>
-          <p className="text-base sm:text-lg text-white/70 max-w-md">
+          <p className="text-base sm:text-lg text-white/70 max-w-xl leading-relaxed">
             실무에서 마주치는 버그 탐지 시나리오로 pytest 역량을 검증하고,
             AI 코치의 피드백으로 빠르게 성장하세요
           </p>
@@ -143,16 +143,16 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400">10+</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">QA 문제</div>
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">10개 문제</div>
+              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">실무 시나리오</div>
             </div>
             <div>
-              <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400">500+</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">누적 제출</div>
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">3단계 난이도</div>
+              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Easy ~ Hard</div>
             </div>
             <div>
-              <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400">50+</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">QA 엔지니어</div>
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">무료 체험</div>
+              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">로그인 불필요</div>
             </div>
           </div>
         </div>
@@ -470,7 +470,7 @@ export default function Home() {
               게스트로 시작하기
             </Link>
             <Link
-              href="/api/auth/login"
+              href="/api/v1/auth/github/login"
               className="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
