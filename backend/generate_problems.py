@@ -9,7 +9,13 @@ output_dir = os.path.join(script_dir, "generated_problems")
 os.makedirs(output_dir, exist_ok=True)
 
 def log(message):
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
+    # Windows cp949 인코딩 문제 방지
+    try:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
+    except UnicodeEncodeError:
+        # 이모지 등 인코딩 불가 문자 제거
+        safe_message = message.encode('cp949', errors='ignore').decode('cp949')
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] {safe_message}")
 
 # 문제 정의
 PROBLEMS_TO_GENERATE = [
@@ -170,6 +176,37 @@ PROBLEMS_TO_GENERATE = [
         "skills": ["date validation", "business logic", "complex conditions"],
         "difficulty": "Medium",
     },
+    # Medium - 실무 패턴 (M06-M10)
+    {
+        "id": "M06",
+        "goal": "로그 분석 및 알람 판정 함수 테스트. 로그 문자열 리스트를 파싱하여 시간 윈도우 내 에러 발생 횟수를 계산하고, 임계값 초과 시 알람 여부를 반환하는 함수를 테스트하는 문제를 만들어주세요. 로그 파싱, 시간순 정렬, 통계 계산, 경계값 테스트 포함.",
+        "skills": ["log-analysis", "parsing", "statistics", "boundary-value", "monitoring"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M07",
+        "goal": "비결정적 코드의 결정적 테스트 작성. 랜덤 쿠폰 코드 생성 함수(prefix + 랜덤 문자열 + 만료일 계산)를 테스트하는 문제를 만들어주세요. 의존성 주입(random_fn, now_fn)을 통해 Flaky 테스트 없이 결정적으로 테스트하는 방법을 학습합니다.",
+        "skills": ["dependency-injection", "deterministic-test", "flaky-test", "random", "datetime", "testability"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M08",
+        "goal": "페이지네이션 헬퍼 함수 테스트. paginate(items, page, page_size) 함수를 테스트하는 문제를 만들어주세요. page는 1부터 시작, total_pages 올림 계산, 빈 리스트 처리, has_next/has_prev 플래그, 범위 초과 페이지 처리, page<1이나 page_size<1에 대한 ValueError 등을 검증해야 합니다. API 개발의 기본기를 다루는 실무 필수 패턴입니다.",
+        "skills": ["pagination", "api", "boundary-value", "offset-calculation"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M09",
+        "goal": "캐시 매니저 클래스 테스트 (TTL 기반). SimpleCache 클래스의 get(key), set(key, value, ttl_seconds), delete(key), clear(), has(key) 메서드를 테스트하는 문제를 만들어주세요. TTL 만료 검증을 위해 시간 주입(now_fn)을 사용하고, 캐시 히트/미스, 만료된 키 조회, 덮어쓰기 등을 테스트합니다. 시간 모킹이 핵심입니다.",
+        "skills": ["cache", "ttl", "time-mock", "class-testing", "state-management"],
+        "difficulty": "Medium",
+    },
+    {
+        "id": "M10",
+        "goal": "검색 필터 조합 함수 테스트. filter_products(products, filters) 함수를 테스트하는 문제를 만들어주세요. filters는 {price_min, price_max, category, in_stock} 등의 조건을 담은 딕셔너리이고, 여러 조건을 AND로 조합합니다. 빈 필터, 단일 조건, 다중 조건 조합, 모든 조건 불일치, 빈 상품 리스트 등 조합 폭발 문제를 다룹니다.",
+        "skills": ["filter", "combinatorial-testing", "search", "multi-condition"],
+        "difficulty": "Medium",
+    },
     # Hard - 복잡한 비즈니스 로직 (H01-H05)
     {
         "id": "H01",
@@ -200,6 +237,38 @@ PROBLEMS_TO_GENERATE = [
         "goal": "워크플로우 통합 함수 테스트 문제. 주문 생성(validate_order) → 재고 확인(check_inventory) → 결제 처리(process_payment) → 배송 준비(prepare_shipping)의 전체 워크플로우를 통합하는 함수를 테스트하는 문제를 만들어주세요.",
         "skills": ["workflow testing", "integration testing", "multi-function coordination"],
         "difficulty": "Hard",
+    },
+    # Hard - 실무 고급 패턴 (H06-H09)
+    {
+        "id": "H06",
+        "goal": "Retry/Backoff API 클라이언트 함수 테스트. fetch_with_retry(url, max_retries, backoff_factor) 함수를 테스트하는 문제를 만들어주세요. 지수 백오프(exponential backoff) 재시도 로직이 포함되어 있고, HTTP 요청은 의존성 주입(http_client)으로 모킹합니다. 재시도 횟수, 대기 시간 검증, 최종 성공/실패 케이스, 타임아웃 등을 테스트합니다.",
+        "skills": ["retry", "backoff", "api", "mock", "dependency-injection", "time-control"],
+        "difficulty": "Hard",
+    },
+    {
+        "id": "H07",
+        "goal": "Rate Limiter (토큰 버킷) 클래스 테스트. TokenBucketRateLimiter 클래스를 테스트하는 문제를 만들어주세요. acquire() 메서드로 토큰 획득, 초기 토큰 수, 리필 속도, 버스트 허용량 등을 설정할 수 있습니다. 시간 주입(now_fn)으로 시간 흐름을 제어하고, 토큰 소진/리필/상한 검증, 버스트 요청, 경계값 테스트를 포함합니다.",
+        "skills": ["rate-limiter", "token-bucket", "state-management", "time-mock", "boundary-value"],
+        "difficulty": "Hard",
+    },
+    {
+        "id": "H08",
+        "goal": "주문 상태 머신(State Machine) 테스트. OrderStateMachine 클래스를 테스트하는 문제를 만들어주세요. 상태: PENDING → PAID → SHIPPED → DELIVERED 또는 CANCELLED. transition(event) 메서드로 상태 전이, 잘못된 전이 시 InvalidTransitionError 발생. 현재 상태에서 가능한 전이 목록 조회, 상태 히스토리 추적 등을 테스트합니다. 거의 모든 서비스에서 사용되는 필수 패턴입니다.",
+        "skills": ["state-machine", "state-transition", "business-logic", "error-handling"],
+        "difficulty": "Hard",
+    },
+    {
+        "id": "H09",
+        "goal": "서킷 브레이커(Circuit Breaker) 패턴 테스트. CircuitBreaker 클래스를 테스트하는 문제를 만들어주세요. 상태: CLOSED(정상) → OPEN(차단) → HALF_OPEN(테스트). call(fn) 메서드로 함수 실행, 연속 실패 시 OPEN으로 전환, 일정 시간 후 HALF_OPEN, 성공 시 CLOSED로 복귀. 실패 임계값, 복구 타임아웃, 상태 전이 검증을 테스트합니다. MSA 필수 패턴입니다.",
+        "skills": ["circuit-breaker", "resilience", "state-machine", "time-mock", "msa-pattern"],
+        "difficulty": "Hard",
+    },
+    # Easy - pytest fixture 기초 (E16)
+    {
+        "id": "E16",
+        "goal": "pytest fixture를 활용한 사용자 저장소 테스트. UserRepository 클래스(add_user, get_user, update_user, delete_user, count_users)를 테스트하는 문제를 만들어주세요. @pytest.fixture로 매 테스트마다 새 인스턴스 생성하여 테스트 격리를 보장하고, fixture 간 의존성(sample_user가 repo 사용)을 활용합니다. 클래스 변수로 상태 공유하는 버그는 fixture 없이는 탐지하기 어렵습니다.",
+        "skills": ["pytest", "fixture", "class-testing", "state-isolation", "setup-teardown"],
+        "difficulty": "Easy",
     },
 ]
 
