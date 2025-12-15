@@ -13,3 +13,5 @@ export type { TestRunResult, UseCodeRunnerOptions, UseCodeRunnerReturn } from '.
 
 // 기타 Hooks
 export { useSubmit } from './useSubmit';
+export { useKeyboardShortcuts } from './useKeyboardShortcuts';
+export { useMediaQuery } from './useMediaQuery';
