@@ -103,6 +103,7 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
     Map<string, { resolve: (value: unknown) => void; reject: (error: Error) => void }>
   >(new Map());
   const isInitializedRef = useRef(false);
+  const isInitializingRef = useRef(false);
 
   // 콜백 refs (Worker 재생성 방지)
   const onProgressRef = useRef(onProgress);
@@ -135,6 +136,7 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
             setVersion(response.payload.version);
             setLoadTime(response.payload.loadTime);
             isInitializedRef.current = true;
+            isInitializingRef.current = false;
             if (response.id) {
               const request = pendingRequestsRef.current.get(response.id);
               if (request) {
@@ -159,6 +161,7 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
             const errorMessage = response.payload.message;
             setError(errorMessage);
             setStatus('error');
+            isInitializingRef.current = false;
             onErrorRef.current?.(errorMessage);
             if (response.id) {
               const request = pendingRequestsRef.current.get(response.id);
@@ -180,6 +183,7 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
         const errorMessage = event.message || 'Worker error occurred';
         setError(errorMessage);
         setStatus('error');
+        isInitializingRef.current = false;
         onErrorRef.current?.(errorMessage);
       };
 
@@ -233,19 +237,26 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
 
   // Pyodide 초기화
   const initialize = useCallback(async (): Promise<void> => {
-    if (isInitializedRef.current) {
+    // 이미 초기화되었거나 초기화 진행 중이면 스킵
+    if (isInitializedRef.current || isInitializingRef.current) {
       return;
     }
 
+    isInitializingRef.current = true;
     setStatus('loading');
     setError(null);
 
-    const request: WorkerRequest = {
-      type: 'init',
-      id: generateRequestId(),
-    };
+    try {
+      const request: WorkerRequest = {
+        type: 'init',
+        id: generateRequestId(),
+      };
 
-    await sendMessage(request);
+      await sendMessage(request);
+    } catch (err) {
+      isInitializingRef.current = false;
+      throw err;
+    }
   }, [sendMessage]);
 
   // Python 코드 실행
@@ -333,6 +344,7 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
     workerRef.current?.terminate();
     pendingRequestsRef.current.clear();
     isInitializedRef.current = false;
+    isInitializingRef.current = false;
 
     setStatus('idle');
     setError(null);
