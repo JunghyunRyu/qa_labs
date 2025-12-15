@@ -10,9 +10,11 @@ import { ApiError } from "@/lib/api";
 import { useSubmit } from "@/hooks/useSubmit";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useProblemSolverShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { usePyodide } from "@/hooks/usePyodide";
 import { useLayoutStore } from "@/stores/layoutStore";
 import type { Problem, Submission } from "@/types/problem";
 import type { AIChatMode } from "@/types/ai";
+import type { PytestResult } from "@/workers/pyodide-worker-types";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -40,6 +42,10 @@ export default function ProblemDetailPage() {
   const [isScoringDrawerOpen, setIsScoringDrawerOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AIChatMode>("OFF");
 
+  // Local test state (Pyodide)
+  const [localTestResult, setLocalTestResult] = useState<PytestResult | null>(null);
+  const [localTestError, setLocalTestError] = useState<string | null>(null);
+
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
@@ -48,6 +54,43 @@ export default function ProblemDetailPage() {
   // Polling constants
   const BASE_POLL_INTERVAL = 2000;
   const MAX_POLL_INTERVAL = 32000;
+
+  // Pyodide for local testing
+  const {
+    isReady: isPyodideReady,
+    isExecuting: isLocalTesting,
+    progress: pyodideProgress,
+    initialize: initializePyodide,
+    runPytest,
+  } = usePyodide({
+    autoInit: false,
+  });
+
+  // Initialize Pyodide when problem loads
+  useEffect(() => {
+    if (problem && !isPyodideReady) {
+      initializePyodide();
+    }
+  }, [problem, isPyodideReady, initializePyodide]);
+
+  // Local test handler
+  const handleLocalTest = useCallback(async () => {
+    if (!problem || !code.trim() || !isPyodideReady) return;
+
+    setLocalTestResult(null);
+    setLocalTestError(null);
+
+    try {
+      const result = await runPytest(code.trim(), problem.golden_code);
+      setLocalTestResult(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof globalThis.Error ? err.message : "테스트 실행 실패";
+      setLocalTestError(errorMessage);
+    }
+  }, [problem, code, isPyodideReady, runPytest]);
+
+  // 로컬 테스트 진행률 (실행 중일 때만)
+  const currentLocalTestProgress = isLocalTesting ? pyodideProgress?.message : undefined;
 
   // Keyboard shortcuts
   useProblemSolverShortcuts({
@@ -309,6 +352,12 @@ def test_edge_case():
                 isSubmitting={submitting}
                 submission={submission}
                 submissionError={submissionError}
+                goldenCode={problem.golden_code}
+                onLocalTest={isPyodideReady ? handleLocalTest : undefined}
+                isLocalTesting={isLocalTesting}
+                localTestResult={localTestResult}
+                localTestError={localTestError}
+                localTestProgress={currentLocalTestProgress}
               />
             }
           />
@@ -360,6 +409,12 @@ def test_edge_case():
               isSubmitting={submitting}
               submission={submission}
               submissionError={submissionError}
+              goldenCode={problem.golden_code}
+              onLocalTest={isPyodideReady ? handleLocalTest : undefined}
+              isLocalTesting={isLocalTesting}
+              localTestResult={localTestResult}
+              localTestError={localTestError}
+              localTestProgress={currentLocalTestProgress}
             />
           }
           aiPanel={

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Code2, Play, Keyboard, Loader2 } from "lucide-react";
+import { Code2, Play, Keyboard, Loader2, FlaskConical } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import SubmissionResultPanel from "@/components/SubmissionResultPanel";
+import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import type { Submission } from "@/types/problem";
+import type { PytestResult } from "@/workers/pyodide-worker-types";
 
 interface CodeEditorPanelProps {
   code: string;
@@ -13,6 +15,18 @@ interface CodeEditorPanelProps {
   isSubmitting: boolean;
   submission: Submission | null;
   submissionError: string | null;
+  /** Golden code for local testing */
+  goldenCode?: string;
+  /** Local test callback */
+  onLocalTest?: () => void;
+  /** Local test running state */
+  isLocalTesting?: boolean;
+  /** Local test result */
+  localTestResult?: PytestResult | null;
+  /** Local test error */
+  localTestError?: string | null;
+  /** Local test progress message */
+  localTestProgress?: string;
 }
 
 export default function CodeEditorPanel({
@@ -22,6 +36,12 @@ export default function CodeEditorPanel({
   isSubmitting,
   submission,
   submissionError,
+  goldenCode,
+  onLocalTest,
+  isLocalTesting = false,
+  localTestResult,
+  localTestError,
+  localTestProgress,
 }: CodeEditorPanelProps) {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [editorHeight, setEditorHeight] = useState(400);
@@ -50,12 +70,20 @@ export default function CodeEditorPanel({
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Handle Ctrl+Enter for submit
+  // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Ctrl+Enter for submit
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
       if (!isSubmitting && code.trim()) {
         onSubmit();
+      }
+    }
+    // Shift+Enter for local test
+    if (e.shiftKey && e.key === "Enter" && onLocalTest) {
+      e.preventDefault();
+      if (!isLocalTesting && code.trim()) {
+        onLocalTest();
       }
     }
   };
@@ -77,26 +105,54 @@ export default function CodeEditorPanel({
           </span>
         </div>
 
-        {/* Submit Button */}
-        <button
-          onClick={onSubmit}
-          disabled={isSubmitting || !code.trim()}
-          className="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
-                     disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-                     font-medium flex items-center gap-2 text-sm"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              제출 중...
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4" />
-              채점하기
-            </>
+        {/* Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Local Test Button */}
+          {onLocalTest && (
+            <button
+              onClick={onLocalTest}
+              disabled={isLocalTesting || isSubmitting || !code.trim()}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600
+                         disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+                         font-medium flex items-center gap-2 text-sm"
+              title="로컬에서 테스트 실행 (Shift+Enter)"
+            >
+              {isLocalTesting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  테스트 중...
+                </>
+              ) : (
+                <>
+                  <FlaskConical className="w-4 h-4" />
+                  로컬 테스트
+                </>
+              )}
+            </button>
           )}
-        </button>
+
+          {/* Submit Button */}
+          <button
+            onClick={onSubmit}
+            disabled={isSubmitting || isLocalTesting || !code.trim()}
+            className="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
+                       disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+                       font-medium flex items-center gap-2 text-sm"
+            title="서버에서 채점 (Ctrl+Enter)"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                제출 중...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4" />
+                채점하기
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Editor Area */}
@@ -117,17 +173,21 @@ export default function CodeEditorPanel({
       {/* Footer with keyboard hint */}
       <div className="flex-shrink-0 px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-3">
             <Keyboard className="w-3 h-3" />
+            {onLocalTest && (
+              <span>
+                <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
+                  Shift+Enter
+                </kbd>
+                {" 로컬 테스트"}
+              </span>
+            )}
             <span>
               <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
-                Ctrl
+                Ctrl+Enter
               </kbd>
-              {" + "}
-              <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
-                Enter
-              </kbd>
-              {" 로 채점"}
+              {" 채점"}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -146,6 +206,19 @@ export default function CodeEditorPanel({
           </div>
         </div>
       </div>
+
+      {/* Local Test Result */}
+      {(localTestResult || localTestError || isLocalTesting) && (
+        <div className="flex-shrink-0 max-h-[30%] overflow-y-auto">
+          <LocalTestResultPanel
+            result={localTestResult ?? null}
+            isRunning={isLocalTesting}
+            error={localTestError ?? null}
+            progressMessage={localTestProgress}
+            onRetry={onLocalTest}
+          />
+        </div>
+      )}
 
       {/* Submission Result */}
       {(submission || submissionError) && (
