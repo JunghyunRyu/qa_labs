@@ -2,14 +2,20 @@
     FROM node:20-alpine AS builder
 
     WORKDIR /app
-    
+
+    # 빌드 인자 받기 (Next.js는 빌드 시점에 NEXT_PUBLIC_* 환경 변수를 번들에 포함)
+    ARG NEXT_PUBLIC_API_URL=/api
+    ARG NEXT_PUBLIC_SENTRY_DSN=
+    ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+
     # 패키지 정보 먼저 복사 후 설치
     COPY package.json package-lock.json ./
     RUN npm ci --legacy-peer-deps
-    
+
     # 나머지 소스 복사
     COPY . .
-    
+
     # Next.js 프로덕션 빌드 (Alpine 권한 이슈 우회)
     RUN npx next build
     
