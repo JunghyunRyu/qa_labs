@@ -12,9 +12,10 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^react-markdown$': '<rootDir>/__mocks__/react-markdown.js',
+    '^react-resizable-panels$': '<rootDir>/__mocks__/react-resizable-panels.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-markdown)/)',
+    'node_modules/(?!(react-markdown|react-resizable-panels)/)',
   ],
   testMatch: [
     '**/__tests__/**/*.[jt]s?(x)',
