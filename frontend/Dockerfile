@@ -10,8 +10,8 @@
     # 나머지 소스 복사
     COPY . .
     
-    # Next.js 프로덕션 빌드
-    RUN npm run build
+    # Next.js 프로덕션 빌드 (Alpine 권한 이슈 우회)
+    RUN npx next build
     
     # --- 실행 단계 ---
     FROM node:20-alpine AS runner
