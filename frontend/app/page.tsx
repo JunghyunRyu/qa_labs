@@ -181,16 +181,16 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">10개 문제</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">실무 시나리오</div>
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">버그 탐지율 채점</div>
+              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">숨은 버그 잡기 도전</div>
             </div>
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">3단계 난이도</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Easy ~ Hard</div>
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">즉각 AI 피드백</div>
+              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">채점 후 바로 분석</div>
             </div>
             <div>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">무료 체험</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">로그인 불필요</div>
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">테스트 코드 특화</div>
+              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">국내 유일 QA 플랫폼</div>
             </div>
           </div>
         </div>
