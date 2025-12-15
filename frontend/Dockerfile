@@ -21,20 +21,20 @@
     
     # --- 실행 단계 ---
     FROM node:20-alpine AS runner
-    
+
     WORKDIR /app
     ENV NODE_ENV=production
     ENV NEXT_TELEMETRY_DISABLED=1
-    
-    # 빌드 결과물만 복사
-    COPY --from=builder /app/package.json ./
-    COPY --from=builder /app/node_modules ./node_modules
-    COPY --from=builder /app/.next ./.next
+
+    # standalone 서버 복사
+    COPY --from=builder /app/.next/standalone ./
+    # static 파일 복사 (standalone/.next/static 위치에)
+    COPY --from=builder /app/.next/static ./.next/static
+    # public 폴더 복사 (standalone/public 위치에)
     COPY --from=builder /app/public ./public
-    COPY --from=builder /app/next.config.* ./
-    
+
     EXPOSE 3000
-    
-    # 프로덕션 서버 실행 (package.json의 "start" 스크립트 사용)
-    CMD ["npm", "start"]
+
+    # standalone 서버 직접 실행
+    CMD ["node", "server.js"]
     
