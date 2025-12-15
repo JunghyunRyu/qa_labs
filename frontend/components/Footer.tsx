@@ -1,8 +1,21 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="py-12 px-4 bg-gray-900 text-gray-400">
+    <footer className="bg-gray-900 text-gray-400">
+      {/* Divider Pattern */}
+      <div className="w-full h-16 relative overflow-hidden">
+        <Image
+          src="/images/footer-divider-pattern.png"
+          alt=""
+          fill
+          className="object-cover"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Logo & Description */}
@@ -57,6 +70,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 pt-8 text-sm text-center">
           <p>&copy; {new Date().getFullYear()} QA-Arena. All rights reserved.</p>
         </div>
+      </div>
       </div>
     </footer>
   );
