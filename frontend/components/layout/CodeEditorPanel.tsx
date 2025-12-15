@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Code2, Play, Keyboard, Loader2 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import SubmissionResultPanel from "@/components/SubmissionResultPanel";
@@ -24,6 +24,31 @@ export default function CodeEditorPanel({
   submissionError,
 }: CodeEditorPanelProps) {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
+  const [editorHeight, setEditorHeight] = useState(400);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+
+  // Measure container height for Monaco
+  useEffect(() => {
+    const updateHeight = () => {
+      if (editorContainerRef.current) {
+        const height = editorContainerRef.current.clientHeight;
+        if (height > 0) {
+          setEditorHeight(height);
+        }
+      }
+    };
+
+    // Initial measurement
+    updateHeight();
+
+    // Update on resize
+    const resizeObserver = new ResizeObserver(updateHeight);
+    if (editorContainerRef.current) {
+      resizeObserver.observe(editorContainerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   // Handle Ctrl+Enter for submit
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -76,18 +101,17 @@ export default function CodeEditorPanel({
 
       {/* Editor Area */}
       <div
+        ref={editorContainerRef}
         className="flex-1 min-h-0 overflow-hidden"
         onFocus={() => setIsEditorFocused(true)}
         onBlur={() => setIsEditorFocused(false)}
       >
-        <div className="h-full">
-          <CodeEditor
-            value={code}
-            onChange={(value) => onCodeChange(value || "")}
-            height="100%"
-            language="python"
-          />
-        </div>
+        <CodeEditor
+          value={code}
+          onChange={(value) => onCodeChange(value || "")}
+          height={`${editorHeight}px`}
+          language="python"
+        />
       </div>
 
       {/* Footer with keyboard hint */}
