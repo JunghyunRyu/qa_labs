@@ -1,5 +1,12 @@
 /** Problem and Submission types */
 
+export interface BuggyImplementation {
+  id: number;
+  buggy_code: string;
+  bug_description?: string;
+  weight: number;
+}
+
 export interface Problem {
   id: number;
   slug: string;
@@ -10,6 +17,7 @@ export interface Problem {
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
   skills?: string[];
   created_at: string;
+  buggy_implementations: BuggyImplementation[];
 }
 
 export interface ProblemListItem {
@@ -74,8 +82,25 @@ export interface Submission {
   created_at: string;
 }
 
+/** Client-side execution result (from Pyodide) */
+export interface ClientExecutionResult {
+  golden_code_passed: boolean;
+  mutants_killed: number;
+  total_mutants: number;
+  score: number;
+  details?: Array<{
+    mutant_id: string;
+    killed: boolean;
+    test_output?: string;
+    execution_time?: number;
+  }>;
+  total_execution_time?: number;
+}
+
 export interface SubmissionCreate {
   problem_id: number;
   code: string;
+  /** If provided, server skips Celery task and saves results directly */
+  client_result?: ClientExecutionResult;
 }
 

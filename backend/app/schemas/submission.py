@@ -6,11 +6,40 @@ from uuid import UUID
 from typing import Optional, Dict, Any
 
 
+class MutantDetail(BaseModel):
+    """Schema for individual mutant test result."""
+
+    mutant_id: str
+    killed: bool
+    test_output: Optional[str] = None
+    execution_time: Optional[float] = None
+
+
+class ClientExecutionResult(BaseModel):
+    """Schema for client-side (Pyodide) execution results.
+
+    This is sent when the code was executed in the browser using Pyodide,
+    allowing us to skip server-side Celery execution.
+    """
+
+    golden_code_passed: bool
+    mutants_killed: int
+    total_mutants: int
+    score: int  # 0-100
+    details: Optional[list[MutantDetail]] = None
+    total_execution_time: Optional[float] = None  # milliseconds
+
+
 class SubmissionCreate(BaseModel):
-    """Schema for creating a submission."""
+    """Schema for creating a submission.
+
+    If client_result is provided, server skips Celery task and saves results directly.
+    If client_result is None, server queues Celery task for server-side execution.
+    """
 
     problem_id: int
     code: str
+    client_result: Optional[ClientExecutionResult] = None
 
 
 class SubmissionResponse(BaseModel):

@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 
 from app.repositories.problem_repository import ProblemRepository
 from app.models.problem import Problem
-from app.schemas.problem import ProblemListResponse, ProblemDetailResponse, ProblemCreate
+from app.schemas.problem import (
+    ProblemListResponse,
+    ProblemDetailResponse,
+    ProblemCreate,
+    BuggyImplementationResponse,
+)
 
 
 class ProblemService:
@@ -108,6 +113,17 @@ class ProblemService:
                 detail=f"Problem with id {problem_id} not found",
             )
 
+        # Convert buggy_implementations to response schema
+        buggy_impl_responses = [
+            BuggyImplementationResponse(
+                id=bi.id,
+                buggy_code=bi.buggy_code,
+                bug_description=bi.bug_description,
+                weight=bi.weight,
+            )
+            for bi in problem.buggy_implementations
+        ]
+
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
@@ -118,6 +134,7 @@ class ProblemService:
             difficulty=problem.difficulty,
             skills=problem.skills,
             created_at=problem.created_at,
+            buggy_implementations=buggy_impl_responses,
         )
 
     def get_problem_by_slug(self, slug: str) -> ProblemDetailResponse:
@@ -140,6 +157,17 @@ class ProblemService:
                 detail=f"Problem with slug '{slug}' not found",
             )
 
+        # Convert buggy_implementations to response schema
+        buggy_impl_responses = [
+            BuggyImplementationResponse(
+                id=bi.id,
+                buggy_code=bi.buggy_code,
+                bug_description=bi.bug_description,
+                weight=bi.weight,
+            )
+            for bi in problem.buggy_implementations
+        ]
+
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
@@ -150,5 +178,6 @@ class ProblemService:
             difficulty=problem.difficulty,
             skills=problem.skills,
             created_at=problem.created_at,
+            buggy_implementations=buggy_impl_responses,
         )
 

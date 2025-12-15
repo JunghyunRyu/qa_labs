@@ -99,7 +99,56 @@ async def create_submission(
             detail=f"Problem with id {submission_data.problem_id} not found",
         )
 
-    # Submission 생성
+    # 클라이언트 실행 결과가 있는지 확인
+    client_result = submission_data.client_result
+
+    if client_result:
+        # 클라이언트 사이드 실행 (Pyodide) - Celery 스킵
+        submission_status = "SUCCESS" if client_result.golden_code_passed else "FAILURE"
+
+        # execution_log 구성
+        execution_log = {
+            "execution_mode": "client",  # 클라이언트 실행임을 표시
+            "golden_code_passed": client_result.golden_code_passed,
+            "total_execution_time_ms": client_result.total_execution_time,
+        }
+        if client_result.details:
+            execution_log["mutant_details"] = [
+                {
+                    "mutant_id": d.mutant_id,
+                    "killed": d.killed,
+                    "test_output": d.test_output[:500] if d.test_output else None,  # 로그 크기 제한
+                    "execution_time": d.execution_time,
+                }
+                for d in client_result.details
+            ]
+
+        submission = Submission(
+            user_id=user_id,
+            anonymous_id=anonymous_id,
+            problem_id=submission_data.problem_id,
+            code=submission_data.code,
+            status=submission_status,
+            score=client_result.score,
+            killed_mutants=client_result.mutants_killed,
+            total_mutants=client_result.total_mutants,
+            execution_log=execution_log,
+        )
+
+        submission_repo = SubmissionRepository(db)
+        submission = submission_repo.create(submission)
+
+        identifier = f"user_id={user_id}" if user_id else f"anonymous_id={anonymous_id}"
+        logger.info(
+            f"[SUBMISSION_CLIENT_EXECUTED] submission_id={submission.id} "
+            f"{identifier} problem_id={submission_data.problem_id} "
+            f"status={submission_status} score={client_result.score} "
+            f"killed={client_result.mutants_killed}/{client_result.total_mutants}"
+        )
+
+        return submission
+
+    # 서버 사이드 실행 (기존 Celery 플로우)
     submission = Submission(
         user_id=user_id,
         anonymous_id=anonymous_id,
@@ -108,22 +157,17 @@ async def create_submission(
         status="PENDING",
         score=0,
     )
-    
+
     submission_repo = SubmissionRepository(db)
     submission = submission_repo.create(submission)
 
     # 로그 메시지 (회원/게스트 구분)
-    if user_id:
-        logger.info(
-            f"[SUBMISSION_CREATED] submission_id={submission.id} "
-            f"user_id={user_id} problem_id={submission_data.problem_id} status=PENDING"
-        )
-    else:
-        logger.info(
-            f"[SUBMISSION_CREATED] submission_id={submission.id} "
-            f"anonymous_id={anonymous_id} problem_id={submission_data.problem_id} status=PENDING"
-        )
-    
+    identifier = f"user_id={user_id}" if user_id else f"anonymous_id={anonymous_id}"
+    logger.info(
+        f"[SUBMISSION_CREATED] submission_id={submission.id} "
+        f"{identifier} problem_id={submission_data.problem_id} status=PENDING"
+    )
+
     # Celery Task 발행
     try:
         process_submission_task.delay(str(submission.id))
@@ -143,7 +187,7 @@ async def create_submission(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to queue submission task: {str(e)}",
         )
-    
+
     return submission
 
 

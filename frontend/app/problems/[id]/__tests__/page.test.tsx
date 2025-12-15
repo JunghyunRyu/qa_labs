@@ -24,6 +24,14 @@ describe('ProblemDetailPage', () => {
     difficulty: 'Easy',
     skills: ['Python', 'Algorithm'],
     created_at: '2024-01-01T00:00:00Z',
+    buggy_implementations: [
+      {
+        id: 1,
+        buggy_code: 'def solve(nums):\n    return sum(nums) + 1',
+        bug_description: 'Off-by-one error',
+        weight: 1,
+      },
+    ],
   };
 
   beforeEach(() => {

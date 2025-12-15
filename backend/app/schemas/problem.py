@@ -45,11 +45,23 @@ class ProblemListResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class BuggyImplementationResponse(BaseModel):
+    """Schema for buggy implementation response."""
+
+    id: int
+    buggy_code: str
+    bug_description: Optional[str] = None
+    weight: int = 1
+
+    model_config = {"from_attributes": True}
+
+
 class ProblemDetailResponse(ProblemBase):
-    """Schema for problem detail response."""
+    """Schema for problem detail response (with buggy implementations for client-side execution)."""
 
     id: int
     created_at: datetime
+    buggy_implementations: List[BuggyImplementationResponse] = []
 
     model_config = {"from_attributes": True}
 

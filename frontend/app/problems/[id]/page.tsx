@@ -10,9 +10,9 @@ import { ApiError } from "@/lib/api";
 import { useSubmit } from "@/hooks/useSubmit";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useProblemSolverShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { usePyodide } from "@/hooks/usePyodide";
+import { useCodeRunner } from "@/hooks/useCodeRunner";
 import { useLayoutStore } from "@/stores/layoutStore";
-import type { Problem, Submission } from "@/types/problem";
+import type { Problem, Submission, ClientExecutionResult } from "@/types/problem";
 import type { AIChatMode } from "@/types/ai";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 import Loading from "@/components/Loading";
@@ -55,14 +55,15 @@ export default function ProblemDetailPage() {
   const BASE_POLL_INTERVAL = 2000;
   const MAX_POLL_INTERVAL = 32000;
 
-  // Pyodide for local testing
+  // Pyodide for local testing and client-side mutation testing
   const {
     isReady: isPyodideReady,
-    isExecuting: isLocalTesting,
+    isRunning: isLocalTesting,
     progress: pyodideProgress,
     initialize: initializePyodide,
-    runPytest,
-  } = usePyodide({
+    runTests,
+    runMutationTest,
+  } = useCodeRunner({
     autoInit: false,
   });
 
@@ -73,7 +74,7 @@ export default function ProblemDetailPage() {
     }
   }, [problem, isPyodideReady, initializePyodide]);
 
-  // Local test handler
+  // Local test handler (quick test against golden code only)
   const handleLocalTest = useCallback(async () => {
     if (!problem || !code.trim() || !isPyodideReady) return;
 
@@ -81,13 +82,13 @@ export default function ProblemDetailPage() {
     setLocalTestError(null);
 
     try {
-      const result = await runPytest(code.trim(), problem.golden_code);
+      const result = await runTests(code.trim(), problem.golden_code);
       setLocalTestResult(result);
     } catch (err: unknown) {
       const errorMessage = err instanceof globalThis.Error ? err.message : "테스트 실행 실패";
       setLocalTestError(errorMessage);
     }
-  }, [problem, code, isPyodideReady, runPytest]);
+  }, [problem, code, isPyodideReady, runTests]);
 
   // 로컬 테스트 진행률 (실행 중일 때만)
   const currentLocalTestProgress = isLocalTesting ? pyodideProgress?.message : undefined;
@@ -244,7 +245,7 @@ def test_edge_case():
     };
   }, [submission]);
 
-  // Submission function
+  // Submission function - runs mutation test locally, then saves results to server
   const doSubmit = useCallback(async (): Promise<Submission> => {
     if (!problem) {
       throw new globalThis.Error("문제 정보가 없습니다.");
@@ -258,6 +259,44 @@ def test_edge_case():
     pollingErrorCountRef.current = 0;
     setSubmissionError(null);
 
+    // If Pyodide is ready and we have buggy implementations, run client-side mutation test
+    if (isPyodideReady && problem.buggy_implementations && problem.buggy_implementations.length > 0) {
+      // Prepare buggy implementations for Pyodide
+      const buggyImpls = problem.buggy_implementations.map((bi) => ({
+        id: String(bi.id),
+        code: bi.buggy_code,
+      }));
+
+      // Run mutation test locally
+      const testResult = await runMutationTest(code.trim(), problem.golden_code, buggyImpls);
+
+      // Convert to ClientExecutionResult format
+      const clientResult: ClientExecutionResult = {
+        golden_code_passed: testResult.goldenCodePassed,
+        mutants_killed: testResult.mutantsKilled,
+        total_mutants: testResult.totalMutants,
+        score: testResult.score,
+        details: testResult.details.map((d) => ({
+          mutant_id: d.mutantId,
+          killed: d.killed,
+          test_output: d.testOutput,
+          execution_time: d.executionTime,
+        })),
+        total_execution_time: testResult.executionTime,
+      };
+
+      // Submit with client results (server skips Celery)
+      const newSubmission = await createSubmission({
+        problem_id: problem.id,
+        code: code.trim(),
+        client_result: clientResult,
+      });
+
+      setSubmission(newSubmission);
+      return newSubmission;
+    }
+
+    // Fallback to server-side execution (no buggy implementations or Pyodide not ready)
     const newSubmission = await createSubmission({
       problem_id: problem.id,
       code: code.trim(),
@@ -265,7 +304,7 @@ def test_edge_case():
 
     setSubmission(newSubmission);
     return newSubmission;
-  }, [problem, code]);
+  }, [problem, code, isPyodideReady, runMutationTest]);
 
   // useSubmit hook with debounce
   const { submit: handleSubmit, isSubmitting: submitting } = useSubmit(doSubmit, {
