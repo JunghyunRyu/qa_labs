@@ -9,6 +9,7 @@ import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
 import ProblemCard from "@/components/ProblemCard";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
+import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
 import { Search, Filter, X, Bookmark } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
@@ -361,6 +362,9 @@ export default function ProblemsPage() {
           ← 홈으로 돌아가기
         </Link>
       </div>
+
+      {/* Pyodide 사전 로딩 - 문제 상세 페이지 진입 전에 미리 로드 */}
+      <PyodidePreloader initializeImmediately={true} delay={2000} />
     </div>
   );
 }

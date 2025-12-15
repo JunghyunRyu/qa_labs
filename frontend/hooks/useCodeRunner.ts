@@ -2,11 +2,11 @@
  * useCodeRunner Hook
  *
  * QA Arena 문제 풀이를 위한 고수준 코드 실행 Hook입니다.
- * usePyodide를 기반으로 Mutation Testing에 특화된 API를 제공합니다.
+ * 전역 PyodideStore를 기반으로 Mutation Testing에 특화된 API를 제공합니다.
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { usePyodide } from './usePyodide';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { usePyodideStore } from '../stores/pyodideStore';
 import type { ProgressInfo, MutationTestResult, PytestResult } from '../workers/pyodide-worker-types';
 
 // 실행 결과 타입
@@ -104,27 +104,54 @@ export function useCodeRunner(options: UseCodeRunnerOptions = {}): UseCodeRunner
   // 상태
   const [lastResult, setLastResult] = useState<TestRunResult | null>(null);
 
-  // usePyodide hook 사용
+  // 콜백 refs
+  const onProgressRef = useRef(onProgress);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onProgressRef.current = onProgress;
+    onErrorRef.current = onError;
+  }, [onProgress, onError]);
+
+  // 전역 Pyodide store 사용
   const {
     status,
-    isReady,
-    isExecuting,
     error,
     version,
     progress,
     initialize: pyodideInit,
-    runPytest: pyodideRunPytest,
+    runTests: pyodideRunTests,
     runMutationTest: pyodideRunMutationTest,
     restart: pyodideRestart,
-  } = usePyodide({
-    autoInit,
-    onProgress,
-    onError,
-  });
+  } = usePyodideStore();
 
   // 파생 상태
+  const isReady = status === 'ready';
   const isInitializing = status === 'loading';
-  const isRunning = isExecuting;
+  const isRunning = status === 'executing';
+
+  // 자동 초기화
+  useEffect(() => {
+    if (autoInit && status === 'idle') {
+      pyodideInit().catch((err) => {
+        onErrorRef.current?.(err instanceof Error ? err.message : 'Initialization failed');
+      });
+    }
+  }, [autoInit, status, pyodideInit]);
+
+  // 진행률 콜백 처리
+  useEffect(() => {
+    if (progress) {
+      onProgressRef.current?.(progress);
+    }
+  }, [progress]);
+
+  // 에러 콜백 처리
+  useEffect(() => {
+    if (error) {
+      onErrorRef.current?.(error);
+    }
+  }, [error]);
 
   // Mutation Testing 실행
   const runMutationTest = useCallback(
@@ -170,12 +197,12 @@ export function useCodeRunner(options: UseCodeRunnerOptions = {}): UseCodeRunner
         };
 
         setLastResult(errorResult);
-        onError?.(errorMessage);
+        onErrorRef.current?.(errorMessage);
 
         return errorResult;
       }
     },
-    [pyodideRunMutationTest, onStart, onComplete, onError]
+    [pyodideRunMutationTest, onStart, onComplete]
   );
 
   // pytest 실행 (단순 테스트)
@@ -184,15 +211,15 @@ export function useCodeRunner(options: UseCodeRunnerOptions = {}): UseCodeRunner
       onStart?.();
 
       try {
-        const result = await pyodideRunPytest(testCode, targetCode);
+        const result = await pyodideRunTests(testCode, targetCode);
         return result;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        onError?.(errorMessage);
+        onErrorRef.current?.(errorMessage);
         throw err;
       }
     },
-    [pyodideRunPytest, onStart, onError]
+    [pyodideRunTests, onStart]
   );
 
   // 결과 초기화
