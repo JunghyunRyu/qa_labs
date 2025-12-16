@@ -15,7 +15,7 @@ from app.models.user import User
 from app.repositories.submission_repository import SubmissionRepository
 from app.repositories.problem_repository import ProblemRepository
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
-from app.workers.tasks import process_submission_task
+from app.workers.tasks import process_submission_task, generate_feedback_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -145,6 +145,19 @@ async def create_submission(
             f"status={submission_status} score={client_result.score} "
             f"killed={client_result.mutants_killed}/{client_result.total_mutants}"
         )
+
+        # 회원이고 SUCCESS인 경우 AI 피드백 비동기 생성
+        if user_id and submission_status == "SUCCESS":
+            try:
+                generate_feedback_task.delay(str(submission.id))
+                logger.info(f"[AI_FEEDBACK_QUEUED] submission_id={submission.id}")
+            except Exception as e:
+                # AI 피드백 큐잉 실패해도 채점 결과는 반환
+                logger.error(
+                    f"[AI_FEEDBACK_QUEUE_ERROR] submission_id={submission.id} "
+                    f"error_type={type(e).__name__} error_message={str(e)}",
+                    exc_info=True
+                )
 
         return submission
 
