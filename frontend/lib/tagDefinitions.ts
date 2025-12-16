@@ -273,9 +273,9 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     category: "CONCEPT",
     priority: 71,
   },
-  "불안정 테스트": {
-    slug: "불안정 테스트",
-    labelKo: "불안정 테스트",
+  "플래키 테스트": {
+    slug: "플래키 테스트",
+    labelKo: "플래키 테스트",
     category: "CONCEPT",
     priority: 72,
   },
@@ -309,9 +309,9 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     category: "CONCEPT",
     priority: 77,
   },
-  "설정/해제": {
-    slug: "설정/해제",
-    labelKo: "설정/해제",
+  "Setup/Teardown": {
+    slug: "Setup/Teardown",
+    labelKo: "Setup/Teardown",
     category: "CONCEPT",
     priority: 78,
   },
@@ -347,9 +347,9 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     category: "CONCEPT",
     priority: 91,
   },
-  "속도 제한": {
-    slug: "속도 제한",
-    labelKo: "속도 제한",
+  "Rate Limit": {
+    slug: "Rate Limit",
+    labelKo: "Rate Limit",
     category: "CONCEPT",
     priority: 92,
   },

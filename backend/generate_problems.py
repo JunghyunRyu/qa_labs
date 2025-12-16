@@ -186,7 +186,7 @@ PROBLEMS_TO_GENERATE = [
     {
         "id": "M07",
         "goal": "비결정적 코드의 결정적 테스트 작성. 랜덤 쿠폰 코드 생성 함수(prefix + 랜덤 문자열 + 만료일 계산)를 테스트하는 문제를 만들어주세요. 의존성 주입(random_fn, now_fn)을 통해 Flaky 테스트 없이 결정적으로 테스트하는 방법을 학습합니다.",
-        "skills": ["의존성 주입", "결정적 테스트", "불안정 테스트", "랜덤", "날짜/시간", "테스트 용이성"],
+        "skills": ["의존성 주입", "결정적 테스트", "플래키 테스트", "랜덤", "날짜/시간", "테스트 용이성"],
         "difficulty": "Medium",
     },
     {
@@ -248,7 +248,7 @@ PROBLEMS_TO_GENERATE = [
     {
         "id": "H07",
         "goal": "Rate Limiter (토큰 버킷) 클래스 테스트. TokenBucketRateLimiter 클래스를 테스트하는 문제를 만들어주세요. acquire() 메서드로 토큰 획득, 초기 토큰 수, 리필 속도, 버스트 허용량 등을 설정할 수 있습니다. 시간 주입(now_fn)으로 시간 흐름을 제어하고, 토큰 소진/리필/상한 검증, 버스트 요청, 경계값 테스트를 포함합니다.",
-        "skills": ["속도 제한", "토큰 버킷", "상태 관리", "시간 모킹", "경계값 분석"],
+        "skills": ["Rate Limit", "토큰 버킷", "상태 관리", "시간 모킹", "경계값 분석"],
         "difficulty": "Hard",
     },
     {
@@ -267,7 +267,7 @@ PROBLEMS_TO_GENERATE = [
     {
         "id": "E16",
         "goal": "pytest fixture를 활용한 사용자 저장소 테스트. UserRepository 클래스(add_user, get_user, update_user, delete_user, count_users)를 테스트하는 문제를 만들어주세요. @pytest.fixture로 매 테스트마다 새 인스턴스 생성하여 테스트 격리를 보장하고, fixture 간 의존성(sample_user가 repo 사용)을 활용합니다. 클래스 변수로 상태 공유하는 버그는 fixture 없이는 탐지하기 어렵습니다.",
-        "skills": ["픽스처", "클래스 테스트", "상태 격리", "설정/해제"],
+        "skills": ["픽스처", "클래스 테스트", "상태 격리", "Setup/Teardown"],
         "difficulty": "Easy",
     },
     # ========================================

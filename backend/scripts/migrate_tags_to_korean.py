@@ -38,7 +38,7 @@ TAG_MAPPING = {
     "multi-layer validation": "다층 검증",
     "dependency-injection": "의존성 주입",
     "deterministic-test": "결정적 테스트",
-    "flaky-test": "불안정 테스트",
+    "flaky-test": "플래키 테스트",
     "basic testing": "기본 테스트",
 
     # === 경계값 분석 세부 ===
@@ -149,7 +149,7 @@ TAG_MAPPING = {
     "state-machine": "상태 머신",
     "state-transition": "상태 전이",
     "state-isolation": "상태 격리",
-    "setup-teardown": "설정/해제",
+    "setup-teardown": "Setup/Teardown",
     "class-testing": "클래스 테스트",
     "fixture": "픽스처",
     "time-control": "시간 제어",
@@ -160,7 +160,7 @@ TAG_MAPPING = {
     # === 인프라/패턴 ===
     "retry": "재시도",
     "backoff": "백오프",
-    "rate-limiter": "속도 제한",
+    "rate-limiter": "Rate Limit",
     "token-bucket": "토큰 버킷",
     "circuit-breaker": "서킷 브레이커",
     "resilience": "회복탄력성",

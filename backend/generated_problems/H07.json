@@ -33,7 +33,7 @@
   "initial_test_template": "import pytest\nfrom target import TokenBucketRateLimiter\n\n\n# 초기 상태 테스트\n\ndef test_initial_tokens_full():\n    # TODO: 생성 직후 토큰이 capacity만큼 있는지 확인\n    pass\n\n\ndef test_acquire_immediately_after_creation():\n    # TODO: 생성 직후 capacity만큼 토큰을 소비할 수 있는지 확인\n    pass\n\n\n# 토큰 소비 테스트\n\ndef test_acquire_reduces_tokens():\n    # TODO: try_acquire 후 토큰이 정확히 감소하는지 확인\n    pass\n\n\ndef test_acquire_fails_when_insufficient():\n    # TODO: 토큰이 부족할 때 False 반환 및 토큰 변화 없음 확인\n    pass\n\n\n# 리필 로직 테스트\n\ndef test_refill_over_time():\n    # TODO: time_fn을 모킹하여 시간 경과 후 리필 검증\n    pass\n\n\ndef test_refill_capped_at_capacity():\n    # TODO: 리필 시 capacity를 초과하지 않는지 확인\n    pass\n\n\n# 경계값 테스트\n\ndef test_request_exceeds_capacity():\n    # TODO: tokens > capacity 요청 시 False 반환 (예외 아님)\n    pass\n\n\ndef test_exact_token_consumption():\n    # TODO: 정확히 남은 토큰만큼 요청 시 성공 후 0개 남음\n    pass\n",
   "tags": [
     "단위 테스트",
-    "속도 제한",
+    "Rate Limit",
     "토큰 버킷",
     "상태 관리",
     "시간 모킹",
