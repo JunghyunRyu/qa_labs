@@ -162,8 +162,16 @@ def test_edge_case():
   }, [problemId]);
 
   // Polling for submission result with exponential backoff
+  // Also poll for AI feedback if member submitted successfully but feedback not yet generated
   useEffect(() => {
-    if (!submission || (submission.status !== "PENDING" && submission.status !== "RUNNING")) {
+    const needsPolling = submission && (
+      submission.status === "PENDING" ||
+      submission.status === "RUNNING" ||
+      // 회원이고 SUCCESS인데 feedback_json이 아직 없으면 AI 피드백 대기 중
+      (submission.status === "SUCCESS" && submission.user_id && !submission.feedback_json)
+    );
+
+    if (!needsPolling) {
       if (pollingTimeoutRef.current) {
         clearTimeout(pollingTimeoutRef.current);
         pollingTimeoutRef.current = null;
@@ -205,7 +213,13 @@ def test_edge_case():
           setSubmission(updatedSubmission);
           pollingErrorCountRef.current = 0;
 
-          if (updatedSubmission.status === "PENDING" || updatedSubmission.status === "RUNNING") {
+          // 폴링 계속 조건: 채점 진행 중 또는 AI 피드백 대기 중
+          const shouldContinuePolling =
+            updatedSubmission.status === "PENDING" ||
+            updatedSubmission.status === "RUNNING" ||
+            (updatedSubmission.status === "SUCCESS" && updatedSubmission.user_id && !updatedSubmission.feedback_json);
+
+          if (shouldContinuePolling) {
             scheduleNextPoll(BASE_POLL_INTERVAL);
           }
         } catch (err) {
