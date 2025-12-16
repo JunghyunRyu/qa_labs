@@ -27,6 +27,7 @@ export interface ProblemListItem {
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
   skills?: string[];
   description_md?: string;  // For preview in list view
+  success_rate?: number | null;  // 0.0~1.0, null if < 5 submissions
 }
 
 export interface ProblemListResponse {

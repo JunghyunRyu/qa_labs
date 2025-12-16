@@ -47,6 +47,7 @@ class ProblemService:
         difficulty: Optional[str] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
+        sort: str = "difficulty-asc",
     ) -> Tuple[List[ProblemListResponse], int, int]:
         """
         Get paginated and filtered list of problems.
@@ -57,6 +58,7 @@ class ProblemService:
             difficulty: Filter by difficulty level (e.g., "Easy", "Medium")
             search: Search query for title, slug, or skills
             tags: Filter by skill tags (all tags must match)
+            sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
 
         Returns:
             Tuple of (list of problems, total count, total pages)
@@ -75,18 +77,21 @@ class ProblemService:
             difficulty=difficulty,
             search=search,
             tags=tags,
+            sort=sort,
         )
 
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
 
+        # Repository now returns dicts with success_rate
         problem_list = [
             ProblemListResponse(
-                id=p.id,
-                slug=p.slug,
-                title=p.title,
-                difficulty=p.difficulty,
-                skills=p.skills,
-                description_md=p.description_md,  # Include description for preview
+                id=p["id"],
+                slug=p["slug"],
+                title=p["title"],
+                difficulty=p["difficulty"],
+                skills=p["skills"],
+                description_md=p["description_md"],
+                success_rate=p["success_rate"],
             )
             for p in problems
         ]

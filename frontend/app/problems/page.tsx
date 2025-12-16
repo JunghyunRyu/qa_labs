@@ -16,7 +16,7 @@ import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 type DifficultyFilter = "All" | "Very Easy" | "Easy" | "Medium" | "Hard";
-type SortOption = "newest" | "oldest" | "difficulty-asc" | "difficulty-desc";
+type SortOption = "difficulty-asc" | "difficulty-desc" | "success-rate-desc" | "success-rate-asc";
 
 export default function ProblemsPage() {
   const { isAuthenticated } = useAuth();
@@ -31,7 +31,7 @@ export default function ProblemsPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("All");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [sortOption, setSortOption] = useState<SortOption>("difficulty-asc");
   const [showFilters, setShowFilters] = useState(false);
 
   // Debounce search query
@@ -52,6 +52,7 @@ export default function ProblemsPage() {
         difficulty: difficultyFilter !== "All" ? difficultyFilter : undefined,
         search: debouncedSearchQuery.trim() || undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
+        sort: sortOption,
       };
       const result = await getProblems(params);
       setData(result);
@@ -67,40 +68,22 @@ export default function ProblemsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, difficultyFilter, debouncedSearchQuery, selectedTags]);
+  }, [page, pageSize, difficultyFilter, debouncedSearchQuery, selectedTags, sortOption]);
 
   useEffect(() => {
     fetchProblems();
   }, [fetchProblems]);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters or sort change
   useEffect(() => {
     setPage(1);
-  }, [difficultyFilter, selectedTags, debouncedSearchQuery]);
+  }, [difficultyFilter, selectedTags, debouncedSearchQuery, sortOption]);
 
-  // 정렬된 문제 목록 (필터링은 서버에서 처리)
+  // 서버에서 정렬된 문제 목록 (정렬은 서버에서 처리)
   const sortedProblems = useMemo(() => {
     if (!data) return [];
-
-    // 정렬 (클라이언트 사이드)
-    const sorted = [...data.problems].sort((a, b) => {
-      switch (sortOption) {
-        case "difficulty-asc":
-          const difficultyOrder = { "Very Easy": 0, Easy: 1, Medium: 2, Hard: 3 };
-          return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
-        case "difficulty-desc":
-          const difficultyOrderDesc = { "Very Easy": 0, Easy: 1, Medium: 2, Hard: 3 };
-          return difficultyOrderDesc[b.difficulty] - difficultyOrderDesc[a.difficulty];
-        case "oldest":
-          return a.id - b.id;
-        case "newest":
-        default:
-          return b.id - a.id;
-      }
-    });
-
-    return sorted;
-  }, [data, sortOption]);
+    return data.problems;
+  }, [data]);
 
   // 사용 가능한 모든 태그 추출 (난이도 태그 제외, 한글화 적용)
   const availableTags = useMemo((): TagViewModel[] => {
@@ -293,10 +276,10 @@ export default function ProblemsPage() {
                 className="w-full md:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm md:text-base"
                 aria-label="정렬 옵션"
               >
-                <option value="newest">최신순</option>
-                <option value="oldest">오래된순</option>
                 <option value="difficulty-asc">난이도 낮은순</option>
                 <option value="difficulty-desc">난이도 높은순</option>
+                <option value="success-rate-desc">정답률 높은순</option>
+                <option value="success-rate-asc">정답률 낮은순</option>
               </select>
             </div>
           </div>

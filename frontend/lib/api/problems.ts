@@ -11,6 +11,7 @@ export interface GetProblemsParams {
   difficulty?: string;
   search?: string;
   tags?: string[];
+  sort?: string;  // difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc
 }
 
 /**
@@ -19,11 +20,12 @@ export interface GetProblemsParams {
 export async function getProblems(
   params: GetProblemsParams = {}
 ): Promise<ProblemListResponse> {
-  const { page = 1, pageSize = 10, difficulty, search, tags } = params;
+  const { page = 1, pageSize = 10, difficulty, search, tags, sort = "difficulty-asc" } = params;
 
   const queryParams = new URLSearchParams({
     page: page.toString(),
     page_size: pageSize.toString(),
+    sort: sort,
   });
 
   if (difficulty) {

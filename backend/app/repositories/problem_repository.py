@@ -1,10 +1,11 @@
 """Problem repository."""
 
-from typing import Optional, List, Tuple, Union
+from typing import Optional, List, Tuple, Union, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, cast, Text
+from sqlalchemy import func, cast, Text, case, literal
 
 from app.models.problem import Problem
+from app.models.submission import Submission
 from app.schemas.problem import ProblemCreate
 
 class ProblemRepository:
@@ -21,9 +22,10 @@ class ProblemRepository:
         difficulty: Optional[str] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
-    ) -> Tuple[List[Problem], int]:
+        sort: str = "difficulty-asc",
+    ) -> Tuple[List[Dict[str, Any]], int]:
         """
-        Get all problems with pagination and optional filtering.
+        Get all problems with pagination, filtering, and sorting.
 
         Args:
             skip: Number of records to skip
@@ -31,11 +33,38 @@ class ProblemRepository:
             difficulty: Filter by difficulty level (e.g., "Easy", "Medium")
             search: Search query for title, slug, or skills
             tags: Filter by skill tags (all tags must match)
+            sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
 
         Returns:
-            Tuple of (list of problems, total count)
+            Tuple of (list of problem dicts with success_rate, total count)
         """
-        query = self.db.query(Problem)
+        # Subquery: 문제별 제출 통계
+        stats_subquery = (
+            self.db.query(
+                Submission.problem_id,
+                func.count(Submission.id).label("submission_count"),
+                func.count(case((Submission.status == "SUCCESS", 1))).label("success_count"),
+            )
+            .group_by(Submission.problem_id)
+            .subquery()
+        )
+
+        # 정답률 계산 (제출 5건 이상일 때만)
+        success_rate_expr = case(
+            (stats_subquery.c.submission_count >= 5,
+             stats_subquery.c.success_count * 1.0 / stats_subquery.c.submission_count),
+            else_=None
+        ).label("success_rate")
+
+        # 메인 쿼리: Problem + 통계 LEFT JOIN
+        query = (
+            self.db.query(
+                Problem,
+                func.coalesce(stats_subquery.c.submission_count, 0).label("submission_count"),
+                success_rate_expr,
+            )
+            .outerjoin(stats_subquery, Problem.id == stats_subquery.c.problem_id)
+        )
 
         # Apply difficulty filter
         if difficulty:
@@ -53,22 +82,63 @@ class ProblemRepository:
         # Apply tags filter (all tags must be present in skills)
         if tags:
             for tag in tags:
-                # Check if the tag exists in the JSON array
                 query = query.filter(
                     cast(Problem.skills, Text).ilike(f"%{tag}%")
                 )
 
-        # Get total count for filtered results
-        total = query.count()
+        # Get total count for filtered results (count distinct problems)
+        total = query.with_entities(func.count(Problem.id.distinct())).scalar()
 
-        # Apply ordering and pagination
-        problems = (
-            query.order_by(Problem.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
+        # 난이도 순서 정의
+        difficulty_order = case(
+            (Problem.difficulty == "Very Easy", 0),
+            (Problem.difficulty == "Easy", 1),
+            (Problem.difficulty == "Medium", 2),
+            (Problem.difficulty == "Hard", 3),
+            else_=4
         )
-        return problems, total
+
+        # Apply sorting
+        if sort == "difficulty-asc":
+            query = query.order_by(difficulty_order.asc(), Problem.id.asc())
+        elif sort == "difficulty-desc":
+            query = query.order_by(difficulty_order.desc(), Problem.id.asc())
+        elif sort == "success-rate-desc":
+            # 정답률 높은순 (NULL은 마지막)
+            query = query.order_by(
+                case((success_rate_expr.is_(None), 1), else_=0),
+                success_rate_expr.desc(),
+                Problem.id.asc()
+            )
+        elif sort == "success-rate-asc":
+            # 정답률 낮은순 (NULL은 마지막)
+            query = query.order_by(
+                case((success_rate_expr.is_(None), 1), else_=0),
+                success_rate_expr.asc(),
+                Problem.id.asc()
+            )
+        else:
+            # 기본: 난이도 낮은순
+            query = query.order_by(difficulty_order.asc(), Problem.id.asc())
+
+        # Apply pagination
+        results = query.offset(skip).limit(limit).all()
+
+        # Convert to list of dicts
+        problems_with_stats = []
+        for problem, submission_count, success_rate in results:
+            problem_dict = {
+                "id": problem.id,
+                "slug": problem.slug,
+                "title": problem.title,
+                "difficulty": problem.difficulty,
+                "skills": problem.skills,
+                "description_md": problem.description_md,
+                "success_rate": float(success_rate) if success_rate is not None else None,
+            }
+            problems_with_stats.append(problem_dict)
+
+        return problems_with_stats, total
 
     def get_by_id(self, problem_id: int) -> Optional[Problem]:
         """
