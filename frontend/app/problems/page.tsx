@@ -106,7 +106,7 @@ export default function ProblemsPage() {
     setSearchQuery("");
     setDifficultyFilter("All");
     setSelectedTags([]);
-    setSortOption("newest");
+    setSortOption("difficulty-asc");
   };
 
   const hasActiveFilters = debouncedSearchQuery || difficultyFilter !== "All" || selectedTags.length > 0;
