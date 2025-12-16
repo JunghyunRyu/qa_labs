@@ -27,12 +27,10 @@
   "description_md": "## 문제 설명\n\n당신은 고객 지원팀에서 사용하는 **텍스트 입력 품질 점검 도구**를 테스트하고 있습니다. 이 도구는 사용자가 입력한 문장에서 특정 문자가 얼마나 자주 등장하는지 세어, 예를 들어 `-` 구분자 개수, `@` 포함 여부, 공백 개수 같은 간단한 규칙을 검증합니다.\n\n그 핵심 유틸리티 함수가 `count_char`이며, 이 함수가 정확하지 않으면 잘못된 입력이 통과하거나 정상 입력이 거절될 수 있습니다.\n\n### 테스트 대상 함수\n`count_char(text: str, ch: str, *, case_sensitive: bool = True) -> int`\n\n- **text**: 검색 대상 문자열 (빈 문자열 가능)\n- **ch**: 세고자 하는 **단일 문자 1개**\n- **case_sensitive**:\n  - `True`: 대소문자 구분하여 카운트\n  - `False`: 대소문자 무시하고 카운트\n\n### 반환값\n- `text` 안에서 `ch`가 등장한 횟수를 `int`로 반환합니다.\n\n### 동작 예시\n- `count_char(\"banana\", \"a\")` → `3`\n- `count_char(\"AaA\", \"a\", case_sensitive=False)` → `3`\n\n### 테스트 힌트 (경계값/파티션 관점)\n다음과 같은 범주를 나누어 테스트 아이디어를 구성해 보세요.\n\n- **Boundary Value Analysis (경계값 분석)**\n  - `text`가 빈 문자열일 때\n  - `text` 길이가 1일 때\n  - 타겟 문자가 문자열의 **첫 글자/마지막 글자**에 위치할 때\n  - `ch`가 정확히 1글자인지(예: 빈 문자열, 2글자 이상)\n\n- **Equivalence Partitioning (동등 분할)**\n  - 대소문자 구분/비구분 모드에 따른 입력 파티션\n  - 일반 알파벳 문자 vs 공백 같은 특수한 문자\n  - 등장 횟수: 0회 / 1회 / 여러 번\n\n### 수험자가 해야 할 일\n- `pytest`로 **테스트 코드만** 작성하세요.\n- 플랫폼에는 여러 개의 구현(정상/버그)이 섞여 있습니다.\n- 당신의 테스트는 정상 구현에서는 통과하면서, 버그 구현들을 최대한 많이 실패시키도록 작성되어야 합니다.\n",
   "initial_test_template": "import pytest\nfrom target import count_char\n\n\ndef test_boundary_empty_text_returns_zero():\n    # TODO (boundary value analysis): text가 \"\"(빈 문자열)일 때 항상 0을 반환하는지 검증\n    # 예: count_char(\"\", \"a\") == 0\n    pass\n\n\ndef test_boundary_last_character_counted():\n    # TODO (boundary value analysis): 타겟 문자가 문자열의 마지막 위치에 있을 때도 정확히 카운트되는지 검증\n    # 예: \"xxa\"에서 'a'가 1로 세어지는지\n    pass\n\n\ndef test_equivalence_case_sensitive_vs_insensitive():\n    # TODO (equivalence partitioning): case_sensitive=True/False 파티션을 나눠서\n    # 대소문자 혼합 문자열에서 결과가 달라지는지 검증\n    # 예: \"AaA\"에서 ch='a'일 때 True면 1, False면 3 같은 형태\n    pass\n\n\ndef test_equivalence_whitespace_character():\n    # TODO (equivalence partitioning): 공백 문자(' ')도 일반 문자처럼 카운트되는지 검증\n    # 예: \"a a  a\"에서 ' ' 개수\n    pass\n",
   "tags": [
-    "easy",
-    "pytest",
-    "unit-test",
-    "string",
-    "boundary value analysis",
-    "equivalence partitioning"
+    "단위 테스트",
+    "문자열",
+    "경계값 분석",
+    "동등 분할"
   ],
   "difficulty": "Easy",
   "problem_id": "E01"
