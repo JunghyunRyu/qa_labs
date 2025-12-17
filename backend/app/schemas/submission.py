@@ -86,6 +86,7 @@ class SubmissionListItem(BaseModel):
     score: int
     killed_mutants: Optional[int] = None
     total_mutants: Optional[int] = None
+    has_feedback: bool = False
     created_at: datetime
 
     model_config = {"from_attributes": True}

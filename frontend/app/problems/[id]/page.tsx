@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
@@ -25,10 +25,13 @@ import CodeEditorPanel from "@/components/layout/CodeEditorPanel";
 import MobileTabLayout from "@/components/layout/MobileTabLayout";
 import FloatingAIChat from "@/components/ai/FloatingAIChat";
 import AICoachPanel from "@/components/AICoachPanel";
+import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import Link from "next/link";
 
 export default function ProblemDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const submissionIdFromUrl = searchParams.get("submission");
   const problemId = parseInt(params.id as string);
   const { isDesktop } = useMediaQuery();
   const { toggleProblemPanel, toggleAIChat, setIsAIChatOpen } = useLayoutStore();
@@ -41,6 +44,10 @@ export default function ProblemDetailPage() {
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isScoringDrawerOpen, setIsScoringDrawerOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AIChatMode>("OFF");
+
+  // Saved feedback from URL submission parameter
+  const [savedFeedback, setSavedFeedback] = useState<SavedFeedback | null>(null);
+  const [savedFeedbackScore, setSavedFeedbackScore] = useState<number | undefined>(undefined);
 
   // Local test state (Pyodide)
   const [localTestResult, setLocalTestResult] = useState<PytestResult | null>(null);
@@ -73,6 +80,72 @@ export default function ProblemDetailPage() {
       initializePyodide();
     }
   }, [problem, isPyodideReady, initializePyodide]);
+
+  // Initialize code: either from saved submission or template
+  // This single effect handles all code initialization to avoid race conditions
+  useEffect(() => {
+    const initializeCode = async () => {
+      // Wait for problem to load first
+      if (!problem) return;
+
+      // Clear previous saved feedback state
+      setSavedFeedback(null);
+      setSavedFeedbackScore(undefined);
+
+      if (submissionIdFromUrl) {
+        // Load saved submission
+        try {
+          const submissionData = await getSubmission(submissionIdFromUrl);
+
+          // Check if this submission belongs to this problem
+          if (submissionData.problem_id !== problemId) {
+            console.warn("Submission does not belong to this problem");
+            setCode(getInitialTemplate(problem));
+            return;
+          }
+
+          // 1. Load the submitted code into editor
+          if (submissionData.code) {
+            setCode(submissionData.code);
+          } else {
+            setCode(getInitialTemplate(problem));
+          }
+
+          // 2. Set the submission result (score, mutants, status)
+          setSubmission(submissionData);
+
+          // 3. Extract and show AI feedback if exists
+          if (submissionData.feedback_json) {
+            const feedback = submissionData.feedback_json as unknown as SavedFeedback;
+            setSavedFeedback(feedback);
+            setSavedFeedbackScore(submissionData.score);
+            // Auto-open AI chat panel to show feedback
+            setIsAIChatOpen(true);
+            setAiMode("COACH");
+          }
+        } catch (err) {
+          console.error("Failed to load saved submission:", err);
+          // Fallback to template on error
+          setCode(getInitialTemplate(problem));
+        }
+      } else {
+        // No submission param - set template
+        setCode(getInitialTemplate(problem));
+      }
+    };
+
+    initializeCode();
+  }, [submissionIdFromUrl, problem, problemId, setIsAIChatOpen]);
+
+  // Clear saved feedback handler
+  const handleClearSavedFeedback = useCallback(() => {
+    setSavedFeedback(null);
+    setSavedFeedbackScore(undefined);
+    // Remove submission param from URL without reload
+    const url = new URL(window.location.href);
+    url.searchParams.delete("submission");
+    window.history.replaceState({}, "", url.toString());
+  }, []);
 
   // Local test handler (quick test against golden code only)
   const handleLocalTest = useCallback(async () => {
@@ -129,7 +202,7 @@ def test_edge_case():
 `;
   };
 
-  // Fetch problem data
+  // Fetch problem data (code initialization is handled by initializeCode effect)
   useEffect(() => {
     const fetchProblem = async () => {
       if (isNaN(problemId)) {
@@ -143,7 +216,8 @@ def test_edge_case():
         setError(null);
         const result = await getProblem(problemId);
         setProblem(result);
-        setCode(getInitialTemplate(result));
+        // Note: Code initialization is handled by the initializeCode effect
+        // which depends on `problem` state and `submissionIdFromUrl`
       } catch (err: unknown) {
         let errorMessage = "문제를 불러오는데 실패했습니다.";
         if (err instanceof ApiError) {
@@ -422,6 +496,9 @@ def test_edge_case():
           codeContext={code}
           mode={aiMode}
           onModeChange={handleAIModeChange}
+          savedFeedback={savedFeedback}
+          savedFeedbackScore={savedFeedbackScore}
+          onClearSavedFeedback={handleClearSavedFeedback}
         />
 
         {/* Scoring Method Drawer */}

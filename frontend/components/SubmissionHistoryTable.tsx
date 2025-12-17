@@ -13,6 +13,9 @@ import {
   Clock,
   Loader2,
   ExternalLink,
+  MessageSquare,
+  Trophy,
+  Target,
 } from "lucide-react";
 
 interface SubmissionHistoryTableProps {
@@ -88,6 +91,72 @@ function StatusBadge({ status }: { status: SubmissionStatus }) {
   );
 }
 
+/**
+ * 결과 배지 - 점수 기반으로 통과/부분통과/미달 표시
+ * status가 SUCCESS가 아닌 경우(PENDING, RUNNING, ERROR, FAILURE)는 상태 배지 표시
+ */
+function ResultBadge({ submission }: { submission: SubmissionListItem }) {
+  const { status, score } = submission;
+
+  // 진행 중이거나 에러인 경우 상태 배지 표시
+  if (status === "PENDING" || status === "RUNNING" || status === "ERROR") {
+    return <StatusBadge status={status} />;
+  }
+
+  // FAILURE (golden code 실패) - 테스트 실패
+  if (status === "FAILURE") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40">
+        <XCircle className="w-4 h-4" />
+        테스트 실패
+      </span>
+    );
+  }
+
+  // SUCCESS 상태에서 점수 기반으로 결과 표시
+  if (score === 100) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40">
+        <Trophy className="w-4 h-4" />
+        통과
+      </span>
+    );
+  } else if (score >= 70) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/40">
+        <Target className="w-4 h-4" />
+        부분통과
+      </span>
+    );
+  } else {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-700">
+        <XCircle className="w-4 h-4" />
+        미달
+      </span>
+    );
+  }
+}
+
+/**
+ * AI 피드백 아이콘 - 피드백이 있으면 표시
+ */
+function FeedbackIcon({ hasFeedback, submissionId, problemId }: { hasFeedback: boolean; submissionId: string; problemId: number }) {
+  if (!hasFeedback) {
+    return <span className="text-gray-300 dark:text-gray-600">-</span>;
+  }
+
+  return (
+    <Link
+      href={`/problems/${problemId}?submission=${submissionId}`}
+      className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+      title="AI 피드백 보기"
+    >
+      <MessageSquare className="w-4 h-4" />
+    </Link>
+  );
+}
+
 function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
   const config = difficultyConfig[difficulty];
   return (
@@ -148,13 +217,16 @@ export default function SubmissionHistoryTable({
                 난이도
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                상태
+                결과
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 점수
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 뮤턴트
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                AI
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 제출일
@@ -180,7 +252,7 @@ export default function SubmissionHistoryTable({
                   <DifficultyBadge difficulty={submission.problem_difficulty} />
                 </td>
                 <td className="px-4 py-4">
-                  <StatusBadge status={submission.status} />
+                  <ResultBadge submission={submission} />
                 </td>
                 <td className="px-4 py-4">
                   <span className="font-semibold text-gray-900 dark:text-gray-100">
@@ -192,6 +264,13 @@ export default function SubmissionHistoryTable({
                   submission.total_mutants !== null
                     ? `${submission.killed_mutants}/${submission.total_mutants}`
                     : "-"}
+                </td>
+                <td className="px-4 py-4 text-center">
+                  <FeedbackIcon
+                    hasFeedback={submission.has_feedback}
+                    submissionId={submission.id}
+                    problemId={submission.problem_id}
+                  />
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                   {formatDate(submission.created_at)}
@@ -214,7 +293,16 @@ export default function SubmissionHistoryTable({
                 {submission.problem_title}
                 <ExternalLink className="w-3 h-3" />
               </Link>
-              <StatusBadge status={submission.status} />
+              <div className="flex items-center gap-2">
+                {submission.has_feedback && (
+                  <FeedbackIcon
+                    hasFeedback={submission.has_feedback}
+                    submissionId={submission.id}
+                    problemId={submission.problem_id}
+                  />
+                )}
+                <ResultBadge submission={submission} />
+              </div>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <DifficultyBadge difficulty={submission.problem_difficulty} />

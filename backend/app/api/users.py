@@ -78,6 +78,7 @@ async def get_my_submissions(
                 score=sub.score,
                 killed_mutants=sub.killed_mutants,
                 total_mutants=sub.total_mutants,
+                has_feedback=sub.feedback_json is not None,
                 created_at=sub.created_at,
             )
         )

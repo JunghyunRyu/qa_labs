@@ -17,6 +17,7 @@ export interface SubmissionListItem {
   score: number;
   killed_mutants?: number;
   total_mutants?: number;
+  has_feedback: boolean;
   created_at: string;
 }
 
