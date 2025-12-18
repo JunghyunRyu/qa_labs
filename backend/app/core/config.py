@@ -1,9 +1,39 @@
 """Application configuration."""
 
 import json
-from pydantic_settings import BaseSettings
+import os
+from pathlib import Path
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional, List
 from pydantic import field_validator
+
+
+def get_env_file_path() -> str:
+    """
+    .env 파일 경로를 결정합니다.
+    1. 환경변수 ENV_FILE이 설정되어 있으면 해당 경로 사용
+    2. Docker 환경(DOCKER_CONTAINER=true)이면 .env 파일 사용 안함
+    3. 그 외: 프로젝트 루트의 .env 파일 사용
+    """
+    # 환경변수로 명시적 지정
+    if os.getenv("ENV_FILE"):
+        return os.getenv("ENV_FILE")
+
+    # Docker 환경에서는 환경변수가 직접 주입되므로 .env 불필요
+    if os.getenv("DOCKER_CONTAINER") == "true":
+        return ""
+
+    # 로컬 개발: 프로젝트 루트의 .env 파일 찾기
+    current = Path(__file__).resolve()
+    # backend/app/core/config.py -> 3단계 위가 프로젝트 루트
+    project_root = current.parent.parent.parent.parent
+    env_file = project_root / ".env"
+
+    if env_file.exists():
+        return str(env_file)
+
+    # 폴백: 현재 디렉토리의 .env
+    return ".env"
 
 
 class Settings(BaseSettings):
@@ -109,10 +139,12 @@ class Settings(BaseSettings):
     # Frontend URL (for OAuth callback redirect)
     FRONTEND_URL: Optional[str] = None  # e.g., "https://qa-arena.qalabs.kr"
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
-        extra = "ignore"  # .env에 정의되지 않은 추가 환경변수 무시
+    model_config = SettingsConfigDict(
+        env_file=get_env_file_path(),
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",  # .env에 정의되지 않은 추가 환경변수 무시
+    )
 
 
 settings = Settings()

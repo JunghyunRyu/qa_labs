@@ -3,20 +3,25 @@ services:
     image: postgres:15-alpine
     container_name: qa_arena_postgres
     environment:
-      POSTGRES_USER: qa_arena_user
-      POSTGRES_PASSWORD: qa_arena_password
-      POSTGRES_DB: qa_arena
+      POSTGRES_USER: ${POSTGRES_USER:-qa_arena_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qa_arena_password}
+      POSTGRES_DB: ${POSTGRES_DB:-qa_arena}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U qa_arena_user"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qa_arena_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - qa_arena_network
+    # 보안: 리소스 제한
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   redis:
     image: redis:7-alpine
@@ -32,6 +37,48 @@ services:
       retries: 5
     networks:
       - qa_arena_network
+    # 보안: Redis 인증 및 리소스 제한
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # Docker Socket Proxy - 보안 강화를 위한 프록시
+  # celery_worker가 직접 Docker 소켓에 접근하는 대신 제한된 API만 허용
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: qa_arena_docker_proxy
+    environment:
+      # 허용할 Docker API 엔드포인트 (최소 권한 원칙)
+      CONTAINERS: 1      # 컨테이너 생성/삭제/조회 허용
+      IMAGES: 1          # 이미지 조회 허용
+      INFO: 1            # Docker 정보 조회 허용
+      NETWORKS: 0        # 네트워크 관리 불허
+      VOLUMES: 0         # 볼륨 관리 불허
+      POST: 1            # POST 요청 허용 (컨테이너 생성에 필요)
+      # 위험한 작업 명시적 차단
+      AUTH: 0
+      SECRETS: 0
+      SERVICES: 0
+      SWARM: 0
+      TASKS: 0
+      BUILD: 0
+      COMMIT: 0
+      EXEC: 0            # exec 차단 (보안상 중요)
+      PLUGINS: 0
+      SYSTEM: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker_internal
+    restart: unless-stopped
+    # 보안 옵션
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /run
 
   backend:
     build:
@@ -41,12 +88,19 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
+      DOCKER_CONTAINER: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD:-qa_arena_password}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini-2025-08-07}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       DEBUG: ${DEBUG:-True}
       CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-secret-key-in-production}
+      # GitHub OAuth
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,6 +112,14 @@ services:
       - ./backend:/app
       - ./backend/logs:/app/logs
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # 보안 옵션
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
 
   celery_worker:
     build:
@@ -65,30 +127,39 @@ services:
       dockerfile: Dockerfile
     container_name: qa_arena_celery_worker
     environment:
-      DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
+      DOCKER_CONTAINER: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD:-qa_arena_password}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini-2025-08-07}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       DEBUG: ${DEBUG:-True}
-      DOCKER_CONTAINER: "true"
-      # DOCKER_HOST 환경변수는 설정하지 않음 (코드에서 자동 감지)
+      # Docker Socket Proxy 사용 (직접 소켓 접근 대신)
+      DOCKER_HOST: tcp://docker-socket-proxy:2375
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      docker-socket-proxy:
+        condition: service_started
     networks:
       - qa_arena_network
+      - docker_internal
     volumes:
       - ./backend:/app
       - ./backend/logs:/app/logs
-      # Windows Docker Desktop에서는 이 마운트가 작동하지 않을 수 있음
-      # 대신 호스트의 Docker 데몬에 TCP로 연결하거나 다른 방법 사용 필요
-      # Linux 환경에서는 정상 작동
-      - /var/run/docker.sock:/var/run/docker.sock
       # Docker-in-Docker용 임시 파일 공유 디렉토리
       - /tmp/qa_arena_judge:/tmp/qa_arena_judge
+      # Docker 소켓 직접 마운트 제거 - Socket Proxy 사용
     command: celery -A app.core.celery_app worker --loglevel=info
+    # 보안 옵션
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
 
   worker_monitor:
     build:
@@ -96,7 +167,8 @@ services:
       dockerfile: Dockerfile
     container_name: qa_arena_worker_monitor
     environment:
-      DATABASE_URL: postgresql://qa_arena_user:qa_arena_password@postgres:5432/qa_arena
+      DOCKER_CONTAINER: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD:-qa_arena_password}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
       SLACK_ALERT_ENABLED: ${SLACK_ALERT_ENABLED:-false}
@@ -113,6 +185,14 @@ services:
       - ./backend:/app
       - ./backend/logs:/app/logs
     command: python -m app.workers.monitor_scheduler
+    # 보안 옵션
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
 
 volumes:
   postgres_data:
@@ -121,4 +201,7 @@ volumes:
 networks:
   qa_arena_network:
     driver: bridge
-
+  # Docker Socket Proxy 전용 내부 네트워크
+  docker_internal:
+    driver: bridge
+    internal: true  # 외부 접근 차단
