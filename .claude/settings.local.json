@@ -22,9 +22,27 @@
       "Bash(docker-compose logs:*)",
       "Bash(git push:*)",
       "mcp__playwright__browser_wait_for",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__playwright__browser_evaluate",
+      "Bash(powershell -Command \"cd ''C:\\jhryu\\qa_labs\\backend''; $env:PYTHONIOENCODING=''utf-8''; python generate_problems.py\")",
+      "Bash(npm test:*)",
+      "Bash(npm install:*)",
+      "Bash(cmd /c \"chcp 65001 && cd /d C:\\jhryu\\qa_labs\\backend && set PYTHONIOENCODING=utf-8 && python generate_problems.py\")",
+      "Bash(cmd /c \"cd /d C:\\jhryu\\qa_labs\\backend && set PYTHONIOENCODING=utf-8 && set PYTHONLEGACYWINDOWSSTDIO=1 && python generate_problems.py 2>&1\")",
+      "Bash(cmd /c \"cd /d C:\\jhryu\\qa_labs\\backend && python generate_problems.py > generate_output.txt 2>&1\")",
+      "Bash(python:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_click",
+      "Bash(docker exec:*)",
+      "Bash(npm run dev:*)",
+      "Bash(powershell -Command \"Set-Location ''C:\\jhryu\\qa_labs\\frontend''; npm run dev\")",
+      "Bash(git -C C:jhryuqa_labs diff --stat)",
+      "Bash(git -C C:jhryuqa_labs log --oneline -5)"
     ],
     "deny": [],
     "ask": []
+  },
+  "enabledPlugins": {
+    "learning-output-style@claude-plugins-official": true
   }
 }

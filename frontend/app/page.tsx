@@ -143,20 +143,23 @@ export default function Home() {
           priority
         />
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-6 px-4 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white drop-shadow-lg">
-            QA-Arena
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg hero-headline">
+            AI가 코드를 더 빨리 쓰는 시대,<br className="desktop-break" />{' '}
+            실력은 <span className="highlight">&apos;숨은 버그를 찾아내는 설계&apos;</span>로 증명됩니다.
           </h1>
-          <p className="text-xl sm:text-2xl text-white/90 font-medium">
-            QA 엔지니어를 위한 AI 코딩 테스트 플랫폼
-          </p>
-          <p className="text-base sm:text-lg text-white/70 max-w-xl leading-relaxed">
-            실무에서 마주치는 버그 탐지 시나리오로 pytest 역량을 검증하고,
-            AI 코치의 피드백으로 빠르게 성장하세요
-          </p>
+          <div className="text-base sm:text-lg text-white/80 max-w-2xl leading-relaxed space-y-3">
+            <p>
+              AI는 구현을 빠르게 돕습니다. 하지만 어떤 케이스가 위험한지는 업무 맥락이 정합니다.
+            </p>
+            <p>
+              실무 시나리오에서 <strong className="text-white">숨은 버그를 얼마나 잡는지(탐지율)</strong>로{' '}
+              <strong className="text-white">검증 범위</strong>를 숫자로 확인하세요.
+            </p>
+          </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -164,33 +167,77 @@ export default function Home() {
               href="/problems"
               className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
             >
-              무료로 시작하기
+              내 버그 탐지율 측정하기
             </Link>
             <a
               href="#how-it-works"
               className="px-8 py-3 bg-white/10 text-white rounded-lg font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/30"
             >
-              작동 방식 알아보기
+              실무 시나리오 둘러보기
             </a>
+          </div>
+
+          {/* Domain Badges */}
+          <div className="mt-12 text-center">
+            <p className="text-xs text-white/60 mb-3">실무 도메인으로 시작하기</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['General', 'Fintech', 'Commerce', 'SaaS', 'Platform', 'Content'].map((domain) => (
+                <span
+                  key={domain}
+                  className="px-3 py-1 text-xs sm:text-sm text-white/80 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all cursor-pointer"
+                >
+                  {domain}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Platform Stats Section */}
-      <section className="py-12 bg-gray-50 dark:bg-gray-900/50">
+      {/* Proof Points Section */}
+      <section className="proof-points-section py-16 bg-slate-50 dark:bg-gray-900/50 relative">
+        {/* Top Divider */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent" />
+
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">버그 탐지율 채점</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">숨은 버그 잡기 도전</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1: 버그 탐지율 채점 */}
+            <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">숨은 버그 탐지율 채점</h3>
+              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
+                정답 통과가 아니라, 숨은 버그를 얼마나 잡는지로 점수를 냅니다.
+              </p>
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">즉각 AI 피드백</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">채점 후 바로 분석</div>
+
+            {/* Card 2: 브라우저 즉시 실행 */}
+            <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">브라우저에서 즉시 실행</h3>
+              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
+                로컬 세팅 없이 바로 실행하고, 결과와 로그를 즉시 확인합니다.
+              </p>
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">테스트 코드 특화</div>
-              <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">국내 유일 QA 플랫폼</div>
+
+            {/* Card 3: AI 코치 리포트 */}
+            <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">AI 코치 리포트</h3>
+              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
+                놓친 케이스와 다음 테스트를 바로 실행 가능한 액션으로 정리합니다.
+              </p>
             </div>
           </div>
         </div>

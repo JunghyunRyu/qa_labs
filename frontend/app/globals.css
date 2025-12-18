@@ -31,3 +31,42 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* Hero Section - Headline */
+.hero-headline {
+  word-break: keep-all;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Hero Section - Highlight Effect */
+.highlight {
+  background: linear-gradient(transparent 60%, rgba(37, 99, 235, 0.35) 60%);
+  padding: 0 0.15em;
+  border-radius: 0.2em;
+}
+
+/* Desktop-only line break */
+.desktop-break {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .desktop-break {
+    display: none;
+  }
+}
+
+/* Proof Points Card Styles */
+.proof-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+.proof-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-desc {
+  word-break: keep-all;
+  line-height: 1.7;
+}
