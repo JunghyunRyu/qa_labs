@@ -91,6 +91,43 @@ const audiences = [
   },
 ];
 
+// Showcase 데이터 (실무 시나리오 하이라이트)
+const showcase = [
+  {
+    domain: "Commerce",
+    emoji: "🛒",
+    title: "장바구니 합계 경계값 테스트",
+    scenario:
+      "빈 장바구니/음수/계산 오차 처리 누락은 결제 단계에서 장애와 환불 이슈로 이어집니다.",
+    difficulty: "Easy" as const,
+    mutants: 4,
+    badges: ["±1 오차", "빈 리스트", "음수 입력"],
+    href: "/problems/problem-e15",
+  },
+  {
+    domain: "SaaS",
+    emoji: "🔐",
+    title: "사용자 인증 예외 테스트",
+    scenario:
+      "만료 토큰·필드 누락·서명 오류를 놓치면 보안 사고 또는 로그인 장애로 이어집니다.",
+    difficulty: "Medium" as const,
+    mutants: 6,
+    badges: ["만료된 토큰", "필드 누락", "서명 불일치"],
+    href: "/problems/problem-m01",
+  },
+  {
+    domain: "Fintech",
+    emoji: "💸",
+    title: "결제 금액 계산 엣지 케이스",
+    scenario:
+      "쿠폰/할인/세금 적용 순서가 바뀌면 과금 오류와 정산 불일치가 즉시 발생합니다.",
+    difficulty: "Hard" as const,
+    mutants: 8,
+    badges: ["반올림 오류", "쿠폰 중복", "세금 계산 순서"],
+    href: "/problems/problem-h01",
+  },
+];
+
 // Sample Problems 데이터 (메인 페이지 미리보기용)
 const sampleProblems = [
   {
@@ -210,7 +247,10 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">숨은 버그 탐지율 채점</h3>
               <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                정답 통과가 아니라, 숨은 버그를 얼마나 잡는지로 점수를 냅니다.
+                정답 통과가 아니라
+              </p>
+              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
+                숨은 버그를 얼마나 잡는지로 점수를 냅니다.
               </p>
             </div>
 
@@ -223,7 +263,9 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">브라우저에서 즉시 실행</h3>
               <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                로컬 세팅 없이 바로 실행하고, 결과와 로그를 즉시 확인합니다.
+                로컬 세팅 없이 바로 실행하고,</p>
+              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
+                결과와 로그를 즉시 확인합니다.
               </p>
             </div>
 
@@ -236,62 +278,111 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">AI 코치 리포트</h3>
               <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                놓친 케이스와 다음 테스트를 바로 실행 가능한 액션으로 정리합니다.
+                놓친 케이스와 다음 테스트를
               </p>
+              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
+                바로 실행 가능한 액션으로 정리합니다.
+              </p>              
             </div>
           </div>
         </div>
       </section>
 
-      {/* Target Audience Section */}
-      <section className="py-16 sm:py-20 px-4 bg-[var(--background)]">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
-            누구를 위한 플랫폼인가요?
-          </h2>
-          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
-            QA-Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
-          </p>
+      {/* Showcase Section - Dark Theme with Spotlight */}
+      <section
+        className="relative overflow-hidden py-16"
+        style={{
+          backgroundColor: '#0f172a',
+          backgroundImage: `
+            radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 60%),
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '100% 100%, 40px 40px, 40px 40px',
+        }}
+      >
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-white">
+              이런 버그, 찾아낼 수 있나요?
+            </h2>
+            <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-slate-300">
+              평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.
+              <br className="hidden sm:block" />
+              실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {audiences.map((a) => (
-              <div
-                key={a.title}
-                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md"
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {showcase.map((p) => (
+              <Link
+                key={p.title}
+                href={p.href}
+                className="group flex flex-col h-full rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-600"
               >
-                {/* Image area */}
-                <div className="relative h-44">
-                  <Image
-                    src={a.imageSrc}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    priority={false}
-                  />
-                  {/* readability overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-white/90 dark:to-slate-800/90" />
-                </div>
-
-                {/* Icon badge (overlap) */}
-                <div className="relative -mt-7 flex justify-center">
-                  <div className={`h-14 w-14 rounded-full ${a.iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
-                    <div className={a.iconColor}>{a.icon}</div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{p.emoji}</span>
+                    <span className="rounded-full border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-medium text-slate-200">
+                      {p.domain}
+                    </span>
+                  </div>
+                  <div className="text-right text-xs">
+                    <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${
+                      p.difficulty === 'Easy'
+                        ? 'bg-green-500/20 text-green-400'
+                        : p.difficulty === 'Medium'
+                        ? 'bg-yellow-500/20 text-yellow-400'
+                        : 'bg-red-500/20 text-red-400'
+                    }`}>
+                      {p.difficulty === 'Easy' ? '초급' : p.difficulty === 'Medium' ? '중급' : '고급'}
+                    </span>
+                    <div className="mt-1.5 text-slate-400">🐞 숨은 버그: {p.mutants}개</div>
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="px-6 pb-7 pt-4 text-center">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{a.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{a.desc}</p>
+                <h3 className="mt-4 text-lg font-semibold text-white group-hover:text-slate-100">
+                  {p.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-300">{p.scenario}</p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {p.badges.map((b) => (
+                    <span
+                      key={b}
+                      className="rounded-full bg-slate-700 px-3 py-1 text-xs font-medium text-slate-300"
+                    >
+                      {b}
+                    </span>
+                  ))}
                 </div>
 
-                {/* subtle hover sheen (optional) */}
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
-                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
+                <div className="mt-auto pt-6 text-sm font-bold text-blue-400 group-hover:text-blue-300 transition-colors inline-flex items-center gap-1">
+                  도전하기
+                  <svg
+                    className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-              </div>
+              </Link>
             ))}
+          </div>
+
+          {/* CTA 버튼 - 섹션 하단 중앙 */}
+          <div className="mt-10 text-center">
+            <Link
+              href="/problems"
+              className="inline-flex items-center justify-center rounded-full border border-white/30 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 hover:border-white transition-colors"
+            >
+              실무 시나리오 더 보기
+              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>
@@ -605,6 +696,59 @@ export default function Home() {
               </svg>
               GitHub로 로그인
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Target Audience Section */}
+      <section className="py-16 sm:py-20 px-4 bg-[var(--background)]">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
+            누구를 위한 플랫폼인가요?
+          </h2>
+          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
+            QA-Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {audiences.map((a) => (
+              <div
+                key={a.title}
+                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md"
+              >
+                {/* Image area */}
+                <div className="relative h-44">
+                  <Image
+                    src={a.imageSrc}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    priority={false}
+                  />
+                  {/* readability overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-white/90 dark:to-slate-800/90" />
+                </div>
+
+                {/* Icon badge (overlap) */}
+                <div className="relative -mt-7 flex justify-center">
+                  <div className={`h-14 w-14 rounded-full ${a.iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
+                    <div className={a.iconColor}>{a.icon}</div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="px-6 pb-7 pt-4 text-center">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{a.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{a.desc}</p>
+                </div>
+
+                {/* subtle hover sheen (optional) */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
+                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

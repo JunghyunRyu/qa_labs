@@ -70,3 +70,11 @@ body {
   word-break: keep-all;
   line-height: 1.7;
 }
+
+/* Proof Points 카드 설명 텍스트 - 단어 끊김 방지 강화 */
+.proof-card p {
+  word-break: keep-all !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  padding: 0 8px;
+}
