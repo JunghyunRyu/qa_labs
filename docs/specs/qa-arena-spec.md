@@ -1,8 +1,8 @@
 
 # QA-Arena – AI-Assisted QA Coding Test Platform Spec
 
-> Version: 0.3 (Updated 2025-12)
-> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합
+> Version: 0.4 (Updated 2025-12)
+> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합 + **클라이언트 사이드 실행(Pyodide)**
 
 ---
 
@@ -30,21 +30,26 @@
   - Next.js (React + TypeScript)
   - Monaco Editor 기반 코드 에디터
   - REST API 호출로 문제 조회, 제출, 결과 조회
+  - **Pyodide (WebAssembly Python)** + Web Worker 기반 클라이언트 사이드 채점
   - Sentry 클라이언트 에러 모니터링
 
 - **Backend API**
   - FastAPI (Python 3.11+)
   - 도메인 로직 / 영속성 / 인증 담당
   - GitHub OAuth 인증 + JWT 토큰 기반 세션 관리
-  - Celery Task 발행 (채점 비동기 처리)
+  - 클라이언트 실행 결과 저장 또는 Celery Task 발행 (조건부)
   - Rate Limiter (slowapi 기반)
   - Sentry 서버 에러 모니터링
 
-- **Judge / Runner Service**
-  - Celery Worker (Python)
-  - Docker 기반 샌드박스 컨테이너 내에서 pytest 실행
-  - Golden Code / Buggy Code 교체, 결과 로그 수집
-  - Docker-in-Docker 환경 (`/tmp/qa_arena_judge` 공유 볼륨)
+- **Judge / Runner Service** (하이브리드 아키텍처)
+  - **클라이언트 사이드 (기본)**
+    - Pyodide (WebAssembly Python) + 브라우저 Web Worker
+    - 즉각적인 피드백 (~밀리초), 서버 부하 없음
+    - 조건: `isPyodideReady && buggy_implementations.length > 0`
+  - **서버 사이드 (Fallback)**
+    - Celery Worker + Docker 컨테이너
+    - Pyodide 미지원 환경 또는 복잡한 테스트용
+    - Docker-in-Docker 환경 (`/tmp/qa_arena_judge` 공유 볼륨)
 
 - **Worker Health Monitor**
   - 별도 컨테이너에서 주기적으로 Celery Worker 상태 및 Health Check 엔드포인트를 점검
@@ -65,13 +70,24 @@
   - Let's Encrypt SSL 인증서
   - Sentry 에러 모니터링
 
-### 2.2. High-Level Request Flow
+### 2.2. High-Level Request Flow (하이브리드)
 
 1. 사용자가 문제 목록/상세를 조회 → FastAPI → DB
-2. 사용자가 테스트 코드를 제출 → FastAPI에서 DB에 submission 생성, Celery Task 발행
-3. Celery Worker가 Docker 컨테이너에서 pytest 실행 → 점수/로그 산출
-4. 결과를 DB에 업데이트 → (옵션) AI Feedback Engine 호출해 자연어 피드백 생성
-5. 클라이언트는 Polling/실시간으로 결과 조회
+2. 사용자가 테스트 코드를 제출:
+   - **[클라이언트 경로]** Pyodide 준비 + buggy_implementations 존재 시:
+     - 프론트엔드에서 Pyodide로 mutation test 실행
+     - 결과(`ClientExecutionResult`)와 함께 API 호출
+     - 서버는 결과 저장만 (Celery 스킵)
+     - 즉시 응답 반환
+   - **[서버 경로]** Pyodide 미준비 또는 buggy_implementations 없을 시:
+     - API 호출 → submission 생성 (PENDING)
+     - Celery Task 발행 (`process_submission_task`)
+     - Worker가 Docker에서 pytest 실행
+     - 클라이언트는 Polling으로 결과 확인
+3. AI Feedback Engine 호출:
+   - 클라이언트 경로: `generate_feedback_task.delay()` (비동기)
+   - 서버 경로: `process_submission` 내에서 동기 호출
+4. 클라이언트에서 결과 표시
 
 ---
 
@@ -400,12 +416,37 @@ LLM Output → JSON 파싱 검증 → DB에 저장.
 cd /workdir && pytest -q --disable-warnings --maxfail=1
 ```
 
-### 7.4. 보안 제한 (MVP 수준)
+### 7.4. 보안 제한 (MVP 수준) - 서버 사이드
 
 - conftest.py에서 문제 되는 모듈 임포트 시 에러 유도:
   - os, sys, subprocess, socket 등
 - pytest 실행 timeout (예: 3~5초)
 - Docker 컨테이너에 네트워크 비활성화 옵션 적용
+
+### 7.5. 클라이언트 사이드 실행 (Pyodide)
+
+#### 실행 환경
+- **런타임**: Pyodide (WebAssembly Python 3.11)
+- **위치**: 브라우저 Web Worker (별도 스레드)
+- **패키지**: micropip으로 pytest 동적 설치
+
+#### 실행 흐름
+1. Pyodide Worker 초기화 (CDN에서 로드)
+2. pytest 설치
+3. Golden Code 테스트 → 실패 시 즉시 FAILURE
+4. Buggy Implementations 순회 테스트
+5. Kill ratio 및 점수 계산
+6. `ClientExecutionResult` 반환
+
+#### 보안 및 제한 사항
+- 네트워크 접근 불가 (브라우저 샌드박스)
+- 파일 시스템 가상화 (Emscripten FS)
+- 일부 C 확장 모듈 미지원
+
+#### Fallback 조건
+- Pyodide 초기화 실패 (CDN, 브라우저 호환성)
+- `buggy_implementations` 없음
+- SharedArrayBuffer 미지원 브라우저
 
 ---
 
@@ -420,20 +461,37 @@ cd /workdir && pytest -q --disable-warnings --maxfail=1
 5. Admin이 description, 코드 등 검수/수정
 6. “문제 저장” 클릭 → `problems`, `buggy_implementations` 에 저장
 
-### 8.2. 사용자의 제출/채점 플로우
+### 8.2. 사용자의 제출/채점 플로우 (하이브리드)
 
+#### 클라이언트 사이드 경로 (기본)
 1. 사용자가 UI에서 문제 선택 → 상세 조회
 2. Monaco Editor에 initial_test_template 로딩
-3. 사용자가 테스트 코드 작성 후 “채점하기” 클릭
-4. `POST /api/v1/submissions` → submission_id 반환
-5. Celery Worker:
-   - Golden Code로 target.py 생성 후 pytest 실행
-   - 실패 시 score=0, status=FAILURE, 종료
-   - 성공 시, 각 buggy_code로 target.py 교체하며 pytest 반복 실행
-   - 잡힌 버그 수/총 mutant 수로 killed_mutants, total_mutants 계산
-   - score 계산 후 DB 업데이트
-   - AI Feedback Engine 호출, feedback_json 저장
-6. 클라이언트는 `GET /api/v1/submissions/{id}` Polling으로 결과 확인
+3. Pyodide 백그라운드 초기화 (자동)
+4. 사용자가 테스트 코드 작성 후 "채점하기" 클릭
+5. 프론트엔드에서 Pyodide Worker로 mutation test 실행:
+   - Golden Code 테스트
+   - 각 Buggy Implementation 테스트
+   - Score 계산
+6. `POST /api/v1/submissions` (`client_result` 포함)
+   - 서버는 DB 저장만 수행 (Celery 스킵)
+   - status = SUCCESS 또는 FAILURE
+7. 회원인 경우 `generate_feedback_task.delay()` 발행
+8. 즉시 응답 반환 → UI에 결과 표시
+
+#### 서버 사이드 경로 (Fallback)
+1-4. (동일)
+5. `POST /api/v1/submissions` (`client_result` 없음)
+   - submission 생성 (status = PENDING)
+   - `process_submission_task.delay()` 발행
+6. Celery Worker:
+   - 상태 변경: PENDING → RUNNING
+   - Docker 컨테이너에서 pytest 실행
+   - Golden Code 테스트 → 실패 시 FAILURE
+   - Buggy Code 테스트들
+   - Score 계산 + AI 피드백 생성 (동기)
+   - 상태 변경: RUNNING → SUCCESS
+7. 클라이언트는 `GET /api/v1/submissions/{id}` Polling (2초 간격)
+8. 상태 변경 감지 → UI에 결과 표시
 
 ---
 
@@ -594,7 +652,70 @@ def process_submission(submission_id: str):
     submission_repo.save(submission)
 ```
 
+### 9.4. 클라이언트 결과 처리 (submissions.py)
+
+```python
+# backend/app/api/submissions.py (라인 102-162)
+client_result = submission_data.client_result
+
+if client_result:
+    # 클라이언트 사이드 실행 - Celery 스킵
+    submission_status = "SUCCESS" if client_result.golden_code_passed else "FAILURE"
+
+    execution_log = {
+        "execution_mode": "client",
+        "golden_code_passed": client_result.golden_code_passed,
+        "total_execution_time_ms": client_result.total_execution_time,
+        "mutant_details": [...]
+    }
+
+    submission = Submission(
+        status=submission_status,
+        score=client_result.score,
+        killed_mutants=client_result.mutants_killed,
+        total_mutants=client_result.total_mutants,
+        execution_log=execution_log,
+        ...
+    )
+
+    # 회원이고 SUCCESS인 경우 AI 피드백 비동기 생성
+    if user_id and submission_status == "SUCCESS":
+        generate_feedback_task.delay(submission.id)
+else:
+    # 서버 사이드 실행 - Celery로 처리
+    submission = Submission(status="PENDING", ...)
+    process_submission_task.delay(submission.id)
+```
+
+### 9.5. ClientExecutionResult 타입 정의
+
+```typescript
+// frontend/types/problem.ts (라인 86-99)
+export interface ClientExecutionResult {
+  golden_code_passed: boolean;
+  mutants_killed: number;
+  total_mutants: number;
+  score: number;
+  details?: Array<{
+    mutant_id: string;
+    killed: boolean;
+    test_output?: string;
+    execution_time?: number;
+  }>;
+  total_execution_time?: number;
+}
+```
+
 ---
 
-이 파일은 전체 시스템의 개략적인 Tech Spec / 아키텍처 / AI 통합 구조를 담고 있으며,  
-이후 세부 구현 시 AI와 “바이브 코딩”할 수 있는 기준 문서로 사용될 수 있습니다.
+이 파일은 전체 시스템의 개략적인 Tech Spec / 아키텍처 / AI 통합 구조를 담고 있으며,
+이후 세부 구현 시 AI와 "바이브 코딩"할 수 있는 기준 문서로 사용될 수 있습니다.
+
+---
+
+## 변경 이력
+
+| 날짜 | 버전 | 변경 내용 | 작성자 |
+|------|------|----------|--------|
+| 2025-12 | 0.3 | 초기 버전 (Celery 기반) | - |
+| 2025-12-18 | 0.4 | 클라이언트 사이드 실행(Pyodide) 하이브리드 아키텍처 반영 | AI Copilot |

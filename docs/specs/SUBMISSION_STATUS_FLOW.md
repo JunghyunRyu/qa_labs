@@ -1,7 +1,8 @@
 # Submission 상태 전이 규칙
 
-> 작성일: 2025-12-06  
-> 목적: Submission 상태 전이 규칙 및 조건 문서화
+> 작성일: 2025-12-06
+> 최종 수정: 2025-12-18
+> 목적: Submission 상태 전이 규칙 및 조건 문서화 (하이브리드 아키텍처 반영)
 
 ---
 
@@ -9,18 +10,47 @@
 
 Submission은 다음 5가지 상태를 가질 수 있습니다:
 
-- **PENDING**: 제출이 생성되었고, Celery Task가 큐에 추가된 상태
-- **RUNNING**: Celery Task가 실행 중인 상태 (채점 진행 중)
-- **SUCCESS**: 채점이 성공적으로 완료된 상태
+- **PENDING**: 제출이 생성되었고, 서버 사이드 채점 대기 중 (Celery Task 큐에 추가됨)
+  - *클라이언트 사이드 실행 시 이 상태를 거치지 않음*
+- **RUNNING**: 서버 사이드 채점 진행 중 (Celery Task 실행 중)
+  - *클라이언트 사이드 실행 시 이 상태를 거치지 않음*
+- **SUCCESS**: 채점이 성공적으로 완료된 상태 (Golden Code 테스트 통과)
 - **FAILURE**: Golden Code 테스트가 실패한 상태 (사용자 테스트 코드 문제)
-- **ERROR**: 예외 발생 또는 최대 재시도 횟수 초과로 실패한 상태
+- **ERROR**: 예외 발생 또는 최대 재시도 횟수 초과로 실패한 상태 (서버 사이드만 해당)
 
 ---
 
 ## 상태 전이 다이어그램
 
+### 클라이언트 사이드 실행 경로 (기본)
+
+> Pyodide 준비 완료 + buggy_implementations 존재 시
+
 ```
-[PENDING] 
+[제출 생성]
+    │
+    ├─ 프론트엔드에서 Pyodide로 채점 완료
+    │
+    ├─ Golden Code 테스트 성공
+    │   │
+    │   ▼
+    │ [SUCCESS] (score 계산됨, execution_mode="client")
+    │
+    └─ Golden Code 테스트 실패
+        │
+        ▼
+      [FAILURE] (score=0, execution_mode="client")
+```
+
+- PENDING, RUNNING 상태를 **거치지 않음**
+- 제출 생성 시 바로 SUCCESS 또는 FAILURE로 설정
+
+### 서버 사이드 실행 경로 (Fallback)
+
+> Pyodide 미준비 또는 buggy_implementations 없을 시
+
+```
+[PENDING]
     │
     ├─ Celery Task 시작
     │
@@ -30,7 +60,7 @@ Submission은 다음 5가지 상태를 가질 수 있습니다:
     ├─ Golden Code 테스트 실패
     │   │
     │   ▼
-    │ [FAILURE] (score=0)
+    │ [FAILURE] (score=0, execution_mode="server")
     │
     ├─ 예외 발생 또는 재시도 실패
     │   │
@@ -40,12 +70,50 @@ Submission은 다음 5가지 상태를 가질 수 있습니다:
     └─ 채점 성공
         │
         ▼
-    [SUCCESS] (score 계산됨, killed_mutants/total_mutants 기록)
+    [SUCCESS] (score 계산됨, execution_mode="server")
 ```
 
 ---
 
-## 상태 전이 조건
+## 클라이언트 사이드 실행 경로 상세
+
+### 실행 조건
+- Pyodide 초기화 완료 (`isPyodideReady = true`)
+- `buggy_implementations.length > 0`
+
+### 상태 전이
+- PENDING, RUNNING 상태를 **거치지 않음**
+- 제출 생성 시 바로 SUCCESS 또는 FAILURE로 설정
+
+### 코드 위치
+- 프론트엔드: `frontend/app/problems/[id]/page.tsx:337-395` (doSubmit)
+- 백엔드: `backend/app/api/submissions.py:102-162`
+
+### execution_log 구조
+```json
+{
+  "execution_mode": "client",
+  "golden_code_passed": true,
+  "total_execution_time_ms": 1234.56,
+  "mutant_details": [
+    {
+      "mutant_id": "1",
+      "killed": true,
+      "test_output": "...",
+      "execution_time": 100.5
+    }
+  ]
+}
+```
+
+### AI 피드백 생성
+- 회원이고 SUCCESS인 경우에만
+- `generate_feedback_task.delay()` 비동기 호출
+- 채점 결과는 이미 저장되어 있음 (피드백 실패해도 결과 유지)
+
+---
+
+## 서버 사이드 상태 전이 조건
 
 ### 1. PENDING → RUNNING
 
@@ -208,5 +276,15 @@ Submission은 다음 5가지 상태를 가질 수 있습니다:
 
 - 상태 전이는 단방향으로만 진행됩니다 (역전이 불가)
 - 한 번 `SUCCESS` 또는 `FAILURE`가 되면 다시 `RUNNING`으로 변경되지 않습니다
-- `ERROR` 상태는 재시도 실패 또는 예외 발생 시에만 설정됩니다
+- `ERROR` 상태는 재시도 실패 또는 예외 발생 시에만 설정됩니다 (서버 사이드만 해당)
+- 클라이언트 사이드 실행에서는 ERROR 상태가 발생하지 않습니다 (에러 시 서버로 Fallback)
+
+---
+
+## 변경 이력
+
+| 날짜 | 변경 내용 | 작성자 |
+|------|----------|--------|
+| 2025-12-06 | 초기 문서 생성 (Celery 기반) | AI Copilot |
+| 2025-12-18 | 클라이언트 사이드 실행(Pyodide) 경로 추가, 하이브리드 아키텍처 반영 | AI Copilot |
 

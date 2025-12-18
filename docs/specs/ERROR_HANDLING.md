@@ -1,7 +1,8 @@
 # 에러 처리 가이드
 
-> 작성일: 2025-12-07  
-> 목적: QA-Arena 프로젝트의 에러 처리 전략 및 가이드 문서화
+> 작성일: 2025-12-07
+> 최종 수정: 2025-12-18
+> 목적: QA-Arena 프로젝트의 에러 처리 전략 및 가이드 문서화 (하이브리드 아키텍처 반영)
 
 ---
 
@@ -163,7 +164,11 @@ sentry_event_id = capture_exception_with_context(
 
 ---
 
-## 4. Celery Task 에러 처리
+## 4. Celery Task 에러 처리 (서버 사이드)
+
+> **참고**: 클라이언트 사이드 실행(Pyodide)을 사용하는 경우,
+> 아래 Celery Task 에러 처리는 적용되지 않습니다.
+> 클라이언트 사이드 에러 처리는 Section 10을 참조하세요.
 
 ### 4.1. 재시도 로직
 
@@ -343,10 +348,111 @@ grep "\[GRADING_ERROR\]" logs/app.log
 
 ---
 
-## 9. 변경 이력
+## 10. 클라이언트 사이드 에러 처리
+
+> 클라이언트 사이드 실행(Pyodide)에서 발생하는 에러에 대한 처리 전략입니다.
+
+### 10.1. 에러 처리 계층
+
+```
+레이어 1 (Worker): 저수준 실행 에러
+  - Pyodide 초기화 실패 (CDN, 브라우저 호환성)
+  - Python 코드 실행 에러
+  → error 메시지 전송
+
+레이어 2 (Store): 메시지 처리
+  - Worker 에러 → state 업데이트 (status: "error")
+  - Promise reject
+
+레이어 3 (Hook): 비즈니스 로직
+  - 테스트 결과 변환
+  - 콜백 실행 (onError, onComplete)
+
+레이어 4 (Page): 데이터 흐름
+  - Fallback 결정 (Pyodide 실패 → 서버 실행)
+
+레이어 5 (UI): 시각화
+  - LocalTestResultPanel: 빨간 알림 + 재시도 버튼
+  - SubmissionResultPanel: 에러 메시지 + 재제출 버튼
+```
+
+### 10.2. Pyodide 초기화 실패
+
+**가능한 원인**:
+- 네트워크 문제 (CDN 접근 불가)
+- 브라우저 호환성 (SharedArrayBuffer 미지원)
+- pytest 설치 실패
+
+**처리 방식**:
+- 로컬 테스트 버튼 비활성화
+- 제출 시 자동으로 서버 사이드 Fallback
+
+**코드 위치**:
+- `frontend/stores/pyodideStore.ts:98-112`
+- `frontend/hooks/useCodeRunner.ts:134-140`
+
+### 10.3. 클라이언트 실행 중 에러
+
+**가능한 에러**:
+- 문법 오류 (SyntaxError)
+- ImportError (존재하지 않는 모듈)
+- 런타임 에러 (TypeError, ValueError 등)
+
+**처리 방식**:
+- 구조화된 에러 결과 반환 (`success: false`, `error: message`)
+- UI에서 에러 메시지 표시
+
+**코드 위치**:
+- `frontend/workers/pyodide.worker.ts:186-257`
+- `frontend/hooks/useCodeRunner.ts:157-206`
+
+### 10.4. generate_feedback_task 에러
+
+> 클라이언트 실행 후 AI 피드백을 비동기로 생성할 때 발생하는 에러
+
+**위치**: `backend/app/workers/tasks.py`
+
+**설정**:
+```python
+@celery_app.task(
+    bind=True,
+    max_retries=2,
+    default_retry_delay=30,
+    retry_backoff=True,
+)
+def generate_feedback_task(self, submission_id: str):
+```
+
+**특징**:
+- 클라이언트 실행 후 비동기로 호출됨
+- 채점 결과는 이미 저장되어 있음
+- 피드백 생성 실패해도 채점 결과는 유지됨
+- 최대 2회 재시도 (30초, 60초 간격)
+
+### 10.5. Fallback 메커니즘
+
+**Pyodide 실패 시 자동 Fallback**:
+```typescript
+// frontend/app/problems/[id]/page.tsx (doSubmit)
+if (isPyodideReady && problem.buggy_implementations?.length > 0) {
+  // 클라이언트 사이드 실행
+} else {
+  // 서버 사이드로 자동 Fallback
+}
+```
+
+**Fallback이 발생하는 조건**:
+- Pyodide 초기화 실패
+- `buggy_implementations` 없음
+- SharedArrayBuffer 미지원 브라우저
+
+---
+
+## 11. 변경 이력
 
 | 날짜 | 변경 내용 | 작성자 |
 |------|----------|--------|
 | 2025-12-07 | 초기 문서 생성 | AI Copilot |
 | 2025-12-13 | Sentry 에러 모니터링 섹션 추가 | AI Copilot |
+| 2025-12-18 | 클라이언트 사이드 에러 처리(Pyodide) 섹션 추가 | AI Copilot |
 

@@ -6,7 +6,8 @@
 > ⚠ AI / 코드 어시스턴트로 트러블슈팅을 진행할 때는
 > 반드시 `docs/specs/AI_SAFETY_PROTOCOLS.md`의 **절대 금지 사항**을 먼저 확인한다.
 
-> 📅 Last Updated: 2025-12
+> 📅 Last Updated: 2025-12-18
+> 하이브리드 아키텍처 (클라이언트 + 서버 사이드 실행) 반영
 
 ---
 
@@ -15,12 +16,16 @@
 프로덕션 `docker-compose.prod.yml` 기준 주요 컨테이너:
 
 - `qa_arena_nginx_prod`        – 프론트 도메인/SSL 종단 (80/443)
-- `qa_arena_frontend_prod`     – Next.js 프론트엔드 (3000)
+- `qa_arena_frontend_prod`     – Next.js 프론트엔드 + Pyodide 클라이언트 실행 (3000)
 - `qa_arena_backend_prod`      – FastAPI 백엔드 (8000 → 호스트 8001)
-- `qa_arena_celery_worker_prod` – 채점용 Celery 워커
+- `qa_arena_celery_worker_prod` – 채점용 Celery 워커 (서버 사이드 Fallback)
 - `qa_arena_worker_monitor_prod` – 워커 헬스 체크/모니터링
 - `qa_arena_postgres_prod`     – PostgreSQL DB
-- `qa_arena_redis_prod`        – Redis (Celery broker/result)
+- `qa_arena_redis_prod`        – Redis (Celery broker/result + AI 피드백 큐)
+
+> **참고**: 대부분의 채점은 클라이언트(Pyodide)에서 처리됩니다.
+> Celery Worker는 Fallback 및 AI 피드백 생성용입니다.
+> Celery Worker가 다운되어도 기본 채점 기능은 정상 동작합니다.
 
 ---
 
@@ -185,3 +190,114 @@ htop   # 설치되어 있다면
 - ❌ /var/lib/postgresql/data 등 DB 데이터 디렉터리 삭제/초기화
 
 ⚠ Nginx, Docker Compose 설정 파일(docker-compose.prod.yml, nginx/qa_arena.conf)의 구조를 AI가 자동 리팩토링하도록 두지 않는다.
+
+---
+
+## 8. 장애 영향 범위 (하이브리드 아키텍처)
+
+하이브리드 아키텍처에서 각 컴포넌트 장애 시 영향 범위를 정리합니다.
+
+### 8.1 Celery Worker 다운 시
+
+**영향 없음**:
+- 클라이언트 사이드 채점 (Pyodide) - 정상 동작
+- 문제 목록/상세 조회
+- 제출 기록 조회
+
+**영향 있음**:
+- 서버 사이드 Fallback 채점 불가
+- AI 피드백 생성 지연/실패
+- Worker Monitor 알림 발송
+
+**사용자 경험**:
+- 채점은 정상 동작
+- AI 피드백만 누락 가능
+- Pyodide 미지원 환경에서 채점 불가
+
+**대응**:
+```bash
+docker compose -f docker-compose.prod.yml restart qa_arena_celery_worker_prod
+docker logs qa_arena_celery_worker_prod --tail 100
+```
+
+### 8.2 Redis 다운 시
+
+**영향 없음**:
+- 클라이언트 사이드 채점 (Pyodide) - 정상 동작
+- 문제 목록/상세 조회
+
+**영향 있음**:
+- 모든 Celery Task 불가 (브로커 역할)
+- AI 피드백 생성 불가
+- 서버 사이드 Fallback 채점 불가
+
+**사용자 경험**:
+- 채점은 정상 동작
+- AI 피드백만 누락
+
+**대응**:
+```bash
+docker compose -f docker-compose.prod.yml restart qa_arena_redis_prod
+docker logs qa_arena_redis_prod --tail 50
+```
+
+### 8.3 Pyodide CDN 장애 시
+
+**자동 Fallback**: 서버 사이드 채점으로 전환
+
+**영향**:
+- 클라이언트 측 Pyodide 초기화 실패
+- 모든 채점이 서버로 전달됨
+- 응답 시간 증가 (밀리초 → 수초)
+
+**사용자 경험**:
+- 채점 기능은 정상
+- 응답 시간만 증가
+
+**대응**:
+- 프론트엔드 로그에서 Pyodide 초기화 에러 확인
+- CDN 상태 확인 (cdn.jsdelivr.net)
+- 서버 부하 모니터링 강화
+
+### 8.4 Frontend 장애 시
+
+**영향**: 전체 서비스 불가
+
+**대응**:
+```bash
+docker compose -f docker-compose.prod.yml restart qa_arena_frontend_prod
+docker logs qa_arena_frontend_prod --tail 100
+```
+
+### 8.5 Backend 장애 시
+
+**영향**:
+- 모든 API 호출 불가
+- 채점 결과 저장 불가 (클라이언트/서버 모두)
+- 인증 불가
+
+**대응**:
+```bash
+docker compose -f docker-compose.prod.yml restart qa_arena_backend_prod
+docker logs qa_arena_backend_prod --tail 100
+```
+
+### 8.6 장애 우선순위 가이드
+
+| 우선순위 | 컴포넌트 | 이유 |
+|----------|----------|------|
+| 1 (최고) | Backend | 모든 기능 영향 |
+| 2 | Frontend | 사용자 접근 불가 |
+| 3 | Nginx | 외부 접근 불가 |
+| 4 | PostgreSQL | 데이터 접근 불가 |
+| 5 | Redis | AI 피드백만 영향 |
+| 6 (최저) | Celery Worker | Fallback만 영향 |
+
+---
+
+## 9. 변경 이력
+
+| 날짜 | 변경 내용 | 작성자 |
+|------|----------|--------|
+| 2025-12 | 초기 문서 생성 | AI Copilot |
+| 2025-12-18 | 하이브리드 아키텍처(Pyodide + Celery) 장애 영향 범위 추가 | AI Copilot |
