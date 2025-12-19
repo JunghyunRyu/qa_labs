@@ -1,5 +1,26 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+
+// Hero copy constants
+const heroCopy = {
+  headline: "AI가 코드를 더 빨리 쓰는 시대, 실력은 '숨은 버그를 찾아내는 설계'로 증명됩니다.",
+  subLine1: "AI는 구현을 빠르게 돕습니다. 하지만 어떤 케이스가 위험한지는 업무 맥락이 정합니다.",
+  micro: "AI 코치는 정답이 아니라, 놓친 케이스와 다음 테스트 설계를 제안합니다.",
+  domainLabel: "실무 도메인으로 시작하기",
+  domainHelper: "도메인을 선택하면 문제/추천 트랙이 해당 업무 시나리오로 맞춰집니다.",
+};
+
+const domains = [
+  { key: "common", label: "Common", title: "공통 시나리오", cta: "내 버그 탐지율 측정하기", hint: "경계값 · 예외처리 · 타입검증 · 널체크" },
+  { key: "fintech", label: "Fintech", title: "결제/정산/수수료", cta: "Fintech 시나리오로 진단하기", hint: "정산 · 수수료 · 반올림 · 중복결제" },
+  { key: "commerce", label: "Commerce", title: "재고/주문/쿠폰", cta: "Commerce 시나리오로 진단하기", hint: "쿠폰 · 재고 · 주문 · 가격우선순위" },
+  { key: "saas", label: "SaaS", title: "권한/요금제/쿼터", cta: "SaaS 시나리오로 진단하기", hint: "권한 · 요금제 · 쿼터 · 레이트리밋" },
+  { key: "platform", label: "Platform", title: "상태전이/복구/장애", cta: "Platform 시나리오로 진단하기", hint: "상태전이 · 재시도 · 서킷브레이커" },
+  { key: "content", label: "Content", title: "문자열/정규화/발송", cta: "Content 시나리오로 진단하기", hint: "길이 · 정규화 · 금칙어 · 발송제한" },
+];
 
 // Feature Card 데이터
 const features = [
@@ -93,38 +114,191 @@ const audiences = [
 
 // Showcase 데이터 (실무 시나리오 하이라이트)
 const showcase = [
+  // Common
   {
-    domain: "Commerce",
+    domain: "common",
+    emoji: "🔢",
+    title: "리스트 합계 경계값 테스트",
+    scenario: "빈 리스트, 음수, off-by-one 오류는 가장 흔하지만 가장 자주 놓치는 버그입니다.",
+    difficulty: "Easy" as const,
+    mutants: 4,
+    badges: ["빈 리스트", "음수 입력", "±1 오차"],
+    href: "/problems/problem-e01",
+  },
+  {
+    domain: "common",
+    emoji: "⚠️",
+    title: "예외 처리 누락 테스트",
+    scenario: "None/null 체크, 타입 검증 누락은 런타임 크래시의 주범입니다.",
+    difficulty: "Easy" as const,
+    mutants: 5,
+    badges: ["널 체크", "타입 검증", "예외 전파"],
+    href: "/problems/problem-e02",
+  },
+  {
+    domain: "common",
+    emoji: "🔄",
+    title: "문자열 파싱 엣지케이스",
+    scenario: "공백, 특수문자, 유니코드 처리 누락은 데이터 손상으로 이어집니다.",
+    difficulty: "Medium" as const,
+    mutants: 6,
+    badges: ["공백 처리", "특수문자", "인코딩"],
+    href: "/problems/problem-m02",
+  },
+  // Commerce
+  {
+    domain: "commerce",
     emoji: "🛒",
     title: "장바구니 합계 경계값 테스트",
-    scenario:
-      "빈 장바구니/음수/계산 오차 처리 누락은 결제 단계에서 장애와 환불 이슈로 이어집니다.",
+    scenario: "빈 장바구니/음수/계산 오차 처리 누락은 결제 단계에서 장애와 환불 이슈로 이어집니다.",
     difficulty: "Easy" as const,
     mutants: 4,
     badges: ["±1 오차", "빈 리스트", "음수 입력"],
     href: "/problems/problem-e15",
   },
   {
-    domain: "SaaS",
+    domain: "commerce",
+    emoji: "🎫",
+    title: "쿠폰 적용 우선순위 테스트",
+    scenario: "중복 쿠폰, 최소금액 미달, 만료 체크 누락은 매출 손실로 직결됩니다.",
+    difficulty: "Medium" as const,
+    mutants: 6,
+    badges: ["중복 적용", "최소금액", "만료 검증"],
+    href: "/problems/problem-m03",
+  },
+  {
+    domain: "commerce",
+    emoji: "📦",
+    title: "재고 동시성 테스트",
+    scenario: "동시 주문 시 재고 차감 경쟁 조건은 overselling 사고로 이어집니다.",
+    difficulty: "Hard" as const,
+    mutants: 7,
+    badges: ["경쟁 조건", "원자성", "롤백"],
+    href: "/problems/problem-h02",
+  },
+  // SaaS
+  {
+    domain: "saas",
     emoji: "🔐",
     title: "사용자 인증 예외 테스트",
-    scenario:
-      "만료 토큰·필드 누락·서명 오류를 놓치면 보안 사고 또는 로그인 장애로 이어집니다.",
+    scenario: "만료 토큰·필드 누락·서명 오류를 놓치면 보안 사고 또는 로그인 장애로 이어집니다.",
     difficulty: "Medium" as const,
     mutants: 6,
     badges: ["만료된 토큰", "필드 누락", "서명 불일치"],
     href: "/problems/problem-m01",
   },
   {
-    domain: "Fintech",
+    domain: "saas",
+    emoji: "👥",
+    title: "권한 검증 테스트",
+    scenario: "역할 기반 접근제어 누락은 데이터 유출과 권한 상승 취약점이 됩니다.",
+    difficulty: "Medium" as const,
+    mutants: 5,
+    badges: ["역할 검증", "리소스 소유권", "권한 상승"],
+    href: "/problems/problem-m04",
+  },
+  {
+    domain: "saas",
+    emoji: "📊",
+    title: "요금제 쿼터 테스트",
+    scenario: "API 호출 한도, 저장 용량 초과 처리 누락은 무료 사용자의 유료 기능 접근을 허용합니다.",
+    difficulty: "Hard" as const,
+    mutants: 7,
+    badges: ["쿼터 초과", "플랜 검증", "레이트리밋"],
+    href: "/problems/problem-h03",
+  },
+  // Fintech
+  {
+    domain: "fintech",
     emoji: "💸",
     title: "결제 금액 계산 엣지 케이스",
-    scenario:
-      "쿠폰/할인/세금 적용 순서가 바뀌면 과금 오류와 정산 불일치가 즉시 발생합니다.",
+    scenario: "쿠폰/할인/세금 적용 순서가 바뀌면 과금 오류와 정산 불일치가 즉시 발생합니다.",
     difficulty: "Hard" as const,
     mutants: 8,
     badges: ["반올림 오류", "쿠폰 중복", "세금 계산 순서"],
     href: "/problems/problem-h01",
+  },
+  {
+    domain: "fintech",
+    emoji: "🔄",
+    title: "중복 결제 방지 테스트",
+    scenario: "네트워크 재시도, 버튼 더블클릭 시 중복 차감은 환불 클레임으로 이어집니다.",
+    difficulty: "Medium" as const,
+    mutants: 5,
+    badges: ["멱등성", "재시도", "트랜잭션"],
+    href: "/problems/problem-m05",
+  },
+  {
+    domain: "fintech",
+    emoji: "📈",
+    title: "수수료 정산 테스트",
+    scenario: "소수점 처리, 통화 변환, 수수료율 적용 순서 오류는 정산 불일치를 만듭니다.",
+    difficulty: "Hard" as const,
+    mutants: 8,
+    badges: ["소수점 처리", "통화 변환", "정산 순서"],
+    href: "/problems/problem-h04",
+  },
+  // Platform
+  {
+    domain: "platform",
+    emoji: "🔄",
+    title: "상태 전이 테스트",
+    scenario: "잘못된 상태 전이 허용은 데이터 정합성 붕괴와 복구 불가능 상태로 이어집니다.",
+    difficulty: "Medium" as const,
+    mutants: 6,
+    badges: ["상태 머신", "전이 검증", "불변 조건"],
+    href: "/problems/problem-m06",
+  },
+  {
+    domain: "platform",
+    emoji: "⚡",
+    title: "서킷브레이커 테스트",
+    scenario: "외부 서비스 장애 전파 차단 실패는 전체 시스템 다운으로 확대됩니다.",
+    difficulty: "Hard" as const,
+    mutants: 7,
+    badges: ["장애 격리", "폴백", "복구"],
+    href: "/problems/problem-h05",
+  },
+  {
+    domain: "platform",
+    emoji: "🔁",
+    title: "재시도 로직 테스트",
+    scenario: "무한 재시도, 백오프 누락은 시스템 과부하와 연쇄 장애를 유발합니다.",
+    difficulty: "Medium" as const,
+    mutants: 5,
+    badges: ["최대 재시도", "지수 백오프", "타임아웃"],
+    href: "/problems/problem-m07",
+  },
+  // Content
+  {
+    domain: "content",
+    emoji: "📝",
+    title: "문자열 길이 검증 테스트",
+    scenario: "바이트/문자 길이 혼동, 이모지 처리 누락은 DB 오류와 UI 깨짐을 유발합니다.",
+    difficulty: "Easy" as const,
+    mutants: 4,
+    badges: ["바이트 길이", "유니코드", "이모지"],
+    href: "/problems/problem-e03",
+  },
+  {
+    domain: "content",
+    emoji: "🚫",
+    title: "금칙어 필터 테스트",
+    scenario: "우회 패턴(띄어쓰기, 유사문자) 미탐지는 커뮤니티 운영 리스크가 됩니다.",
+    difficulty: "Medium" as const,
+    mutants: 6,
+    badges: ["우회 패턴", "정규화", "유사문자"],
+    href: "/problems/problem-m08",
+  },
+  {
+    domain: "content",
+    emoji: "📧",
+    title: "발송 제한 테스트",
+    scenario: "일일 한도, 수신 거부, 중복 발송 체크 누락은 스팸 신고와 서비스 차단으로 이어집니다.",
+    difficulty: "Medium" as const,
+    mutants: 5,
+    badges: ["일일 한도", "수신 거부", "중복 방지"],
+    href: "/problems/problem-m09",
   },
 ];
 
@@ -167,6 +341,9 @@ const difficultyStyles = {
 };
 
 export default function Home() {
+  const [selectedDomain, setSelectedDomain] = useState("common");
+  const currentDomain = domains.find((d) => d.key === selectedDomain) || domains[0];
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -182,29 +359,37 @@ export default function Home() {
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
 
-        {/* Content */}
+        {/* Content - with panel background for better readability */}
         <div className="relative z-10 flex flex-col items-center gap-6 px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg hero-headline">
-            AI가 코드를 더 빨리 쓰는 시대,<br className="desktop-break" />{' '}
-            실력은 <span className="highlight">&apos;숨은 버그를 찾아내는 설계&apos;</span>로 증명됩니다.
-          </h1>
-          <div className="text-base sm:text-lg text-white/80 max-w-2xl leading-relaxed space-y-3">
-            <p>
-              AI는 구현을 빠르게 돕습니다. 하지만 어떤 케이스가 위험한지는 업무 맥락이 정합니다.
-            </p>
-            <p>
-              실무 시나리오에서 <strong className="text-white">숨은 버그를 얼마나 잡는지(탐지율)</strong>로{' '}
-              <strong className="text-white">검증 범위</strong>를 숫자로 확인하세요.
+          <div className="bg-black/25 backdrop-blur-sm rounded-2xl px-6 py-8 sm:px-10 sm:py-10">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg hero-headline">
+              AI가 코드를 더 빨리 쓰는 시대,<br className="desktop-break" />{' '}
+              실력은 <span className="highlight">&apos;숨은 버그를 찾아내는 설계&apos;</span>로 증명됩니다.
+            </h1>
+            <div className="mt-6 text-base sm:text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
+              <span className="block">{heroCopy.subLine1}</span>
+              <span className="block mt-2">
+                실무 시나리오에서{" "}
+                <span className="font-semibold text-white underline underline-offset-4 decoration-white/40">
+                  숨은 버그를 얼마나 잡는지(탐지율)
+                </span>
+                로 검증 범위를 숫자로 확인하세요.
+              </span>
+            </div>
+
+            {/* Micro copy */}
+            <p className="mt-4 text-sm text-white/60 max-w-xl mx-auto">
+              {heroCopy.micro}
             </p>
           </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <Link
-              href="/problems"
+              href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
               className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
             >
-              내 버그 탐지율 측정하기
+              {currentDomain.cta}
             </Link>
             <a
               href="#how-it-works"
@@ -216,17 +401,28 @@ export default function Home() {
 
           {/* Domain Badges */}
           <div className="mt-12 text-center">
-            <p className="text-xs text-white/60 mb-3">실무 도메인으로 시작하기</p>
+            <p className="text-sm md:text-base font-medium text-white/75 mb-3">{heroCopy.domainLabel}</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {['General', 'Fintech', 'Commerce', 'SaaS', 'Platform', 'Content'].map((domain) => (
-                <span
-                  key={domain}
-                  className="px-3 py-1 text-xs sm:text-sm text-white/80 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all cursor-pointer"
+              {domains.map((d) => (
+                <button
+                  key={d.key}
+                  title={d.title}
+                  onClick={() => setSelectedDomain(d.key)}
+                  className={`px-3.5 py-1.5 text-sm rounded-full border transition-all cursor-pointer ${
+                    selectedDomain === d.key
+                      ? "bg-white/30 text-white border-white/50 font-semibold"
+                      : "text-white/90 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 hover:border-white/40"
+                  }`}
                 >
-                  {domain}
-                </span>
+                  {d.label}
+                </button>
               ))}
             </div>
+            <p className="mt-2 text-sm text-white/65 leading-relaxed">{heroCopy.domainHelper}</p>
+            {/* Domain hint - changes based on selection */}
+            <p className="mt-3 text-xs text-blue-300/80 font-medium tracking-wide">
+              {currentDomain.hint}
+            </p>
           </div>
         </div>
       </section>
@@ -304,17 +500,22 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-white">
-              이런 버그, 찾아낼 수 있나요?
+              {selectedDomain === "common"
+                ? "이런 버그, 찾아낼 수 있나요?"
+                : `${currentDomain.label} 시나리오 추천`}
             </h2>
             <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-slate-300">
-              평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.
-              <br className="hidden sm:block" />
-              실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.
+              {selectedDomain === "common"
+                ? <>평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.<br className="hidden sm:block" />실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.</>
+                : <>{currentDomain.title} 도메인에서 자주 발생하는 버그 시나리오입니다.<br className="hidden sm:block" />실무에서 놓치기 쉬운 케이스를 미리 연습해보세요.</>}
             </p>
           </div>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {showcase.map((p) => (
+            {showcase
+              .filter((p) => p.domain === selectedDomain)
+              .slice(0, 3)
+              .map((p) => (
               <Link
                 key={p.title}
                 href={p.href}
@@ -323,7 +524,7 @@ export default function Home() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{p.emoji}</span>
-                    <span className="rounded-full border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-medium text-slate-200">
+                    <span className="rounded-full border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-medium text-slate-200 capitalize">
                       {p.domain}
                     </span>
                   </div>
@@ -375,10 +576,10 @@ export default function Home() {
           {/* CTA 버튼 - 섹션 하단 중앙 */}
           <div className="mt-10 text-center">
             <Link
-              href="/problems"
+              href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
               className="inline-flex items-center justify-center rounded-full border border-white/30 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 hover:border-white transition-colors"
             >
-              실무 시나리오 더 보기
+              {selectedDomain === "common" ? "실무 시나리오 더 보기" : `${currentDomain.label} 문제 전체 보기`}
               <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
