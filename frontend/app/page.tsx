@@ -407,7 +407,34 @@ export default function Home() {
                 <button
                   key={d.key}
                   title={d.title}
-                  onClick={() => setSelectedDomain(d.key)}
+                  onClick={() => {
+                    setSelectedDomain(d.key);
+                    // 커스텀 스무스 스크롤 (브라우저 smooth 무시 문제 해결)
+                    requestAnimationFrame(() => {
+                      const el = document.getElementById("scenario-showcase");
+                      if (!el) return;
+                      const headerOffset = 96;
+                      const targetY = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+                      const startY = window.scrollY;
+                      const diff = targetY - startY;
+                      const duration = 600; // ms
+                      let startTime: number | null = null;
+
+                      const easeInOutCubic = (t: number) =>
+                        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+                      const animateScroll = (currentTime: number) => {
+                        if (!startTime) startTime = currentTime;
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeProgress = easeInOutCubic(progress);
+                        window.scrollTo(0, startY + diff * easeProgress);
+                        if (progress < 1) requestAnimationFrame(animateScroll);
+                      };
+
+                      requestAnimationFrame(animateScroll);
+                    });
+                  }}
                   className={`px-3.5 py-1.5 text-sm rounded-full border transition-all cursor-pointer ${
                     selectedDomain === d.key
                       ? "bg-white/30 text-white border-white/50 font-semibold"
@@ -486,7 +513,8 @@ export default function Home() {
 
       {/* Showcase Section - Dark Theme with Spotlight */}
       <section
-        className="relative overflow-hidden py-16"
+        id="scenario-showcase"
+        className="relative overflow-hidden py-16 scroll-mt-24"
         style={{
           backgroundColor: '#0f172a',
           backgroundImage: `
