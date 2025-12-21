@@ -26,8 +26,8 @@ const domains = [
 const features = [
   {
     image: "/images/qa-scenario-card.png",
-    title: "실전 버그 헌팅 시나리오",
-    description: "경계값, 예외 처리 등 실무에서 자주 놓치는 버그 패턴을 학습하세요",
+    title: "STEP 01. 실전 시나리오로 시작",
+    description: "계산기 예제가 아니라, 현업에서 실제로 터지는 장애 상황을 시나리오로 마주합니다.",
     iconBg: "bg-red-100 dark:bg-red-900/30",
     iconColor: "text-red-600 dark:text-red-400",
     icon: (
@@ -38,8 +38,8 @@ const features = [
   },
   {
     image: "/images/auto-grading-card.png",
-    title: "Mutant 기반 자동 채점",
-    description: "정답 코드와 버그 코드에 테스트를 실행해 버그 탐지율로 채점합니다",
+    title: "STEP 02. 탐지력(킬 비율)로 검증",
+    description: "숨은 버그(변이)를 심어, 내 테스트가 결함을 얼마나 잡는지 점수로 확인합니다.",
     iconBg: "bg-amber-100 dark:bg-amber-900/30",
     iconColor: "text-amber-600 dark:text-amber-400",
     icon: (
@@ -50,8 +50,8 @@ const features = [
   },
   {
     image: "/images/ai-code-review-card.png",
-    title: "AI 코치의 맞춤 피드백",
-    description: "잘한 점, 개선점, 놓친 테스트 케이스를 AI가 구체적으로 제안합니다",
+    title: "STEP 03. AI 분석 리포트로 회고",
+    description: "놓친 케이스와 취약 지점을 요약하고, 보완할 테스트 우선순위를 제안합니다.",
     iconBg: "bg-sky-100 dark:bg-sky-900/30",
     iconColor: "text-sky-600 dark:text-sky-400",
     icon: (
@@ -302,44 +302,6 @@ const showcase = [
   },
 ];
 
-// Sample Problems 데이터 (메인 페이지 미리보기용)
-const sampleProblems = [
-  {
-    title: "리스트 합계 경계값 테스트",
-    description: "정수 리스트를 입력받아 합을 계산하는 함수의 경계값을 테스트하세요",
-    difficulty: "Easy" as const,
-    tag: "boundary",
-    image: "/images/problems/boundary.png",
-    bugPatterns: ["off-by-one", "empty list", "negative"],
-    mutantCount: 4,
-  },
-  {
-    title: "사용자 인증 예외 테스트",
-    description: "잘못된 자격 증명과 만료된 토큰에 대한 예외 처리를 검증하세요",
-    difficulty: "Medium" as const,
-    tag: "exception",
-    image: "/images/problems/auth.png",
-    bugPatterns: ["expired token", "missing field", "invalid signature"],
-    mutantCount: 6,
-  },
-  {
-    title: "결제 금액 계산 테스트",
-    description: "할인, 쿠폰, 세금이 복합 적용되는 결제 금액 계산의 엣지 케이스를 찾아내세요",
-    difficulty: "Hard" as const,
-    tag: "edge_case",
-    image: "/images/problems/payment.png",
-    bugPatterns: ["rounding", "coupon stacking", "tax order"],
-    mutantCount: 8,
-  },
-];
-
-// 난이도별 스타일 설정
-const difficultyStyles = {
-  Easy: "bg-green-500/90 text-white",
-  Medium: "bg-yellow-500/90 text-white",
-  Hard: "bg-red-500/90 text-white",
-};
-
 export default function Home() {
   const [selectedDomain, setSelectedDomain] = useState("common");
   const currentDomain = domains.find((d) => d.key === selectedDomain) || domains[0];
@@ -460,52 +422,139 @@ export default function Home() {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent" />
 
         <div className="max-w-6xl mx-auto px-4">
+          {/* Section Header */}
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4 break-keep">
+              왜 정답 통과만으로는 부족할까요?
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto break-keep">
+              정답 여부를 넘어, 숨은 버그를 잡는 힘을 측정하고 개선합니다.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1: 버그 탐지율 채점 */}
             <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                {/* 타겟 + 버그 아이콘 */}
+                <svg
+                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  {/* 타겟 원 */}
+                  <circle cx="12" cy="12" r="9" strokeWidth={1.5} />
+                  <circle cx="12" cy="12" r="5" strokeWidth={1.5} />
+
+                  {/* 십자선 */}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 3v4M12 17v4M3 12h4M17 12h4"
+                  />
+
+                  {/* 버그 몸통 */}
+                  <ellipse cx="12" cy="12" rx="2" ry="2.5" strokeWidth={1.5} fill="currentColor" />
+
+                  {/* 버그 더듬이 */}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M10.5 10l-1-1.5M13.5 10l1-1.5"
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">숨은 버그 탐지율 채점</h3>
-              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                정답 통과가 아니라
-              </p>
-              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                숨은 버그를 얼마나 잡는지로 점수를 냅니다.
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">숨은 버그 탐지율 채점</h3>
+              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
+                정답 통과가 아니라, 테스트가 결함을 얼마나 잡는지{' '}
+                <span className="font-semibold text-blue-600 dark:text-blue-400">검증 강도</span>를
+                점수로 확인합니다.
               </p>
             </div>
 
             {/* Card 2: 브라우저 즉시 실행 */}
             <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                {/* 브라우저 + 플레이 아이콘 */}
+                <svg
+                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  {/* 브라우저 창 */}
+                  <rect x="3" y="4" width="18" height="16" rx="2" strokeWidth={1.5} />
+
+                  {/* 브라우저 상단 바 */}
+                  <path strokeWidth={1.5} d="M3 8h18" />
+
+                  {/* 상단 점들 */}
+                  <circle cx="6" cy="6" r="0.8" fill="currentColor" />
+                  <circle cx="9" cy="6" r="0.8" fill="currentColor" />
+
+                  {/* 플레이 버튼 (fill-only) */}
+                  <path fill="currentColor" d="M10 11v6l5-3-5-3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">브라우저에서 즉시 실행</h3>
-              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                로컬 세팅 없이 바로 실행하고,</p>
-              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                결과와 로그를 즉시 확인합니다.
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">브라우저에서 즉시 실행</h3>
+              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
+                <span className="font-semibold text-blue-600 dark:text-blue-400">로컬 세팅 없이</span>{' '}
+                바로 코드를 작성하고, 실행 결과와 로그를 즉시 확인합니다.
               </p>
             </div>
 
-            {/* Card 3: AI 코치 리포트 */}
+            {/* Card 3: AI 분석 리포트 */}
             <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                {/* 문서 + 돋보기 + AI 노드 아이콘 */}
+                <svg
+                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  {/* 문서 */}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 4h10l4 4v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 4v4h4" />
+
+                  {/* 문서 라인 */}
+                  <path strokeLinecap="round" strokeWidth={1.5} d="M7 9h4" />
+                  <path strokeLinecap="round" strokeWidth={1.5} d="M7 12h6" />
+
+                  {/* 돋보기 */}
+                  <circle cx="17" cy="17" r="3" strokeWidth={1.5} />
+                  <path strokeLinecap="round" strokeWidth={1.5} d="M19.5 19.5L22 22" />
+
+                  {/* AI 노드 점들 */}
+                  <circle cx="8" cy="16" r="1" fill="currentColor" />
+                  <circle cx="12" cy="16" r="1" fill="currentColor" />
+
+                  {/* 노드 연결 */}
+                  <path strokeWidth={1.5} d="M9 16h2" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">AI 코치 리포트</h3>
-              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                놓친 케이스와 다음 테스트를
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">AI 분석 리포트</h3>
+              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
+                놓친 케이스와 취약 지점을 요약하고{" "}
+                <span className="card-desc font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                  보완할 테스트 우선순위를
+                </span>{" "}
+                제안합니다.
               </p>
-              <p className="card-desc text-sm text-gray-500 dark:text-gray-400 px-2">
-                바로 실행 가능한 액션으로 정리합니다.
-              </p>              
             </div>
           </div>
         </div>
@@ -602,12 +651,25 @@ export default function Home() {
           </div>
 
           {/* CTA 버튼 - 섹션 하단 중앙 */}
-          <div className="mt-10 text-center">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* 도메인별 더 보기 버튼 */}
+            {selectedDomain !== "common" && (
+              <Link
+                href={`/problems?domain=${selectedDomain}`}
+                className="inline-flex items-center justify-center rounded-full border border-white/30 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 hover:border-white transition-colors"
+              >
+                {currentDomain.label} 더 보기
+                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            )}
+            {/* 전체 문제 보기 버튼 */}
             <Link
-              href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
-              className="inline-flex items-center justify-center rounded-full border border-white/30 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 hover:border-white transition-colors"
+              href="/problems"
+              className="inline-flex items-center justify-center rounded-full border border-blue-400/50 bg-blue-500/20 px-6 py-3 text-sm font-medium text-blue-300 hover:bg-blue-500/30 hover:border-blue-400 transition-colors"
             >
-              {selectedDomain === "common" ? "실무 시나리오 더 보기" : `${currentDomain.label} 문제 전체 보기`}
+              전체 문제 보기
               <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -619,147 +681,111 @@ export default function Home() {
       {/* Features Section */}
       <section id="features" className="py-16 sm:py-20 px-4 bg-[var(--background)]">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
-            주요 기능
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)] break-keep">
+            막막했던 테스트 설계, 3단계로 완성됩니다
           </h2>
-          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
-            QA-Arena는 실무 중심의 학습 경험을 제공합니다
+          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto break-keep">
+            이론이 아니라 실전입니다. 시나리오 → 검증 → 회고로 테스트 설계를 완성하세요.
           </p>
 
-          {/* Feature Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md"
-              >
-                {/* Image area - aspect-square 유지 */}
-                <div className="relative aspect-square">
-                  <Image
-                    src={feature.image}
-                    alt={feature.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                  {/* readability overlay - 하단만 적용 */}
-                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
-                </div>
-
-                {/* Icon badge (overlap) */}
-                <div className="relative -mt-7 flex justify-center">
-                  <div className={`h-14 w-14 rounded-full ${feature.iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
-                    <div className={feature.iconColor}>{feature.icon}</div>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="px-6 pb-7 pt-4 text-center">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{feature.description}</p>
-                </div>
-
-                {/* subtle hover sheen (optional) */}
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
-                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
+          {/* Feature Cards Grid with Flow Arrows (5-column layout) */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-8 md:gap-6 md:items-center">
+            {/* STEP 01 Card */}
+            <div className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md">
+              <div className="relative aspect-square">
+                <Image
+                  src={features[0].image}
+                  alt={features[0].title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
+              </div>
+              <div className="relative -mt-7 flex justify-center">
+                <div className={`h-14 w-14 rounded-full ${features[0].iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
+                  <div className={features[0].iconColor}>{features[0].icon}</div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Problem Preview Section */}
-      <section className="py-16 sm:py-20 px-4 bg-gray-50 dark:bg-gray-900/50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
-            이런 문제를 풀게 됩니다
-          </h2>
-          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
-            실무에서 마주치는 다양한 버그 시나리오를 연습하세요
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {sampleProblems.map((problem, index) => (
-              <div
-                key={index}
-                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-lg"
-              >
-                {/* 이미지 영역 (상단) - 160px 높이 */}
-                <div className="relative h-40">
-                  <Image
-                    src={problem.image}
-                    alt={problem.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-
-                  {/* Mutants 배지 (우상단 오버레이) */}
-                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-xs font-semibold flex items-center gap-1 shadow-sm">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    Mutants: {problem.mutantCount}
-                  </div>
-
-                  {/* 난이도/태그 배지 (좌하단 오버레이) */}
-                  <div className="absolute bottom-3 left-3 flex gap-2">
-                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full shadow-sm ${difficultyStyles[problem.difficulty]}`}>
-                      {problem.difficulty}
-                    </span>
-                    <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 shadow-sm">
-                      {problem.tag}
-                    </span>
-                  </div>
-
-                  {/* 가독성 그라데이션 */}
-                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/40 to-transparent" />
-                </div>
-
-                {/* 콘텐츠 영역 */}
-                <div className="p-5">
-                  <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">
-                    {problem.title}
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
-                    {problem.description}
-                  </p>
-
-                  {/* 버그 패턴 칩 (하단) */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {problem.bugPatterns.map((pattern, patternIndex) => (
-                      <span
-                        key={patternIndex}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        {pattern}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* hover sheen effect */}
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
-                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
-                </div>
+              <div className="px-6 pb-7 pt-4 text-center">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{features[0].title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{features[0].description}</p>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="text-center mt-8">
-            <Link
-              href="/problems"
-              className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 font-medium hover:underline"
-            >
-              전체 문제 보기
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            {/* Arrow 1 */}
+            <div className="hidden md:flex items-center justify-center -translate-y-12">
+              <svg
+                className="w-16 h-6 text-slate-400/70 dark:text-slate-500/70"
+                viewBox="0 0 64 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M2 12H54" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" />
+                <path d="M50 6l6 6-6 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </Link>
+            </div>
+
+            {/* STEP 02 Card */}
+            <div className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md">
+              <div className="relative aspect-square">
+                <Image
+                  src={features[1].image}
+                  alt={features[1].title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
+              </div>
+              <div className="relative -mt-7 flex justify-center">
+                <div className={`h-14 w-14 rounded-full ${features[1].iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
+                  <div className={features[1].iconColor}>{features[1].icon}</div>
+                </div>
+              </div>
+              <div className="px-6 pb-7 pt-4 text-center">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{features[1].title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{features[1].description}</p>
+              </div>
+            </div>
+
+            {/* Arrow 2 */}
+            <div className="hidden md:flex items-center justify-center -translate-y-12">
+              <svg
+                className="w-16 h-6 text-slate-400/70 dark:text-slate-500/70"
+                viewBox="0 0 64 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M2 12H54" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" />
+                <path d="M50 6l6 6-6 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            {/* STEP 03 Card */}
+            <div className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md">
+              <div className="relative aspect-square">
+                <Image
+                  src={features[2].image}
+                  alt={features[2].title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
+              </div>
+              <div className="relative -mt-7 flex justify-center">
+                <div className={`h-14 w-14 rounded-full ${features[2].iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
+                  <div className={features[2].iconColor}>{features[2].icon}</div>
+                </div>
+              </div>
+              <div className="px-6 pb-7 pt-4 text-center">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{features[2].title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{features[2].description}</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

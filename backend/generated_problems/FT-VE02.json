@@ -1,0 +1,42 @@
+{
+  "title": "원화-달러 환율 변환 함수 테스트",
+  "function_signature": "def convert_krw_to_usd(amount: float, rate: float) -> float:",
+  "golden_code": "def convert_krw_to_usd(amount: float, rate: float) -> float:\n    \"\"\"Convert KRW amount to USD using an exchange rate.\n\n    The conversion formula is:\n        usd = amount / rate\n\n    - `amount` must be >= 0.\n    - `rate` must be > 0 (KRW per 1 USD).\n    - The result is rounded to 2 decimal places using decimal rounding mode `ROUND_HALF_UP`\n      (typical financial rounding to cents).\n\n    Returns:\n        float: USD amount rounded to 2 decimals.\n\n    Raises:\n        ValueError: if `amount` is negative, or `rate` is not positive.\n    \"\"\"\n    from decimal import Decimal, ROUND_HALF_UP\n\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n    if rate <= 0:\n        raise ValueError(\"rate must be positive\")\n\n    # Use Decimal to avoid surprising float rounding behavior in financial values.\n    amt = Decimal(str(amount))\n    r = Decimal(str(rate))\n    usd = amt / r\n\n    return float(usd.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP))\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "amount가 0인 경우도 유효한 입력인데, 0을 에러로 처리하거나 None을 반환하여 정상적인 0 USD 결과를 내지 못함",
+      "buggy_code": "def convert_krw_to_usd(amount: float, rate: float) -> float:\n    \"\"\"Buggy: treats zero amount as invalid.\"\"\"\n    from decimal import Decimal, ROUND_HALF_UP\n\n    if amount <= 0:\n        raise ValueError(\"amount must be positive\")\n    if rate <= 0:\n        raise ValueError(\"rate must be positive\")\n\n    usd = Decimal(str(amount)) / Decimal(str(rate))\n    return float(usd.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP))\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "환율 적용 방향을 반대로 적용하여 amount / rate가 아니라 amount * rate를 수행함 (일반 입력에서 큰 오차 발생)",
+      "buggy_code": "def convert_krw_to_usd(amount: float, rate: float) -> float:\n    \"\"\"Buggy: uses the wrong formula (multiplies instead of divides).\"\"\"\n    from decimal import Decimal, ROUND_HALF_UP\n\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n    if rate <= 0:\n        raise ValueError(\"rate must be positive\")\n\n    usd = Decimal(str(amount)) * Decimal(str(rate))\n    return float(usd.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP))\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "소수점 반올림이 아니라 내림 또는 절사 방식으로 2자리로 맞춰서, 0.005 같은 케이스에서 0.01이 아닌 0.00으로 반환될 수 있음",
+      "buggy_code": "def convert_krw_to_usd(amount: float, rate: float) -> float:\n    \"\"\"Buggy: truncates instead of rounding half-up to 2 decimals.\"\"\"\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n    if rate <= 0:\n        raise ValueError(\"rate must be positive\")\n\n    usd = amount / rate\n    # Truncate to 2 decimals (not proper financial rounding)\n    return int(usd * 100) / 100.0\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "rate가 0인 경우 명확한 ValueError를 발생시켜야 하는데, 검증이 없어 ZeroDivisionError가 발생하거나(또는 음수 rate도 그대로 계산됨)",
+      "buggy_code": "def convert_krw_to_usd(amount: float, rate: float) -> float:\n    \"\"\"Buggy: missing rate validation; may raise ZeroDivisionError for rate==0.\"\"\"\n    from decimal import Decimal, ROUND_HALF_UP\n\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    usd = Decimal(str(amount)) / Decimal(str(rate))\n    return float(usd.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP))\n",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n당신은 간단한 환율 변환 기능을 제공하는 결제/정산 서비스의 QA 엔지니어입니다. 서비스에서는 원화 금액을 달러로 표시해야 하며, 표시 금액은 **센트 단위 소수 둘째 자리**까지 올바르게 반올림되어야 합니다.\n\n이번 과제의 목표는 `convert_krw_to_usd(amount, rate)` 함수에 대해 `pytest` 기반 테스트를 작성하여, 숨어 있는 버그 구현들을 최대한 많이 탐지하는 것입니다.\n\n### 함수 역할\n- 입력\n  - `amount`: 원화 금액(KRW). 0 이상이어야 합니다.\n  - `rate`: 환율(KRW per 1 USD). 0보다 커야 합니다.\n- 출력\n  - 원화를 달러로 변환한 값(USD)을 `float`로 반환합니다.\n  - 결과는 소수점 둘째 자리까지 반올림되어야 합니다.\n\n### 정상 동작 예시\n- `convert_krw_to_usd(1330, 1330)` → `1.0`\n- `convert_krw_to_usd(0, 1300)` → `0.0`\n\n### 테스트 힌트\n다음과 같은 관점으로 테스트를 설계해보세요.\n- `boundary value` 관점: 금액이 0인 경우, 환율이 0에 가까운 경우, 음수 입력\n- `equivalence partitioning` 관점: 정상 범위 입력과 비정상 입력을 나누어 검증\n- 반올림 검증: 소수점 셋째 자리에서 올림이 발생해야 하는 케이스와, 발생하지 않아야 하는 케이스\n- 예외 처리: 잘못된 입력에서 어떤 예외 타입이 나와야 하는지\n\n### 수험자가 할 일\n- `pytest`로 테스트 코드를 작성하세요.\n- 가능한 한 다양한 케이스를 통해 버그 구현을 최대한 많이 잡아내세요.\n- 단일 함수에 대한 `unit test` 형태로 작성하면 됩니다.\n",
+  "initial_test_template": "import pytest\nfrom target import convert_krw_to_usd\n\n\ndef test_zero_amount_boundary_value():\n    # TODO: amount가 0일 때도 정상적으로 0.0 USD가 반환되는지 확인\n    # 힌트: 예외가 나면 안 됩니다.\n    pass\n\n\ndef test_basic_conversion_equivalence_partitioning():\n    # TODO: 일반적인 정상 입력 파티션에서 변환 공식이 올바른지 확인\n    # 힌트: amount / rate 관계를 이용해 쉬운 숫자로 검증해보세요.\n    pass\n\n\ndef test_rounding_to_two_decimals():\n    # TODO: 소수점 2자리 반올림이 기대대로 동작하는지 확인\n    # 힌트: 소수점 셋째 자리가 5 이상인 케이스(올림)와 4 이하인 케이스(유지)를 포함하세요.\n    pass\n\n\ndef test_invalid_rate_error_handling():\n    # TODO: rate가 0 또는 음수인 경우 예외 처리(예: ValueError)가 일관되게 되는지 확인\n    pass\n",
+  "tags": [
+    "very easy",
+    "unit-test",
+    "pytest",
+    "qa",
+    "finance",
+    "currency",
+    "basic testing",
+    "boundary value analysis",
+    "error handling"
+  ],
+  "difficulty": "Very Easy",
+  "domain": "fintech"
+}

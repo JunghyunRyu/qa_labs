@@ -45,6 +45,7 @@ class ProblemService:
         page: int = 1,
         page_size: int = 10,
         difficulty: Optional[str] = None,
+        domain: Optional[str] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
         sort: str = "difficulty-asc",
@@ -56,6 +57,7 @@ class ProblemService:
             page: Page number (1-indexed)
             page_size: Number of items per page
             difficulty: Filter by difficulty level (e.g., "Easy", "Medium")
+            domain: Filter by domain (common, fintech, commerce, saas, platform, content)
             search: Search query for title, slug, or skills
             tags: Filter by skill tags (all tags must match)
             sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
@@ -75,6 +77,7 @@ class ProblemService:
             skip=skip,
             limit=page_size,
             difficulty=difficulty,
+            domain=domain,
             search=search,
             tags=tags,
             sort=sort,
@@ -89,6 +92,7 @@ class ProblemService:
                 slug=p["slug"],
                 title=p["title"],
                 difficulty=p["difficulty"],
+                domain=p.get("domain", "common"),
                 skills=p["skills"],
                 description_md=p["description_md"],
                 success_rate=p["success_rate"],
@@ -137,6 +141,7 @@ class ProblemService:
             function_signature=problem.function_signature,
             golden_code=problem.golden_code,
             difficulty=problem.difficulty,
+            domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
             created_at=problem.created_at,
             buggy_implementations=buggy_impl_responses,
@@ -181,6 +186,7 @@ class ProblemService:
             function_signature=problem.function_signature,
             golden_code=problem.golden_code,
             difficulty=problem.difficulty,
+            domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
             created_at=problem.created_at,
             buggy_implementations=buggy_impl_responses,

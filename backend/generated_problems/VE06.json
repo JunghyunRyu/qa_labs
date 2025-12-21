@@ -1,0 +1,40 @@
+{
+  "title": "퍼센트 범위 검증 함수 테스트 (0~100 경계값)",
+  "function_signature": "def is_valid_percentage(value: int) -> bool:",
+  "golden_code": "def is_valid_percentage(value: int) -> bool:\n    \"\"\"Return True if `value` is a valid percentage.\n\n    A valid percentage is an integer in the inclusive range 0 to 100.\n\n    Examples:\n        - 0, 1, 99, 100 are valid\n        - -1, 101 are invalid\n\n    Notes:\n        - This function assumes `value` is an `int` as indicated by the type hint.\n        - The boundary values (0 and 100) are included.\n    \"\"\"\n    return 0 <= value <= 100\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "하한 경계값 처리 오류: 0을 유효 범위에서 제외하여 value=0일 때 False를 반환함 (0~100 포함 범위 검증 실패).",
+      "buggy_code": "def is_valid_percentage(value: int) -> bool:\n    \"\"\"Buggy: incorrectly excludes 0.\n\n    Intended: accept integers in [0, 100].\n    Bug: uses a strict lower bound.\n    \"\"\"\n    return 0 < value <= 100\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "상한 경계값 처리 오류: 100을 유효 범위에서 제외하여 value=100일 때 False를 반환함 (0~100 포함 범위 검증 실패).",
+      "buggy_code": "def is_valid_percentage(value: int) -> bool:\n    \"\"\"Buggy: incorrectly excludes 100.\n\n    Intended: accept integers in [0, 100].\n    Bug: uses a strict upper bound.\n    \"\"\"\n    return 0 <= value < 100\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "비교 연산자 방향 실수: 범위를 제대로 검사하지 못하고 value>=0 조건만으로 True를 반환하는 케이스가 생김 (예: value=101이 True).",
+      "buggy_code": "def is_valid_percentage(value: int) -> bool:\n    \"\"\"Buggy: uses OR instead of AND.\n\n    Intended: accept integers in [0, 100].\n    Bug: `or` makes most non-negative numbers appear valid.\n    \"\"\"\n    return (value >= 0) or (value <= 100)\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "경계값에서의 부등호 오류: '>' 대신 '>='를 잘못 사용해 상한 초과 값(101)도 유효로 처리함 (예: value=101이 True).",
+      "buggy_code": "def is_valid_percentage(value: int) -> bool:\n    \"\"\"Buggy: off-by-one on the upper bound.\n\n    Intended: accept integers in [0, 100].\n    Bug: accepts 101 due to an incorrect comparison.\n    \"\"\"\n    if value < 0:\n        return False\n    # Mistake: allows 101\n    return value <= 101\n",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n어드민 콘솔에서 \"할인율\" 또는 \"진행률\"을 입력받는 기능이 있다고 가정해 봅시다. 이때 입력값이 **퍼센트 범위**를 벗어나면 저장되면 안 되므로, 간단한 범위 검증 함수가 필요합니다.\n\n이번 과제의 목표는 `pytest`로 **경계값 분석**(boundary value) 기반의 테스트를 작성하여, 주어진 `is_valid_percentage` 함수 구현들 중 버그가 있는 구현을 최대한 많이 탐지하는 것입니다.\n\n### 함수 역할\n- 함수명: `is_valid_percentage`\n- 입력: `value` (정수 `int`)\n- 반환: `bool`\n  - `value`가 0 이상 100 이하이면 `True`\n  - 그 외는 `False`\n\n### 정상 동작 예시\n- `is_valid_percentage(0)` -> `True`\n- `is_valid_percentage(100)` -> `True`\n\n### 테스트 힌트\n다음과 같은 테스트 아이디어를 조합해 보세요.\n\n- `boundary value`에 집중해 **경계 포함 여부**를 확인해 보세요. 예를 들면 0과 100이 포함되는지 여부입니다.\n- 범위 밖의 대표값도 함께 확인해 보세요. 예를 들면 음수나 100 초과 값입니다.\n- `equivalence partitioning` 관점에서, 유효 범위 내부와 외부를 각각 대표하는 값들을 선정해 보세요.\n\n연습용으로 다음 입력들을 우선순위 있게 고려해 보세요: `0, 1, 99, 100, -1, 101`.\n\n### 수험자가 해야 할 일\n- `pytest` 기반 테스트 코드를 작성하세요.\n- 올바른 구현은 통과하고, 버그 구현들은 실패하도록 테스트를 구성하세요.\n- 가능한 한 다양한 케이스로 버그를 많이 잡아내는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_percentage\n\n\ndef test_valid_boundaries_inclusive():\n    # TODO: boundary value analysis\n    # 힌트: 0과 100이 유효(True)인지 확인하세요.\n    pass\n\n\ndef test_valid_values_inside_range():\n    # TODO: equivalence partitioning\n    # 힌트: 범위 내부 대표값(예: 1, 99 등)이 True인지 확인하세요.\n    pass\n\n\ndef test_invalid_values_outside_range():\n    # TODO: range validation\n    # 힌트: 범위 밖 대표값(예: -1, 101 등)이 False인지 확인하세요.\n    pass\n",
+  "tags": [
+    "very easy",
+    "boundary value analysis",
+    "range validation",
+    "basic testing",
+    "unit-test",
+    "python",
+    "pytest"
+  ],
+  "difficulty": "Very Easy",
+  "domain": "common"
+}

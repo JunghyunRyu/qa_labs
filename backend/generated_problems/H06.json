@@ -40,5 +40,6 @@
     "의존성 주입",
     "시간 제어"
   ],
-  "difficulty": "Hard"
+  "difficulty": "Hard",
+  "domain": "saas"
 }

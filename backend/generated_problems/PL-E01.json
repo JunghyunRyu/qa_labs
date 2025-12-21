@@ -1,0 +1,39 @@
+{
+  "title": "JWT 토큰 형식 검증 is_valid_token_format 테스트",
+  "function_signature": "def is_valid_token_format(token: str) -> bool:",
+  "golden_code": "def is_valid_token_format(token: str) -> bool:\n    \"\"\"Check whether a string looks like a JWT token in compact serialization form.\n\n    The function validates only the *format* (not signature, not claims):\n    - token must be a `str`\n    - must contain exactly 2 dots, producing exactly 3 segments (header.payload.signature)\n    - each segment must be non-empty\n    - each segment must use Base64URL characters only: [A-Z a-z 0-9 _ -]\n    - whitespace is not allowed (including leading/trailing spaces)\n\n    Returns:\n        bool: True if the token matches the expected JWT-like format, otherwise False.\n    \"\"\"\n    import re\n\n    if not isinstance(token, str):\n        return False\n\n    if token == \"\":\n        return False\n\n    # Reject any whitespace, including surrounding spaces.\n    if token != token.strip():\n        return False\n    if any(ch.isspace() for ch in token):\n        return False\n\n    # JWT compact serialization should have exactly two dots.\n    if token.count(\".\") != 2:\n        return False\n\n    parts = token.split(\".\")\n    if len(parts) != 3:\n        return False\n\n    base64url_re = re.compile(r\"^[A-Za-z0-9_-]+$\")\n    for part in parts:\n        if part == \"\":\n            return False\n        if base64url_re.fullmatch(part) is None:\n            return False\n\n    return True\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "점의 개수를 '정확히 2개'가 아니라 '2개 이상'으로 허용하여, 세그먼트가 4개 이상인 토큰도 유효하다고 판단함 (입력 검증 누락으로 인증 전 처리 취약).",
+      "buggy_code": "def is_valid_token_format(token: str) -> bool:\n    \"\"\"BUGGY: Accepts tokens with 2 or more dots (more than 3 segments).\"\"\"\n    import re\n\n    if not isinstance(token, str):\n        return False\n    if token == \"\":\n        return False\n\n    # Does not strictly enforce dot count.\n    if token.count(\".\") < 2:\n        return False\n\n    parts = token.split(\".\")\n\n    base64url_re = re.compile(r\"^[A-Za-z0-9_-]+$\")\n    for part in parts:\n        if part == \"\":\n            return False\n        if base64url_re.fullmatch(part) is None:\n            return False\n\n    return True\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "세그먼트가 비어있는 경우(예: 'abc..def', '.abc.def')를 유효하다고 판단함. 빈 문자열 경계값과 구분자 주변 입력 검증 실패.",
+      "buggy_code": "def is_valid_token_format(token: str) -> bool:\n    \"\"\"BUGGY: Does not reject empty segments.\"\"\"\n    import re\n\n    if not isinstance(token, str):\n        return False\n    if token == \"\":\n        return False\n\n    if any(ch.isspace() for ch in token):\n        return False\n\n    if token.count(\".\") != 2:\n        return False\n\n    parts = token.split(\".\")\n    if len(parts) != 3:\n        return False\n\n    base64url_re = re.compile(r\"^[A-Za-z0-9_-]*$\")\n    # NOTE: `*` allows empty segment; and there's no explicit non-empty check.\n    for part in parts:\n        if base64url_re.fullmatch(part) is None:\n            return False\n\n    return True\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "Base64URL 문자인 '-'와 '_'를 허용하지 않고 영문/숫자만 허용함. 정상 JWT에서 흔한 문자를 잘못 거부하여 유효 토큰을 false로 처리함.",
+      "buggy_code": "def is_valid_token_format(token: str) -> bool:\n    \"\"\"BUGGY: Uses `isalnum()` so '-' and '_' are rejected.\"\"\"\n\n    if not isinstance(token, str):\n        return False\n    if token == \"\":\n        return False\n\n    if any(ch.isspace() for ch in token):\n        return False\n\n    if token.count(\".\") != 2:\n        return False\n\n    parts = token.split(\".\")\n    if len(parts) != 3:\n        return False\n\n    for part in parts:\n        if part == \"\":\n            return False\n        if not part.isalnum():\n            return False\n\n    return True\n",
+      "weight": 2
+    },
+    {
+      "bug_description": "앞뒤 공백을 제거해서 검사한 뒤 True를 반환함. 공백이 포함된 토큰을 거부해야 하는데, 입력을 '정규화'해버려 잘못 유효 처리함 (입력 검증/인증 경계).",
+      "buggy_code": "def is_valid_token_format(token: str) -> bool:\n    \"\"\"BUGGY: Strips leading/trailing whitespace and validates the stripped token.\"\"\"\n    import re\n\n    if not isinstance(token, str):\n        return False\n\n    token = token.strip()  # should have been rejected instead\n    if token == \"\":\n        return False\n\n    if token.count(\".\") != 2:\n        return False\n\n    parts = token.split(\".\")\n    if len(parts) != 3:\n        return False\n\n    base64url_re = re.compile(r\"^[A-Za-z0-9_-]+$\")\n    for part in parts:\n        if part == \"\":\n            return False\n        if base64url_re.fullmatch(part) is None:\n            return False\n\n    return True\n",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n당신은 사내 API 게이트웨이 팀의 QA 엔지니어입니다. 일부 서비스는 요청 헤더의 인증 토큰을 `JWT`로 전달하며, 본격적인 디코딩과 서명 검증을 수행하기 전에 **토큰 문자열이 최소한 JWT 형태처럼 보이는지** 빠르게 검증하는 유틸리티 함수를 사용합니다.\n\n이 문제의 목표는 `is_valid_token_format` 함수에 대해 `pytest` 기반 단위 테스트를 작성하여, 형식 검증 로직에서 발생할 수 있는 결함을 최대한 많이 찾아내는 것입니다.\n\n### 함수 역할\n- 함수명: `is_valid_token_format(token)`\n- 입력: `token` (문자열)\n- 반환: `bool`\n\n이 함수는 JWT의 *서명/클레임 검증*이 아닌, 오직 **문자열 형식**만 검사합니다.\n\n### 기대되는 동작 개요\n- 토큰은 일반적으로 `header.payload.signature` 형태의 3개 세그먼트로 구성됩니다.\n- 세그먼트 구분자는 점 문자 `.` 입니다.\n- 각 세그먼트는 비어 있으면 안 되며, URL-safe Base64 계열 문자 집합을 사용합니다.\n\n### 정상 동작 예시\n- 입력: `\"abc.DEF_12.-xyz\"` → 출력: `True`\n- 입력: `\"abc.def\"` → 출력: `False`\n\n### 테스트 힌트\n다음과 같은 관점으로 테스트를 설계해 보세요.\n- **입력 검증**: `None` 또는 문자열이 아닌 타입, 빈 문자열, 공백 포함 여부\n- **경계 조건**: 점 문자의 개수가 부족하거나 많은 경우, 세그먼트가 비어 있는 경우\n- **인증 관점**: 형식 검증이 느슨해지면 어떤 토큰이 잘못 통과할 수 있는지(예: 세그먼트 수가 맞지 않는데도 통과)\n\n### 수험자가 할 일\n- 제공된 `target.py`의 `is_valid_token_format`에 대해 `pytest` 단위 테스트를 작성하세요.\n- 테스트는 **정상 구현**에서는 모두 통과해야 하며, **버그 구현들**에서는 가능한 한 많이 실패를 유도해야 합니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_token_format\n\n\ndef test_empty_and_whitespace_boundary_cases():\n    # TODO: boundary value 관점\n    # - 빈 문자열\n    # - 공백만 있는 문자열\n    # - 앞/뒤 공백이 포함된 문자열\n    # - 문자열 내부에 공백/탭/개행이 섞인 경우\n    pass\n\n\ndef test_dot_count_and_segment_count_validation():\n    # TODO: 입력 검증 관점\n    # - 점이 0개/1개인 경우\n    # - 점이 정확히 2개가 아닌 경우 (예: 3개 이상)\n    # - 점은 2개지만 split 결과에 빈 세그먼트가 나오는 경우\n    pass\n\n\ndef test_allowed_character_set_for_segments():\n    # TODO: 인증 토큰 형식 관점\n    # - base64url에서 흔히 쓰는 '-' '_' 포함 케이스\n    # - 허용되면 안 되는 문자가 포함된 케이스 (예: '/', '+', '=', 한글, 공백)\n    pass\n\n\ndef test_non_string_inputs_are_handled_safely():\n    # TODO: 입력 검증/오류 처리 관점\n    # - None, int, bytes, list 등을 넣었을 때 False가 반환되는지\n    pass\n",
+  "tags": [
+    "easy",
+    "unit-test",
+    "pytest",
+    "authentication",
+    "input validation",
+    "string"
+  ],
+  "difficulty": "Easy",
+  "domain": "platform"
+}

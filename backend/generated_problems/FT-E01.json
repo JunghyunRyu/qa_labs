@@ -1,0 +1,40 @@
+{
+  "title": "출금 가능 여부 판단(can_withdraw) 경계값 테스트",
+  "function_signature": "def can_withdraw(balance: int, amount: int) -> bool:",
+  "golden_code": "def can_withdraw(balance: int, amount: int) -> bool:\n    \"\"\"Return whether a withdrawal is allowed.\n\n    Business rules:\n    - `balance` and `amount` are integers representing the smallest currency unit (e.g., won).\n    - A withdrawal is allowed when `amount` is between 0 and `balance`, inclusive.\n      (Withdrawing exactly the remaining balance is allowed.)\n\n    Validation:\n    - If `balance` is negative, raise ValueError.\n    - If `amount` is negative, raise ValueError.\n\n    Examples:\n    - can_withdraw(1000, 0) -> True\n    - can_withdraw(1000, 1000) -> True\n    - can_withdraw(1000, 1001) -> False\n    \"\"\"\n    if balance < 0:\n        raise ValueError(\"balance must be non-negative\")\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    return amount <= balance\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "경계값 처리 오류: 잔액과 출금액이 정확히 같을 때도 출금을 불가로 판단한다(<= 대신 < 사용). 예: balance=1000, amount=1000에서 False 반환.",
+      "buggy_code": "def can_withdraw(balance: int, amount: int) -> bool:\n    \"\"\"Buggy: uses a strict comparison, rejecting withdrawals that equal the balance.\"\"\"\n    if balance < 0:\n        raise ValueError(\"balance must be non-negative\")\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    return amount < balance\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "0원 출금 경계값 오류: amount가 0이면 출금을 불가로 판단한다. 예: balance=10, amount=0에서 False 반환.",
+      "buggy_code": "def can_withdraw(balance: int, amount: int) -> bool:\n    \"\"\"Buggy: mistakenly treats zero-amount withdrawal as not allowed.\"\"\"\n    if balance < 0:\n        raise ValueError(\"balance must be non-negative\")\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    if amount == 0:\n        return False\n    return amount <= balance\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "잔액 검증 누락: balance가 음수여도 예외를 발생시키지 않고 단순 비교로 처리한다. 예: balance=-1, amount=0에서 예외 대신 True/False를 반환.",
+      "buggy_code": "def can_withdraw(balance: int, amount: int) -> bool:\n    \"\"\"Buggy: does not validate negative balances.\"\"\"\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    return amount <= balance\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "출금액 검증 오류: amount가 음수일 때 ValueError 대신 False를 반환한다. 예: balance=1000, amount=-1에서 예외가 아니라 False 반환.",
+      "buggy_code": "def can_withdraw(balance: int, amount: int) -> bool:\n    \"\"\"Buggy: returns False for negative amount instead of raising ValueError.\"\"\"\n    if balance < 0:\n        raise ValueError(\"balance must be non-negative\")\n\n    if amount < 0:\n        return False\n\n    return amount <= balance\n",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n전자지갑 서비스에서 사용자가 출금을 요청하면, 시스템은 **출금 가능 여부**를 먼저 판단해야 합니다. 잘못된 판단은 잔액이 부족한데도 출금이 되거나, 정상 요청인데도 거절되는 문제로 이어질 수 있습니다.\n\n이번 과제에서는 `can_withdraw(balance, amount)` 함수에 대해 `pytest` 기반의 단위 테스트를 작성하여, 구현에 숨어있는 버그를 최대한 많이 찾아내는 것이 목표입니다.\n\n### 함수 역할\n- 입력\n  - `balance`: 현재 계좌 잔액 (정수, 예: 원 단위)\n  - `amount`: 출금 요청 금액 (정수)\n- 반환\n  - 출금이 허용되면 `True`, 허용되지 않으면 `False`\n- 예외\n  - 입력값이 유효하지 않으면 `ValueError`를 발생시킵니다.\n\n### 정상 동작 예시\n- `can_withdraw(1000, 300) -> True`\n- `can_withdraw(1000, 1200) -> False`\n\n### 테스트 힌트\n다음은 정답을 직접적으로 제공하지 않는 범위에서의 힌트입니다. 테스트 아이디어를 떠올리는 데 활용하세요.\n\n- `boundary value` 관점에서, **출금액이 잔액과 같을 때**는 매우 중요한 경계입니다.\n- **0원 출금**은 실제 서비스에서 허용/거절 정책이 명확해야 하며, 구현에서 종종 실수하는 경계값입니다.\n- `잔액 검증` 관점에서, 음수 잔액이나 음수 출금액처럼 **입력 자체가 잘못된 경우**를 어떻게 처리해야 하는지 확인하세요.\n\n### 수험자가 해야 할 일\n- 주어진 `can_withdraw` 함수에 대해 `pytest`로 테스트 코드를 작성하세요.\n- 다양한 케이스(특히 경계값과 잘못된 입력)를 통해 **버그 구현들을 최대한 많이 탐지**하는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import can_withdraw\n\n\ndef test_boundary_amount_equals_balance():\n    # TODO: boundary value - amount == balance 일 때 허용되는지 확인\n    # 예: balance=1000, amount=1000\n    pass\n\n\ndef test_boundary_zero_amount():\n    # TODO: boundary value - 0원 출금 정책 확인 (일반적으로는 허용되는 케이스)\n    # 예: balance=10, amount=0\n    pass\n\n\ndef test_invalid_negative_amount_raises():\n    # TODO: error handling/validation - amount < 0 일 때 ValueError 발생 여부 확인\n    pass\n\n\ndef test_invalid_negative_balance_raises():\n    # TODO: 잔액 검증 - balance < 0 일 때 ValueError 발생 여부 확인\n    pass\n",
+  "tags": [
+    "easy",
+    "unit-test",
+    "pytest",
+    "boundary value analysis",
+    "validation",
+    "integer",
+    "finance"
+  ],
+  "difficulty": "Easy",
+  "domain": "fintech"
+}

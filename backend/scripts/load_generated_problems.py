@@ -72,6 +72,7 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session):
         function_signature=data.get('function_signature', ''),
         golden_code=data.get('golden_code', ''),
         difficulty=data.get('difficulty', 'Easy'),
+        domain=data.get('domain', 'common'),  # Load domain from JSON
         skills=data.get('tags', []),  # Use tags as skills
     )
     

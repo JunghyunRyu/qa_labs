@@ -35,5 +35,6 @@
     "날짜/시간",
     "테스트 용이성"
   ],
-  "difficulty": "Medium"
+  "difficulty": "Medium",
+  "domain": "platform"
 }

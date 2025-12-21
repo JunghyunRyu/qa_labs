@@ -1,0 +1,39 @@
+{
+  "title": "구간 겹침 판정 함수 테스트: 경계 접촉과 포함 관계",
+  "function_signature": "def do_ranges_overlap(start1: int, end1: int, start2: int, end2: int) -> bool:",
+  "golden_code": "def do_ranges_overlap(start1: int, end1: int, start2: int, end2: int) -> bool:\n    \"\"\"Return True if two inclusive integer ranges overlap.\n\n    The ranges are inclusive: [start1, end1] and [start2, end2].\n    If the ranges share at least one integer point, they overlap.\n\n    Rules:\n    - Touching at a boundary counts as overlap. Example: [1, 3] and [3, 5] -> True\n    - Containment counts as overlap. Example: [1, 10] and [3, 4] -> True\n\n    Validation:\n    - If start > end for either range, raise ValueError.\n\n    This is commonly used for validating schedule slots, coupon validity windows,\n    or reservation conflicts where endpoints are inclusive.\n    \"\"\"\n    if start1 > end1:\n        raise ValueError(\"Invalid range1: start1 must be <= end1\")\n    if start2 > end2:\n        raise ValueError(\"Invalid range2: start2 must be <= end2\")\n\n    # Overlap exists unless one range is strictly before the other.\n    return not (end1 < start2 or end2 < start1)\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "경계 접촉을 겹침으로 보지 않는 버그. 예: [1, 3]과 [3, 7]에서 False를 반환하는 등, end1 == start2 또는 end2 == start1인 케이스에서 실패.",
+      "buggy_code": "def do_ranges_overlap(start1: int, end1: int, start2: int, end2: int) -> bool:\n    \"\"\"Buggy: uses strict overlap logic (touching endpoints treated as non-overlap).\"\"\"\n    if start1 > end1:\n        raise ValueError(\"Invalid range1: start1 must be <= end1\")\n    if start2 > end2:\n        raise ValueError(\"Invalid range2: start2 must be <= end2\")\n\n    # Incorrect for inclusive ranges: treats boundary touch as non-overlap.\n    return not (end1 <= start2 or end2 <= start1)\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "포함 관계를 놓치는 버그. 한 구간의 start 또는 end가 다른 구간 안에 들어오는지만 검사하여, [2, 8]과 [3, 4]처럼 두 번째 구간이 완전히 포함되는 경우 False를 반환할 수 있음.",
+      "buggy_code": "def do_ranges_overlap(start1: int, end1: int, start2: int, end2: int) -> bool:\n    \"\"\"Buggy: only checks whether range2's endpoints fall inside range1.\"\"\"\n    if start1 > end1:\n        raise ValueError(\"Invalid range1: start1 must be <= end1\")\n    if start2 > end2:\n        raise ValueError(\"Invalid range2: start2 must be <= end2\")\n\n    # Fails when range2 is fully inside range1 but neither endpoint check matches due to wrong direction,\n    # and also fails when range1 is fully inside range2.\n    return (start1 <= start2 <= end1) or (start1 <= end2 <= end1)\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "서로 겹치지 않는 조건을 잘못 결합하는 버그. 예: [1, 2]와 [5, 6]처럼 완전히 떨어진 구간에서 True를 반환할 수 있음. 4개 변수 관계에서 `or`와 `and`를 혼동한 형태.",
+      "buggy_code": "def do_ranges_overlap(start1: int, end1: int, start2: int, end2: int) -> bool:\n    \"\"\"Buggy: wrong boolean operator when checking separation.\"\"\"\n    if start1 > end1:\n        raise ValueError(\"Invalid range1: start1 must be <= end1\")\n    if start2 > end2:\n        raise ValueError(\"Invalid range2: start2 must be <= end2\")\n\n    # Should be: not (end1 < start2 or end2 < start1)\n    # Bug: uses 'and', making many disjoint ranges look overlapping.\n    return not (end1 < start2 and end2 < start1)\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "입력 검증을 하지 않고 구간을 자동 정렬해버리는 버그. start > end 같은 잘못된 입력에서 ValueError가 아니라 정상 처리(True/False)를 반환하여, 에러 핸들링/입력 경계 테스트에서 실패.",
+      "buggy_code": "def do_ranges_overlap(start1: int, end1: int, start2: int, end2: int) -> bool:\n    \"\"\"Buggy: silently normalizes invalid ranges instead of raising ValueError.\"\"\"\n    a1, b1 = (start1, end1) if start1 <= end1 else (end1, start1)\n    a2, b2 = (start2, end2) if start2 <= end2 else (end2, start2)\n\n    return not (b1 < a2 or b2 < a1)\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n예약 시스템(회의실, 숙소, 장비 대여 등)에서는 두 예약 시간이 **겹치는지**를 빠르게 판정하는 로직이 핵심입니다. 특히 경계 시각이 정확히 맞닿는 경우(예: 한 예약이 10시에 끝나고 다른 예약이 10시에 시작) 처리 방식이 서비스 정책에 큰 영향을 줍니다.\n\n이번 과제에서는 두 정수 구간이 겹치는지 판정하는 함수 `do_ranges_overlap`를 테스트합니다.\n\n### 함수 역할\n- 두 구간 `[start1, end1]`, `[start2, end2]`가 **하나 이상의 정수 지점을 공유하면** `True`를 반환합니다.\n- 구간은 **양 끝을 포함**하는 `inclusive range`입니다.\n\n### 파라미터\n- `start1`, `end1`: 첫 번째 구간의 시작과 끝 (정수)\n- `start2`, `end2`: 두 번째 구간의 시작과 끝 (정수)\n\n### 반환값\n- `bool`: 겹치면 `True`, 겹치지 않으면 `False`\n\n### 정상 동작 예시\n- `do_ranges_overlap(1, 3, 3, 5) -> True` (경계가 맞닿는 경우도 겹침)\n- `do_ranges_overlap(10, 12, 13, 20) -> False` (완전히 분리)\n\n### 테스트 힌트\n다음과 같은 테스트 아이디어를 조합해 보세요.\n- `boundary value` 관점: `end1 == start2`, `end2 == start1` 같은 **경계 접촉**\n- `equivalence partitioning` 관점(구간 관계): 완전 분리, 부분 겹침, 한쪽이 다른 쪽을 완전히 포함\n- 사변수 관계 테스트: `start1/end1/start2/end2`의 상대적 크기 관계가 바뀌는 다양한 케이스\n- 입력이 잘못된 경우: `start > end` 형태의 구간이 들어오면 어떻게 되어야 하는지(예외 발생 여부)\n\n### 수험자가 할 일\n- `pytest`로 테스트 코드를 작성하세요.\n- 최대한 많은 버그 구현을 탐지할 수 있도록, 다양한 경계/관계 케이스를 체계적으로 구성하세요.\n",
+  "initial_test_template": "import pytest\nfrom target import do_ranges_overlap\n\n\ndef test_boundary_touch_should_overlap():\n    # TODO: 경계값 분석: end1 == start2, end2 == start1 케이스에서 inclusive 정책을 검증하세요.\n    # 예: [1,3] vs [3,5], [3,3] vs [3,10] 등\n    pass\n\n\ndef test_containment_and_partial_overlap_partitions():\n    # TODO: 구간 관계 파티션 테스트: 완전 포함, 부분 겹침(좌/우), 완전 분리 케이스를 구성하세요.\n    # 핵심은 4개 변수(start1,end1,start2,end2)의 상대적 순서를 바꿔가며 검증하는 것입니다.\n    pass\n\n\ndef test_invalid_ranges_raise_value_error():\n    # TODO: 에러 처리/입력 경계: start > end 인 입력에서 예외 타입(ValueError)과 동작을 검증하세요.\n    # range1만 잘못된 경우, range2만 잘못된 경우를 각각 확인해보세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "boundary value analysis",
+    "interval",
+    "range overlap",
+    "unit-test",
+    "pytest"
+  ],
+  "difficulty": "Easy",
+  "domain": "common"
+}

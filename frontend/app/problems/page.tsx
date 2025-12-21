@@ -3,6 +3,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { getProblems, GetProblemsParams } from "@/lib/api/problems";
 import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
@@ -16,23 +17,46 @@ import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 type DifficultyFilter = "All" | "Very Easy" | "Easy" | "Medium" | "Hard";
+type DomainFilter = "All" | "common" | "fintech" | "commerce" | "saas" | "platform" | "content";
 type SortOption = "difficulty-asc" | "difficulty-desc" | "success-rate-desc" | "success-rate-asc";
+
+// 도메인 레이블 정의
+const DOMAIN_LABELS: Record<DomainFilter, string> = {
+  All: "전체",
+  common: "공통",
+  fintech: "핀테크",
+  commerce: "커머스",
+  saas: "SaaS",
+  platform: "플랫폼",
+  content: "컨텐츠",
+};
 
 export default function ProblemsPage() {
   const { isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<ProblemListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 10;
-  
+
   // 필터 및 검색 상태
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("All");
+  const [domainFilter, setDomainFilter] = useState<DomainFilter>("All");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>("difficulty-asc");
   const [showFilters, setShowFilters] = useState(false);
+
+  // URL 쿼리 파라미터에서 도메인 필터 읽기 (메인 페이지에서 도메인 클릭 시)
+  useEffect(() => {
+    const domainParam = searchParams.get("domain");
+    if (domainParam && Object.keys(DOMAIN_LABELS).includes(domainParam)) {
+      setDomainFilter(domainParam as DomainFilter);
+      setShowFilters(true);  // 필터 패널 자동 열기
+    }
+  }, [searchParams]);
 
   // Debounce search query
   useEffect(() => {
@@ -50,6 +74,7 @@ export default function ProblemsPage() {
         page,
         pageSize,
         difficulty: difficultyFilter !== "All" ? difficultyFilter : undefined,
+        domain: domainFilter !== "All" ? domainFilter : undefined,
         search: debouncedSearchQuery.trim() || undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         sort: sortOption,
@@ -68,7 +93,7 @@ export default function ProblemsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, difficultyFilter, debouncedSearchQuery, selectedTags, sortOption]);
+  }, [page, pageSize, difficultyFilter, domainFilter, debouncedSearchQuery, selectedTags, sortOption]);
 
   useEffect(() => {
     fetchProblems();
@@ -77,7 +102,7 @@ export default function ProblemsPage() {
   // Reset to page 1 when filters or sort change
   useEffect(() => {
     setPage(1);
-  }, [difficultyFilter, selectedTags, debouncedSearchQuery, sortOption]);
+  }, [difficultyFilter, domainFilter, selectedTags, debouncedSearchQuery, sortOption]);
 
   // 서버에서 정렬된 문제 목록 (정렬은 서버에서 처리)
   const sortedProblems = useMemo(() => {
@@ -105,11 +130,12 @@ export default function ProblemsPage() {
   const clearFilters = () => {
     setSearchQuery("");
     setDifficultyFilter("All");
+    setDomainFilter("All");
     setSelectedTags([]);
     setSortOption("difficulty-asc");
   };
 
-  const hasActiveFilters = debouncedSearchQuery || difficultyFilter !== "All" || selectedTags.length > 0;
+  const hasActiveFilters = debouncedSearchQuery || difficultyFilter !== "All" || domainFilter !== "All" || selectedTags.length > 0;
 
   if (loading) {
     return (
@@ -187,7 +213,7 @@ export default function ProblemsPage() {
             <span className="hidden sm:inline">필터</span>
             {hasActiveFilters && (
               <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">
-                {selectedTags.length + (difficultyFilter !== "All" ? 1 : 0)}
+                {selectedTags.length + (difficultyFilter !== "All" ? 1 : 0) + (domainFilter !== "All" ? 1 : 0)}
               </span>
             )}
           </button>
@@ -208,6 +234,29 @@ export default function ProblemsPage() {
         {/* 필터 패널 */}
         {showFilters && (
           <div id="filter-panel" className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+            {/* 도메인 필터 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                도메인
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {(["All", "common", "fintech", "commerce", "saas", "platform", "content"] as DomainFilter[]).map((domain) => (
+                  <button
+                    key={domain}
+                    onClick={() => setDomainFilter(domain)}
+                    className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
+                      domainFilter === domain
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    }`}
+                    aria-pressed={domainFilter === domain}
+                  >
+                    {DOMAIN_LABELS[domain]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* 난이도 필터 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

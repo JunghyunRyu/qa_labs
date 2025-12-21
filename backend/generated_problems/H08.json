@@ -38,5 +38,6 @@
     "비즈니스 로직",
     "오류 처리"
   ],
-  "difficulty": "Hard"
+  "difficulty": "Hard",
+  "domain": "platform"
 }

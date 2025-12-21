@@ -1,0 +1,39 @@
+{
+  "title": "카드 번호 형식 검증 함수 테스트",
+  "function_signature": "def is_valid_card_format(card_number: str) -> bool:",
+  "golden_code": "def is_valid_card_format(card_number: str) -> bool:\n    \"\"\"Validate card number *format* only.\n\n    Rules:\n    - Input must be a string; otherwise raise TypeError.\n    - Leading/trailing whitespace is ignored.\n    - Accepted formats are:\n        1) Exactly 16 digits: \"1234567890123456\"\n        2) Hyphen-separated 4-digit groups: \"1234-5678-9012-3456\"\n    - Any other characters (spaces inside, letters, extra/missing hyphens, wrong grouping) are invalid.\n\n    This function does not perform checksum validation (e.g., Luhn).\n    \"\"\"\n    if not isinstance(card_number, str):\n        raise TypeError(\"card_number must be a str\")\n\n    s = card_number.strip()\n\n    # Format 1: 16 digits\n    if len(s) == 16 and s.isdigit():\n        return True\n\n    # Format 2: 4-4-4-4 with hyphens\n    if len(s) == 19:\n        parts = s.split(\"-\")\n        if len(parts) != 4:\n            return False\n        for p in parts:\n            if len(p) != 4 or not p.isdigit():\n                return False\n        return True\n\n    return False\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "하이픈이 포함된 입력을 무조건 `isdigit()`로만 판단하여, \"1234-5678-9012-3456\" 같은 올바른 하이픈 형식을 잘못된 것으로 처리한다.",
+      "buggy_code": "def is_valid_card_format(card_number: str) -> bool:\n    \"\"\"BUGGY: Validates only 16-digit continuous numbers and rejects hyphenated format.\"\"\"\n    if not isinstance(card_number, str):\n        raise TypeError(\"card_number must be a str\")\n\n    s = card_number.strip()\n    return len(s) == 16 and s.isdigit()\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "하이픈을 전부 제거한 뒤 숫자 16자리만 남으면 통과시키는 방식이라, 하이픈 위치/개수가 잘못된 입력(예: \"12345678-9012-3456\", \"1234--5678-9012-3456\")도 유효하다고 판정할 수 있다.",
+      "buggy_code": "def is_valid_card_format(card_number: str) -> bool:\n    \"\"\"BUGGY: Removes all hyphens and checks only digit count; hyphen placement is not validated.\"\"\"\n    if not isinstance(card_number, str):\n        raise TypeError(\"card_number must be a str\")\n\n    s = card_number.strip()\n    candidate = s.replace(\"-\", \"\")\n    return len(candidate) == 16 and candidate.isdigit()\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "길이 검증이 부정확하여 15자리 숫자 또는 17자리 숫자 같은 경계값에서 오동작한다. 예: 15자리는 잘못 통과시키고, 16자리는 거부할 수 있다.",
+      "buggy_code": "def is_valid_card_format(card_number: str) -> bool:\n    \"\"\"BUGGY: Off-by-one length check for the pure-digit format.\"\"\"\n    if not isinstance(card_number, str):\n        raise TypeError(\"card_number must be a str\")\n\n    s = card_number.strip()\n\n    # Wrong: accepts 15 digits instead of 16\n    if len(s) == 15 and s.isdigit():\n        return True\n\n    # Hyphen format check is mostly correct (kept to make the bug isolated)\n    if len(s) == 19:\n        parts = s.split(\"-\")\n        if len(parts) != 4:\n            return False\n        for p in parts:\n            if len(p) != 4 or not p.isdigit():\n                return False\n        return True\n\n    return False\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "입력에서 숫자만 추출해서 16자리면 통과시키므로, 허용되지 않은 문자가 섞여도(예: 공백 포함 \"1234 5678 9012 3456\", 문자 포함 \"abcd1234567890123456\") 유효하다고 판정한다.",
+      "buggy_code": "def is_valid_card_format(card_number: str) -> bool:\n    \"\"\"BUGGY: Extracts digits and validates only digit count, allowing invalid separators/characters.\"\"\"\n    if not isinstance(card_number, str):\n        raise TypeError(\"card_number must be a str\")\n\n    s = card_number.strip()\n    digits_only = \"\".join(ch for ch in s if ch.isdigit())\n    return len(digits_only) == 16\n",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n온라인 결제 서비스에서는 사용자가 입력한 카드 번호가 **올바른 형식**인지 먼저 검증해야 합니다. 형식 검증이 허술하면 저장/마스킹/로그 처리 단계에서 오류가 나거나, 허용되지 않은 입력이 시스템에 유입될 수 있습니다.\n\n이번 과제의 목표는 `is_valid_card_format` 함수에 대해 `pytest` 기반 테스트를 작성하여, 다양한 입력 검증과 형식 검증 관점에서 버그를 최대한 많이 찾아내는 것입니다.\n\n### 함수 역할\n- 함수명: `is_valid_card_format(card_number)`\n- 입력:\n  - `card_number`: 카드 번호 문자열\n- 반환:\n  - 형식이 유효하면 `True`, 아니면 `False`\n- 예외:\n  - `card_number`가 문자열이 아니면 `TypeError`를 발생시켜야 합니다.\n\n### 허용되는 카드 번호 형식\n다음 두 형식만 유효합니다.\n1) 하이픈이 없는 16자리 숫자\n- 예: `\"1234567890123456\"` -> `True`\n\n2) 4자리씩 하이픈으로 구분된 형식\n- 예: `\"1234-5678-9012-3456\"` -> `True`\n\n### 테스트 힌트\n다음 관점들을 활용해 테스트를 설계해 보세요.\n- `boundary value`: 길이가 15, 16, 17인 경우\n- `equivalence partitioning`: 숫자만 있는 경우, 하이픈이 있는 경우, 하이픈 위치가 잘못된 경우\n- 입력 검증: `None`, 정수 타입 등 문자열이 아닌 입력\n- 형식 검증: 하이픈이 1개/2개/3개/4개 이상인 경우, 연속 하이픈, 그룹 길이가 4가 아닌 경우\n- 허용되지 않은 문자가 섞인 경우: 내부 공백, 문자, 특수문자\n\n### 수험자가 해야 할 일\n`pytest`로 테스트 코드를 작성하여, 주어진 구현들 중 잘못된 구현을 최대한 많이 실패시키는 테스트를 만드세요. 올바른 구현은 통과해야 합니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_card_format\n\n\ndef test_valid_formats_equivalence_partitions():\n    # TODO: 유효한 입력 파티션을 나누어 테스트하세요.\n    # - 16자리 숫자만 있는 형식\n    # - 4자리-4자리-4자리-4자리 하이픈 형식\n    pass\n\n\ndef test_invalid_length_boundary_values():\n    # TODO: boundary value 관점에서 길이 15/16/17 등을 점검하세요.\n    # - 숫자만 있는 형식에서의 길이 경계\n    # - 하이픈 포함 형식에서의 길이 경계 (예: 너무 짧거나 긴 경우)\n    pass\n\n\ndef test_invalid_hyphen_placement_and_characters():\n    # TODO: 형식 검증 관점에서 하이픈 위치/개수가 잘못된 경우를 추가하세요.\n    # 예: 하이픈이 빠지거나, 연속 하이픈, 그룹 길이가 4가 아님\n    # 또한 공백/문자/특수문자 등 허용되지 않은 문자가 섞인 입력도 고려하세요.\n    pass\n\n\ndef test_type_validation_error_handling():\n    # TODO: 입력 검증 - 문자열이 아닌 입력에서 TypeError가 발생하는지 확인하세요.\n    # 예: None, int, list 등\n    pass\n",
+  "tags": [
+    "easy",
+    "pytest",
+    "unit-test",
+    "input validation",
+    "format validation",
+    "string"
+  ],
+  "difficulty": "Easy",
+  "domain": "fintech"
+}

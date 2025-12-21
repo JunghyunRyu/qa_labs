@@ -22,6 +22,7 @@ describe('ProblemDetailPage', () => {
     function_signature: 'def solve(nums: List[int]) -> int:',
     golden_code: 'def solve(nums):\n    return sum(nums)',
     difficulty: 'Easy',
+    domain: 'common',
     skills: ['Python', 'Algorithm'],
     created_at: '2024-01-01T00:00:00Z',
     buggy_implementations: [

@@ -1,0 +1,41 @@
+{
+  "title": "상품 필터 조합 matches_filter 함수 테스트",
+  "function_signature": "def matches_filter(product: dict, category: str | None, min_price: int | None, in_stock: bool | None) -> bool:",
+  "golden_code": "def matches_filter(product: dict, category: str | None, min_price: int | None, in_stock: bool | None) -> bool:\n    \"\"\"Return whether a product matches a set of optional filters.\n\n    This function is used by a simple catalog search feature where users can\n    combine filters.\n\n    Rules:\n    - Each filter is optional. If a filter is None, that condition is ignored.\n    - If a filter has a value, the product must satisfy it.\n    - Filters are combined with AND.\n    - Category comparison is exact match.\n    - min_price is inclusive (price >= min_price).\n    - in_stock compares to the product's boolean stock state.\n\n    Product shape:\n    - product should contain keys: 'category' (str), 'price' (int), 'in_stock' (bool)\n    - If any required key is missing, the product is treated as non-matching and False is returned.\n    \"\"\"\n\n    try:\n        p_category = product[\"category\"]\n        p_price = product[\"price\"]\n        p_in_stock = product[\"in_stock\"]\n    except KeyError:\n        return False\n\n    if category is not None and p_category != category:\n        return False\n\n    if min_price is not None and p_price < min_price:\n        return False\n\n    if in_stock is not None and p_in_stock != in_stock:\n        return False\n\n    return True\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "None인 필터를 무시하지 않고 비교해버림. 예를 들어 category가 None이면 product['category'] == None 비교를 수행하여 대부분 False가 되어, 필터를 주지 않았는데도 매칭이 실패한다. (null 처리, 선택적 매개변수)",
+      "buggy_code": "def matches_filter(product: dict, category: str | None, min_price: int | None, in_stock: bool | None) -> bool:\n    \"\"\"Buggy: treats None filters as values to compare against.\"\"\"\n\n    try:\n        p_category = product[\"category\"]\n        p_price = product[\"price\"]\n        p_in_stock = product[\"in_stock\"]\n    except KeyError:\n        return False\n\n    # BUG: None should mean 'ignore', but this compares directly.\n    if p_category != category:\n        return False\n\n    if min_price is not None and p_price < min_price:\n        return False\n\n    if in_stock is not None and p_in_stock != in_stock:\n        return False\n\n    return True\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "여러 조건을 AND가 아니라 OR처럼 처리함. 예를 들어 category는 맞지만 min_price는 미달인 경우에도 True가 되는 등, 필터 조합에서 잘못된 결과를 반환한다. (조합 테스트, 필터 조합 오류)",
+      "buggy_code": "def matches_filter(product: dict, category: str | None, min_price: int | None, in_stock: bool | None) -> bool:\n    \"\"\"Buggy: combines filters incorrectly (OR-like behavior).\"\"\"\n\n    try:\n        p_category = product[\"category\"]\n        p_price = product[\"price\"]\n        p_in_stock = product[\"in_stock\"]\n    except KeyError:\n        return False\n\n    matched_any = False\n\n    if category is None or p_category == category:\n        matched_any = True\n\n    if min_price is None or p_price >= min_price:\n        matched_any = True\n\n    if in_stock is None or p_in_stock == in_stock:\n        matched_any = True\n\n    # BUG: should require all provided filters to match, not any.\n    return matched_any\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "min_price 경계값을 잘못 처리함. price가 min_price와 정확히 같은 경우에도 False가 되는 등, 비교 연산이 > 로 되어 경계값에서 실패한다. (경계값, 조합 테스트에서 min_price 포함 케이스)",
+      "buggy_code": "def matches_filter(product: dict, category: str | None, min_price: int | None, in_stock: bool | None) -> bool:\n    \"\"\"Buggy: min_price boundary is wrong (strictly greater than).\"\"\"\n\n    try:\n        p_category = product[\"category\"]\n        p_price = product[\"price\"]\n        p_in_stock = product[\"in_stock\"]\n    except KeyError:\n        return False\n\n    if category is not None and p_category != category:\n        return False\n\n    # BUG: should be p_price < min_price to fail, not <= (i.e., >= is inclusive)\n    if min_price is not None and p_price <= min_price:\n        return False\n\n    if in_stock is not None and p_in_stock != in_stock:\n        return False\n\n    return True\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "in_stock 필터가 True일 때만 적용되고 False를 요청하면 무시됨. 예를 들어 in_stock=False로 품절 상품만 보고 싶어도 필터가 적용되지 않아 재고 있는 상품이 섞여 True가 반환될 수 있다. (선택적 매개변수, boolean 필터, null 처리와 조합 테스트)",
+      "buggy_code": "def matches_filter(product: dict, category: str | None, min_price: int | None, in_stock: bool | None) -> bool:\n    \"\"\"Buggy: ignores in_stock filter when it is False.\"\"\"\n\n    try:\n        p_category = product[\"category\"]\n        p_price = product[\"price\"]\n        p_in_stock = product[\"in_stock\"]\n    except KeyError:\n        return False\n\n    if category is not None and p_category != category:\n        return False\n\n    if min_price is not None and p_price < min_price:\n        return False\n\n    # BUG: using truthiness check; when in_stock is False, this block is skipped.\n    if in_stock and p_in_stock != in_stock:\n        return False\n\n    return True\n",
+      "weight": 4
+    }
+  ],
+  "description_md": "## 문제 설명\n\n당신은 이커머스 서비스의 상품 목록 화면을 담당하는 QA 엔지니어입니다. 사용자는 여러 필터를 조합하여 상품을 탐색하며, 필터는 선택적으로 적용됩니다. 필터 조합 로직은 작은 실수로도 검색 결과가 크게 흔들리기 때문에, `pytest`로 조합 테스트를 촘촘히 작성해 결함을 찾아내는 것이 중요합니다.\n\n### 함수 역할\n`matches_filter(product, category, min_price, in_stock) -> bool`는 단일 상품 `product`가 사용자가 선택한 필터 조건을 만족하는지 여부를 반환합니다.\n\n- `product`: 상품 정보 딕셔너리\n  - 필수 키: `category`(문자열), `price`(정수), `in_stock`(불리언)\n- `category`: 카테고리 필터. `None`이면 무시, 값이 있으면 정확히 일치해야 합니다.\n- `min_price`: 최소 가격 필터. `None`이면 무시, 값이 있으면 `price >= min_price`를 만족해야 합니다.\n- `in_stock`: 재고 여부 필터. `None`이면 무시, 값이 있으면 `product['in_stock'] == in_stock`여야 합니다.\n\n모든 필터는 **AND**로 결합됩니다. 즉, 값이 주어진 필터는 전부 만족해야 `True`입니다.\n\n추가 규칙:\n- `product`에 필요한 키가 누락된 경우, 해당 상품은 매칭 실패로 보고 `False`를 반환합니다.\n\n### 정상 동작 예시\n- 입력:\n  - `product = {'category': 'book', 'price': 12000, 'in_stock': True}`\n  - `category='book', min_price=10000, in_stock=None`\n- 출력: `True`\n\n- 입력:\n  - `product = {'category': 'book', 'price': 9000, 'in_stock': True}`\n  - `category='book', min_price=10000, in_stock=None`\n- 출력: `False`\n\n### 테스트 힌트\n다음 포인트를 중심으로 테스트를 설계하세요.\n\n- 선택적 매개변수에서 `None`의 의미가 올바르게 처리되는지\n- 필터가 0개, 1개, 2개, 3개 적용되는 다양한 조합에서 결과가 일관적인지 (조합 테스트)\n- `min_price`의 경계값(같은 값 포함 여부)\n- 불리언 필터의 함정: `False`도 유효한 필터 값이라는 점\n- 필수 키가 누락된 `product` 입력이 들어왔을 때의 동작\n\n### 수험자가 할 일\n`pytest` 기반의 테스트 코드를 작성하여, 주어진 구현들 중 버그가 있는 구현을 최대한 많이 탐지하세요. 특히 `None` 포함 조합과 필터 결합 로직을 체계적으로 검증하는 테스트를 기대합니다.\n",
+  "initial_test_template": "import pytest\nfrom target import matches_filter\n\n\ndef test_all_filters_none_should_match_any_valid_product():\n    # TODO: category/min_price/in_stock이 모두 None일 때는 조건을 모두 무시하므로 True가 되어야 합니다.\n    # TODO: 유효한 product 예시를 하나 만들어 검증하세요.\n    pass\n\n\ndef test_single_filter_equivalence_partitions():\n    # TODO: 각 필터를 '단독'으로 적용해보세요.\n    # - category만 적용 (일치/불일치)\n    # - min_price만 적용 (미달/같음/초과)\n    # - in_stock만 적용 (True/False)\n    # 선택적 매개변수와 null 처리 관점에서 None과 값의 차이를 검증하세요.\n    pass\n\n\ndef test_combination_and_logic_with_none_mix():\n    # TODO: 2개 이상 필터가 동시에 주어질 때 AND로 결합되는지 검증하세요.\n    # 예: category는 맞지만 min_price는 틀린 경우 -> False\n    # 예: in_stock=False를 명시했을 때 품절 상품만 True가 되는지\n    # None이 섞인 조합도 포함해 조합 테스트를 구성해보세요.\n    pass\n\n\ndef test_missing_required_keys_returns_false():\n    # TODO: product에 'category'/'price'/'in_stock' 중 하나가 빠진 경우 False를 반환해야 합니다.\n    # 조합 테스트를 할 때도, 입력 데이터의 형태가 깨졌을 때의 결과를 확인해보세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "unit-test",
+    "pytest",
+    "combinatorial testing",
+    "optional parameters",
+    "null handling",
+    "filter",
+    "dict"
+  ],
+  "difficulty": "Easy",
+  "domain": "common"
+}

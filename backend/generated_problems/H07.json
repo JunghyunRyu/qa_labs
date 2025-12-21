@@ -39,5 +39,6 @@
     "시간 모킹",
     "경계값 분석"
   ],
-  "difficulty": "Hard"
+  "difficulty": "Hard",
+  "domain": "saas"
 }

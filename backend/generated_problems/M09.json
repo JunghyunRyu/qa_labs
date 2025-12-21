@@ -34,5 +34,6 @@
     "상태 관리",
     "단위 테스트"
   ],
-  "difficulty": "Medium"
+  "difficulty": "Medium",
+  "domain": "content"
 }

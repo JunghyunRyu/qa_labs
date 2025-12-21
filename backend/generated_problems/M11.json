@@ -1,0 +1,41 @@
+{
+  "title": "Luhn 기반 신용카드 번호 유효성 검증 함수 테스트",
+  "function_signature": "def is_valid_card_number(card_number: str) -> bool:",
+  "golden_code": "def is_valid_card_number(card_number: str) -> bool:\n    \"\"\"Validate a credit card number using length rules and the Luhn checksum.\n\n    Rules:\n      - Input must be digits only (no spaces, hyphens, or other characters).\n      - Length must be between 13 and 19 inclusive.\n      - Must pass the Luhn checksum.\n\n    Returns:\n      - True if the number is valid by the rules above, otherwise False.\n\n    Notes:\n      - This function is intentionally strict: formatted numbers like '4111-1111-1111-1111'\n        or '4111 1111 1111 1111' are considered invalid.\n    \"\"\"\n    if not isinstance(card_number, str):\n        return False\n\n    if not card_number.isdigit():\n        return False\n\n    n = len(card_number)\n    if n < 13 or n > 19:\n        return False\n\n    total = 0\n    # Luhn: from right to left, double every second digit (i.e., digits in even position from the right)\n    double = False\n    for ch in reversed(card_number):\n        d = ord(ch) - ord('0')\n        if double:\n            d *= 2\n            if d > 9:\n                d -= 9\n        total += d\n        double = not double\n\n    return total % 10 == 0\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "길이 경계값 처리 오류: 13자리 또는 19자리를 잘못 제외하여 경계값(최소/최대)에서 기대와 다른 결과가 발생한다.",
+      "buggy_code": "def is_valid_card_number(card_number: str) -> bool:\n    \"\"\"Buggy: incorrect inclusive/exclusive handling for length boundaries.\"\"\"\n    if not isinstance(card_number, str):\n        return False\n\n    if not card_number.isdigit():\n        return False\n\n    # BUG: should allow 13..19 inclusive, but this excludes exactly 13 and 19.\n    n = len(card_number)\n    if n <= 13 or n >= 19:\n        return False\n\n    total = 0\n    double = False\n    for ch in reversed(card_number):\n        d = ord(ch) - ord('0')\n        if double:\n            d *= 2\n            if d > 9:\n                d -= 9\n        total += d\n        double = not double\n\n    return total % 10 == 0\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "Luhn 체크섬 계산에서 시작 위치 오류: 오른쪽에서 두 번째 자리가 아니라 오른쪽 끝 자리부터 doubling을 시작하여, 일부 번호에서 체크섬 결과가 뒤바뀐다.",
+      "buggy_code": "def is_valid_card_number(card_number: str) -> bool:\n    \"\"\"Buggy: doubles the wrong positions (starts doubling from the rightmost digit).\"\"\"\n    if not isinstance(card_number, str):\n        return False\n\n    if not card_number.isdigit():\n        return False\n\n    n = len(card_number)\n    if n < 13 or n > 19:\n        return False\n\n    total = 0\n    # BUG: should start with double=False for the rightmost digit.\n    double = True\n    for ch in reversed(card_number):\n        d = ord(ch) - ord('0')\n        if double:\n            d *= 2\n            if d > 9:\n                d -= 9\n        total += d\n        double = not double\n\n    return total % 10 == 0\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "문자열 정규화 처리 오류: 공백/하이픈이 포함된 입력을 digits-only로 엄격히 거부해야 하지만, 공백과 하이픈을 제거한 뒤 검증하여 '포맷된 카드번호'를 잘못 허용한다.",
+      "buggy_code": "def is_valid_card_number(card_number: str) -> bool:\n    \"\"\"Buggy: strips spaces/hyphens and validates, accepting formatted inputs that should be invalid.\"\"\"\n    if not isinstance(card_number, str):\n        return False\n\n    # BUG: spec says digits only; this normalization makes formatted inputs pass.\n    normalized = card_number.replace(\" \", \"\").replace(\"-\", \"\")\n\n    if not normalized.isdigit():\n        return False\n\n    n = len(normalized)\n    if n < 13 or n > 19:\n        return False\n\n    total = 0\n    double = False\n    for ch in reversed(normalized):\n        d = ord(ch) - ord('0')\n        if double:\n            d *= 2\n            if d > 9:\n                d -= 9\n        total += d\n        double = not double\n\n    return total % 10 == 0\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "Luhn 변환 규칙 구현 오류: doubling 후 9를 빼야 하는 조건이 '9 이상'으로 구현되어, 9가 되는 경우까지 잘못 보정되어 특정 입력에서 오탐/미탐이 발생한다.",
+      "buggy_code": "def is_valid_card_number(card_number: str) -> bool:\n    \"\"\"Buggy: subtracts 9 when doubled digit is >= 9 instead of > 9.\"\"\"\n    if not isinstance(card_number, str):\n        return False\n\n    if not card_number.isdigit():\n        return False\n\n    n = len(card_number)\n    if n < 13 or n > 19:\n        return False\n\n    total = 0\n    double = False\n    for ch in reversed(card_number):\n        d = ord(ch) - ord('0')\n        if double:\n            d *= 2\n            # BUG: should be strictly > 9\n            if d >= 9:\n                d -= 9\n        total += d\n        double = not double\n\n    return total % 10 == 0\n",
+      "weight": 4
+    }
+  ],
+  "description_md": "## 배경\n\n결제/구독 서비스에서는 사용자가 입력한 신용카드 번호가 **기본 형식 요건**과 `Luhn` 체크섬을 만족하는지 빠르게 검증해야 합니다. 잘못된 검증은 정상 결제를 막거나, 잘못된 번호를 통과시켜 이후 단계에서 오류를 유발할 수 있습니다.\n\n이번 과제에서는 카드 번호 검증 함수 `is_valid_card_number`에 대해 `pytest`로 테스트를 작성해 다양한 버그를 찾아내는 것이 목표입니다.\n\n## 함수 설명\n\n- 함수: `is_valid_card_number(card_number: str) -> bool`\n- 입력:\n  - `card_number`: 카드 번호 문자열\n- 반환:\n  - 모든 규칙을 만족하면 `True`\n  - 하나라도 만족하지 않으면 `False`\n\n### 규칙\n\n1. 길이는 **13자리 이상 19자리 이하**여야 합니다.\n2. 문자열은 **숫자만** 포함해야 합니다. (공백, 하이픈 등은 허용하지 않습니다)\n3. `Luhn` 체크섬을 통과해야 합니다.\n\n## 예시\n\n- `is_valid_card_number(\"4111111111111111\")` → `True`\n- `is_valid_card_number(\"4111-1111-1111-1111\")` → `False` (하이픈 포함)\n\n## 테스트 힌트\n\n아래 관점들을 조합해 테스트 케이스를 설계해 보세요.\n\n- **경계값 분석**: 길이 12, 13, 19, 20 등 최소/최대 경계를 집중적으로 확인\n- **동등 분할**: 숫자만인 케이스 vs 숫자 이외 문자가 섞인 케이스\n- **체크섬 검증**: `Luhn` 알고리즘 특성상 doubling 위치가 바뀌면 결과가 뒤집히는 케이스가 존재합니다. \"거의 맞는\" 번호(마지막 자리만 바꾼 케이스)도 유용합니다.\n- **문자열 처리**: 앞뒤 공백, 중간 공백, 하이픈 등 입력 문자열 형태가 결과에 어떤 영향을 주는지 검증\n\n## 수험자가 할 일\n\n- 제공된 `target.py`의 `is_valid_card_number`에 대해 `pytest` 테스트 코드를 작성하세요.\n- 목표는 다양한 입력 조합으로 **버그 구현들을 최대한 많이 탐지**하는 것입니다.\n- 테스트는 단일 함수에 대한 `unit test` 형태로 작성하며, 재현 가능한 단정문 `assert`를 포함해야 합니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_card_number\n\n\ndef test_length_boundaries_min_and_max():\n    # TODO: boundary value 분석\n    # - 길이 13과 19는 허용되어야 함\n    # - 길이 12와 20은 거부되어야 함\n    # 힌트: Luhn을 통과하는 샘플과 통과하지 않는 샘플을 각각 준비하면 좋습니다.\n    pass\n\n\ndef test_digits_only_rejects_whitespace_and_hyphen():\n    # TODO: 문자열 파티션 테스트\n    # - 숫자만 입력은 규칙에 따라 True/False가 Luhn에 의해 결정\n    # - 공백/하이픈이 포함된 입력은 (길이/체크섬과 무관하게) False여야 함\n    # 예: \"4111 1111 1111 1111\", \"4111-1111-1111-1111\", \" 4111111111111111 \"\n    pass\n\n\ndef test_luhn_checksum_correctness_with_near_miss():\n    # TODO: Luhn 알고리즘 검증\n    # - 유효한 번호 1개를 선정한 뒤, 마지막 자리(체크 디짓)를 바꾼 번호는 보통 False가 되어야 함\n    # - doubling 시작 위치(오른쪽에서 두 번째 자리) 관련 오류를 잡아낼 수 있는 케이스를 고민해보세요.\n    pass\n\n\ndef test_equivalence_partitions_various_lengths_that_pass_luhn():\n    # TODO: 13~19 범위에서 서로 다른 길이의 번호를 준비하여 Luhn 통과/실패를 확인\n    # - 길이만 맞고 체크섬이 틀린 케이스\n    # - 길이도 맞고 체크섬도 맞는 케이스\n    pass\n",
+  "tags": [
+    "medium",
+    "unit-test",
+    "pytest",
+    "string",
+    "boundary value analysis",
+    "luhn",
+    "checksum validation",
+    "length validation"
+  ],
+  "difficulty": "Medium",
+  "domain": "common"
+}

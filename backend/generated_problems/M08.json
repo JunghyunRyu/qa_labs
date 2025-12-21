@@ -38,5 +38,6 @@
     "오프셋 계산",
     "단위 테스트"
   ],
-  "difficulty": "Medium"
+  "difficulty": "Medium",
+  "domain": "content"
 }

@@ -21,6 +21,7 @@ async def get_problems(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(10, ge=1, le=100, description="Number of items per page"),
     difficulty: Optional[str] = Query(None, description="Filter by difficulty (e.g., 'Easy', 'Medium')"),
+    domain: Optional[str] = Query(None, description="Filter by domain (common, fintech, commerce, saas, platform, content)"),
     search: Optional[str] = Query(None, description="Search in title, slug, or skills"),
     tags: Optional[str] = Query(None, description="Comma-separated skill tags to filter by"),
     sort: str = Query("difficulty-asc", description="Sort: difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc"),
@@ -35,12 +36,13 @@ async def get_problems(
     # Parse tags from comma-separated string
     tag_list = [t.strip() for t in tags.split(",")] if tags else None
 
-    logger.info(f"Fetching problems - page: {page}, page_size: {page_size}, difficulty: {difficulty}, search: {search}, tags: {tag_list}, sort: {sort}")
+    logger.info(f"Fetching problems - page: {page}, page_size: {page_size}, difficulty: {difficulty}, domain: {domain}, search: {search}, tags: {tag_list}, sort: {sort}")
     service = ProblemService(db)
     problems, total, total_pages = service.get_problems(
         page=page,
         page_size=page_size,
         difficulty=difficulty,
+        domain=domain,
         search=search,
         tags=tag_list,
         sort=sort,

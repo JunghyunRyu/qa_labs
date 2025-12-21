@@ -1,0 +1,39 @@
+{
+  "title": "거래 금액 구간별 수수료 계산 함수 테스트",
+  "function_signature": "def calculate_fee(amount: int) -> int:",
+  "golden_code": "def calculate_fee(amount: int) -> int:\n    \"\"\"거래 금액에 따라 수수료를 계산해 정수(원)로 반환한다.\n\n    수수료 규칙:\n    - amount < 10,000원: 수수료 0원\n    - 10,000원 <= amount < 1,000,000원: 1% (원 단위 내림)\n    - amount >= 1,000,000원: 0.5% (원 단위 내림)\n\n    입력 제약:\n    - amount는 bool이 아닌 int여야 한다.\n    - amount는 0 이상이어야 한다.\n\n    예외:\n    - amount가 int가 아니면 TypeError\n    - amount가 음수면 ValueError\n    \"\"\"\n    if type(amount) is not int:\n        raise TypeError(\"amount must be an int\")\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    if amount < 10_000:\n        return 0\n    if amount < 1_000_000:\n        return amount // 100\n    return amount // 200\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "구간 경계값 처리 오류: 10,000원이 무료로 처리되거나 1,000,000원이 1%로 처리되는 등, 구간 기준의 포함/미포함이 잘못되어 특정 경계 입력에서 오답이 발생한다.",
+      "buggy_code": "def calculate_fee(amount: int) -> int:\n    \"\"\"거래 금액에 따라 수수료를 계산한다(버그 포함).\n\n    버그: 경계값을 잘못 포함해 10,000원을 무료로 처리하거나 1,000,000원을 1%로 처리할 수 있다.\n    \"\"\"\n    if type(amount) is not int:\n        raise TypeError(\"amount must be an int\")\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    if amount <= 10_000:\n        return 0\n    if amount <= 1_000_000:\n        return amount // 100\n    return amount // 200\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "대금 구간 수수료율 계산 오류: 1,000,000원 이상 구간에서 0.5%가 아닌 더 큰 비율(예: 5%)로 계산되어 대금 거래 수수료가 과도하게 산정된다.",
+      "buggy_code": "def calculate_fee(amount: int) -> int:\n    \"\"\"거래 금액에 따라 수수료를 계산한다(버그 포함).\n\n    버그: 대금 구간(>= 1,000,000원)에서 0.5% 대신 5%로 계산한다.\n    \"\"\"\n    if type(amount) is not int:\n        raise TypeError(\"amount must be an int\")\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    if amount < 10_000:\n        return 0\n    if amount < 1_000_000:\n        return amount // 100\n    # 잘못된 비율: 5% (정상은 0.5%)\n    return amount // 20\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "내림 처리 대신 반올림을 사용: 수수료가 '원 단위 내림'이 아니라 반올림으로 계산되어, 특정 금액(예: 0.5% 계산 결과가 x.5 이상인 경우)에서 1원 이상 더 크게 산정된다.",
+      "buggy_code": "def calculate_fee(amount: int) -> int:\n    \"\"\"거래 금액에 따라 수수료를 계산한다(버그 포함).\n\n    버그: 원 단위 내림 대신 round를 사용해 일부 금액에서 수수료가 증가한다.\n    \"\"\"\n    if type(amount) is not int:\n        raise TypeError(\"amount must be an int\")\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n\n    if amount < 10_000:\n        return 0\n    if amount < 1_000_000:\n        return round(amount * 0.01)\n    return round(amount * 0.005)\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "입력 검증이 느슨함: bool이 int로 취급되어 허용되거나, 음수 금액을 예외로 처리하지 않고 0으로 보정하는 등 잘못된 입력에 대한 에러 핸들링이 요구사항과 다르다.",
+      "buggy_code": "def calculate_fee(amount: int) -> int:\n    \"\"\"거래 금액에 따라 수수료를 계산한다(버그 포함).\n\n    버그:\n    - isinstance를 사용해 True/False 같은 bool 입력을 허용한다.\n    - 음수 입력을 ValueError로 처리하지 않고 0으로 보정한다.\n    \"\"\"\n    if not isinstance(amount, int):\n        raise TypeError(\"amount must be an int\")\n    if amount < 0:\n        amount = 0\n\n    if amount < 10_000:\n        return 0\n    if amount < 1_000_000:\n        return amount // 100\n    return amount // 200\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n간편송금/증권 거래 같은 금융 서비스에서는 거래 금액에 따라 수수료 정책이 달라집니다. 수수료 구간 계산은 사소해 보이지만, **구간 경계값** 처리 실수로 고객 과금 오류가 발생하기 쉽습니다.\n\n이번 과제에서는 거래 금액을 입력받아 수수료를 계산하는 `calculate_fee` 함수를 대상으로 `pytest` 테스트를 작성합니다.\n\n### 함수 역할\n- 입력된 거래 금액 `amount`를 기준으로 수수료를 계산하여 **정수**(원) 로 반환합니다.\n\n### 파라미터\n- `amount: int`\n  - 거래 금액(원)\n  - 0 이상의 정수여야 합니다\n\n### 반환값\n- `int`: 수수료(원)\n  - 퍼센트 수수료는 **원 단위 내림**으로 계산합니다\n\n### 수수료 규칙\n- 소액: `amount < 10,000` 이면 수수료 0원\n- 일반: `10,000 <= amount < 1,000,000` 이면 1%\n- 대금: `amount >= 1,000,000` 이면 0.5%\n\n### 동작 예시\n- `calculate_fee(9000) -> 0`\n- `calculate_fee(25000) -> 250` (1%)\n\n### 테스트 힌트\n- `equivalence partitioning` 관점에서 소액/일반/대금 구간 각각을 대표값으로 검증해 보세요.\n- 구간이 바뀌는 지점(예: 기준 금액의 바로 아래/같음/바로 위)에서 결과가 바뀌는지 확인해 보세요.\n- 수수료는 `fee calculation` 관점에서 계산 비율과 **내림 처리**가 일관적인지 확인해 보세요.\n- 잘못된 입력(음수, 타입이 int가 아닌 값 등)에 대해 예외가 올바르게 발생하는지도 점검해 보세요.\n\n### 수험자가 해야 할 일\n- 제공된 `calculate_fee` 함수에 대해 `pytest` 기반 단위 테스트를 작성하세요.\n- 다양한 테스트 케이스로 버그 구현들을 최대한 많이 탐지하는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import calculate_fee\n\n\ndef test_equivalence_partition_small_amount_free():\n    # TODO: 소액 구간 대표값으로 수수료가 0인지 검증\n    # 예: 기준 금액보다 충분히 작은 값\n    pass\n\n\ndef test_equivalence_partition_normal_amount_one_percent():\n    # TODO: 일반 구간 대표값으로 1%가 적용되는지 검증\n    # 포인트: 정수 내림(원 단위) 결과 확인\n    pass\n\n\ndef test_equivalence_partition_large_amount_half_percent():\n    # TODO: 대금 구간 대표값으로 0.5%가 적용되는지 검증\n    # 포인트: 0.5% 계산과 내림 규칙\n    pass\n\n\ndef test_boundaries_around_thresholds():\n    # TODO: 구간 경계값 근처(바로 아래/같음/바로 위)에서 결과가 올바른지 검증\n    # 예: 10,000과 1,000,000 주변\n    pass\n\n\ndef test_invalid_input_handling():\n    # TODO: 음수 입력 또는 int가 아닌 입력에서 예외가 발생하는지 검증\n    # 추가 아이디어: bool 입력이 허용되면 안 되는지 확인\n    pass\n",
+  "tags": [
+    "easy",
+    "unit-test",
+    "pytest",
+    "equivalence partitioning",
+    "fee calculation",
+    "numeric"
+  ],
+  "difficulty": "Easy",
+  "domain": "fintech"
+}

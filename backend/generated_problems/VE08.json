@@ -1,0 +1,41 @@
+{
+  "title": "로그인/관리자 조합에 따른 접근 권한 판정 테스트",
+  "function_signature": "def can_access(is_logged_in: bool, is_admin: bool) -> bool:",
+  "golden_code": "def can_access(is_logged_in: bool, is_admin: bool) -> bool:\n    \"\"\"Return whether a user can access a protected page.\n\n    Rules:\n    - If the user is an admin, access is always allowed (login not required).\n    - Otherwise, access is allowed only when the user is logged in.\n\n    This function is intentionally small so you can practice basic boolean\n    combination testing over the 4 possible (is_logged_in, is_admin) pairs.\n\n    Args:\n        is_logged_in: True if the user is authenticated.\n        is_admin: True if the user has admin privileges.\n\n    Returns:\n        True if access should be granted, otherwise False.\n    \"\"\"\n    return bool(is_admin or is_logged_in)\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "관리자도 로그인해야만 접근 가능하게 처리함. (is_admin=True, is_logged_in=False) 조합에서 False를 반환",
+      "buggy_code": "def can_access(is_logged_in: bool, is_admin: bool) -> bool:\n    \"\"\"Buggy: requires login even for admins.\"\"\"\n    return bool(is_logged_in and is_admin)\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "로그인한 일반 사용자만 접근 가능하게 하려고 했지만 조건식을 뒤집어 관리자만 허용함. (is_logged_in=True, is_admin=False) 조합에서 False를 반환",
+      "buggy_code": "def can_access(is_logged_in: bool, is_admin: bool) -> bool:\n    \"\"\"Buggy: mistakenly allows only admins.\"\"\"\n    return bool(is_admin)\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "로그인 여부를 반대로 해석함. 로그인하지 않은 일반 사용자도 접근 가능해짐. (is_logged_in=False, is_admin=False) 조합에서 True를 반환",
+      "buggy_code": "def can_access(is_logged_in: bool, is_admin: bool) -> bool:\n    \"\"\"Buggy: treats 'not logged in' as a condition to allow access.\"\"\"\n    return bool(is_admin or (not is_logged_in))\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "입력 인자를 혼동하여 관리자 플래그를 로그인으로 취급함. (is_logged_in=True, is_admin=False) 조합에서 False를 반환",
+      "buggy_code": "def can_access(is_logged_in: bool, is_admin: bool) -> bool:\n    \"\"\"Buggy: uses the wrong variable (mix-up between flags).\"\"\"\n    # Mistakenly checks admin flag where login state should be used.\n    return bool(is_admin or is_admin)\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n간단한 웹 서비스에서 **보호된 페이지**(예: 계정 설정, 주문 내역, 관리자 콘솔 등)에 접근할 수 있는지 판정하는 로직은 매우 자주 등장합니다. 이런 로직은 작아 보여도 조건 조합 실수로 인해 보안 이슈가 발생하기 쉬우므로, 기본적인 조합 테스트가 중요합니다.\n\n이번 과제에서는 다음 함수를 `pytest`로 테스트합니다.\n\n### 대상 함수\n- 함수: `can_access(is_logged_in: bool, is_admin: bool) -> bool`\n- 입력:\n  - `is_logged_in`: 사용자가 로그인 상태인지\n  - `is_admin`: 사용자가 관리자 권한을 갖는지\n- 반환:\n  - 접근 가능하면 `True`, 불가능하면 `False`\n\n### 접근 규칙\n- 관리자는 항상 접근 가능 (로그인 불필요)\n- 관리자가 아니라면, 로그인 상태일 때만 접근 가능\n\n### 정상 동작 예시\n- `can_access(is_logged_in=True, is_admin=False)` → `True`\n- `can_access(is_logged_in=False, is_admin=False)` → `False`\n\n### 테스트 힌트\n- 이 함수는 불리언 입력 2개로 구성되어 있으므로 가능한 조합은 총 4개입니다.\n- `조합 테스트` 관점에서 4가지 조합을 빠짐없이 커버하는 테스트를 작성해 보세요.\n- `불리언 조합`에서 `and` / `or` 혼동, 예외 규칙(관리자는 항상 허용) 누락, 플래그 혼동 같은 실수가 흔합니다.\n\n### 수험자가 할 일\n- `pytest` 기반 테스트 코드를 작성하여, 주어진 함수 구현들 중 버그가 있는 구현을 최대한 많이 탐지하세요.\n- 단일 함수에 대한 `unit test`이며, 외부 시스템이나 I/O는 없습니다.\n",
+  "initial_test_template": "import pytest\nfrom target import can_access\n\n\ndef test_combination_logged_in_user_not_admin():\n    # TODO: (is_logged_in=True, is_admin=False) 조합의 기대 결과를 검증하세요.\n    # 조합 테스트(`combinatorial testing`)에서 가장 기본이 되는 케이스입니다.\n    pass\n\n\ndef test_combination_not_logged_in_admin():\n    # TODO: (is_logged_in=False, is_admin=True) 조합의 기대 결과를 검증하세요.\n    # 접근 제어 규칙 중 \"관리자는 항상 접근 가능\" 예외를 검증하는 케이스입니다.\n    pass\n\n\ndef test_combination_not_logged_in_not_admin():\n    # TODO: (is_logged_in=False, is_admin=False) 조합의 기대 결과를 검증하세요.\n    # 잘못된 `or`/부정 처리로 인해 권한이 열리는 버그를 잡는 데 유용합니다.\n    pass\n\n\ndef test_combination_logged_in_admin():\n    # TODO: (is_logged_in=True, is_admin=True) 조합의 기대 결과를 검증하세요.\n    # 두 플래그가 모두 True인 경우도 명시적으로 확인해 보세요.\n    pass\n",
+  "tags": [
+    "very easy",
+    "unit-test",
+    "pytest",
+    "boolean",
+    "access-control",
+    "combinatorial testing",
+    "불리언 조합",
+    "조합 테스트"
+  ],
+  "difficulty": "Very Easy",
+  "domain": "common"
+}

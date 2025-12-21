@@ -35,5 +35,6 @@
     "오류 처리"
   ],
   "difficulty": "Medium",
-  "problem_id": "M01"
+  "problem_id": "M01",
+  "domain": "saas"
 }

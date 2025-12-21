@@ -35,5 +35,6 @@
     "결제"
   ],
   "difficulty": "Very Easy",
-  "problem_id": "VE01"
+  "problem_id": "VE01",
+  "domain": "common"
 }

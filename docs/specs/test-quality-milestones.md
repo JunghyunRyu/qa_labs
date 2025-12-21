@@ -9,7 +9,7 @@
 
 | Phase | 상태 | 완료율 |
 |-------|------|--------|
-| Phase 0: 스파이크 | 진행 중 | 0/5 |
+| Phase 0: 스파이크 | 진행 중 | 1/5 |
 | Phase 1: 스키마 | 대기 | 0/5 |
 | Phase 2: 분석 엔진 | 대기 | 0/4 |
 | Phase 3: AI 연계 | 대기 | 0/3 |
@@ -24,11 +24,11 @@
 
 ### 체크리스트
 
-- [ ] **P0-1**: TestCaseParser 구현
-  - [ ] AST 파싱 기본 구조
-  - [ ] `@pytest.mark.parametrize` 1급 지원
-  - [ ] fixture 감지
-  - [ ] `pytest.raises` 감지
+- [x] **P0-1**: TestCaseParser 구현
+  - [x] AST 파싱 기본 구조
+  - [x] `@pytest.mark.parametrize` 1급 지원
+  - [x] fixture 감지
+  - [x] `pytest.raises` 감지
   - 파일: `backend/app/services/test_case_parser.py`
 
 - [ ] **P0-2**: 분류 로직 구현 (룰 기반)
@@ -157,8 +157,16 @@
 
 > 세션별 진행 상황 기록
 
-### 2024-12-XX (세션 1)
-- [ ] 작업 내용 기록
+### 2024-12-21 (세션 1)
+- [x] **P0-1 완료**: TestCaseParser 구현
+  - AST 파싱 기본 구조
+  - `@pytest.mark.parametrize` 1급 지원 (multi-param, nested values 포함)
+  - fixture 감지 (함수 파라미터 기반)
+  - `pytest.raises` 감지 (context manager, exception type 추출)
+  - assertion 분석 (Equal, NotEqual, In, True, False 등)
+  - pytest markers 감지 (skip, xfail 등)
+- [x] 단위 테스트 34개 작성 및 통과
+  - 파일: `backend/tests/test_test_case_parser.py`
 
 ---
 
@@ -177,6 +185,9 @@ python backend/scripts/coverage_spike.py
 # 마이그레이션 (Phase 1)
 cd backend && alembic upgrade head
 
-# 테스트 실행
+# 테스트 실행 (Parser)
+pytest backend/tests/test_test_case_parser.py -v
+
+# 테스트 실행 (Analyzer - Phase 2)
 pytest backend/tests/services/test_quality_analyzer_test.py
 ```

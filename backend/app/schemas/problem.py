@@ -14,6 +14,7 @@ class ProblemBase(BaseModel):
     function_signature: str
     golden_code: str
     difficulty: str
+    domain: str = "common"
     skills: Optional[List[str]] = None
 
 
@@ -39,6 +40,7 @@ class ProblemListResponse(BaseModel):
     slug: str
     title: str
     difficulty: str
+    domain: str = "common"
     skills: Optional[List[str]] = None
     description_md: Optional[str] = None  # For preview in list view
     success_rate: Optional[float] = None  # 0.0~1.0, None if < 5 submissions
@@ -103,5 +105,6 @@ class ProblemCreateWithBuggy(BaseModel):
     function_signature: str
     golden_code: str
     difficulty: str
+    domain: str = "common"
     skills: Optional[List[str]] = None
     buggy_implementations: List[BuggyImplementationCreate] = []

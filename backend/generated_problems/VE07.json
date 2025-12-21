@@ -1,0 +1,40 @@
+{
+  "title": "배열 인덱스 범위 검증 함수 테스트",
+  "function_signature": "def is_valid_index(index: int, array_length: int) -> bool:",
+  "golden_code": "def is_valid_index(index: int, array_length: int) -> bool:\n    \"\"\"Return True if the given index is a valid zero-based index for an array.\n\n    A valid index satisfies: 0 <= index < array_length.\n\n    Notes:\n    - If array_length is 0, no index is valid.\n    - Negative indices are treated as invalid in this function (unlike Python's list indexing).\n    - The function is a pure validation helper and does not raise exceptions.\n    \"\"\"\n    return 0 <= index < array_length\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "경계값 포함 오류: index가 0일 때도 무효로 처리한다(0 < index < array_length로 검사). index=0, array_length>0에서 False가 반환됨.",
+      "buggy_code": "def is_valid_index(index: int, array_length: int) -> bool:\n    \"\"\"Buggy: incorrectly rejects index 0 by using a strict lower bound.\"\"\"\n    return 0 < index < array_length\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "상한 경계 오프바이원: index==array_length를 유효로 처리한다(0 <= index <= array_length). index=array_length에서 True가 반환됨.",
+      "buggy_code": "def is_valid_index(index: int, array_length: int) -> bool:\n    \"\"\"Buggy: off-by-one on upper bound, allows index == array_length.\"\"\"\n    return 0 <= index <= array_length\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "음수 인덱스 체크 누락: index < array_length만 검사하여 음수도 True가 될 수 있다. 예: index=-1, array_length=3에서 True가 반환됨.",
+      "buggy_code": "def is_valid_index(index: int, array_length: int) -> bool:\n    \"\"\"Buggy: misses the non-negative constraint; negative indices may pass.\"\"\"\n    return index < array_length\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "이변수 관계 처리 실수: array_length가 0 이하이면 모두 무효여야 하는데, array_length<0일 때는 True를 반환할 수 있다(길이가 음수인 비정상 입력을 잘못 처리). 예: index=0, array_length=-1에서 True가 반환됨.",
+      "buggy_code": "def is_valid_index(index: int, array_length: int) -> bool:\n    \"\"\"Buggy: mishandles non-positive lengths; treats negative length like 'no upper bound'.\"\"\"\n    if array_length == 0:\n        return False\n    if array_length < 0:\n        # Wrong: a negative length should make every index invalid.\n        return index >= 0\n    return 0 <= index < array_length\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n모바일 앱의 피드 화면에서 특정 카드(배너/게시물)를 클릭하면, 서버에서 받아온 카드 배열에서 해당 위치의 데이터를 찾아 상세 화면으로 이동합니다. 이때 잘못된 인덱스를 사용하면 앱이 크래시 나거나 잘못된 카드로 이동할 수 있으므로, **인덱스 범위 검증**은 가장 기본적이면서 중요한 방어 로직입니다.\n\n이번 문제에서는 다음 함수를 `pytest`로 테스트합니다.\n\n### 함수 역할\n- `is_valid_index(index, array_length)`는 주어진 `index`가 길이 `array_length`인 배열에서 유효한 `0`-based 인덱스인지 판단해 `bool`을 반환합니다.\n- 유효 조건은 다음과 같습니다.\n  - `0 <= index < array_length`\n\n### 파라미터\n- `index: int` : 접근하려는 위치\n- `array_length: int` : 배열 길이\n\n### 반환값\n- `bool` : 유효하면 `True`, 아니면 `False`\n\n### 정상 동작 예시\n- `is_valid_index(0, 3)` → `True`\n- `is_valid_index(3, 3)` → `False`\n\n### 테스트 힌트\n이 문제는 **경계값 분석**(`boundary value`)을 연습하기 위한 문제입니다. 특히 `index`와 `array_length`의 **이변수 관계**를 고려해보세요.\n\n테스트 아이디어 예시:\n- `index`의 하한 경계(0) 주변 값: -1, 0, 1\n- `index`의 상한 경계(`array_length - 1`, `array_length`) 주변 값\n- `array_length`가 0일 때: 어떤 `index`도 유효하지 않아야 함\n- `array_length`가 1일 때의 최소 케이스: 유효한 인덱스가 오직 0 하나뿐\n- 비정상 입력에 대한 일관성: `array_length`가 0 이하인 경우의 처리(함수는 예외를 던지지 않고 `False`를 반환하는 방식)\n\n### 수험자가 해야 할 일\n- `pytest` 기반의 테스트 코드를 작성하여, 주어진 구현들 중 **버그가 있는 구현을 최대한 많이 탐지**하세요.\n- 단일 함수에 대한 단위 테스트이며, 다양한 경계 조건을 조합해 테스트 케이스를 구성하는 것이 핵심입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_index\n\n\ndef test_lower_bound_boundary_values():\n    # TODO: 경계값 분석: index가 -1, 0, 1일 때를 점검해 보세요.\n    # - array_length는 1 이상인 값으로 고정해서 하한 경계만 관찰하거나,\n    # - 여러 array_length와 조합하여 이변수 경계를 같이 확인해도 좋습니다.\n    pass\n\n\ndef test_upper_bound_off_by_one_cases():\n    # TODO: 경계값 분석: index가 array_length-1, array_length, array_length+1일 때를 점검해 보세요.\n    # 특히 index == array_length는 항상 False여야 합니다.\n    pass\n\n\ndef test_length_edge_cases_and_two_variable_relationship():\n    # TODO: 이변수 경계: array_length가 0일 때, 1일 때를 우선 점검하세요.\n    # 추가로 array_length가 0 이하인 입력(예: -1)에서도 결과가 일관적인지 확인해 보세요.\n    pass\n",
+  "tags": [
+    "very easy",
+    "unit-test",
+    "pytest",
+    "boundary value analysis",
+    "index validation",
+    "two-variable boundary",
+    "integer"
+  ],
+  "difficulty": "Very Easy",
+  "domain": "common"
+}

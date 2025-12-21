@@ -351,14 +351,160 @@ PROBLEMS_TO_GENERATE = [
         "skills": ["조합 테스트", "결정 테이블", "보험 로직", "오변수 조합"],
         "difficulty": "Medium",
     },
+    # ========================================
+    # 도메인별 부족 문제 보강 (18개)
+    # ========================================
+    # Fintech - Very Easy (2개)
+    {
+        "id": "FT-VE01",
+        "goal": "단순 이자 계산 함수 테스트. 원금과 연이율을 받아 1년 단리 이자를 계산하는 calculate_simple_interest(principal, rate) 함수. 버그: 이율을 100으로 나누지 않음, 음수 원금 미처리 등.",
+        "skills": ["기본 테스트", "금융 계산"],
+        "difficulty": "Very Easy",
+        "domain": "fintech",
+    },
+    {
+        "id": "FT-VE02",
+        "goal": "환율 변환 함수 테스트. 원화를 달러로 변환하는 convert_krw_to_usd(amount, rate) 함수. 버그: 0 금액 처리 오류, 소수점 반올림 오류 등.",
+        "skills": ["기본 테스트", "환율 변환"],
+        "difficulty": "Very Easy",
+        "domain": "fintech",
+    },
+    # Fintech - Easy (3개)
+    {
+        "id": "FT-E01",
+        "goal": "계좌 잔액 검증 함수 테스트. 출금 가능 여부를 판단하는 can_withdraw(balance, amount) 함수. 경계값: 잔액과 출금액이 같을 때, 0원 출금 등.",
+        "skills": ["경계값 분석", "잔액 검증"],
+        "difficulty": "Easy",
+        "domain": "fintech",
+    },
+    {
+        "id": "FT-E02",
+        "goal": "카드 번호 형식 검증 함수 테스트. 16자리 숫자로 구성된 카드 번호 형식을 검증하는 is_valid_card_format(card_number) 함수. 버그: 하이픈 포함 번호 처리 오류, 길이 검증 오류 등.",
+        "skills": ["입력 검증", "형식 검증"],
+        "difficulty": "Easy",
+        "domain": "fintech",
+    },
+    {
+        "id": "FT-E03",
+        "goal": "거래 수수료 계산 함수 테스트. 거래 금액에 따른 수수료율을 적용하는 calculate_fee(amount) 함수. 동등 분할: 소액(1만원 미만 무료)/일반(1%)/대금(0.5%) 구간.",
+        "skills": ["동등 분할", "수수료 계산"],
+        "difficulty": "Easy",
+        "domain": "fintech",
+    },
+    # Platform - Very Easy (2개)
+    {
+        "id": "PL-VE01",
+        "goal": "요청 로깅 함수 테스트. HTTP 요청 정보를 로그 문자열로 포맷팅하는 format_request_log(method, path) 함수. 버그: None 처리 누락, 빈 문자열 등.",
+        "skills": ["기본 테스트", "로깅"],
+        "difficulty": "Very Easy",
+        "domain": "platform",
+    },
+    {
+        "id": "PL-VE02",
+        "goal": "타임스탬프 변환 함수 테스트. Unix 타임스탬프를 ISO 8601 문자열로 변환하는 timestamp_to_iso(ts) 함수. 버그: 0 처리, 음수 타임스탬프 등.",
+        "skills": ["기본 테스트", "날짜 변환"],
+        "difficulty": "Very Easy",
+        "domain": "platform",
+    },
+    # Platform - Easy (3개)
+    {
+        "id": "PL-E01",
+        "goal": "인증 토큰 형식 검증 함수 테스트. JWT 형식(xxx.yyy.zzz)인지 검증하는 is_valid_token_format(token) 함수. 경계값: 빈 문자열, 점 2개 미만 등.",
+        "skills": ["입력 검증", "인증"],
+        "difficulty": "Easy",
+        "domain": "platform",
+    },
+    {
+        "id": "PL-E02",
+        "goal": "세션 만료 체크 함수 테스트. 세션 생성 시간과 TTL을 비교하는 is_session_expired(created_at, ttl_seconds, current_time) 함수.",
+        "skills": ["시간 비교", "세션 관리"],
+        "difficulty": "Easy",
+        "domain": "platform",
+    },
+    {
+        "id": "PL-E03",
+        "goal": "권한 레벨 검사 함수 테스트. 사용자 권한이 요구 수준 이상인지 확인하는 has_permission(user_level, required_level) 함수.",
+        "skills": ["권한 검증", "비교 연산"],
+        "difficulty": "Easy",
+        "domain": "platform",
+    },
+    # Common - Hard (3개)
+    {
+        "id": "H10",
+        "goal": "복잡한 상태 전이 테스트. 유한 상태 기계(FSM)에서 유효하지 않은 전이를 감지하는 테스트. TaskStateMachine 클래스: 상태 IDLE -> RUNNING -> PAUSED -> COMPLETED 또는 FAILED.",
+        "skills": ["상태 기반 테스트", "FSM", "상태 전이"],
+        "difficulty": "Hard",
+        "domain": "common",
+    },
+    {
+        "id": "H11",
+        "goal": "동시성 버그 검출 테스트. ThreadSafeCounter 클래스의 increment(), decrement(), get_value() 메서드 테스트. threading을 사용한 동시 접근 시 데이터 정합성 검증.",
+        "skills": ["동시성 테스트", "race condition", "스레드 안전성"],
+        "difficulty": "Hard",
+        "domain": "common",
+    },
+    {
+        "id": "H12",
+        "goal": "LRU 캐시 구현 테스트. LRUCache(capacity) 클래스의 get(key), put(key, value) 메서드 테스트. 캐시 히트/미스, 용량 초과 시 제거 정책 등.",
+        "skills": ["캐시 테스트", "LRU 알고리즘", "자료구조"],
+        "difficulty": "Hard",
+        "domain": "common",
+    },
+    # SaaS - Very Easy (1개)
+    {
+        "id": "SA-VE01",
+        "goal": "API 응답 상태 확인 함수 테스트. HTTP 상태 코드가 성공(2xx)인지 확인하는 is_success_status(status_code) 함수. 버그: 200만 성공으로 처리, 299 경계 오류 등.",
+        "skills": ["기본 테스트", "HTTP 상태"],
+        "difficulty": "Very Easy",
+        "domain": "saas",
+    },
+    # SaaS - Easy (2개)
+    {
+        "id": "SA-E01",
+        "goal": "API 요청 파라미터 검증 함수 테스트. 필수 파라미터 존재 여부를 확인하는 validate_required_params(params, required_keys) 함수.",
+        "skills": ["입력 검증", "API 설계"],
+        "difficulty": "Easy",
+        "domain": "saas",
+    },
+    {
+        "id": "SA-E02",
+        "goal": "페이지네이션 계산 함수 테스트. offset과 limit을 계산하는 calculate_pagination(page, page_size) 함수. 경계값: page=0, 음수 등.",
+        "skills": ["경계값 분석", "페이지네이션"],
+        "difficulty": "Easy",
+        "domain": "saas",
+    },
+    # Content - Very Easy (1개)
+    {
+        "id": "CT-VE01",
+        "goal": "텍스트 길이 제한 함수 테스트. 문자열을 최대 길이로 자르고 말줄임표를 붙이는 truncate_text(text, max_length) 함수.",
+        "skills": ["기본 테스트", "문자열 처리"],
+        "difficulty": "Very Easy",
+        "domain": "content",
+    },
+    # Content - Hard (1개)
+    {
+        "id": "CT-H01",
+        "goal": "마크다운 파서 테스트. 마크다운을 HTML로 변환하는 parse_markdown(text) 함수의 정확성 검증. 헤딩, 볼드, 링크, 코드 블록, XSS 방지 등.",
+        "skills": ["파싱 테스트", "보안 검증", "마크다운"],
+        "difficulty": "Hard",
+        "domain": "content",
+    },
+    # Commerce - Very Easy (1개)
+    {
+        "id": "CM-VE01",
+        "goal": "상품 가격 표시 함수 테스트. 가격을 원화 형식(1,234원)으로 포맷팅하는 format_price(price) 함수. 버그: 0원 처리, 음수 가격 등.",
+        "skills": ["기본 테스트", "가격 포맷"],
+        "difficulty": "Very Easy",
+        "domain": "commerce",
+    },
 ]
 
 def generate_problem(problem_def):
     """단일 문제 생성"""
     from app.services.ai_problem_designer import generate_problem as ai_generate
-    
+
     log(f"문제 생성 중: {problem_def['id']} - {problem_def['goal'][:50]}...")
-    
+
     result = ai_generate(
         goal=problem_def["goal"],
         language="python",
@@ -368,7 +514,10 @@ def generate_problem(problem_def):
         use_reasoning=True,
         reasoning_effort="high",
     )
-    
+
+    # 도메인 정보 추가 (정의에 있으면 사용, 없으면 'common')
+    result["domain"] = problem_def.get("domain", "common")
+
     return result
 
 

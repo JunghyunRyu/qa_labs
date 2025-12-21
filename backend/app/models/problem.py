@@ -24,6 +24,13 @@ class Problem(Base):
         CheckConstraint("difficulty IN ('Very Easy', 'Easy', 'Medium', 'Hard')"),
         nullable=False,
     )
+    domain = Column(
+        String(20),
+        CheckConstraint("domain IN ('common', 'fintech', 'commerce', 'saas', 'platform', 'content')"),
+        nullable=False,
+        default='common',
+        index=True,
+    )
     skills = Column(JSONB)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

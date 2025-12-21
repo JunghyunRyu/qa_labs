@@ -33,5 +33,6 @@
     "응답 처리",
     "API 검증"
   ],
-  "difficulty": "Medium"
+  "difficulty": "Medium",
+  "domain": "saas"
 }

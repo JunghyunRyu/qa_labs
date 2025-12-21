@@ -7,6 +7,8 @@ export interface BuggyImplementation {
   weight: number;
 }
 
+export type DomainType = "common" | "fintech" | "commerce" | "saas" | "platform" | "content";
+
 export interface Problem {
   id: number;
   slug: string;
@@ -15,6 +17,7 @@ export interface Problem {
   function_signature: string;
   golden_code: string;
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
+  domain: DomainType;
   skills?: string[];
   created_at: string;
   buggy_implementations: BuggyImplementation[];
@@ -25,6 +28,7 @@ export interface ProblemListItem {
   slug: string;
   title: string;
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
+  domain: DomainType;
   skills?: string[];
   description_md?: string;  // For preview in list view
   success_rate?: number | null;  // 0.0~1.0, null if < 5 submissions

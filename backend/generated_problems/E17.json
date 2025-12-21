@@ -1,0 +1,41 @@
+{
+  "title": "날짜 유효성 검증 함수 테스트: 윤년과 월별 마지막 날 경계값",
+  "function_signature": "def is_valid_day(year: int, month: int, day: int) -> bool:",
+  "golden_code": "def is_valid_day(year: int, month: int, day: int) -> bool:\n    \"\"\"Return True if the given (year, month, day) is a valid calendar date.\n\n    Rules:\n    - `month` must be in 1..12\n    - `day` must be in 1..(days in that month)\n    - Leap year rule (Gregorian):\n      - divisible by 400 -> leap year\n      - divisible by 100 -> not a leap year\n      - divisible by 4 -> leap year\n      - otherwise -> not a leap year\n\n    Notes:\n    - This function is validation-only and does not raise exceptions.\n    - `year` must be >= 1 (non-positive years are treated as invalid input).\n    \"\"\"\n    if year < 1:\n        return False\n    if month < 1 or month > 12:\n        return False\n    if day < 1:\n        return False\n\n    def is_leap(y: int) -> bool:\n        if y % 400 == 0:\n            return True\n        if y % 100 == 0:\n            return False\n        return y % 4 == 0\n\n    leap = is_leap(year)\n\n    if month == 2:\n        max_day = 29 if leap else 28\n    elif month in (4, 6, 9, 11):\n        max_day = 30\n    else:\n        max_day = 31\n\n    return day <= max_day\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "월별 마지막 날을 경계값으로 포함하지 못하는 `off-by-one` 오류. 예: 2023-01-31, 2023-04-30 같은 '마지막 날'이 False로 판정될 수 있음.",
+      "buggy_code": "def is_valid_day(year: int, month: int, day: int) -> bool:\n    \"\"\"Buggy: off-by-one on the maximum day boundary.\n\n    Symptom:\n    - Uses `< max_day` instead of `<= max_day`, so the last day of a month is rejected.\n    \"\"\"\n    if year < 1:\n        return False\n    if month < 1 or month > 12:\n        return False\n    if day < 1:\n        return False\n\n    def is_leap(y: int) -> bool:\n        if y % 400 == 0:\n            return True\n        if y % 100 == 0:\n            return False\n        return y % 4 == 0\n\n    leap = is_leap(year)\n\n    if month == 2:\n        max_day = 29 if leap else 28\n    elif month in (4, 6, 9, 11):\n        max_day = 30\n    else:\n        max_day = 31\n\n    return day < max_day\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "윤년과 무관하게 2월의 최대 일수를 28로 고정하는 오류. 예: 2024-02-29가 False로 판정될 수 있음.",
+      "buggy_code": "def is_valid_day(year: int, month: int, day: int) -> bool:\n    \"\"\"Buggy: February is treated as always having 28 days.\n\n    Symptom:\n    - (year, 2, 29) is rejected even when `year` is a leap year.\n    \"\"\"\n    if year < 1:\n        return False\n    if month < 1 or month > 12:\n        return False\n    if day < 1:\n        return False\n\n    # Leap year calculation exists but is not used correctly for February.\n    def is_leap(y: int) -> bool:\n        if y % 400 == 0:\n            return True\n        if y % 100 == 0:\n            return False\n        return y % 4 == 0\n\n    _ = is_leap(year)  # computed but ignored\n\n    if month == 2:\n        max_day = 28\n    elif month in (4, 6, 9, 11):\n        max_day = 30\n    else:\n        max_day = 31\n\n    return day <= max_day\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "윤년 판정이 단순히 4로 나누어떨어지는지만 확인하는 오류. 예: 1900-02-29를 True로 잘못 판정할 수 있음(세기년 규칙 누락).",
+      "buggy_code": "def is_valid_day(year: int, month: int, day: int) -> bool:\n    \"\"\"Buggy: leap year rule is incomplete.\n\n    Symptom:\n    - Treats any year divisible by 4 as leap, ignoring century exceptions.\n    - Example: 1900 is not a leap year in Gregorian calendar, but this code treats it as leap.\n    \"\"\"\n    if year < 1:\n        return False\n    if month < 1 or month > 12:\n        return False\n    if day < 1:\n        return False\n\n    def is_leap(y: int) -> bool:\n        return y % 4 == 0\n\n    leap = is_leap(year)\n\n    if month == 2:\n        max_day = 29 if leap else 28\n    elif month in (4, 6, 9, 11):\n        max_day = 30\n    else:\n        max_day = 31\n\n    return day <= max_day\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "30일인 달 집합이 잘못되어 의존적 경계(월에 따른 최대 일)가 깨지는 오류. 예: 6월 31일을 True로 잘못 판정하거나, 7월 31일을 False로 잘못 판정할 수 있음.",
+      "buggy_code": "def is_valid_day(year: int, month: int, day: int) -> bool:\n    \"\"\"Buggy: wrong month-to-days mapping for 30-day months.\n\n    Symptom:\n    - Uses an incorrect set for 30-day months, causing dependent boundary failures.\n    \"\"\"\n    if year < 1:\n        return False\n    if month < 1 or month > 12:\n        return False\n    if day < 1:\n        return False\n\n    def is_leap(y: int) -> bool:\n        if y % 400 == 0:\n            return True\n        if y % 100 == 0:\n            return False\n        return y % 4 == 0\n\n    leap = is_leap(year)\n\n    if month == 2:\n        max_day = 29 if leap else 28\n    # Incorrect: should be (4, 6, 9, 11)\n    elif month in (4, 7, 9, 11):\n        max_day = 30\n    else:\n        max_day = 31\n\n    return day <= max_day\n",
+      "weight": 3
+    }
+  ],
+  "description_md": "## 문제 설명\n\n전자상거래 서비스에서 **주문 가능 날짜**를 검증해야 합니다. 잘못된 날짜가 통과되면 배송 스케줄, 정산, 쿠폰 만료 처리 등에서 문제가 발생할 수 있습니다.\n\n이번 과제에서는 다음 함수가 다양한 날짜 입력을 올바르게 판별하는지 `pytest`로 검증하는 테스트를 작성합니다.\n\n### 대상 함수\n- 함수: `is_valid_day(year: int, month: int, day: int) -> bool`\n- 역할: 입력된 `year`, `month`, `day`가 실제 달력에서 유효한 날짜이면 `True`, 아니면 `False`를 반환합니다.\n\n### 규칙 요약\n- `month`는 1부터 12 사이여야 합니다.\n- `day`는 1 이상이어야 하며, **해당 월의 최대 일수**를 넘을 수 없습니다.\n- 2월은 윤년이면 29일까지, 평년이면 28일까지입니다.\n- 윤년 규칙은 `Gregorian` 규칙을 따른다고 가정합니다.\n\n### 정상 동작 예시\n- `is_valid_day(2023, 2, 28) -> True`\n- `is_valid_day(2023, 2, 29) -> False`\n\n### 테스트 힌트\n다음과 같은 테스트 관점이 중요합니다.\n- **경계값 분석**: 각 월의 1일, 마지막 날, 마지막 날 다음(예: 31 다음인 32 등)\n- **의존적 경계**: `month`에 따라 `day`의 유효 범위가 달라집니다. 같은 `day=31`이라도 월에 따라 결과가 달라져야 합니다.\n- **윤년**: 2월 29일이 되는 해와 그렇지 않은 해를 구분해야 합니다. 특히 세기년(100으로 나누어떨어지는 해) 조건도 고려 대상입니다.\n\n### 수험자가 해야 할 일\n- `pytest` 기반의 단위 테스트를 작성하여, 주어진 구현들 중 **버그가 있는 구현을 최대한 많이 탐지**하세요.\n- 테스트는 단일 함수 `is_valid_day`만을 대상으로 작성하면 됩니다.\n",
+  "initial_test_template": "import pytest\nfrom target import is_valid_day\n\n\ndef test_month_range_boundaries():\n    # TODO: month 경계값 분석\n    # - month=1, 12는 유효\n    # - month=0, 13 같은 범위 밖 값은 무효\n    pass\n\n\ndef test_day_boundaries_by_month_dependent():\n    # TODO: 의존적 경계 테스트 (month에 따라 day 최대값이 달라짐)\n    # 예: 31일이 가능한 달/불가능한 달을 나눠서 검증\n    # - 4, 6, 9, 11월의 마지막 날과 그 다음 날\n    # - 1, 3, 5, 7, 8, 10, 12월의 마지막 날과 그 다음 날\n    pass\n\n\ndef test_february_leap_year_boundaries():\n    # TODO: 윤년 경계 테스트\n    # - 평년의 2/28, 2/29\n    # - 윤년의 2/28, 2/29\n    # - 세기년(예: 1900)과 400으로 나누어떨어지는 해(예: 2000) 비교\n    pass\n",
+  "tags": [
+    "easy",
+    "unit-test",
+    "pytest",
+    "boundary value analysis",
+    "date validation",
+    "dependent boundaries",
+    "leap-year",
+    "calendar"
+  ],
+  "difficulty": "Easy",
+  "domain": "common"
+}

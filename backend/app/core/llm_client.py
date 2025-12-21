@@ -283,6 +283,7 @@ class LLMClient:
                 "model": use_model,
                 "instructions": system_prompt,
                 "input": user_prompt,
+                "max_output_tokens": 16000,  # 충분한 토큰 확보
             }
 
             # reasoning_effort가 "none"이 아닌 경우에만 reasoning 설정 추가

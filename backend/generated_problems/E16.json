@@ -34,5 +34,6 @@
     "클래스 테스트",
     "상태 격리",
     "Setup/Teardown"
-  ]
+  ],
+  "domain": "common"
 }

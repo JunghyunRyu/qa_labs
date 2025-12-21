@@ -42,5 +42,6 @@
     "단위 테스트"
   ],
   "difficulty": "Hard",
-  "problem_id": "H01"
+  "problem_id": "H01",
+  "domain": "fintech"
 }

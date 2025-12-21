@@ -1,0 +1,39 @@
+{
+  "title": "알림 채널 조합 결정 함수 테스트",
+  "function_signature": "def should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str:",
+  "golden_code": "def should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str:\n    \"\"\"Determine which notification channel(s) should be used.\n\n    Returns one of: 'email', 'push', 'both', 'none'.\n\n    Rules:\n    - If is_urgent is True: send via all enabled channels.\n      - If both are enabled -> 'both'\n      - If only one is enabled -> that channel\n      - If none are enabled -> 'none'\n    - If is_urgent is False: prefer email.\n      - If email is enabled -> 'email' (even if push is also enabled)\n      - Else if push is enabled -> 'push'\n      - Else -> 'none'\n\n    This function is pure and has no side effects.\n    \"\"\"\n    if is_urgent:\n        if email_enabled and push_enabled:\n            return \"both\"\n        if email_enabled:\n            return \"email\"\n        if push_enabled:\n            return \"push\"\n        return \"none\"\n\n    # Not urgent: email has priority.\n    if email_enabled:\n        return \"email\"\n    if push_enabled:\n        return \"push\"\n    return \"none\"\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "긴급 여부와 무관하게, email과 push가 둘 다 켜져 있으면 항상 'both'를 반환한다. 비긴급 상황에서 'email' 우선 규칙이 깨진다.",
+      "buggy_code": "def should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str:\n    \"\"\"Buggy: when both channels are enabled, always returns 'both'.\n\n    This breaks the non-urgent rule where email should be preferred.\n    \"\"\"\n    if email_enabled and push_enabled:\n        return \"both\"\n\n    if email_enabled:\n        return \"email\"\n    if push_enabled:\n        return \"push\"\n    return \"none\"\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "is_urgent 처리를 누락하여, 긴급 상황에서도 비긴급 로직(이메일 우선)을 그대로 적용한다. email과 push가 모두 켜진 긴급 조합에서 오답이 난다.",
+      "buggy_code": "def should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str:\n    \"\"\"Buggy: ignores is_urgent and always applies the non-urgent logic.\"\"\"\n    # Non-urgent logic applied unconditionally\n    if email_enabled:\n        return \"email\"\n    if push_enabled:\n        return \"push\"\n    return \"none\"\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "email이 꺼지고 push만 켜진 경우에 'email'을 반환하는 분기 오류가 있다. (특정 조합에서 채널이 뒤바뀜)",
+      "buggy_code": "def should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str:\n    \"\"\"Buggy: swaps the result for the push-only case.\"\"\"\n    if is_urgent:\n        if email_enabled and push_enabled:\n            return \"both\"\n        if email_enabled:\n            return \"email\"\n        if push_enabled:\n            return \"email\"  # BUG: should be 'push'\n        return \"none\"\n\n    if email_enabled:\n        return \"email\"\n    if push_enabled:\n        return \"email\"  # BUG: should be 'push'\n    return \"none\"\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "긴급이고 두 채널이 모두 꺼져 있는 조합에서 'none' 대신 'both'를 반환한다. (모든 입력이 False인 케이스에서 실패)",
+      "buggy_code": "def should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str:\n    \"\"\"Buggy: returns 'both' for urgent requests even when no channel is enabled.\"\"\"\n    if is_urgent:\n        if email_enabled and push_enabled:\n            return \"both\"\n        if email_enabled:\n            return \"email\"\n        if push_enabled:\n            return \"push\"\n        return \"both\"  # BUG: should be 'none'\n\n    if email_enabled:\n        return \"email\"\n    if push_enabled:\n        return \"push\"\n    return \"none\"\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n쇼핑/커뮤니티 서비스에서는 사용자가 **알림 채널 설정**을 켜거나 끌 수 있고, 특정 이벤트는 **긴급 알림**으로 처리되어 가능한 모든 채널로 보내야 합니다. 이때 채널 선택 로직이 조금만 잘못되어도 사용자에게 알림이 누락되거나 과다 발송될 수 있습니다.\n\n이번 문제에서는 다음 함수를 `pytest`로 테스트하여, 구현에 숨어있는 버그를 최대한 많이 찾아내는 것이 목표입니다.\n\n### 대상 함수\n- 함수명: `should_send_notification`\n- 시그니처: `def should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str`\n\n### 파라미터\n- `email_enabled`: 이메일 알림 채널이 활성화되어 있는지\n- `push_enabled`: 푸시 알림 채널이 활성화되어 있는지\n- `is_urgent`: 긴급 알림인지\n\n### 반환값\n다음 문자열 중 하나를 반환합니다.\n- `'email'`: 이메일로 발송\n- `'push'`: 푸시로 발송\n- `'both'`: 이메일과 푸시로 발송\n- `'none'`: 발송하지 않음\n\n### 동작 규칙\n- `is_urgent`가 True이면: 활성화된 모든 채널로 발송합니다.\n- `is_urgent`가 False이면: 이메일을 우선합니다.\n  - 이메일이 켜져 있으면 푸시가 켜져 있어도 `'email'`\n  - 이메일이 꺼져 있고 푸시만 켜져 있으면 `'push'`\n  - 둘 다 꺼져 있으면 `'none'`\n\n### 정상 동작 예시\n- `email_enabled=True, push_enabled=True, is_urgent=False` -> `'email'`\n- `email_enabled=False, push_enabled=True, is_urgent=True` -> `'push'`\n\n### 테스트 힌트\n- 이 문제는 **조합 테스트**(combinational testing) 입문입니다.\n- 불리언 입력 3개는 총 8가지 조합이 있습니다. 각 조합을 빠짐없이 검증해 보세요.\n- `pytest.mark.parametrize`를 사용하면 삼변수 조합 테스트를 간결하게 작성할 수 있습니다.\n- 특히 `is_urgent`가 True일 때와 False일 때의 규칙이 다르므로, 같은 `email_enabled`/`push_enabled`라도 결과가 달라질 수 있음을 염두에 두세요.\n\n### 수험자가 할 일\n`pytest` 기반 테스트 코드를 작성하여, 서로 다른 버그 구현들이 최대한 많이 실패하도록 만들어 주세요. (정상 구현은 통과해야 합니다.)\n",
+  "initial_test_template": "import pytest\nfrom target import should_send_notification\n\n\ndef test_all_combinations_table_driven():\n    # TODO: 조합 테스트 (삼변수 조합)\n    # 힌트: (email_enabled, push_enabled, is_urgent, expected) 형태의 테이블을 만들고\n    # pytest.mark.parametrize로 8가지 조합을 모두 검증해 보세요.\n    pass\n\n\ndef test_non_urgent_email_priority():\n    # TODO: 비긴급일 때는 email 우선 규칙을 검증하세요.\n    # 예: email과 push가 모두 True여도 결과는 'email'이어야 합니다.\n    pass\n\n\ndef test_urgent_sends_all_enabled_channels():\n    # TODO: 긴급일 때는 활성화된 모든 채널로 발송되는지 검증하세요.\n    # 예: 둘 다 True면 'both', 하나만 True면 해당 채널, 둘 다 False면 'none'\n    pass\n",
+  "tags": [
+    "very easy",
+    "pytest",
+    "unit-test",
+    "combinational testing",
+    "boolean logic",
+    "notification"
+  ],
+  "difficulty": "Very Easy",
+  "domain": "common"
+}

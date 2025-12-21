@@ -1,0 +1,40 @@
+{
+  "title": "세션 TTL 기반 만료 여부 is_session_expired 테스트",
+  "function_signature": "def is_session_expired(created_at: 'datetime', ttl_seconds: int, current_time: 'datetime') -> bool:",
+  "golden_code": "def is_session_expired(created_at: 'datetime', ttl_seconds: int, current_time: 'datetime') -> bool:\n    \"\"\"Return whether a session is expired at current_time.\n\n    A session is considered expired when:\n      current_time >= created_at + ttl_seconds\n\n    Args:\n        created_at: Session creation timestamp as datetime.\n        ttl_seconds: Time-to-live in seconds. Must be >= 0.\n        current_time: Timestamp to check expiry against as datetime.\n\n    Returns:\n        True if expired, False otherwise.\n\n    Notes:\n        - Boundary is inclusive: if current_time equals the exact expiry time,\n          the session is expired.\n        - ttl_seconds == 0 means the session expires immediately at created_at.\n        - If current_time is earlier than created_at (clock skew), it is treated\n          as not expired.\n\n    Raises:\n        TypeError: if created_at/current_time are not datetime, or ttl_seconds is not int.\n        ValueError: if ttl_seconds is negative.\n    \"\"\"\n    from datetime import datetime, timedelta\n\n    if not isinstance(created_at, datetime) or not isinstance(current_time, datetime):\n        raise TypeError(\"created_at and current_time must be datetime\")\n    if not isinstance(ttl_seconds, int):\n        raise TypeError(\"ttl_seconds must be int\")\n    if ttl_seconds < 0:\n        raise ValueError(\"ttl_seconds must be non-negative\")\n\n    expires_at = created_at + timedelta(seconds=ttl_seconds)\n\n    # If current_time is earlier than created_at, treat as not expired.\n    if current_time < created_at:\n        return False\n\n    return current_time >= expires_at\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "경계값 처리 오류: 만료 시각과 정확히 같은 경우( current_time == created_at + TTL )를 만료로 보지 않고 유효로 처리한다. 시간 비교의 포함/미포함 경계에서 실패한다.",
+      "buggy_code": "def is_session_expired(created_at: 'datetime', ttl_seconds: int, current_time: 'datetime') -> bool:\n    \"\"\"Buggy: uses a strict comparison and misses the exact expiry boundary.\"\"\"\n    from datetime import datetime, timedelta\n\n    if not isinstance(created_at, datetime) or not isinstance(current_time, datetime):\n        raise TypeError(\"created_at and current_time must be datetime\")\n    if not isinstance(ttl_seconds, int):\n        raise TypeError(\"ttl_seconds must be int\")\n    if ttl_seconds < 0:\n        raise ValueError(\"ttl_seconds must be non-negative\")\n\n    expires_at = created_at + timedelta(seconds=ttl_seconds)\n    if current_time < created_at:\n        return False\n\n    # BUG: should be >=\n    return current_time > expires_at\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "단위 혼동: TTL을 초로 받아야 하는데 분으로 계산한다. TTL이 작을수록 눈치채기 어려우나, 비교적 명확한 세션 관리 버그다.",
+      "buggy_code": "def is_session_expired(created_at: 'datetime', ttl_seconds: int, current_time: 'datetime') -> bool:\n    \"\"\"Buggy: interprets ttl_seconds as minutes instead of seconds.\"\"\"\n    from datetime import datetime, timedelta\n\n    if not isinstance(created_at, datetime) or not isinstance(current_time, datetime):\n        raise TypeError(\"created_at and current_time must be datetime\")\n    if not isinstance(ttl_seconds, int):\n        raise TypeError(\"ttl_seconds must be int\")\n    if ttl_seconds < 0:\n        raise ValueError(\"ttl_seconds must be non-negative\")\n\n    # BUG: minutes instead of seconds\n    expires_at = created_at + timedelta(minutes=ttl_seconds)\n    if current_time < created_at:\n        return False\n\n    return current_time >= expires_at\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "시간 차 계산 버그: timedelta.total_seconds 대신 timedelta.seconds를 사용해 24시간(하루) 이상 지난 세션에서 만료 판단이 틀린다. (또한 created_at 이후가 아닌 경우에도 비정상 값이 나올 수 있다.)",
+      "buggy_code": "def is_session_expired(created_at: 'datetime', ttl_seconds: int, current_time: 'datetime') -> bool:\n    \"\"\"Buggy: uses timedelta.seconds which discards day component.\"\"\"\n    from datetime import datetime\n\n    if not isinstance(created_at, datetime) or not isinstance(current_time, datetime):\n        raise TypeError(\"created_at and current_time must be datetime\")\n    if not isinstance(ttl_seconds, int):\n        raise TypeError(\"ttl_seconds must be int\")\n    if ttl_seconds < 0:\n        raise ValueError(\"ttl_seconds must be non-negative\")\n\n    delta = current_time - created_at\n\n    # BUG: .seconds is modulo 24 hours; sessions older than a day will be wrong.\n    age_seconds = int(delta.seconds)\n\n    return age_seconds >= ttl_seconds\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "TTL 0 및 음수 처리 오류: ttl_seconds가 0이면 즉시 만료여야 하는데 만료되지 않는 것으로 처리한다. 또한 음수 TTL에 대해 예외를 발생시키지 않는다.",
+      "buggy_code": "def is_session_expired(created_at: 'datetime', ttl_seconds: int, current_time: 'datetime') -> bool:\n    \"\"\"Buggy: treats ttl_seconds <= 0 as never expiring, and doesn't validate negative TTL.\"\"\"\n    from datetime import datetime, timedelta\n\n    if not isinstance(created_at, datetime) or not isinstance(current_time, datetime):\n        raise TypeError(\"created_at and current_time must be datetime\")\n    if not isinstance(ttl_seconds, int):\n        raise TypeError(\"ttl_seconds must be int\")\n\n    # BUG: ttl_seconds == 0 should expire immediately; negative should raise.\n    if ttl_seconds <= 0:\n        return False\n\n    expires_at = created_at + timedelta(seconds=ttl_seconds)\n    if current_time < created_at:\n        return False\n\n    return current_time >= expires_at\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n웹 서비스/모바일 앱에서 로그인 상태를 유지하기 위해 **세션 만료** 여부를 정확히 판단하는 것은 매우 중요합니다. 세션이 만료됐는데도 유효하다고 판단하면 보안 문제가 되고, 반대로 아직 유효한 세션을 만료로 판단하면 사용자가 불필요하게 로그아웃됩니다.\n\n이 문제에서는 다음 함수의 동작을 검증하는 테스트를 작성합니다.\n\n### 함수: `is_session_expired(created_at, ttl_seconds, current_time)`\n\n- **역할**: 세션 생성 시각 `created_at` 과 세션 수명 `ttl_seconds` 를 바탕으로, `current_time` 기준에서 세션이 만료되었는지 `bool` 로 반환합니다.\n- `created_at`: 세션이 생성된 시각 (`datetime`)\n- `ttl_seconds`: TTL 값, 초 단위 정수 (`int`)\n- `current_time`: 만료 여부를 확인할 현재 시각 (`datetime`)\n- 반환값: 만료되었으면 `True`, 아니면 `False`\n\n### 정상 동작 예시\n\n- 예시 1\n  - `created_at = 2025-01-01 00:00:00`, `ttl_seconds = 60`, `current_time = 2025-01-01 00:00:30`\n  - 결과: `False` (아직 만료 아님)\n\n- 예시 2\n  - `created_at = 2025-01-01 00:00:00`, `ttl_seconds = 60`, `current_time = 2025-01-01 00:01:00`\n  - 결과: `True` (만료 시각과 같은 순간은 만료로 간주)\n\n### 테스트 힌트\n\n다음과 같은 테스트 아이디어를 고려해 보세요. (정답을 그대로 적기보다는 다양한 케이스로 함수의 신뢰성을 검증해 보세요.)\n\n- 시간 비교에서 경계값이 중요한 경우: 만료 시각과 **정확히 같은 시각**\n- `ttl_seconds` 가 0일 때의 의미\n- `ttl_seconds` 가 음수인 입력은 어떻게 처리하는 것이 합리적인지 (예외 처리)\n- 충분히 긴 시간 경과(예: 하루 이상)에서 시간 차 계산이 올바른지\n- 시스템 시계 오차 등으로 `current_time` 이 `created_at` 보다 과거인 경우\n\n이 문제는 `pytest` 기반의 단위 테스트를 통해 시간 비교 로직과 세션 관리 관점의 검증 능력을 평가합니다.\n\n### 수험자가 해야 할 일\n\n- `pytest` 를 사용하여 테스트 코드를 작성하세요.\n- 테스트는 단일 함수 `is_session_expired` 에 집중합니다.\n- 다양한 입력 조합을 통해 버그가 있는 구현체들을 최대한 많이 탐지하세요.\n",
+  "initial_test_template": "import pytest\nfrom datetime import datetime, timedelta\n\nfrom target import is_session_expired\n\n\ndef test_expiry_boundary_inclusive():\n    # TODO: 만료 시각과 정확히 같은 순간( created_at + TTL )을 검증하세요.\n    # 힌트: 시간 비교의 경계 포함 여부는 세션 만료 판단에서 중요합니다.\n    pass\n\n\ndef test_ttl_zero_behavior():\n    # TODO: ttl_seconds == 0 일 때의 동작을 정의하고 검증하세요.\n    # 힌트: 세션 관리 정책상 '즉시 만료'로 보는지 확인해보세요.\n    pass\n\n\ndef test_negative_ttl_error_handling():\n    # TODO: ttl_seconds < 0 입력에 대한 예외 처리(Type/메시지 포함 여부)를 검증하세요.\n    pass\n\n\ndef test_long_duration_over_one_day():\n    # TODO: created_at과 current_time 차이가 24시간 이상인 케이스를 추가하세요.\n    # 힌트: 시간 차 계산 방식에 따라 하루 이상에서 버그가 드러날 수 있습니다.\n    pass\n",
+  "tags": [
+    "easy",
+    "pytest",
+    "unit-test",
+    "time",
+    "session",
+    "time comparison",
+    "state"
+  ],
+  "difficulty": "Easy",
+  "domain": "platform"
+}

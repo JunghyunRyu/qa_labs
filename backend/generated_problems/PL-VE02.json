@@ -1,0 +1,39 @@
+{
+  "title": "Unix 타임스탬프를 ISO 8601 UTC 문자열로 변환 테스트",
+  "function_signature": "def timestamp_to_iso(ts: int) -> str:",
+  "golden_code": "from __future__ import annotations\n\nfrom datetime import datetime, timezone\n\n\ndef timestamp_to_iso(ts: int) -> str:\n    \"\"\"Convert a Unix timestamp in seconds to an ISO 8601 UTC string.\n\n    - Input `ts` is a Unix timestamp expressed in **seconds** since the Unix epoch.\n    - The result is a UTC time string in the exact format: `YYYY-MM-DDTHH:MM:SSZ`.\n    - `ts` can be negative (times before 1970-01-01).\n\n    Raises:\n        TypeError: if `ts` is not an `int`.\n        ValueError/OSError: may propagate from `datetime` for out-of-range values.\n    \"\"\"\n    if not isinstance(ts, int):\n        raise TypeError(\"ts must be an int representing seconds since epoch\")\n\n    dt = datetime.fromtimestamp(ts, tz=timezone.utc)\n    return dt.strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "`ts == 0`을 비어있는 값으로 잘못 취급하여 예외를 발생시킵니다. (Unix epoch 경계값 테스트에서 드러남)",
+      "buggy_code": "from __future__ import annotations\n\nfrom datetime import datetime, timezone\n\n\ndef timestamp_to_iso(ts: int) -> str:\n    \"\"\"Buggy: treats 0 as missing.\"\"\"\n    if not isinstance(ts, int):\n        raise TypeError(\"ts must be an int representing seconds since epoch\")\n\n    # BUG: 0 is a valid timestamp but this treats it as absent.\n    if not ts:\n        raise ValueError(\"timestamp is required\")\n\n    dt = datetime.fromtimestamp(ts, tz=timezone.utc)\n    return dt.strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "음수 타임스탬프를 지원해야 하는데 `ts < 0`이면 예외를 발생시킵니다. (1970 이전 날짜 변환 테스트에서 드러남)",
+      "buggy_code": "from __future__ import annotations\n\nfrom datetime import datetime, timezone\n\n\ndef timestamp_to_iso(ts: int) -> str:\n    \"\"\"Buggy: rejects negative timestamps.\"\"\"\n    if not isinstance(ts, int):\n        raise TypeError(\"ts must be an int representing seconds since epoch\")\n\n    # BUG: negative timestamps are valid Unix timestamps.\n    if ts < 0:\n        raise ValueError(\"ts must be non-negative\")\n\n    dt = datetime.fromtimestamp(ts, tz=timezone.utc)\n    return dt.strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "입력을 밀리초로 오해하여 `ts/1000`을 사용합니다. 일반적인 초 단위 입력에서 결과 날짜가 크게 어긋납니다. (날짜 변환 기본 검증에서 드러남)",
+      "buggy_code": "from __future__ import annotations\n\nfrom datetime import datetime, timezone\n\n\ndef timestamp_to_iso(ts: int) -> str:\n    \"\"\"Buggy: interprets seconds as milliseconds.\"\"\"\n    if not isinstance(ts, int):\n        raise TypeError(\"ts must be an int representing seconds since epoch\")\n\n    # BUG: divides by 1000 as if input were milliseconds.\n    dt = datetime.fromtimestamp(ts / 1000.0, tz=timezone.utc)\n    return dt.strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "1초를 임의로 더해 변환하여 결과가 항상 1초 늦습니다. (정확한 초 단위 변환 검증에서 드러남)",
+      "buggy_code": "from __future__ import annotations\n\nfrom datetime import datetime, timezone\n\n\ndef timestamp_to_iso(ts: int) -> str:\n    \"\"\"Buggy: off-by-one second.\"\"\"\n    if not isinstance(ts, int):\n        raise TypeError(\"ts must be an int representing seconds since epoch\")\n\n    # BUG: adds 1 second.\n    dt = datetime.fromtimestamp(ts + 1, tz=timezone.utc)\n    return dt.strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n당신은 로그 수집/감사 시스템에서 저장된 이벤트 시간을 사람이 읽을 수 있는 문자열로 변환하는 기능을 검증하고 있습니다. 서비스에서는 이벤트가 `Unix timestamp`(초 단위)로 저장되고, 외부로 노출할 때는 UTC 기준 `ISO 8601` 문자열로 반환해야 합니다.\n\n이번 과제의 목표는 `timestamp_to_iso(ts)` 함수에 대해 `pytest` 기반 테스트를 작성하여, 잘못 구현된 버전들을 최대한 많이 잡아내는 것입니다.\n\n### 함수 역할\n- 입력: `ts` (정수, Unix timestamp, **초 단위**)\n- 출력: UTC 기준 ISO 8601 문자열, 형식은 정확히 `YYYY-MM-DDTHH:MM:SSZ`\n\n### 정상 동작 예시\n- `timestamp_to_iso(0)` → `1970-01-01T00:00:00Z`\n- `timestamp_to_iso(1)` → `1970-01-01T00:00:01Z`\n\n### 테스트 힌트\n다음과 같은 테스트 아이디어를 고려해 보세요.\n- **경계값**: epoch 시작 값(예: `0`)이 정상 처리되는지\n- **날짜 변환 정확성**: 특정 timestamp가 기대하는 문자열로 변환되는지 (초 단위 정확성)\n- **1970 이전 값**: 음수 timestamp가 허용되는지와 결과 문자열 형식이 맞는지\n- **입력 타입**: 정수가 아닌 값이 들어왔을 때의 동작(예외 타입 등)\n\n### 수험자가 할 일\n- `pytest`로 테스트 코드를 작성하세요.\n- 구현체가 여러 개 존재한다고 가정하며, 작성한 테스트로 **버그 구현들을 최대한 많이 탐지**하는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import timestamp_to_iso\n\n\ndef test_epoch_zero_boundary_value():\n    # TODO: ts=0은 유효한 값입니다. 반환 문자열이 epoch 시작 시각(UTC)과 일치하는지 검증하세요.\n    # 예: 형식 `YYYY-MM-DDTHH:MM:SSZ` 및 값 자체 확인\n    pass\n\n\ndef test_negative_timestamp_supported():\n    # TODO: 음수 timestamp(1970 이전)가 허용되는 요구사항입니다.\n    # 대표적인 음수 값을 넣었을 때 예외가 발생하지 않고, 기대 문자열이 나오는지 검증하세요.\n    pass\n\n\ndef test_typical_timestamp_conversion_accuracy():\n    # TODO: 일반적인 timestamp 하나를 선택하여 정확한 날짜/시간(UTC)으로 변환되는지 검증하세요.\n    # (초 단위 오차, 밀리초로 오해하는 구현 등을 잡아낼 수 있어야 합니다.)\n    pass\n\n\ndef test_type_validation_for_non_int():\n    # TODO: 정수가 아닌 입력(예: str, float, None)에 대해 어떤 예외가 발생해야 하는지 검증하세요.\n    pass\n",
+  "tags": [
+    "very easy",
+    "unit-test",
+    "date-time",
+    "pytest",
+    "basic testing",
+    "boundary value analysis"
+  ],
+  "difficulty": "Very Easy",
+  "domain": "platform"
+}

@@ -32,5 +32,6 @@
     "단위 테스트",
     "텍스트 검증"
   ],
-  "difficulty": "Easy"
+  "difficulty": "Easy",
+  "domain": "common"
 }

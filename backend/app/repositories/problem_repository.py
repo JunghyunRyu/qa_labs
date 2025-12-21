@@ -20,6 +20,7 @@ class ProblemRepository:
         skip: int = 0,
         limit: int = 10,
         difficulty: Optional[str] = None,
+        domain: Optional[str] = None,
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
         sort: str = "difficulty-asc",
@@ -31,6 +32,7 @@ class ProblemRepository:
             skip: Number of records to skip
             limit: Maximum number of records to return
             difficulty: Filter by difficulty level (e.g., "Easy", "Medium")
+            domain: Filter by domain (common, fintech, commerce, saas, platform, content)
             search: Search query for title, slug, or skills
             tags: Filter by skill tags (all tags must match)
             sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
@@ -69,6 +71,10 @@ class ProblemRepository:
         # Apply difficulty filter
         if difficulty:
             query = query.filter(Problem.difficulty == difficulty)
+
+        # Apply domain filter
+        if domain:
+            query = query.filter(Problem.domain == domain)
 
         # Apply search filter (title, slug, or skills)
         if search:
@@ -132,6 +138,7 @@ class ProblemRepository:
                 "slug": problem.slug,
                 "title": problem.title,
                 "difficulty": problem.difficulty,
+                "domain": getattr(problem, 'domain', 'common'),
                 "skills": problem.skills,
                 "description_md": problem.description_md,
                 "success_rate": float(success_rate) if success_rate is not None else None,

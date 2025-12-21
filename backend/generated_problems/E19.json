@@ -1,0 +1,41 @@
+{
+  "title": "회원 등급/첫구매/쿠폰 조합 할인율 테스트",
+  "function_signature": "def get_discount_rate(member_tier: str, is_first_purchase: bool, has_coupon: bool) -> int:",
+  "golden_code": "def get_discount_rate(member_tier: str, is_first_purchase: bool, has_coupon: bool) -> int:\n    \"\"\"회원 등급과 혜택 조합에 따른 할인율(%)을 계산한다.\n\n    규칙:\n    - 기본 할인율: bronze=5, silver=10, gold=18\n    - 첫 구매 보너스: +7\n    - 쿠폰 보너스: +10\n    - 첫 구매 보너스와 쿠폰은 중복 적용되지 않으며, 둘 다 True이면 더 큰 혜택(쿠폰 +10)만 적용한다.\n    - 최종 할인율은 최대 25%로 제한한다.\n\n    Args:\n        member_tier: 'bronze', 'silver', 'gold' 중 하나\n        is_first_purchase: 첫 구매 여부\n        has_coupon: 쿠폰 보유/적용 여부\n\n    Returns:\n        0~25 범위의 정수 할인율(%)\n\n    Raises:\n        ValueError: member_tier가 허용된 값이 아닐 때\n    \"\"\"\n    base_map = {\"bronze\": 5, \"silver\": 10, \"gold\": 18}\n    if member_tier not in base_map:\n        raise ValueError(\"member_tier must be one of: bronze, silver, gold\")\n\n    rate = base_map[member_tier]\n\n    first_bonus = 7 if is_first_purchase else 0\n    coupon_bonus = 10 if has_coupon else 0\n\n    # 중복 불가: 둘 다 있으면 더 큰 혜택 하나만 적용\n    rate += max(first_bonus, coupon_bonus)\n\n    if rate > 25:\n        rate = 25\n    return rate\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "특정 조합에서 등급 기본 할인율을 잘못 적용함: gold이면서 쿠폰이 있으면 gold 기본값 대신 silver 기본값을 사용하여 할인율이 낮게 계산된다.",
+      "buggy_code": "def get_discount_rate(member_tier: str, is_first_purchase: bool, has_coupon: bool) -> int:\n    \"\"\"버그 포함: gold + coupon 조합에서 기본 할인율 매핑을 잘못 적용한다.\"\"\"\n    base_map = {\"bronze\": 5, \"silver\": 10, \"gold\": 18}\n    if member_tier not in base_map:\n        raise ValueError(\"member_tier must be one of: bronze, silver, gold\")\n\n    # 버그: gold이면서 쿠폰이 있으면 silver 기본율을 사용\n    if member_tier == \"gold\" and has_coupon:\n        rate = base_map[\"silver\"]\n    else:\n        rate = base_map[member_tier]\n\n    first_bonus = 7 if is_first_purchase else 0\n    coupon_bonus = 10 if has_coupon else 0\n\n    rate += max(first_bonus, coupon_bonus)\n\n    if rate > 25:\n        rate = 25\n    return rate\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "중복 적용 규칙 오류: 첫 구매와 쿠폰이 모두 True일 때, 둘 중 하나만 적용해야 하지만 두 보너스를 모두 더해 과도한 할인율이 된다.",
+      "buggy_code": "def get_discount_rate(member_tier: str, is_first_purchase: bool, has_coupon: bool) -> int:\n    \"\"\"버그 포함: 첫 구매 보너스와 쿠폰 보너스를 중복 적용한다.\"\"\"\n    base_map = {\"bronze\": 5, \"silver\": 10, \"gold\": 18}\n    if member_tier not in base_map:\n        raise ValueError(\"member_tier must be one of: bronze, silver, gold\")\n\n    rate = base_map[member_tier]\n\n    if is_first_purchase:\n        rate += 7\n    if has_coupon:\n        rate += 10\n\n    if rate > 25:\n        rate = 25\n    return rate\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "중복 적용 선택 로직 오류: 첫 구매와 쿠폰이 모두 True일 때 더 큰 혜택을 적용해야 하지만, 첫 구매 보너스만 적용되어 할인율이 부족해진다.",
+      "buggy_code": "def get_discount_rate(member_tier: str, is_first_purchase: bool, has_coupon: bool) -> int:\n    \"\"\"버그 포함: 둘 다 True이면 쿠폰이 아니라 첫 구매 보너스만 적용한다.\"\"\"\n    base_map = {\"bronze\": 5, \"silver\": 10, \"gold\": 18}\n    if member_tier not in base_map:\n        raise ValueError(\"member_tier must be one of: bronze, silver, gold\")\n\n    rate = base_map[member_tier]\n\n    # 버그: 둘 다 True인 경우 첫 구매 보너스만 적용\n    if is_first_purchase and has_coupon:\n        rate += 7\n    elif is_first_purchase:\n        rate += 7\n    elif has_coupon:\n        rate += 10\n\n    if rate > 25:\n        rate = 25\n    return rate\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "최대 할인율 캡 처리 오류: 최종 할인율이 25% 이상인 경우 25%로 제한해야 하지만, 25%인 경우까지 24%로 잘못 낮춘다. 특히 gold + 첫 구매(정확히 25%)에서 드러난다.",
+      "buggy_code": "def get_discount_rate(member_tier: str, is_first_purchase: bool, has_coupon: bool) -> int:\n    \"\"\"버그 포함: 캡 경계값(25)을 잘못 처리하여 25가 24로 깎인다.\"\"\"\n    base_map = {\"bronze\": 5, \"silver\": 10, \"gold\": 18}\n    if member_tier not in base_map:\n        raise ValueError(\"member_tier must be one of: bronze, silver, gold\")\n\n    rate = base_map[member_tier]\n\n    first_bonus = 7 if is_first_purchase else 0\n    coupon_bonus = 10 if has_coupon else 0\n    rate += max(first_bonus, coupon_bonus)\n\n    # 버그: 25도 초과로 간주해 24로 만든다\n    if rate >= 25:\n        rate = 24\n    return rate\n",
+      "weight": 4
+    }
+  ],
+  "description_md": "## 문제 설명\n\n이커머스 서비스에서 **회원 등급**과 **프로모션 혜택**(첫 구매, 쿠폰)에 따라 최종 할인율을 계산하는 로직은 매출과 직결되므로 매우 중요합니다. 작은 조건 분기 실수로도 특정 조합에서 할인율이 과대 또는 과소 계산될 수 있습니다.\n\n이번 과제에서는 단일 함수 `get_discount_rate`에 대해 `pytest` 기반 테스트를 작성하여, 다양한 조합에서 발생하는 버그를 최대한 많이 검출하는 것이 목표입니다.\n\n### 함수 역할\n- 입력값(회원 등급, 첫 구매 여부, 쿠폰 여부)에 따라 **최종 할인율**을 정수 퍼센트로 반환합니다.\n\n### 파라미터\n- `member_tier: str`\n  - 허용 값: `'bronze'`, `'silver'`, `'gold'`\n- `is_first_purchase: bool`\n  - 첫 구매이면 `True`\n- `has_coupon: bool`\n  - 쿠폰을 적용할 수 있으면 `True`\n\n### 반환값\n- `int`: 최종 할인율(%)\n\n### 정상 동작 예시\n- `get_discount_rate('bronze', False, False) -> 5`\n- `get_discount_rate('gold', True, False) -> 25`  \n  힌트: 특정 조합에서는 최대 할인율 제한이 경계값으로 등장할 수 있습니다.\n\n### 테스트 힌트\n- 입력 조합 수는 `3 x 2 x 2 = 12`입니다. 모든 조합을 전부 나열할 수도 있지만, 더 효율적인 방식으로도 높은 결함 검출력을 만들 수 있습니다.\n- `조합 테스트` 관점에서 **등급별 기본 할인율**, **보너스 적용 규칙**, **중복 적용 규칙**, **최대 할인율 제한**을 분리해서 사고해보세요.\n- `pairwise testing` 관점에서 두 조건씩의 상호작용(예: 등급-쿠폰, 등급-첫구매, 첫구매-쿠폰)이 모두 커버되도록 케이스를 설계해보세요.\n- `다수준 조합`에서 특정 등급에서만 문제가 생기거나, 특정 불리언 조합에서만 문제가 생길 수 있습니다.\n\n### 수험자가 할 일\n- `pytest`로 테스트 코드를 작성하세요.\n- 가능한 한 많은 버그 구현을 실패하게 만드는 테스트를 설계하세요.\n- 테스트는 결정적이어야 하며, 외부 I/O 없이 함수의 입력-출력만 검증해야 합니다.\n",
+  "initial_test_template": "import pytest\nfrom target import get_discount_rate\n\n\n# TODO: 조합 테스트 전략을 세워 12개 조합(3등급 x 2 x 2)을 효율적으로 커버하세요.\n# 힌트: pytest.mark.parametrize를 활용하면 테스트 케이스를 테이블 형태로 관리할 수 있습니다.\n\n\ndef test_equivalence_partitioning_basic_tiers():\n    # TODO: 등급별 기본 할인율이 올바른지 검증하는 케이스들을 구성하세요.\n    # 예: (tier, first=False, coupon=False) 파티션\n    pass\n\n\ndef test_pairwise_interactions_tier_and_coupon():\n    # TODO: `pairwise testing` 관점에서 (member_tier, has_coupon) 상호작용을 커버하세요.\n    # - 특정 등급에서만 쿠폰 조합이 잘못 처리될 수 있습니다.\n    pass\n\n\ndef test_pairwise_interactions_first_purchase_and_coupon_non_stack_rule():\n    # TODO: 첫 구매와 쿠폰이 동시에 True인 경우의 중복 적용 규칙을 검증하세요.\n    # - 둘 다 True일 때 \"둘 중 하나만\" 적용되는지, \"더 큰 혜택\"이 적용되는지 등 규칙을 확인하세요.\n    pass\n\n\ndef test_boundary_value_max_cap():\n    # TODO: 최대 할인율 제한(캡) 경계값을 검증하세요.\n    # - 정확히 캡 값이 되는 조합과, 캡을 초과하는 조합을 모두 고려해보세요.\n    pass\n\n\ndef test_invalid_member_tier_raises():\n    # TODO: 잘못된 member_tier 입력에 대한 예외 처리를 검증하세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "unit-test",
+    "pytest",
+    "combinatorial testing",
+    "pairwise testing",
+    "business-logic",
+    "boolean-flags",
+    "string"
+  ],
+  "difficulty": "Easy",
+  "domain": "common"
+}

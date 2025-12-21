@@ -1,0 +1,41 @@
+{
+  "title": "원화 가격 표시 format_price 테스트",
+  "function_signature": "def format_price(price: int) -> str:",
+  "golden_code": "def format_price(price: int) -> str:\n    \"\"\"원화(KRW) 가격을 사용자에게 표시하기 좋은 문자열로 포맷팅합니다.\n\n    규칙:\n    - 입력은 `int` 여야 합니다. (`bool`은 허용하지 않음)\n    - 0 이상 정수만 허용합니다. 음수는 `ValueError`를 발생시킵니다.\n    - 천 단위 구분자(,)를 사용하고, 끝에 '원'을 붙입니다.\n\n    예:\n    - 0 -> '0원'\n    - 1234 -> '1,234원'\n    - 1000000 -> '1,000,000원'\n    \"\"\"\n    if isinstance(price, bool) or not isinstance(price, int):\n        raise TypeError(\"price must be an int\")\n    if price < 0:\n        raise ValueError(\"price must be non-negative\")\n    return f\"{price:,}원\"\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "0원을 특수값으로 잘못 처리하여, price가 0이면 '0원'이 아니라 빈 값에 가까운 문자열을 반환함",
+      "buggy_code": "def format_price(price: int) -> str:\n    \"\"\"원화 가격을 포맷팅합니다. (버그 구현)\n\n    - 천 단위 구분자와 '원' 접미사를 붙입니다.\n    \"\"\"\n    if isinstance(price, bool) or not isinstance(price, int):\n        raise TypeError(\"price must be an int\")\n    if price < 0:\n        raise ValueError(\"price must be non-negative\")\n\n    # BUG: 0은 falsy라서 예외적으로 처리되어 버림\n    if not price:\n        return \"원\"\n\n    return f\"{price:,}원\"\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "음수 가격을 금지해야 하는데, abs를 사용해 양수처럼 포맷팅해버려 음수 입력에서 예외가 발생하지 않음",
+      "buggy_code": "def format_price(price: int) -> str:\n    \"\"\"원화 가격을 포맷팅합니다. (버그 구현)\n\n    - 음수 입력이 들어오더라도 절댓값으로 표시해버리는 문제가 있습니다.\n    \"\"\"\n    if isinstance(price, bool) or not isinstance(price, int):\n        raise TypeError(\"price must be an int\")\n\n    # BUG: 음수는 예외가 아니라 절댓값 처리\n    price = abs(price)\n    return f\"{price:,}원\"\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "천 단위 구분자(,)가 누락되어 1234가 '1234원'처럼 반환됨",
+      "buggy_code": "def format_price(price: int) -> str:\n    \"\"\"원화 가격을 포맷팅합니다. (버그 구현)\n\n    - 천 단위 구분자를 적용하지 않고 문자열로만 변환합니다.\n    \"\"\"\n    if isinstance(price, bool) or not isinstance(price, int):\n        raise TypeError(\"price must be an int\")\n    if price < 0:\n        raise ValueError(\"price must be non-negative\")\n\n    # BUG: 콤마 포맷 누락\n    return str(price) + \"원\"\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "반환 형식이 요구사항과 다르게 '원' 앞에 공백이 들어가거나 접미사가 일관되지 않음 (예: '1,234 원')",
+      "buggy_code": "def format_price(price: int) -> str:\n    \"\"\"원화 가격을 포맷팅합니다. (버그 구현)\n\n    - 보기 좋게 만든다는 이유로 접미사 앞에 공백을 넣어 형식이 달라집니다.\n    \"\"\"\n    if isinstance(price, bool) or not isinstance(price, int):\n        raise TypeError(\"price must be an int\")\n    if price < 0:\n        raise ValueError(\"price must be non-negative\")\n\n    # BUG: '원' 앞에 불필요한 공백\n    return f\"{price:,} 원\"\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n쇼핑몰/커머스 서비스에서는 상품 목록, 장바구니, 주문서 등 다양한 화면에서 **가격 표시**가 반복됩니다. 표시 포맷이 조금만 어긋나도 사용자 혼란, CS 증가, 결제 오류 의심 등으로 이어질 수 있어 `format_price` 같은 유틸리티 함수는 꼼꼼한 테스트가 필요합니다.\n\n### 대상 함수\n`format_price(price)`는 정수 가격을 받아 **원화 표기 문자열**로 변환합니다.\n\n- 입력 파라미터: `price: int`\n- 반환값: `str` (예: `\"1,234원\"`)\n\n### 정상 동작 예시\n- `format_price(0)` → `\"0원\"`\n- `format_price(1234)` → `\"1,234원\"`\n\n### 테스트 힌트\n다음과 같은 관점으로 테스트를 설계해 보세요.\n\n- **기본 테스트**: 대표적인 정상 입력에서 결과 문자열이 기대한 형태인지 확인\n- **가격 포맷**: 천 단위 구분자와 접미사 `원`의 위치/공백 여부 등 표시 규칙 확인\n- 경계 상황: `0` 같은 값, 아주 큰 값(예: 백만 단위 이상)\n- 예외 상황: 음수 가격이 들어오면 어떻게 되어야 하는지, 타입이 잘못 들어오면 어떻게 되어야 하는지\n\n### 수험자가 해야 할 일\n`pytest`로 테스트 코드를 작성하여, 주어진 `format_price` 구현들 중 **버그가 있는 구현을 최대한 많이 탐지**하세요. 정답 구현은 모든 테스트를 통과해야 하며, 버그 구현은 최소 하나 이상의 테스트에서 실패하도록 만드는 것이 목표입니다.\n",
+  "initial_test_template": "import pytest\nfrom target import format_price\n\n\ndef test_zero_price_formatting():\n    # TODO: 0원은 흔한 경계값입니다.\n    # - 반환값이 문자열인지\n    # - 정확히 '0원'인지(공백/누락/다른 문자 없는지)\n    pass\n\n\ndef test_thousands_separator_formatting():\n    # TODO: 천 단위 구분자(,)가 제대로 들어가는지 확인하세요.\n    # - 예: 1234, 1000000 등\n    # - '원' 접미사가 정확한 위치에 붙는지\n    pass\n\n\ndef test_negative_price_raises():\n    # TODO: 음수 가격은 정책상 허용되지 않는다고 가정합니다.\n    # - 어떤 예외를 기대할지(ValueError 등)\n    pass\n\n\ndef test_type_validation_optional():\n    # TODO: 매우 쉬운 문제이지만, 타입이 잘못 들어오면 어떻게 되는지도 생각해 보세요.\n    # - 예: '1000', 12.34, True 등\n    pass\n",
+  "tags": [
+    "very easy",
+    "unit-test",
+    "pytest",
+    "string",
+    "formatting",
+    "price",
+    "basic testing",
+    "가격 포맷"
+  ],
+  "difficulty": "Very Easy",
+  "domain": "commerce"
+}

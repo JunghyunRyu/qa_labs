@@ -33,5 +33,6 @@
     "동등 분할"
   ],
   "difficulty": "Easy",
-  "problem_id": "E01"
+  "problem_id": "E01",
+  "domain": "common"
 }

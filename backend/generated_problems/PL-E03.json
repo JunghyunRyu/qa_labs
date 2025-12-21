@@ -1,0 +1,39 @@
+{
+  "title": "권한 레벨 비교 함수 has_permission 테스트",
+  "function_signature": "def has_permission(user_level: int, required_level: int) -> bool:",
+  "golden_code": "def has_permission(user_level: int, required_level: int) -> bool:\n    \"\"\"사용자 권한 레벨이 요구 권한 레벨 이상인지 확인한다.\n\n    권한 레벨은 정수이며 0 이상의 값만 유효하다.\n\n    규칙:\n    - user_level >= required_level 이면 True, 아니면 False\n    - required_level 이 0이면 누구나 접근 가능하므로 항상 True (단, 입력이 유효할 때)\n\n    예외:\n    - user_level 또는 required_level 이 int가 아니면 TypeError\n    - user_level 또는 required_level 이 음수이면 ValueError\n    \"\"\"\n    if not isinstance(user_level, int) or not isinstance(required_level, int):\n        raise TypeError(\"user_level and required_level must be integers\")\n\n    if user_level < 0 or required_level < 0:\n        raise ValueError(\"permission levels must be non-negative\")\n\n    return user_level >= required_level\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "비교 연산에서 '>=' 대신 '>'를 사용하여, user_level과 required_level이 정확히 같은 경우에 False를 반환한다.",
+      "buggy_code": "def has_permission(user_level: int, required_level: int) -> bool:\n    \"\"\"사용자 권한 레벨이 요구 권한 레벨 이상인지 확인한다.\"\"\"\n    if not isinstance(user_level, int) or not isinstance(required_level, int):\n        raise TypeError(\"user_level and required_level must be integers\")\n    if user_level < 0 or required_level < 0:\n        raise ValueError(\"permission levels must be non-negative\")\n    return user_level > required_level\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "권한 비교 방향이 뒤바뀌어 user_level이 높을수록 오히려 False가 나올 수 있다. 예: user_level=5, required_level=3에서 False.",
+      "buggy_code": "def has_permission(user_level: int, required_level: int) -> bool:\n    \"\"\"사용자 권한 레벨이 요구 권한 레벨 이상인지 확인한다.\"\"\"\n    if not isinstance(user_level, int) or not isinstance(required_level, int):\n        raise TypeError(\"user_level and required_level must be integers\")\n    if user_level < 0 or required_level < 0:\n        raise ValueError(\"permission levels must be non-negative\")\n    return user_level <= required_level\n",
+      "weight": 4
+    },
+    {
+      "bug_description": "required_level이 0인 '공개 리소스' 상황을 잘못 처리하여 False를 반환한다. 예: user_level=0, required_level=0에서 False.",
+      "buggy_code": "def has_permission(user_level: int, required_level: int) -> bool:\n    \"\"\"사용자 권한 레벨이 요구 권한 레벨 이상인지 확인한다.\"\"\"\n    if not isinstance(user_level, int) or not isinstance(required_level, int):\n        raise TypeError(\"user_level and required_level must be integers\")\n    if user_level < 0 or required_level < 0:\n        raise ValueError(\"permission levels must be non-negative\")\n\n    if required_level == 0:\n        return False\n\n    return user_level >= required_level\n",
+      "weight": 3
+    },
+    {
+      "bug_description": "정수 레벨을 문자열로 변환해 비교하여, 두 자리 이상 레벨에서 비교가 깨진다. 예: user_level=10, required_level=2에서 '10' < '2'로 처리되어 False를 반환할 수 있다.",
+      "buggy_code": "def has_permission(user_level: int, required_level: int) -> bool:\n    \"\"\"사용자 권한 레벨이 요구 권한 레벨 이상인지 확인한다.\"\"\"\n    if not isinstance(user_level, int) or not isinstance(required_level, int):\n        raise TypeError(\"user_level and required_level must be integers\")\n    if user_level < 0 or required_level < 0:\n        raise ValueError(\"permission levels must be non-negative\")\n\n    return str(user_level) >= str(required_level)\n",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 문제 설명\n\n당신은 사내 백오피스와 API 게이트웨이에서 공통으로 쓰이는 **권한 레벨 기반 접근 제어** 로직을 테스트하고 있습니다. 일부 엔드포인트는 \"요구 권한 레벨\" 이상인 사용자만 접근할 수 있으며, 레벨은 숫자가 클수록 더 높은 권한을 의미합니다.\n\n이번 과제의 목표는 `has_permission(user_level, required_level)` 함수에 대해 `pytest` 기반 테스트를 작성하여, 구현체들에 숨어 있는 버그를 최대한 많이 찾아내는 것입니다.\n\n### 함수 역할\n- 입력된 `user_level`이 `required_level` 이상인지 확인하여 접근 가능 여부를 `bool`로 반환합니다.\n\n### 파라미터\n- `user_level: int` : 현재 사용자 권한 레벨 (0 이상의 정수)\n- `required_level: int` : 리소스가 요구하는 최소 권한 레벨 (0 이상의 정수)\n\n### 반환값\n- `bool`\n  - 접근 가능하면 `True`\n  - 접근 불가능하면 `False`\n\n### 정상 동작 예시\n- `has_permission(3, 3) -> True` (요구 레벨과 같으면 허용)\n- `has_permission(2, 5) -> False` (요구 레벨보다 낮으면 거부)\n\n### 테스트 힌트\n다음과 같은 테스트 아이디어를 고려해 보세요.\n- 권한 검증 관점에서, \"같은 레벨\", \"딱 1 차이\" 등 `boundary value`에 해당하는 케이스\n- 비교 연산이 올바른 방향과 기준으로 수행되는지 확인하는 케이스\n- `required_level`이 0인 경우처럼 정책적으로 자주 등장하는 값\n- 두 자리 이상(예: 10 이상) 레벨에서도 비교가 정상인지 확인\n- 입력 값이 정수/음수 등 유효성 조건을 벗어났을 때의 처리\n\n### 수험자가 할 일\n- `pytest`로 테스트 코드를 작성하세요.\n- 동일한 함수에 대해 여러 구현이 주어졌을 때, 버그 구현을 가능한 한 많이 실패시키고 정상 구현은 통과시키는 테스트를 목표로 하세요.\n",
+  "initial_test_template": "import pytest\nfrom target import has_permission\n\n\ndef test_equal_level_boundary():\n    # TODO: user_level과 required_level이 동일한 경우를 테스트하세요.\n    # 힌트: 비교 연산에서 >= 와 > 차이가 드러나는 케이스를 생각해 보세요.\n    pass\n\n\ndef test_higher_and_lower_levels_equivalence_partitions():\n    # TODO: user_level이 더 큰 경우(True)와 더 작은 경우(False)를 각각 테스트하세요.\n    # 힌트: 비교 방향이 뒤집힌 구현을 잡아낼 수 있는 조합을 포함하세요.\n    pass\n\n\ndef test_required_level_zero_public_resource():\n    # TODO: required_level=0인 공개 리소스 접근 정책을 테스트하세요.\n    # 힌트: user_level이 0인 경우도 포함해 보세요.\n    pass\n\n\ndef test_two_digit_levels_comparison():\n    # TODO: 10 이상의 레벨 같은 두 자리 숫자에서 비교가 정상인지 테스트하세요.\n    # 힌트: 숫자 비교가 아닌 다른 방식으로 비교하면 결과가 달라질 수 있습니다.\n    pass\n\n\ndef test_invalid_inputs_type_and_range():\n    # TODO: 음수 레벨, int가 아닌 타입 입력 등 유효하지 않은 입력에 대한 동작을 테스트하세요.\n    # 힌트: 예외 타입(TypeError/ValueError)과 발생 조건을 명확히 검증해 보세요.\n    pass\n",
+  "tags": [
+    "easy",
+    "unit-test",
+    "pytest",
+    "authorization",
+    "permission validation",
+    "comparison"
+  ],
+  "difficulty": "Easy",
+  "domain": "platform"
+}

@@ -39,5 +39,6 @@
     "경계값 분석",
     "모니터링"
   ],
-  "difficulty": "Medium"
+  "difficulty": "Medium",
+  "domain": "platform"
 }

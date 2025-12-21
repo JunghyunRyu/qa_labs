@@ -39,5 +39,6 @@
     "시간 모킹",
     "MSA 패턴"
   ],
-  "difficulty": "Hard"
+  "difficulty": "Hard",
+  "domain": "platform"
 }
