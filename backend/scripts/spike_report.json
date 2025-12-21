@@ -1,0 +1,2000 @@
+{
+  "generated_at": "2025-12-21T23:49:24.500680",
+  "summary": {
+    "total_samples": 25,
+    "success_count": 23,
+    "failure_count": 2,
+    "success_rate": 92.0
+  },
+  "confidence": {
+    "values": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.8333333333333334,
+      1.0
+    ],
+    "average": 0.9927536231884058,
+    "min": 0.8333333333333334,
+    "max": 1.0,
+    "high_confidence_count": 23,
+    "high_confidence_ratio": 100.0
+  },
+  "distributions": {
+    "value_types": {
+      "NORMAL": 22,
+      "BOUNDARY": 15,
+      "EDGE": 14,
+      "NEGATIVE": 3,
+      "EXTREME": 1
+    },
+    "input_diversity": {
+      "SINGLE": 16,
+      "UNKNOWN": 3,
+      "EMPTY": 9,
+      "MULTIPLE": 8,
+      "MIXED_TYPES": 1
+    },
+    "test_purposes": {
+      "HAPPY_PATH": 20,
+      "ERROR_HANDLING": 10,
+      "BOUNDARY_CHECK": 14,
+      "STATE_TRANSITION": 1,
+      "EQUIVALENCE_PARTITION": 1
+    },
+    "antipatterns": {
+      "NO_ASSERTION": 5,
+      "EXCEPTION_SWALLOWED": 1,
+      "NON_DETERMINISTIC": 2,
+      "EXTERNAL_DEPENDENCY": 1,
+      "EXCESSIVE_NESTING": 1
+    }
+  },
+  "completion_criteria": {
+    "parametrize_parsed": true,
+    "high_confidence_ratio": 100.0,
+    "high_confidence_met": true
+  },
+  "details": [
+    {
+      "id": "sample_001",
+      "name": "기본 테스트 - 정상값만",
+      "analysis": {
+        "success": true,
+        "test_count": 2,
+        "effective_test_count": 2,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_sum_positive",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_sum_single",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      },
+      "expected": {
+        "purposes": [
+          "HAPPY_PATH"
+        ],
+        "value_types": [
+          "NORMAL"
+        ],
+        "diversity": [],
+        "antipatterns": []
+      }
+    },
+    {
+      "id": "sample_002",
+      "name": "경계값 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 4,
+        "effective_test_count": 4,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 1,
+        "value_types": [
+          "NORMAL",
+          "EDGE",
+          "NEGATIVE",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "ERROR_HANDLING",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_boundary_zero",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_boundary_negative_one",
+            "value_types": [
+              "NEGATIVE",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK",
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_edge_empty",
+            "value_types": [
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_edge_none_element",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING",
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      },
+      "expected": {
+        "purposes": [
+          "BOUNDARY_CHECK",
+          "ERROR_HANDLING"
+        ],
+        "value_types": [
+          "BOUNDARY",
+          "EDGE"
+        ],
+        "diversity": [],
+        "antipatterns": []
+      }
+    },
+    {
+      "id": "sample_003",
+      "name": "Parametrize 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 2,
+        "effective_test_count": 9,
+        "parametrize_count": 9,
+        "fixture_count": 3,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "EXTREME",
+          "EDGE",
+          "NEGATIVE",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "UNKNOWN",
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_is_prime",
+            "value_types": [
+              "NEGATIVE",
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "UNKNOWN",
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_large_numbers",
+            "value_types": [
+              "EXTREME",
+              "EDGE"
+            ],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      },
+      "expected": {
+        "purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY",
+          "NEGATIVE",
+          "EXTREME"
+        ],
+        "diversity": [],
+        "antipatterns": []
+      }
+    },
+    {
+      "id": "sample_004",
+      "name": "에러 핸들링 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 3,
+        "effective_test_count": 3,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 2,
+        "value_types": [
+          "NORMAL"
+        ],
+        "input_diversity": [
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK",
+          "ERROR_HANDLING"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_divide_normal",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_divide_by_zero",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING",
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_divide_invalid_type",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH",
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      },
+      "expected": {
+        "purposes": [
+          "HAPPY_PATH",
+          "ERROR_HANDLING"
+        ],
+        "value_types": [
+          "NORMAL"
+        ],
+        "diversity": [],
+        "antipatterns": []
+      }
+    },
+    {
+      "id": "sample_005",
+      "name": "안티패턴 테스트 (경고)",
+      "analysis": {
+        "success": true,
+        "test_count": 3,
+        "effective_test_count": 3,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "ERROR_HANDLING"
+        ],
+        "antipatterns": [
+          {
+            "type": "NO_ASSERTION",
+            "penalty": -10,
+            "location": "test_no_assertion"
+          },
+          {
+            "type": "NO_ASSERTION",
+            "penalty": -10,
+            "location": "test_exception_swallowed"
+          },
+          {
+            "type": "EXCEPTION_SWALLOWED",
+            "penalty": -15,
+            "location": "test_exception_swallowed"
+          },
+          {
+            "type": "NON_DETERMINISTIC",
+            "penalty": -10,
+            "location": "test_random_data"
+          }
+        ],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_no_assertion",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_exception_swallowed",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_random_data",
+            "value_types": [
+              "NORMAL",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_006",
+      "name": "입력 다양성 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 5,
+        "effective_test_count": 5,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "MULTIPLE",
+          "MIXED_TYPES",
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_empty_list",
+            "value_types": [
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_single_element",
+            "value_types": [
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_no_duplicates",
+            "value_types": [
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_with_duplicates",
+            "value_types": [
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_mixed_types",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "MULTIPLE",
+              "MIXED_TYPES"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_007",
+      "name": "고품질 복합 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 7,
+        "effective_test_count": 8,
+        "parametrize_count": 2,
+        "fixture_count": 1,
+        "pytest_raises_count": 1,
+        "value_types": [
+          "NORMAL",
+          "EDGE",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "ERROR_HANDLING",
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_valid_email",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_valid_with_subdomain",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_empty_string",
+            "value_types": [
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_min_length",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_missing_at",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_invalid_type",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH",
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_extreme_length",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      },
+      "expected": {
+        "purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK",
+          "ERROR_HANDLING"
+        ],
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY",
+          "EDGE",
+          "EXTREME"
+        ],
+        "diversity": [],
+        "antipatterns": []
+      }
+    },
+    {
+      "id": "sample_008",
+      "name": "Fixture 사용 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 2,
+        "effective_test_count": 2,
+        "parametrize_count": 0,
+        "fixture_count": 2,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_create_user",
+            "value_types": [
+              "NORMAL",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_find_user",
+            "value_types": [
+              "NORMAL",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_009",
+      "name": "극단값 집중 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 4,
+        "effective_test_count": 4,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "SINGLE",
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_max_int",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_min_int",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_very_large_float",
+            "value_types": [
+              "NORMAL",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_zero",
+            "value_types": [
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_010",
+      "name": "문자열 처리 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 5,
+        "effective_test_count": 5,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "SINGLE",
+          "MULTIPLE",
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_normal_string",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_empty_string",
+            "value_types": [
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_single_char",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_unicode",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_whitespace",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_011",
+      "name": "리스트 심화 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 6,
+        "effective_test_count": 6,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "EDGE",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "SINGLE",
+          "MULTIPLE",
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_sorted_list",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_empty_list",
+            "value_types": [
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_single_element",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_duplicates",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_already_sorted",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_reverse_sorted",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_012",
+      "name": "딕셔너리 처리 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 5,
+        "effective_test_count": 5,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "MULTIPLE",
+          "SINGLE",
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_merge_two_dicts",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_merge_overlapping",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_merge_with_empty",
+            "value_types": [
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_merge_both_empty",
+            "value_types": [
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_nested_dicts",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_013",
+      "name": "예외 처리 집중 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 5,
+        "effective_test_count": 5,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 5,
+        "value_types": [],
+        "input_diversity": [],
+        "test_purposes": [
+          "ERROR_HANDLING",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_divide_by_zero",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING",
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_divide_type_error",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_file_not_found",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_permission_error",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_value_error",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_014",
+      "name": "Parametrize 고급 사용",
+      "analysis": {
+        "success": true,
+        "test_count": 2,
+        "effective_test_count": 15,
+        "parametrize_count": 15,
+        "fixture_count": 6,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "EDGE",
+          "NEGATIVE",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "UNKNOWN",
+          "SINGLE",
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "ERROR_HANDLING",
+          "HAPPY_PATH",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_basic_operations",
+            "value_types": [
+              "NORMAL",
+              "NEGATIVE",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "UNKNOWN",
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "ERROR_HANDLING",
+              "HAPPY_PATH",
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_identity_operations",
+            "value_types": [
+              "NEGATIVE",
+              "NORMAL",
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "SINGLE",
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_015",
+      "name": "Skip/Xfail 마커 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 5,
+        "effective_test_count": 5,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "MULTIPLE",
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "ERROR_HANDLING"
+        ],
+        "antipatterns": [
+          {
+            "type": "NO_ASSERTION",
+            "penalty": -10,
+            "location": "test_linux_only"
+          }
+        ],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_future_feature",
+            "value_types": [
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_linux_only",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_known_bug",
+            "value_types": [
+              "NORMAL",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_normal_case",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_expected_fail",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH",
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_016",
+      "name": "클래스 기반 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 7,
+        "effective_test_count": 7,
+        "parametrize_count": 0,
+        "fixture_count": 5,
+        "pytest_raises_count": 1,
+        "value_types": [
+          "NORMAL",
+          "EDGE",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "BOUNDARY_CHECK",
+          "HAPPY_PATH",
+          "ERROR_HANDLING"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_add",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_subtract",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_multiply",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_divide",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_divide_by_zero",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "ERROR_HANDLING",
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_memory_store",
+            "value_types": [
+              "NORMAL",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_memory_clear",
+            "value_types": [
+              "BOUNDARY",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_017",
+      "name": "Assertion 없는 테스트들",
+      "analysis": {
+        "success": true,
+        "test_count": 3,
+        "effective_test_count": 3,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL"
+        ],
+        "input_diversity": [
+          "MULTIPLE"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH"
+        ],
+        "antipatterns": [
+          {
+            "type": "NO_ASSERTION",
+            "penalty": -10,
+            "location": "test_no_assertion_1"
+          },
+          {
+            "type": "NO_ASSERTION",
+            "penalty": -10,
+            "location": "test_no_assertion_2"
+          }
+        ],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_no_assertion_1",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_no_assertion_2",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_with_assertion",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_018",
+      "name": "외부 의존성 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 3,
+        "effective_test_count": 3,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "MULTIPLE",
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH"
+        ],
+        "antipatterns": [
+          {
+            "type": "EXTERNAL_DEPENDENCY",
+            "penalty": -5,
+            "location": "test_fetch_external_api"
+          },
+          {
+            "type": "NON_DETERMINISTIC",
+            "penalty": -10,
+            "location": "test_time_dependent"
+          }
+        ],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_fetch_external_api",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_time_dependent",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_pure_function",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_019",
+      "name": "중첩 구조 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 3,
+        "effective_test_count": 3,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH"
+        ],
+        "antipatterns": [
+          {
+            "type": "EXCESSIVE_NESTING",
+            "penalty": -5,
+            "location": "test_deeply_nested"
+          }
+        ],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_deeply_nested",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_normal",
+            "value_types": [
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_flat",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_020",
+      "name": "상태 전이 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 5,
+        "effective_test_count": 5,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 1,
+        "value_types": [
+          "NORMAL"
+        ],
+        "input_diversity": [
+          "MULTIPLE"
+        ],
+        "test_purposes": [
+          "BOUNDARY_CHECK",
+          "ERROR_HANDLING",
+          "HAPPY_PATH",
+          "STATE_TRANSITION"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_initial_state",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "STATE_TRANSITION"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_start_transition",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "STATE_TRANSITION"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_stop_transition",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "STATE_TRANSITION"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_invalid_transition",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "STATE_TRANSITION",
+              "HAPPY_PATH",
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_full_cycle",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "MULTIPLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_021",
+      "name": "동치 분할 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 4,
+        "effective_test_count": 4,
+        "parametrize_count": 0,
+        "fixture_count": 0,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY"
+        ],
+        "input_diversity": [
+          "SINGLE"
+        ],
+        "test_purposes": [
+          "EQUIVALENCE_PARTITION",
+          "BOUNDARY_CHECK"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_grade_a_partition",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "EQUIVALENCE_PARTITION"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_grade_b_partition",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "EQUIVALENCE_PARTITION"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_grade_f_partition",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "EQUIVALENCE_PARTITION"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_boundary_between_grades",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "BOUNDARY_CHECK"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_022",
+      "name": "데이터 주도 테스트",
+      "analysis": {
+        "success": true,
+        "test_count": 2,
+        "effective_test_count": 2,
+        "parametrize_count": 0,
+        "fixture_count": 3,
+        "pytest_raises_count": 1,
+        "value_types": [
+          "NORMAL"
+        ],
+        "input_diversity": [
+          "UNKNOWN"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH",
+          "ERROR_HANDLING"
+        ],
+        "antipatterns": [],
+        "confidence": 0.8333333333333334,
+        "per_test_details": [
+          {
+            "name": "test_parse_date_valid",
+            "value_types": [
+              "NORMAL"
+            ],
+            "input_diversity": [
+              "UNKNOWN"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 0.6666666666666667
+          },
+          {
+            "name": "test_parse_date_invalid",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH",
+              "ERROR_HANDLING"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "sample_023",
+      "name": "빈 테스트 파일",
+      "analysis": {
+        "success": false,
+        "error": "No test cases found",
+        "test_count": 0
+      }
+    },
+    {
+      "id": "sample_024",
+      "name": "구문 오류 테스트",
+      "analysis": {
+        "success": false,
+        "error": "'(' was never closed (<unknown>, line 4)",
+        "test_count": 0
+      }
+    },
+    {
+      "id": "sample_025",
+      "name": "복잡한 픽스처 체인",
+      "analysis": {
+        "success": true,
+        "test_count": 3,
+        "effective_test_count": 3,
+        "parametrize_count": 0,
+        "fixture_count": 4,
+        "pytest_raises_count": 0,
+        "value_types": [
+          "NORMAL",
+          "BOUNDARY",
+          "EDGE"
+        ],
+        "input_diversity": [
+          "SINGLE",
+          "EMPTY"
+        ],
+        "test_purposes": [
+          "HAPPY_PATH"
+        ],
+        "antipatterns": [],
+        "confidence": 1.0,
+        "per_test_details": [
+          {
+            "name": "test_service_query",
+            "value_types": [
+              "NORMAL",
+              "EDGE"
+            ],
+            "input_diversity": [
+              "EMPTY"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_service_cached",
+            "value_types": [
+              "NORMAL",
+              "BOUNDARY"
+            ],
+            "input_diversity": [
+              "SINGLE"
+            ],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          },
+          {
+            "name": "test_database_direct",
+            "value_types": [],
+            "input_diversity": [],
+            "test_purposes": [
+              "HAPPY_PATH"
+            ],
+            "confidence": 1.0
+          }
+        ]
+      }
+    }
+  ]
+}
