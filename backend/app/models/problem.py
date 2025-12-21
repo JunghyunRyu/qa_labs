@@ -1,6 +1,6 @@
 """Problem model."""
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, CheckConstraint
+from sqlalchemy import Column, Integer, Float, String, Text, DateTime, CheckConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -33,6 +33,10 @@ class Problem(Base):
     )
     skills = Column(JSONB)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Rubric Evaluation (Phase 1)
+    rubric_score = Column(Float, nullable=True)  # 0.0 ~ 100.0
+    rubric_analysis = Column(JSONB, nullable=True)  # RubricAnalysis JSON
 
     # Relationships
     buggy_implementations = relationship(

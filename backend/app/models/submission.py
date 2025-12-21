@@ -1,6 +1,6 @@
 """Submission model."""
 
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, CheckConstraint
+from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Text, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -42,6 +42,11 @@ class Submission(Base):
     feedback_json = Column(JSONB)
     progress = Column(JSONB)  # {"step": "testing_buggy", "current": 2, "total": 4, "percent": 50}
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Test Quality Evaluation (Phase 1)
+    test_quality_score = Column(Float, nullable=True)  # 0.0 ~ 100.0
+    test_quality_grade = Column(String(1), nullable=True)  # A/B/C/D/F
+    test_quality_analysis = Column(JSONB, nullable=True)  # TestQualityAnalysis JSON
 
     # Relationships
     user = relationship("User")

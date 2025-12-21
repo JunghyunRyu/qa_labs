@@ -7,6 +7,7 @@ from app.models.buggy_implementation import BuggyImplementation
 from app.models.submission import Submission
 from app.models.bookmarked_problem import BookmarkedProblem
 from app.models.ai_conversation import AIConversation, AIMessage
+from app.models.test_quality import AnalysisRun
 
 __all__ = [
     "Base",
@@ -18,4 +19,5 @@ __all__ = [
     "BookmarkedProblem",
     "AIConversation",
     "AIMessage",
+    "AnalysisRun",
 ]
