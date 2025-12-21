@@ -9,7 +9,7 @@
 
 | Phase | 상태 | 완료율 |
 |-------|------|--------|
-| Phase 0: 스파이크 | 진행 중 | 1/5 |
+| Phase 0: 스파이크 | 진행 중 | 3/5 |
 | Phase 1: 스키마 | 대기 | 0/5 |
 | Phase 2: 분석 엔진 | 대기 | 0/4 |
 | Phase 3: AI 연계 | 대기 | 0/3 |
@@ -31,16 +31,16 @@
   - [x] `pytest.raises` 감지
   - 파일: `backend/app/services/test_case_parser.py`
 
-- [ ] **P0-2**: 분류 로직 구현 (룰 기반)
-  - [ ] ValueType 분류기
-  - [ ] InputDiversity 분류기
-  - [ ] TestPurpose 분류기
-  - [ ] AntiPattern 감지기
+- [x] **P0-2**: 분류 로직 구현 (룰 기반)
+  - [x] ValueType 분류기
+  - [x] InputDiversity 분류기
+  - [x] TestPurpose 분류기
+  - [x] AntiPattern 감지기
   - 파일: `backend/app/services/test_quality_classifier.py`
 
-- [ ] **P0-3**: confidence 계산 로직 구현
-  - [ ] UNKNOWN 값 비율 기반 신뢰도 계산
-  - [ ] parametrize 케이스 포함 계산
+- [x] **P0-3**: confidence 계산 로직 구현
+  - [x] UNKNOWN 값 비율 기반 신뢰도 계산
+  - [x] parametrize 케이스 포함 계산
 
 - [ ] **P0-4**: 스파이크 실행 스크립트 작성
   - 파일: `backend/scripts/coverage_spike.py`
@@ -167,6 +167,16 @@
   - pytest markers 감지 (skip, xfail 등)
 - [x] 단위 테스트 34개 작성 및 통과
   - 파일: `backend/tests/test_test_case_parser.py`
+- [x] **P0-2 완료**: TestQualityClassifier 구현
+  - ValueType 분류기 (NORMAL, BOUNDARY, EDGE, NEGATIVE, EXTREME)
+  - InputDiversity 분류기 (SINGLE, MULTIPLE, EMPTY, DUPLICATE, MIXED_TYPES)
+  - TestPurpose 분류기 (HAPPY_PATH, ERROR_HANDLING, BOUNDARY_CHECK 등)
+  - AntiPattern 감지기 (NO_ASSERTION, EXCEPTION_SWALLOWED 등)
+- [x] **P0-3 완료**: confidence 계산 로직 구현
+  - UNKNOWN 비율 기반 신뢰도 계산
+  - 테스트별/전체 신뢰도 산출
+- [x] 단위 테스트 49개 작성 및 통과
+  - 파일: `backend/tests/test_test_quality_classifier.py`
 
 ---
 
