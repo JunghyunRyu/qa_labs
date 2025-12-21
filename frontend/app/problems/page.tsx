@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { getProblems, GetProblemsParams } from "@/lib/api/problems";
 import { ApiError } from "@/lib/api";
@@ -31,7 +31,8 @@ const DOMAIN_LABELS: Record<DomainFilter, string> = {
   content: "컨텐츠",
 };
 
-export default function ProblemsPage() {
+// useSearchParams를 사용하는 내부 컴포넌트
+function ProblemsContent() {
   const { isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const [data, setData] = useState<ProblemListResponse | null>(null);
@@ -398,6 +399,19 @@ export default function ProblemsPage() {
       {/* Pyodide 사전 로딩 - 문제 상세 페이지 진입 전에 미리 로드 */}
       <PyodidePreloader initializeImmediately={true} delay={2000} />
     </div>
+  );
+}
+
+// Suspense로 감싼 메인 컴포넌트
+export default function ProblemsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <Loading />
+      </div>
+    }>
+      <ProblemsContent />
+    </Suspense>
   );
 }
 
