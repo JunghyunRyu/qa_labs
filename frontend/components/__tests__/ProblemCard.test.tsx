@@ -10,6 +10,7 @@ const mockProblem: ProblemListItem = {
   title: 'Test Problem',
   difficulty: 'Easy',
   skills: ['Python', 'Algorithm'],
+  domain: 'common',
 };
 
 describe('ProblemCard', () => {

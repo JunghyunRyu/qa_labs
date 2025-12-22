@@ -410,7 +410,7 @@ export default function Home() {
       </section>
 
       {/* Proof Points Section */}
-      <section className="proof-points-section py-16 bg-slate-50 dark:bg-gray-900/50 relative">
+      <section id="why" className="proof-points-section py-16 bg-slate-50 dark:bg-gray-900/50 relative scroll-mt-16">
         {/* Top Divider */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent" />
 
@@ -787,7 +787,7 @@ export default function Home() {
       <HowItWorksSection />
 
       {/* AI Feedback Sample Section */}
-      <section className="py-16 sm:py-20 px-4 bg-[var(--background)]">
+      <section id="ai-feedback" className="py-16 sm:py-20 px-4 bg-[var(--background)] scroll-mt-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
             AI 도우미가 이렇게 피드백합니다

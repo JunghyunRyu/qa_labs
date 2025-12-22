@@ -7,19 +7,50 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import LoginButton from "./LoginButton";
 import UserMenu from "./UserMenu";
+
+// 홈 variant 메뉴 항목
+const homeNavItems = [
+  { label: "문제 보기", href: "/problems", isAnchor: false },
+  { label: "진행 방식", href: "/#how-it-works", anchor: "how-it-works", isAnchor: true },
+  { label: "AI 피드백", href: "/#ai-feedback", anchor: "ai-feedback", isAnchor: true },
+  { label: "시나리오", href: "/#scenario-showcase", anchor: "scenario-showcase", isAnchor: true },
+];
+
+// 앱 variant 메뉴 항목
+const appNavItems = [
+  { label: "Problems", href: "/problems" },
+];
 
 export default function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+
+  // 홈페이지면 home variant, 그 외는 app variant
+  const isHome = pathname === "/";
+  const navItems = isHome ? homeNavItems : appNavItems;
 
   // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // 앵커 클릭 핸들러: 홈에서는 스무스 스크롤, 다른 페이지에서는 /#id로 이동
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, anchor: string) => {
+    if (isHome) {
+      e.preventDefault();
+      const element = document.getElementById(anchor);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    // 홈이 아니면 Link의 기본 동작 (/#id로 페이지 이동)
+  };
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -34,13 +65,21 @@ export default function Header() {
         </Link>
 
         {/* Navigation */}
-        <nav className="flex flex-1 items-center space-x-6 text-sm font-medium">
-          <Link
-            href="/problems"
-            className="transition-colors hover:text-[var(--accent)] text-[var(--muted)]"
-          >
-            Problems
-          </Link>
+        <nav className="flex flex-1 items-center space-x-4 sm:space-x-6 text-sm font-medium">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={
+                "isAnchor" in item && item.isAnchor && "anchor" in item
+                  ? (e) => handleAnchorClick(e, item.anchor as string)
+                  : undefined
+              }
+              className="transition-colors hover:text-[var(--accent)] text-[var(--muted)] whitespace-nowrap"
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         {/* Right side: Theme Toggle + Auth */}

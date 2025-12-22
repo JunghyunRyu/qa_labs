@@ -24,6 +24,7 @@ describe('Problems API', () => {
             title: 'Test Problem',
             difficulty: 'Easy',
             skills: ['Python'],
+            domain: 'common',
           },
         ],
         total: 1,
@@ -77,6 +78,8 @@ describe('Problems API', () => {
         golden_code: 'def test():\n    pass',
         difficulty: 'Easy',
         skills: ['Python'],
+        domain: 'common',
+        buggy_implementations: [],
         created_at: '2024-01-01T00:00:00Z',
       };
 
