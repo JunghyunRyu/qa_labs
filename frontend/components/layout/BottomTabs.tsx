@@ -53,10 +53,14 @@ interface BottomTabsProps {
   activeTab?: TabId;
   /** Tab change callback */
   onTabChange?: (tab: TabId) => void;
-  /** Controlled expanded state */
+  /** Controlled expanded state (legacy - use isCollapsed instead) */
   isExpanded?: boolean;
-  /** Expand toggle callback */
+  /** Expand toggle callback (legacy) */
   onExpandToggle?: (expanded: boolean) => void;
+  /** New: Collapsed state for minimal view */
+  isCollapsed?: boolean;
+  /** New: Collapse toggle callback */
+  onCollapseToggle?: () => void;
   /** Local test props */
   localTestResult?: PytestResult | null;
   localTestError?: string | null;
@@ -81,6 +85,8 @@ export default function BottomTabs({
   onTabChange,
   isExpanded: controlledIsExpanded,
   onExpandToggle,
+  isCollapsed = false,
+  onCollapseToggle,
   localTestResult,
   localTestError,
   isLocalTesting = false,
@@ -196,21 +202,22 @@ export default function BottomTabs({
           </button>
         ))}
 
-        {/* Expand/Collapse Toggle */}
+        {/* Collapse Toggle */}
         <button
-          onClick={handleExpandToggle}
+          onClick={onCollapseToggle ?? handleExpandToggle}
           className="ml-auto px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          title={isExpanded ? "패널 축소" : "패널 확장"}
+          title={isCollapsed ? "패널 펼치기" : "패널 접기"}
         >
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
+          {isCollapsed ? (
             <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
           )}
         </button>
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content - Hidden when collapsed */}
+      {!isCollapsed && (
       <div className="flex-1 min-h-0 overflow-y-auto">
         {/* Local Test Tab */}
         {activeTab === "local" && (
@@ -291,6 +298,7 @@ export default function BottomTabs({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

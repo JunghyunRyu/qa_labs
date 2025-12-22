@@ -1,11 +1,27 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Code2, Play, Keyboard, Loader2, FlaskConical } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  Code2,
+  Play,
+  Keyboard,
+  Loader2,
+  FlaskConical,
+  GripHorizontal,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import BottomTabs, { type TabId } from "@/components/layout/BottomTabs";
 import type { Submission } from "@/types/problem";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
+
+// Constants for bottom panel sizing
+const BOTTOM_PANEL_MIN = 120; // Minimum height when visible
+const BOTTOM_PANEL_MAX = 500; // Maximum height
+const BOTTOM_PANEL_DEFAULT = 220; // Default height
+const BOTTOM_PANEL_COLLAPSED = 36; // Height when collapsed (just tab bar)
+const STORAGE_KEY = "qa-arena-bottom-panel-height";
 
 interface CodeEditorPanelProps {
   code: string;
@@ -54,12 +70,54 @@ export default function CodeEditorPanel({
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [editorHeight, setEditorHeight] = useState(400);
   const [activeTab, setActiveTab] = useState<TabId>("local");
-  const [isBottomExpanded, setIsBottomExpanded] = useState(false);
-  const editorContainerRef = useRef<HTMLDivElement>(null);
 
-  // Panel heights
-  const PANEL_HEIGHT_COLLAPSED = 220;
-  const PANEL_HEIGHT_EXPANDED = 360;
+  // Bottom panel state
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(BOTTOM_PANEL_DEFAULT);
+  const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [userHasResized, setUserHasResized] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const dragStartY = useRef(0);
+  const dragStartHeight = useRef(0);
+
+  // Load saved height from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.height === "number") {
+          setBottomPanelHeight(Math.max(BOTTOM_PANEL_MIN, Math.min(BOTTOM_PANEL_MAX, parsed.height)));
+        }
+        if (typeof parsed.collapsed === "boolean") {
+          setIsBottomCollapsed(parsed.collapsed);
+        }
+        if (typeof parsed.userResized === "boolean") {
+          setUserHasResized(parsed.userResized);
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
+
+  // Save height to localStorage when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          height: bottomPanelHeight,
+          collapsed: isBottomCollapsed,
+          userResized: userHasResized,
+        })
+      );
+    } catch {
+      // Ignore storage errors
+    }
+  }, [bottomPanelHeight, isBottomCollapsed, userHasResized]);
 
   // Measure container height for Monaco
   useEffect(() => {
@@ -72,10 +130,8 @@ export default function CodeEditorPanel({
       }
     };
 
-    // Initial measurement
     updateHeight();
 
-    // Update on resize
     const resizeObserver = new ResizeObserver(updateHeight);
     if (editorContainerRef.current) {
       resizeObserver.observe(editorContainerRef.current);
@@ -84,19 +140,67 @@ export default function CodeEditorPanel({
     return () => resizeObserver.disconnect();
   }, []);
 
+  // Handle drag start
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartY.current = e.clientY;
+    dragStartHeight.current = bottomPanelHeight;
+  }, [bottomPanelHeight]);
+
+  // Handle drag move
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaY = dragStartY.current - e.clientY;
+      const newHeight = Math.max(
+        BOTTOM_PANEL_MIN,
+        Math.min(BOTTOM_PANEL_MAX, dragStartHeight.current + deltaY)
+      );
+      setBottomPanelHeight(newHeight);
+      setUserHasResized(true);
+
+      // If user drags to expand, un-collapse
+      if (isBottomCollapsed && newHeight > BOTTOM_PANEL_MIN) {
+        setIsBottomCollapsed(false);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, isBottomCollapsed]);
+
   // Auto-switch to local test tab when local test starts
   useEffect(() => {
     if (isLocalTesting) {
       setActiveTab("local");
+      // Auto-expand if collapsed (don't override user's height preference)
+      if (isBottomCollapsed) {
+        setIsBottomCollapsed(false);
+      }
     }
-  }, [isLocalTesting]);
+  }, [isLocalTesting, isBottomCollapsed]);
 
   // Auto-switch to result tab when submission starts
   useEffect(() => {
     if (isSubmitting) {
       setActiveTab("result");
+      // Auto-expand if collapsed
+      if (isBottomCollapsed) {
+        setIsBottomCollapsed(false);
+      }
     }
-  }, [isSubmitting]);
+  }, [isSubmitting, isBottomCollapsed]);
 
   // Auto-switch to logs tab on submission error or failure
   useEffect(() => {
@@ -106,6 +210,20 @@ export default function CodeEditorPanel({
       setActiveTab("logs");
     }
   }, [submissionError, submission?.status]);
+
+  // Auto-expand when results arrive (if user hasn't manually resized)
+  useEffect(() => {
+    if (!userHasResized && (localTestResult || submission)) {
+      if (isBottomCollapsed) {
+        setIsBottomCollapsed(false);
+      }
+    }
+  }, [localTestResult, submission, userHasResized, isBottomCollapsed]);
+
+  // Toggle collapse
+  const toggleCollapse = useCallback(() => {
+    setIsBottomCollapsed((prev) => !prev);
+  }, []);
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -125,8 +243,12 @@ export default function CodeEditorPanel({
     }
   };
 
+  // Current bottom panel height based on collapse state
+  const currentBottomHeight = isBottomCollapsed ? BOTTOM_PANEL_COLLAPSED : bottomPanelHeight;
+
   return (
     <div
+      ref={containerRef}
       className="h-full flex flex-col bg-white dark:bg-gray-900 overflow-hidden"
       onKeyDown={handleKeyDown}
     >
@@ -250,20 +372,36 @@ export default function CodeEditorPanel({
         </div>
       </div>
 
+      {/* ===== 드래그 핸들 ===== */}
+      <div
+        className={`flex-shrink-0 h-2 flex items-center justify-center cursor-row-resize
+                    border-t border-gray-200 dark:border-gray-700
+                    bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
+                    transition-colors group ${isDragging ? "bg-sky-100 dark:bg-sky-900/30" : ""}`}
+        onMouseDown={handleDragStart}
+        title="드래그하여 패널 크기 조절"
+      >
+        <GripHorizontal
+          className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300
+                      ${isDragging ? "text-sky-500" : ""}`}
+        />
+      </div>
+
       {/* ===== 하단 영역: 결과 탭 ===== */}
       <div
-        className="flex-shrink-0 flex flex-col transition-all duration-200"
+        className="flex-shrink-0 flex flex-col transition-all duration-150"
         style={{
-          height: isBottomExpanded ? PANEL_HEIGHT_EXPANDED : PANEL_HEIGHT_COLLAPSED,
-          minHeight: isBottomExpanded ? PANEL_HEIGHT_EXPANDED : PANEL_HEIGHT_COLLAPSED,
+          height: currentBottomHeight,
+          minHeight: BOTTOM_PANEL_COLLAPSED,
         }}
       >
+        {/* Collapse toggle in tab bar is handled inside BottomTabs */}
         <BottomTabs
           className="h-full"
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          isExpanded={isBottomExpanded}
-          onExpandToggle={setIsBottomExpanded}
+          isExpanded={!isBottomCollapsed}
+          onExpandToggle={() => toggleCollapse()}
           localTestResult={localTestResult}
           localTestError={localTestError}
           isLocalTesting={isLocalTesting}
@@ -276,8 +414,15 @@ export default function CodeEditorPanel({
           problemId={problemId}
           onLoadSubmission={onLoadSubmission}
           sessionHistory={sessionHistory}
+          isCollapsed={isBottomCollapsed}
+          onCollapseToggle={toggleCollapse}
         />
       </div>
+
+      {/* Overlay during drag to prevent iframe/editor capturing mouse */}
+      {isDragging && (
+        <div className="fixed inset-0 z-50 cursor-row-resize" />
+      )}
     </div>
   );
 }
