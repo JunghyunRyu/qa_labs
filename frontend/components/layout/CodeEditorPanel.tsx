@@ -82,6 +82,22 @@ export default function CodeEditorPanel({
     }
   }, [isLocalTesting]);
 
+  // Auto-switch to result tab when submission starts
+  useEffect(() => {
+    if (isSubmitting) {
+      setActiveTab("result");
+    }
+  }, [isSubmitting]);
+
+  // Auto-switch to logs tab on submission error or failure
+  useEffect(() => {
+    if (submissionError) {
+      setActiveTab("logs");
+    } else if (submission?.status === "ERROR" || submission?.status === "FAILURE") {
+      setActiveTab("logs");
+    }
+  }, [submissionError, submission?.status]);
+
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Ctrl+Enter for submit
@@ -241,6 +257,10 @@ export default function CodeEditorPanel({
           isLocalTesting={isLocalTesting}
           localTestProgress={localTestProgress}
           onLocalTestRetry={onLocalTest}
+          submission={submission}
+          submissionError={submissionError}
+          isSubmitting={isSubmitting}
+          onSubmitRetry={onSubmit}
         />
       </div>
     </div>
