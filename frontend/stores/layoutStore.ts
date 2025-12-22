@@ -25,7 +25,7 @@ interface LayoutState {
 }
 
 const DEFAULT_STATE = {
-  panelWidth: 40,
+  panelWidth: 35, // 35% problem / 65% code
   isProblemCollapsed: false,
   isAIChatOpen: false,
   editorFontSize: 14,
@@ -38,8 +38,8 @@ export const useLayoutStore = create<LayoutState>()(
       ...DEFAULT_STATE,
 
       setPanelWidth: (width: number) => {
-        // Clamp between 20-55%
-        const clampedWidth = Math.min(55, Math.max(20, width));
+        // Clamp between 22-55% (problem panel takes 22-55%, code takes 45-78%)
+        const clampedWidth = Math.min(55, Math.max(22, width));
         set({ panelWidth: clampedWidth });
       },
 

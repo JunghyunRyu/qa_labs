@@ -29,25 +29,26 @@ interface ProblemPanelProps {
 export default function ProblemPanel({ problem }: ProblemPanelProps) {
   const { isProblemCollapsed, toggleProblemPanel } = useLayoutStore();
 
-  // Collapsed state - narrow vertical bar
+  // Collapsed state - minimal vertical bar with expand button
   if (isProblemCollapsed) {
     return (
-      <div className="h-full bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-4">
+      <div className="h-full bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-2">
         <button
           onClick={toggleProblemPanel}
-          className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700
+                     bg-white dark:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-600
+                     transition-colors group"
           aria-label="문제 패널 펼치기"
           title="문제 패널 펼치기 (Ctrl+B)"
         >
-          <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-sky-600 dark:group-hover:text-sky-400" />
         </button>
 
-        <div className="mt-4 writing-mode-vertical">
-          <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-        </div>
-
-        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 writing-mode-vertical whitespace-nowrap">
-          문제
+        <div className="mt-3 flex flex-col items-center gap-1">
+          <FileText className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 writing-mode-vertical whitespace-nowrap">
+            문제
+          </span>
         </div>
       </div>
     );
