@@ -3,9 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Code2, Play, Keyboard, Loader2, FlaskConical } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
-import SubmissionResultPanel from "@/components/SubmissionResultPanel";
-import LocalTestResultPanel from "@/components/LocalTestResultPanel";
-import BottomTabs from "@/components/layout/BottomTabs";
+import BottomTabs, { type TabId } from "@/components/layout/BottomTabs";
 import type { Submission } from "@/types/problem";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 
@@ -46,6 +44,7 @@ export default function CodeEditorPanel({
 }: CodeEditorPanelProps) {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [editorHeight, setEditorHeight] = useState(400);
+  const [activeTab, setActiveTab] = useState<TabId>("local");
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Measure container height for Monaco
@@ -70,6 +69,13 @@ export default function CodeEditorPanel({
 
     return () => resizeObserver.disconnect();
   }, []);
+
+  // Auto-switch to local test tab when local test starts
+  useEffect(() => {
+    if (isLocalTesting) {
+      setActiveTab("local");
+    }
+  }, [isLocalTesting]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -213,64 +219,17 @@ export default function CodeEditorPanel({
 
       {/* ===== 하단 영역: 결과 탭 ===== */}
       <div className="flex-shrink-0 h-[200px] min-h-[200px] flex flex-col">
-        {/* BottomTabs (더미) */}
-        <BottomTabs className="h-full" />
+        <BottomTabs
+          className="h-full"
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          localTestResult={localTestResult}
+          localTestError={localTestError}
+          isLocalTesting={isLocalTesting}
+          localTestProgress={localTestProgress}
+          onLocalTestRetry={onLocalTest}
+        />
       </div>
     </div>
-  );
-}
-
-/**
- * 기존 결과 UI 컴포넌트들 - 나중에 BottomTabs로 이동 예정
- * (현재는 사용하지 않음 - PR-2에서 통합)
- */
-function _LegacyResultPanels({
-  localTestResult,
-  localTestError,
-  isLocalTesting,
-  localTestProgress,
-  onLocalTest,
-  submission,
-  submissionError,
-  isSubmitting,
-  onSubmit,
-}: {
-  localTestResult: PytestResult | null | undefined;
-  localTestError: string | null | undefined;
-  isLocalTesting: boolean;
-  localTestProgress: string | undefined;
-  onLocalTest: (() => void) | undefined;
-  submission: Submission | null;
-  submissionError: string | null;
-  isSubmitting: boolean;
-  onSubmit: () => void;
-}) {
-  return (
-    <>
-      {/* Local Test Result */}
-      {(localTestResult || localTestError || isLocalTesting) && (
-        <div className="flex-shrink-0 max-h-[30%] overflow-y-auto">
-          <LocalTestResultPanel
-            result={localTestResult ?? null}
-            isRunning={isLocalTesting}
-            error={localTestError ?? null}
-            progressMessage={localTestProgress}
-            onRetry={onLocalTest}
-          />
-        </div>
-      )}
-
-      {/* Submission Result */}
-      {(submission || submissionError) && (
-        <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 max-h-[40%] overflow-y-auto">
-          <SubmissionResultPanel
-            submission={submission}
-            isSubmitting={isSubmitting}
-            submissionError={submissionError}
-            onRetry={onSubmit}
-          />
-        </div>
-      )}
-    </>
   );
 }
