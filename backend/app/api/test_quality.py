@@ -31,6 +31,10 @@ from app.services.test_quality_analyzer import (
     PARSER_VERSION,
     SCORING_VERSION,
 )
+from app.services.test_hint_generator import (
+    generate_hints_from_analysis,
+    HintGenerationResult,
+)
 from app.services.auth import get_current_user_optional
 
 logger = logging.getLogger(__name__)
@@ -117,6 +121,93 @@ async def analyze_code(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Analysis failed: {str(e)}",
+        )
+
+
+@router.get(
+    "/submissions/{submission_id}/hints",
+    response_model=HintGenerationResult,
+)
+@limiter.limit(settings.RATE_LIMIT_STANDARD)
+async def get_test_improvement_hints(
+    request: Request,
+    submission_id: UUID,
+    max_hints: int = 3,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    """
+    Get test improvement hints for a submission.
+
+    Phase 3-2: 사용자용 텍스트 힌트 생성.
+    코드 없이 텍스트 힌트만 제공하여 사용자의 사고를 유도합니다.
+
+    Args:
+        request: FastAPI request object (for rate limiting)
+        submission_id: Submission UUID
+        max_hints: Maximum number of hints to return (default: 3, max: 5)
+        db: Database session
+        current_user: Authenticated user (optional)
+
+    Returns:
+        Hints with summary, improvement suggestions, and encouragement
+
+    Raises:
+        404: If submission not found or quality not analyzed
+        400: If hint generation fails
+    """
+    # Limit max_hints to prevent abuse
+    max_hints = min(max_hints, 5)
+
+    # Get submission with quality analysis
+    submission_repo = SubmissionRepository(db)
+    submission = submission_repo.get_by_id(submission_id)
+
+    if not submission:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Submission {submission_id} not found",
+        )
+
+    # Check if quality analysis exists
+    if not submission.test_quality_analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Quality analysis for submission {submission_id} not found. "
+            "Please wait for analysis to complete.",
+        )
+
+    # Get problem title for context
+    problem_repo = ProblemRepository(db)
+    problem = problem_repo.get_by_id(submission.problem_id)
+    problem_title = problem.title if problem else "Unknown Problem"
+
+    try:
+        # Parse analysis from JSONB
+        analysis = TestQualityAnalysis(**submission.test_quality_analysis)
+
+        # Generate hints
+        result = generate_hints_from_analysis(
+            analysis=analysis,
+            problem_title=problem_title,
+            max_hints=max_hints,
+        )
+
+        logger.info(
+            f"[HINT_GENERATION_SUCCESS] submission_id={submission_id} "
+            f"hints_count={len(result.hints)}"
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(
+            f"[HINT_GENERATION_ERROR] submission_id={submission_id} error={str(e)}",
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Hint generation failed: {str(e)}",
         )
 
 

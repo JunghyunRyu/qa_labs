@@ -6,9 +6,11 @@ import ScoreDisplay from "./ScoreDisplay";
 import FeedbackDisplay from "./FeedbackDisplay";
 import TestResultsList from "./TestResultsList";
 import ErrorLogDisplay from "./ErrorLogDisplay";
+import { TestQualityPanel } from "./test-quality";
 import { parsePytestOutput } from "@/lib/pytestParser";
 import { AlertCircle, FileText, Sparkles, Lock } from "lucide-react";
 import { Github } from "lucide-react";
+import type { QualityGrade, TestQualityAnalysis } from "@/types/test-quality";
 
 interface SubmissionResultProps {
   submission: Submission;
@@ -64,6 +66,18 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
             totalMutants={submission.total_mutants}
           />
         </div>
+      )}
+
+      {/* Test Quality Analysis - Shown for SUCCESS status */}
+      {submission.status === "SUCCESS" && submission.test_quality_analysis && (
+        <TestQualityPanel
+          submissionId={submission.id}
+          score={submission.test_quality_score}
+          grade={submission.test_quality_grade as QualityGrade | undefined}
+          analysis={submission.test_quality_analysis as unknown as TestQualityAnalysis}
+          showHints={!!submission.user_id}
+          defaultExpanded={false}
+        />
       )}
 
       {/* FAILURE 상태 상세 정보 */}
