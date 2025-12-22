@@ -35,7 +35,7 @@ from app.services.test_hint_generator import (
     generate_hints_from_analysis,
     HintGenerationResult,
 )
-from app.services.auth import get_current_user_optional
+from app.core.dependencies import get_current_user_optional
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ async def get_submission_quality(
 
 
 @router.post("/analyze")
-@limiter.limit(settings.RATE_LIMIT_STANDARD)
+@limiter.limit(settings.RATE_LIMIT_DEFAULT)
 async def analyze_code(
     request: Request,
     code: str,
@@ -128,7 +128,7 @@ async def analyze_code(
     "/submissions/{submission_id}/hints",
     response_model=HintGenerationResult,
 )
-@limiter.limit(settings.RATE_LIMIT_STANDARD)
+@limiter.limit(settings.RATE_LIMIT_DEFAULT)
 async def get_test_improvement_hints(
     request: Request,
     submission_id: UUID,
