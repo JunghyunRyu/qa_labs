@@ -389,7 +389,7 @@ export default function CodeEditorPanel({
 
       {/* ===== 하단 영역: 결과 탭 ===== */}
       <div
-        className="flex-shrink-0 flex flex-col transition-all duration-150"
+        className={`flex-shrink-0 flex flex-col ${isDragging ? "" : "transition-all duration-150"}`}
         style={{
           height: currentBottomHeight,
           minHeight: BOTTOM_PANEL_COLLAPSED,
