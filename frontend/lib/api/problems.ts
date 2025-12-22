@@ -46,10 +46,10 @@ export async function getProblems(
 }
 
 /**
- * Get problem detail by ID
+ * Get problem detail by ID or slug
  */
-export async function getProblem(id: number): Promise<Problem> {
-  return get<Problem>(`${PROBLEMS_ENDPOINT}/${id}`);
+export async function getProblem(idOrSlug: number | string): Promise<Problem> {
+  return get<Problem>(`${PROBLEMS_ENDPOINT}/${idOrSlug}`);
 }
 
 /**

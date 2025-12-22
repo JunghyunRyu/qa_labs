@@ -32,7 +32,8 @@ export default function ProblemDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const submissionIdFromUrl = searchParams.get("submission");
-  const problemId = parseInt(params.id as string);
+  // Support both numeric ID and slug
+  const problemIdOrSlug = params.id as string;
   const { isDesktop } = useMediaQuery();
   const { toggleProblemPanel, toggleAIChat, setIsAIChatOpen } = useLayoutStore();
 
@@ -101,7 +102,7 @@ export default function ProblemDetailPage() {
           const submissionData = await getSubmission(submissionIdFromUrl);
 
           // Check if this submission belongs to this problem
-          if (submissionData.problem_id !== problemId) {
+          if (submissionData.problem_id !== problem.id) {
             console.warn("Submission does not belong to this problem");
             setCode(getInitialTemplate(problem));
             return;
@@ -138,7 +139,7 @@ export default function ProblemDetailPage() {
     };
 
     initializeCode();
-  }, [submissionIdFromUrl, problem, problemId, setIsAIChatOpen]);
+  }, [submissionIdFromUrl, problem, setIsAIChatOpen]);
 
   // Clear saved feedback handler
   const handleClearSavedFeedback = useCallback(() => {
@@ -215,7 +216,7 @@ def test_edge_case():
   // Fetch problem data (code initialization is handled by initializeCode effect)
   useEffect(() => {
     const fetchProblem = async () => {
-      if (isNaN(problemId)) {
+      if (!problemIdOrSlug) {
         setError("잘못된 문제 ID입니다.");
         setLoading(false);
         return;
@@ -224,7 +225,7 @@ def test_edge_case():
       try {
         setLoading(true);
         setError(null);
-        const result = await getProblem(problemId);
+        const result = await getProblem(problemIdOrSlug);
         setProblem(result);
         // Note: Code initialization is handled by the initializeCode effect
         // which depends on `problem` state and `submissionIdFromUrl`
@@ -243,7 +244,7 @@ def test_edge_case():
     };
 
     fetchProblem();
-  }, [problemId]);
+  }, [problemIdOrSlug]);
 
   // Polling for submission result with exponential backoff
   // Also poll for AI feedback if member submitted successfully but feedback not yet generated
@@ -504,7 +505,7 @@ def test_edge_case():
                 localTestResult={localTestResult}
                 localTestError={localTestError}
                 localTestProgress={currentLocalTestProgress}
-                problemId={problemId}
+                problemId={problem?.id ?? 0}
                 onLoadSubmission={handleLoadSubmission}
                 sessionHistory={sessionHistory}
               />
@@ -514,7 +515,7 @@ def test_edge_case():
 
         {/* Floating AI Chat */}
         <FloatingAIChat
-          problemId={problemId}
+          problemId={problem?.id ?? 0}
           codeContext={code}
           mode={aiMode}
           onModeChange={handleAIModeChange}
@@ -567,7 +568,7 @@ def test_edge_case():
               localTestResult={localTestResult}
               localTestError={localTestError}
               localTestProgress={currentLocalTestProgress}
-              problemId={problemId}
+              problemId={problem?.id ?? 0}
               onLoadSubmission={handleLoadSubmission}
               sessionHistory={sessionHistory}
             />
@@ -575,7 +576,7 @@ def test_edge_case():
           aiPanel={
             <div className="h-full">
               <AICoachPanel
-                problemId={problemId}
+                problemId={problem?.id ?? 0}
                 codeContext={code}
                 mode={aiMode}
                 onModeChange={handleAIModeChange}

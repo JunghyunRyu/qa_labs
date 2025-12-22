@@ -117,14 +117,14 @@ async def get_bookmarked_problems(
 
 @router.get("/{problem_id}", response_model=ProblemDetailResponse)
 async def get_problem(
-    problem_id: int,
+    problem_id: str,
     db: Session = Depends(get_db),
 ):
     """
-    Get problem detail by ID.
+    Get problem detail by ID or slug.
 
     Args:
-        problem_id: Problem ID
+        problem_id: Problem ID (integer) or slug (string)
 
     Returns:
         Problem detail
@@ -132,10 +132,17 @@ async def get_problem(
     Raises:
         404: If problem not found
     """
-    logger.info(f"Fetching problem {problem_id}")
     service = ProblemService(db)
-    problem = service.get_problem_by_id(problem_id)
-    logger.info(f"Problem {problem_id} retrieved successfully")
+
+    # Check if problem_id is numeric (ID) or string (slug)
+    if problem_id.isdigit():
+        logger.info(f"Fetching problem by ID: {problem_id}")
+        problem = service.get_problem_by_id(int(problem_id))
+    else:
+        logger.info(f"Fetching problem by slug: {problem_id}")
+        problem = service.get_problem_by_slug(problem_id)
+
+    logger.info(f"Problem retrieved successfully: {problem_id}")
     return problem
 
 
