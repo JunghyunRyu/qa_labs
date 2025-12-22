@@ -157,7 +157,7 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
                 AI 피드백은 회원 전용 기능입니다
               </p>
               <p className="text-sm text-gray-500 mb-6">
-                로그인하면 상세한 AI 코칭과 개선 제안을 받을 수 있습니다.
+                로그인하면 상세한 AI 피드백과 개선 제안을 받을 수 있습니다.
               </p>
               <a
                 href="/api/v1/auth/github/login"

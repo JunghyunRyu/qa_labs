@@ -437,7 +437,7 @@ export default function MutationDiagram({ onStageChange, initialStage = 1 }: Pro
         </motion.g>
       </svg>
 
-      {/* Step 05 Callouts: 품질 분석 + AI 코칭 */}
+      {/* Step 05 Callouts: 품질 분석 + AI 피드백 */}
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700 dark:bg-purple-950/50 dark:text-purple-300">
           <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,7 +449,7 @@ export default function MutationDiagram({ onStageChange, initialStage = 1 }: Pro
           <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
-          AI 코칭 제공
+          AI 피드백 제공
         </span>
       </div>
 

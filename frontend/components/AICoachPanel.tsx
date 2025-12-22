@@ -162,7 +162,7 @@ export default function AICoachPanel({
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-sky-500" />
           <span className="font-medium text-gray-900 dark:text-gray-100">
-            AI 코치
+            AI 도우미
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -202,7 +202,7 @@ export default function AICoachPanel({
             <Bot className="w-6 h-6 text-gray-400" />
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            AI 코치가 꺼져 있습니다
+            AI 도우미가 꺼져 있습니다
           </p>
           <button
             onClick={() => onModeChange("COACH")}
@@ -221,7 +221,7 @@ export default function AICoachPanel({
             회원 전용 기능
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            AI 코치는 로그인 후 이용할 수 있습니다
+            AI 도우미는 로그인 후 이용할 수 있습니다
           </p>
           <button
             onClick={login}

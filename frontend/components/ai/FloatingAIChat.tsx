@@ -72,8 +72,8 @@ export default function FloatingAIChat({
                        hover:from-purple-600 hover:to-purple-700
                        text-white shadow-lg flex items-center justify-center
                        transition-colors"
-            aria-label="AI 코치 열기 (Ctrl+/)"
-            title="AI 코치 열기 (Ctrl+/)"
+            aria-label="AI 도우미 열기 (Ctrl+/)"
+            title="AI 도우미 열기 (Ctrl+/)"
           >
             <Bot className="w-6 h-6" />
           </motion.button>
@@ -120,7 +120,7 @@ export default function FloatingAIChat({
                 ) : (
                   <>
                     <Bot className="w-5 h-5" />
-                    <span className="font-semibold">AI 코치</span>
+                    <span className="font-semibold">AI 도우미</span>
                   </>
                 )}
               </div>

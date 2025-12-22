@@ -201,7 +201,7 @@ export default function CodeEditorPanel({
               <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
                 Ctrl+/
               </kbd>
-              {" AI 코치"}
+              {" AI 도우미"}
             </span>
           </div>
         </div>
