@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FlaskConical,
   FileText,
@@ -26,8 +26,10 @@ import {
 } from "lucide-react";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import { useLayoutStore } from "@/stores/layoutStore";
+import { getMySubmissions } from "@/lib/api/users";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 import type { Submission, SubmissionProgress } from "@/types/problem";
+import type { SubmissionListItem } from "@/types/submission";
 
 // Core loop tabs: 로컬 테스트 → 채점 결과 → 로그, with 히스토리 as 4th
 export type TabId = "local" | "result" | "logs" | "history";
@@ -66,6 +68,11 @@ interface BottomTabsProps {
   submissionError?: string | null;
   isSubmitting?: boolean;
   onSubmitRetry?: () => void;
+  /** History props */
+  problemId?: number;
+  onLoadSubmission?: (submission: Submission) => void;
+  /** Session-based history for non-authenticated users */
+  sessionHistory?: Submission[];
 }
 
 export default function BottomTabs({
@@ -83,6 +90,9 @@ export default function BottomTabs({
   submissionError,
   isSubmitting = false,
   onSubmitRetry,
+  problemId,
+  onLoadSubmission,
+  sessionHistory = [],
 }: BottomTabsProps) {
   // Internal state for uncontrolled mode
   const [internalActiveTab, setInternalActiveTab] = useState<TabId>("local");
@@ -268,16 +278,15 @@ export default function BottomTabs({
           </div>
         )}
 
-        {/* History Tab - Placeholder */}
+        {/* History Tab */}
         {activeTab === "history" && (
-          <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
-            <div className="text-center">
-              <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">제출 히스토리 없음</p>
-              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
-                이전 제출 기록이 여기에 표시됩니다
-              </p>
-            </div>
+          <div className="h-full overflow-y-auto">
+            <HistoryTabContent
+              problemId={problemId}
+              sessionHistory={sessionHistory}
+              onLoadSubmission={onLoadSubmission}
+              onTabChange={handleTabChange}
+            />
           </div>
         )}
       </div>
@@ -785,6 +794,243 @@ function LogsTabContent({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// History Tab Content Component
+function HistoryTabContent({
+  problemId,
+  sessionHistory,
+  onLoadSubmission,
+  onTabChange,
+}: {
+  problemId?: number;
+  sessionHistory?: Submission[];
+  onLoadSubmission?: (submission: Submission) => void;
+  onTabChange?: (tab: TabId) => void;
+}) {
+  const [submissions, setSubmissions] = useState<SubmissionListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch submissions from API (for authenticated users)
+  const fetchSubmissions = useCallback(async () => {
+    if (!problemId) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Fetch all submissions and filter by problem_id
+      const response = await getMySubmissions(1, 50);
+      const filtered = response.submissions.filter(
+        (s) => s.problem_id === problemId
+      );
+      setSubmissions(filtered);
+    } catch (err) {
+      // User might not be authenticated - that's OK, use session history
+      setSubmissions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [problemId]);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
+
+  // Convert session history to display format
+  const sessionItems: SubmissionListItem[] = (sessionHistory || [])
+    .filter((s) => s.problem_id === problemId)
+    .map((s) => ({
+      id: s.id,
+      problem_id: s.problem_id,
+      problem_title: "",
+      problem_difficulty: "Easy" as const,
+      status: s.status,
+      score: s.score,
+      killed_mutants: s.killed_mutants,
+      total_mutants: s.total_mutants,
+      has_feedback: !!s.feedback_json,
+      created_at: s.created_at,
+    }));
+
+  // Merge API submissions with session history, avoiding duplicates
+  const allSubmissions = [...submissions];
+  sessionItems.forEach((item) => {
+    if (!allSubmissions.some((s) => s.id === item.id)) {
+      allSubmissions.push(item);
+    }
+  });
+
+  // Sort by created_at descending (newest first)
+  allSubmissions.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  // Handle click on history item
+  const handleItemClick = async (item: SubmissionListItem) => {
+    if (!onLoadSubmission) return;
+
+    // Check if it's in session history (full Submission object available)
+    const sessionSubmission = sessionHistory?.find((s) => s.id === item.id);
+    if (sessionSubmission) {
+      onLoadSubmission(sessionSubmission);
+      onTabChange?.("result");
+      return;
+    }
+
+    // Otherwise, we need to fetch the full submission
+    // For now, create a partial submission object from the list item
+    const partialSubmission: Submission = {
+      id: item.id,
+      user_id: null,
+      anonymous_id: null,
+      problem_id: item.problem_id,
+      code: "",
+      status: item.status,
+      score: item.score,
+      killed_mutants: item.killed_mutants,
+      total_mutants: item.total_mutants,
+      created_at: item.created_at,
+    };
+    onLoadSubmission(partialSubmission);
+    onTabChange?.("result");
+  };
+
+  // Format relative time
+  const formatRelativeTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSecs < 60) return "방금 전";
+    if (diffMins < 60) return `${diffMins}분 전`;
+    if (diffHours < 24) return `${diffHours}시간 전`;
+    if (diffDays < 7) return `${diffDays}일 전`;
+    return date.toLocaleDateString("ko-KR");
+  };
+
+  // Get status badge
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "SUCCESS":
+        return (
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">
+            <CheckCircle className="w-3 h-3" />
+            성공
+          </span>
+        );
+      case "FAILURE":
+        return (
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
+            <XCircle className="w-3 h-3" />
+            실패
+          </span>
+        );
+      case "ERROR":
+        return (
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+            <AlertTriangle className="w-3 h-3" />
+            에러
+          </span>
+        );
+      case "PENDING":
+      case "RUNNING":
+        return (
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            진행중
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[120px] p-4">
+        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      </div>
+    );
+  }
+
+  // Empty state
+  if (allSubmissions.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
+        <div className="text-center">
+          <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">제출 히스토리 없음</p>
+          <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
+            채점 후 제출 기록이 여기에 표시됩니다
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // History list
+  return (
+    <div className="p-3 space-y-2">
+      {allSubmissions.map((item) => {
+        const killRatio =
+          item.killed_mutants !== undefined &&
+          item.total_mutants !== undefined &&
+          item.total_mutants > 0
+            ? Math.round((item.killed_mutants / item.total_mutants) * 100)
+            : null;
+
+        return (
+          <div
+            key={item.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => handleItemClick(item)}
+            onKeyDown={(e) => e.key === "Enter" && handleItemClick(item)}
+            className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+          >
+            {/* Top row: time and status */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <Clock className="w-3.5 h-3.5" />
+                {formatRelativeTime(item.created_at)}
+              </div>
+              {getStatusBadge(item.status)}
+            </div>
+
+            {/* Bottom row: score and kill ratio */}
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1.5">
+                <Trophy className={`w-4 h-4 ${
+                  item.score >= 90 ? "text-green-500" :
+                  item.score >= 70 ? "text-blue-500" :
+                  item.score >= 50 ? "text-yellow-500" : "text-red-500"
+                }`} />
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {item.score}점
+                </span>
+              </div>
+
+              {killRatio !== null && (
+                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                  <Target className="w-4 h-4" />
+                  <span>
+                    {item.killed_mutants}/{item.total_mutants} ({killRatio}%)
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

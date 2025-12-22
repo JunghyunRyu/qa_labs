@@ -72,7 +72,7 @@ export default function ScoreDisplay({
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-              <span className="text-gray-600">결함 검출: {score - 30}점</span>
+              <span className="text-gray-600">버그 탐지: {score - 30}점</span>
             </div>
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function ScoreDisplay({
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-600">
-                  발견된 결함: <span className="font-semibold text-gray-900">{killedMutants}건</span>
+                  발견된 버그: <span className="font-semibold text-gray-900">{killedMutants}건</span>
                 </span>
               </div>
               <span className="text-gray-500">
