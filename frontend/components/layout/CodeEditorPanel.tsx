@@ -19,7 +19,7 @@ import type { PytestResult } from "@/workers/pyodide-worker-types";
 // Constants for bottom panel sizing
 const BOTTOM_PANEL_MIN = 120; // Minimum height when visible
 const BOTTOM_PANEL_MAX = 500; // Maximum height
-const BOTTOM_PANEL_DEFAULT = 220; // Default height
+const BOTTOM_PANEL_DEFAULT = 200; // Default height when expanded
 const BOTTOM_PANEL_COLLAPSED = 36; // Height when collapsed (just tab bar)
 const STORAGE_KEY = "qa-arena-bottom-panel-height";
 
@@ -73,9 +73,13 @@ export default function CodeEditorPanel({
 
   // Bottom panel state
   const [bottomPanelHeight, setBottomPanelHeight] = useState(BOTTOM_PANEL_DEFAULT);
-  const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
+  const [isBottomCollapsed, setIsBottomCollapsed] = useState(true); // Start collapsed
   const [isDragging, setIsDragging] = useState(false);
-  const [userHasResized, setUserHasResized] = useState(false);
+  const [userHasManuallyCollapsed, setUserHasManuallyCollapsed] = useState(false); // Track manual collapse
+
+  // Check if there's any result to show
+  const hasAnyResult = !!(localTestResult || localTestError || submission || submissionError);
+  const isRunning = isLocalTesting || isSubmitting;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -91,33 +95,26 @@ export default function CodeEditorPanel({
         if (typeof parsed.height === "number") {
           setBottomPanelHeight(Math.max(BOTTOM_PANEL_MIN, Math.min(BOTTOM_PANEL_MAX, parsed.height)));
         }
-        if (typeof parsed.collapsed === "boolean") {
-          setIsBottomCollapsed(parsed.collapsed);
-        }
-        if (typeof parsed.userResized === "boolean") {
-          setUserHasResized(parsed.userResized);
-        }
+        // Don't restore collapsed state - always start collapsed for clean UX
       }
     } catch {
       // Ignore parse errors
     }
   }, []);
 
-  // Save height to localStorage when it changes
+  // Save height to localStorage when it changes (but not collapsed state)
   useEffect(() => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
           height: bottomPanelHeight,
-          collapsed: isBottomCollapsed,
-          userResized: userHasResized,
         })
       );
     } catch {
       // Ignore storage errors
     }
-  }, [bottomPanelHeight, isBottomCollapsed, userHasResized]);
+  }, [bottomPanelHeight]);
 
   // Measure container height for Monaco
   useEffect(() => {
@@ -159,11 +156,11 @@ export default function CodeEditorPanel({
         Math.min(BOTTOM_PANEL_MAX, dragStartHeight.current + deltaY)
       );
       setBottomPanelHeight(newHeight);
-      setUserHasResized(true);
 
-      // If user drags to expand, un-collapse
+      // If user drags to expand, un-collapse and reset manual collapse flag
       if (isBottomCollapsed && newHeight > BOTTOM_PANEL_MIN) {
         setIsBottomCollapsed(false);
+        setUserHasManuallyCollapsed(false);
       }
     };
 
@@ -180,27 +177,25 @@ export default function CodeEditorPanel({
     };
   }, [isDragging, isBottomCollapsed]);
 
-  // Auto-switch to local test tab when local test starts
+  // Auto-expand when running starts (unless user manually collapsed)
+  useEffect(() => {
+    if (isRunning && !userHasManuallyCollapsed) {
+      setIsBottomCollapsed(false);
+    }
+  }, [isRunning, userHasManuallyCollapsed]);
+
+  // Auto-switch to appropriate tab when testing/submitting starts
   useEffect(() => {
     if (isLocalTesting) {
       setActiveTab("local");
-      // Auto-expand if collapsed (don't override user's height preference)
-      if (isBottomCollapsed) {
-        setIsBottomCollapsed(false);
-      }
     }
-  }, [isLocalTesting, isBottomCollapsed]);
+  }, [isLocalTesting]);
 
-  // Auto-switch to result tab when submission starts
   useEffect(() => {
     if (isSubmitting) {
       setActiveTab("result");
-      // Auto-expand if collapsed
-      if (isBottomCollapsed) {
-        setIsBottomCollapsed(false);
-      }
     }
-  }, [isSubmitting, isBottomCollapsed]);
+  }, [isSubmitting]);
 
   // Auto-switch to logs tab on submission error or failure
   useEffect(() => {
@@ -211,18 +206,29 @@ export default function CodeEditorPanel({
     }
   }, [submissionError, submission?.status]);
 
-  // Auto-expand when results arrive (if user hasn't manually resized)
+  // Auto-expand when results arrive (unless user manually collapsed)
   useEffect(() => {
-    if (!userHasResized && (localTestResult || submission)) {
-      if (isBottomCollapsed) {
-        setIsBottomCollapsed(false);
-      }
+    if (hasAnyResult && !userHasManuallyCollapsed) {
+      setIsBottomCollapsed(false);
     }
-  }, [localTestResult, submission, userHasResized, isBottomCollapsed]);
+  }, [hasAnyResult, userHasManuallyCollapsed]);
 
-  // Toggle collapse
+  // Auto-collapse only when explicitly no results (e.g., new problem loaded)
+  // This is tracked by problemId change, not by hasAnyResult becoming false
+  useEffect(() => {
+    // Reset state when problem changes
+    setUserHasManuallyCollapsed(false);
+    setIsBottomCollapsed(true);
+  }, [problemId]);
+
+  // Toggle collapse (manual action)
   const toggleCollapse = useCallback(() => {
-    setIsBottomCollapsed((prev) => !prev);
+    setIsBottomCollapsed((prev) => {
+      const newCollapsed = !prev;
+      // Track manual collapse to prevent auto-expand interference
+      setUserHasManuallyCollapsed(newCollapsed);
+      return newCollapsed;
+    });
   }, []);
 
   // Handle keyboard shortcuts
