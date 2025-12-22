@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
 
 // Hero copy constants
 const heroCopy = {
@@ -60,14 +61,6 @@ const features = [
       </svg>
     ),
   },
-];
-
-// How It Works 단계 데이터
-const steps = [
-  { number: "01", title: "문제 선택", description: "난이도와 스킬 태그로 원하는 QA 문제를 선택하세요" },
-  { number: "02", title: "테스트 코드 작성", description: "브라우저 에디터에서 pytest 테스트 코드를 작성하세요" },
-  { number: "03", title: "버그 탐지 채점", description: "정답/버그 코드에 테스트를 실행해 탐지율을 계산합니다" },
-  { number: "04", title: "AI 피드백 수령", description: "AI 코치가 잘한 점, 개선점, 추가 테스트 케이스를 제안합니다" },
 ];
 
 // Target Audience 데이터
@@ -791,52 +784,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-16 sm:py-20 px-4 bg-gray-100 dark:bg-gray-900">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-gray-900 dark:text-white">
-            이렇게 진행됩니다
-          </h2>
-          <p className="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto">
-            간단한 4단계로 QA 역량을 키워보세요
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Steps */}
-            <div className="space-y-6 order-2 lg:order-1">
-              {steps.map((step, index) => (
-                <div
-                  key={index}
-                  className="flex gap-4 p-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
-                    {step.number}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                      {step.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Judge Image */}
-            <div className="relative order-1 lg:order-2">
-              <div className="relative aspect-square max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl">
-                <Image
-                  src="/images/Judge.png"
-                  alt="Judge System"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HowItWorksSection />
 
       {/* AI Feedback Sample Section */}
       <section className="py-16 sm:py-20 px-4 bg-[var(--background)]">
