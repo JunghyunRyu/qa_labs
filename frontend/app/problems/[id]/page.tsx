@@ -23,6 +23,7 @@ import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
 import ProblemPanel from "@/components/layout/ProblemPanel";
 import CodeEditorPanel from "@/components/layout/CodeEditorPanel";
 import MobileTabLayout from "@/components/layout/MobileTabLayout";
+import ProblemPeekOverlay from "@/components/layout/ProblemPeekOverlay";
 import FloatingAIChat from "@/components/ai/FloatingAIChat";
 import AICoachPanel from "@/components/AICoachPanel";
 import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
@@ -35,7 +36,16 @@ export default function ProblemDetailPage() {
   // Support both numeric ID and slug
   const problemIdOrSlug = params.id as string;
   const { isDesktop } = useMediaQuery();
-  const { toggleProblemPanel, toggleAIChat, setIsAIChatOpen } = useLayoutStore();
+  const {
+    toggleProblemPanel,
+    toggleAIChat,
+    setIsAIChatOpen,
+    isFocusMode,
+    toggleFocusMode,
+    isProblemPeekOpen,
+    toggleProblemPeek,
+    setIsProblemPeekOpen,
+  } = useLayoutStore();
 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -182,6 +192,9 @@ export default function ProblemDetailPage() {
     toggleProblemPanel,
     toggleAIChat,
     closeAIChat: () => setIsAIChatOpen(false),
+    toggleFocusMode,
+    toggleProblemPeek,
+    closeProblemPeek: () => setIsProblemPeekOpen(false),
   });
 
   // Generate initial test template
@@ -475,8 +488,11 @@ def test_edge_case():
 
   // Desktop layout - Resizable split panel
   if (isDesktop) {
+    // Focus mode uses smaller header (h-8 = 2rem vs h-14 = 3.5rem)
+    const headerHeight = isFocusMode ? "2rem" : "3.5rem";
+
     return (
-      <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <div className="flex flex-col" style={{ height: `calc(100vh - ${headerHeight})` }}>
         {/* Main content - Split panel (Breadcrumb integrated into ProblemPanel) */}
         <div className="flex-1 min-h-0">
           <ResizableSplitPanel
@@ -512,6 +528,13 @@ def test_edge_case():
           savedFeedback={savedFeedback}
           savedFeedbackScore={savedFeedbackScore}
           onClearSavedFeedback={handleClearSavedFeedback}
+        />
+
+        {/* Problem Peek Overlay (Alt+P) */}
+        <ProblemPeekOverlay
+          problem={problem}
+          isOpen={isProblemPeekOpen}
+          onClose={() => setIsProblemPeekOpen(false)}
         />
 
         {/* Scoring Method Drawer */}

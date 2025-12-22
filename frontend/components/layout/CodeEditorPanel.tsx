@@ -357,9 +357,15 @@ export default function CodeEditorPanel({
             <div className="flex items-center gap-3">
               <span>
                 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
-                  Ctrl+B
+                  Alt+P
                 </kbd>
-                {" 문제 패널"}
+                {" 문제 보기"}
+              </span>
+              <span>
+                <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
+                  Alt+F
+                </kbd>
+                {" 집중 모드"}
               </span>
               <span>
                 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">

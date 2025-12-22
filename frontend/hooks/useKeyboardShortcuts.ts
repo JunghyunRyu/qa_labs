@@ -64,6 +64,9 @@ export function useProblemSolverShortcuts(handlers: {
   toggleProblemPanel: () => void;
   toggleAIChat: () => void;
   closeAIChat: () => void;
+  toggleFocusMode?: () => void;
+  toggleProblemPeek?: () => void;
+  closeProblemPeek?: () => void;
 }) {
   useKeyboardShortcuts([
     {
@@ -78,8 +81,34 @@ export function useProblemSolverShortcuts(handlers: {
     },
     {
       key: "Escape",
-      action: handlers.closeAIChat,
+      action: () => {
+        // ESC closes peek first, then AI chat
+        if (handlers.closeProblemPeek) {
+          handlers.closeProblemPeek();
+        }
+        handlers.closeAIChat();
+      },
       preventDefault: false,
     },
+    // Alt+P: Toggle problem peek overlay
+    ...(handlers.toggleProblemPeek
+      ? [
+          {
+            key: "p",
+            altKey: true,
+            action: handlers.toggleProblemPeek,
+          },
+        ]
+      : []),
+    // Alt+F: Toggle focus mode
+    ...(handlers.toggleFocusMode
+      ? [
+          {
+            key: "f",
+            altKey: true,
+            action: handlers.toggleFocusMode,
+          },
+        ]
+      : []),
   ]);
 }

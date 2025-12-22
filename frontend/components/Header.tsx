@@ -1,5 +1,6 @@
 /**
  * Header component with theme toggle, navigation, and authentication
+ * Supports Focus Mode for problem solving pages
  */
 
 "use client";
@@ -9,6 +10,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { useLayoutStore } from "@/stores/layoutStore";
+import { Maximize2, Minimize2 } from "lucide-react";
 import LoginButton from "./LoginButton";
 import UserMenu from "./UserMenu";
 
@@ -28,12 +31,17 @@ const appNavItems = [
 export default function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
+  const { isFocusMode, toggleFocusMode } = useLayoutStore();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   // 홈페이지면 home variant, 그 외는 app variant
   const isHome = pathname === "/";
   const navItems = isHome ? homeNavItems : appNavItems;
+
+  // Focus mode only applies to problem detail pages
+  const isProblemPage = pathname.startsWith("/problems/") && pathname !== "/problems";
+  const showFocusMode = isProblemPage && isFocusMode;
 
   // Avoid hydration mismatch
   useEffect(() => {
@@ -55,6 +63,37 @@ export default function Header() {
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
+
+  // Focus mode: minimal header
+  if (showFocusMode) {
+    return (
+      <header className="sticky top-0 z-50 w-full bg-[var(--background)]/80 backdrop-blur">
+        <div className="container mx-auto flex h-8 max-w-screen-2xl items-center justify-between px-4">
+          {/* Minimal logo */}
+          <Link href="/" className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+            QA-Arena
+          </Link>
+
+          {/* Focus mode indicator & exit button */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[var(--muted)]">
+              Focus Mode
+            </span>
+            <button
+              onClick={toggleFocusMode}
+              className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs
+                         bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300
+                         hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
+              title="Focus Mode 종료 (Alt+F)"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              종료
+            </button>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[var(--card-border)] bg-[var(--background)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--background)]/60">
@@ -82,8 +121,22 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* Right side: Theme Toggle + Auth */}
+        {/* Right side: Focus Mode + Theme Toggle + Auth */}
         <div className="flex items-center space-x-4">
+          {/* Focus Mode Toggle (only on problem pages) */}
+          {isProblemPage && mounted && (
+            <button
+              onClick={toggleFocusMode}
+              className="inline-flex items-center justify-center rounded-md p-2 transition-colors
+                         hover:bg-[var(--card-background)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]
+                         text-[var(--muted)] hover:text-[var(--foreground)]"
+              aria-label="Focus Mode 전환"
+              title="Focus Mode (Alt+F)"
+            >
+              <Maximize2 className="w-5 h-5" />
+            </button>
+          )}
+
           {/* Theme Toggle */}
           {mounted ? (
             <button
