@@ -16,8 +16,12 @@ import {
   Target,
   Copy,
   Check,
+  Bot,
+  Lightbulb,
+  ArrowRight,
 } from "lucide-react";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
+import { useLayoutStore } from "@/stores/layoutStore";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 import type { Submission, SubmissionProgress } from "@/types/problem";
 
@@ -456,9 +460,54 @@ function ResultTabContent({
       ? ((submission.killed_mutants || 0) / submission.total_mutants) * 100
       : 0;
 
+    const survivedCount = (submission.total_mutants || 0) - (submission.killed_mutants || 0);
+
+    // Cause and recommendation based on kill ratio
+    const getCauseAndRecommendation = () => {
+      if (killRatio >= 90) {
+        return {
+          type: "excellent" as const,
+          cause: "거의 모든 버그를 탐지했습니다!",
+          recommendations: ["완벽에 가까운 테스트입니다. 유지보수 시 테스트도 함께 업데이트하세요."],
+        };
+      } else if (killRatio >= 70) {
+        return {
+          type: "good" as const,
+          cause: `${survivedCount}개의 버그가 테스트를 통과했습니다.`,
+          recommendations: [
+            "경계값 테스트 추가 (0, 빈 값, 최대값)",
+            "예외 상황 테스트 강화",
+          ],
+        };
+      } else if (killRatio >= 50) {
+        return {
+          type: "moderate" as const,
+          cause: `절반 정도의 버그만 탐지했습니다. (${survivedCount}개 미탐지)`,
+          recommendations: [
+            "다양한 입력값 테스트 추가",
+            "경계값/예외 케이스 보강",
+            "엣지 케이스 (빈 배열, None 등) 확인",
+          ],
+        };
+      } else {
+        return {
+          type: "needs_improvement" as const,
+          cause: `대부분의 버그가 살아남았습니다. (${survivedCount}개 미탐지)`,
+          recommendations: [
+            "기본적인 입력값 테스트부터 추가",
+            "경계값 테스트 (0, 1, 최대값)",
+            "예외 상황 테스트 (빈 입력, 잘못된 타입)",
+          ],
+        };
+      }
+    };
+
+    const { type, cause, recommendations } = getCauseAndRecommendation();
+
     return (
-      <div className="p-4">
-        <div className="flex items-start gap-4">
+      <div className="p-4 space-y-4">
+        {/* Summary Row */}
+        <div className="flex items-center gap-4">
           {/* Score */}
           <div className="flex items-center gap-2">
             <Trophy className={`w-6 h-6 ${
@@ -509,9 +558,63 @@ function ResultTabContent({
             <span className="text-sm font-medium">완료</span>
           </div>
         </div>
+
+        {/* Cause Summary */}
+        <div className={`p-3 rounded-lg text-sm ${
+          type === "excellent" ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300" :
+          type === "good" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" :
+          type === "moderate" ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300" :
+          "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300"
+        }`}>
+          <div className="flex items-start gap-2">
+            <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">{cause}</p>
+              {type !== "excellent" && recommendations.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {recommendations.map((rec, idx) => (
+                    <li key={idx} className="flex items-center gap-1.5">
+                      <ArrowRight className="w-3 h-3" />
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Next Action CTA */}
+        {type !== "excellent" && (
+          <ResultCTAButtons />
+        )}
       </div>
     );
   }
 
   return null;
+}
+
+// CTA Buttons for Result Tab
+function ResultCTAButtons() {
+  const { setIsAIChatOpen } = useLayoutStore();
+
+  const handleAskAI = () => {
+    setIsAIChatOpen(true);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={handleAskAI}
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium
+                   bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
+                   hover:bg-purple-200 dark:hover:bg-purple-900/50
+                   rounded-lg transition-colors"
+      >
+        <Bot className="w-4 h-4" />
+        AI 도우미에게 물어보기
+      </button>
+    </div>
+  );
 }
