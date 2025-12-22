@@ -45,7 +45,12 @@ export default function CodeEditorPanel({
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [editorHeight, setEditorHeight] = useState(400);
   const [activeTab, setActiveTab] = useState<TabId>("local");
+  const [isBottomExpanded, setIsBottomExpanded] = useState(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
+
+  // Panel heights
+  const PANEL_HEIGHT_COLLAPSED = 220;
+  const PANEL_HEIGHT_EXPANDED = 360;
 
   // Measure container height for Monaco
   useEffect(() => {
@@ -218,11 +223,19 @@ export default function CodeEditorPanel({
       </div>
 
       {/* ===== 하단 영역: 결과 탭 ===== */}
-      <div className="flex-shrink-0 h-[200px] min-h-[200px] flex flex-col">
+      <div
+        className="flex-shrink-0 flex flex-col transition-all duration-200"
+        style={{
+          height: isBottomExpanded ? PANEL_HEIGHT_EXPANDED : PANEL_HEIGHT_COLLAPSED,
+          minHeight: isBottomExpanded ? PANEL_HEIGHT_EXPANDED : PANEL_HEIGHT_COLLAPSED,
+        }}
+      >
         <BottomTabs
           className="h-full"
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          isExpanded={isBottomExpanded}
+          onExpandToggle={setIsBottomExpanded}
           localTestResult={localTestResult}
           localTestError={localTestError}
           isLocalTesting={isLocalTesting}

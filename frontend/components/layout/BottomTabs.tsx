@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FlaskConical, FileText, History, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { FlaskConical, FileText, ScrollText, History, ChevronUp, ChevronDown } from "lucide-react";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 
-export type TabId = "local" | "result" | "history" | "feedback";
+// Core loop tabs: 로컬 테스트 → 채점 결과 → 로그, with 히스토리 as 4th
+export type TabId = "local" | "result" | "logs" | "history";
 
 interface Tab {
   id: TabId;
@@ -16,8 +17,8 @@ interface Tab {
 const tabs: Tab[] = [
   { id: "local", label: "로컬 테스트", icon: <FlaskConical className="w-4 h-4" /> },
   { id: "result", label: "채점 결과", icon: <FileText className="w-4 h-4" /> },
+  { id: "logs", label: "로그", icon: <ScrollText className="w-4 h-4" /> },
   { id: "history", label: "히스토리", icon: <History className="w-4 h-4" /> },
-  { id: "feedback", label: "AI 피드백", icon: <MessageSquare className="w-4 h-4" /> },
 ];
 
 interface BottomTabsProps {
@@ -26,6 +27,10 @@ interface BottomTabsProps {
   activeTab?: TabId;
   /** Tab change callback */
   onTabChange?: (tab: TabId) => void;
+  /** Controlled expanded state */
+  isExpanded?: boolean;
+  /** Expand toggle callback */
+  onExpandToggle?: (expanded: boolean) => void;
   /** Local test props */
   localTestResult?: PytestResult | null;
   localTestError?: string | null;
@@ -38,6 +43,8 @@ export default function BottomTabs({
   className = "",
   activeTab: controlledActiveTab,
   onTabChange,
+  isExpanded: controlledIsExpanded,
+  onExpandToggle,
   localTestResult,
   localTestError,
   isLocalTesting = false,
@@ -46,15 +53,26 @@ export default function BottomTabs({
 }: BottomTabsProps) {
   // Internal state for uncontrolled mode
   const [internalActiveTab, setInternalActiveTab] = useState<TabId>("local");
+  const [internalIsExpanded, setInternalIsExpanded] = useState(false);
 
   // Use controlled or uncontrolled mode
   const activeTab = controlledActiveTab ?? internalActiveTab;
+  const isExpanded = controlledIsExpanded ?? internalIsExpanded;
 
   const handleTabChange = (tab: TabId) => {
     if (onTabChange) {
       onTabChange(tab);
     } else {
       setInternalActiveTab(tab);
+    }
+  };
+
+  const handleExpandToggle = () => {
+    const newExpanded = !isExpanded;
+    if (onExpandToggle) {
+      onExpandToggle(newExpanded);
+    } else {
+      setInternalIsExpanded(newExpanded);
     }
   };
 
@@ -93,6 +111,19 @@ export default function BottomTabs({
             )}
           </button>
         ))}
+
+        {/* Expand/Collapse Toggle */}
+        <button
+          onClick={handleExpandToggle}
+          className="ml-auto px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          title={isExpanded ? "패널 축소" : "패널 확장"}
+        >
+          {isExpanded ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronUp className="w-4 h-4" />
+          )}
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -129,10 +160,26 @@ export default function BottomTabs({
         {activeTab === "result" && (
           <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
             <div className="text-center">
-              <div className="text-4xl mb-2">🚧</div>
-              <p className="text-sm">준비 중</p>
+              <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">채점 결과 없음</p>
               <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
-                채점 결과가 여기에 표시됩니다
+                <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
+                  Ctrl+Enter
+                </kbd>
+                {" 또는 '채점하기' 버튼을 클릭하세요"}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Logs Tab - Placeholder */}
+        {activeTab === "logs" && (
+          <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
+            <div className="text-center">
+              <ScrollText className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">로그 없음</p>
+              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
+                테스트 실행 또는 채점 후 상세 로그가 여기에 표시됩니다
               </p>
             </div>
           </div>
@@ -142,23 +189,10 @@ export default function BottomTabs({
         {activeTab === "history" && (
           <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
             <div className="text-center">
-              <div className="text-4xl mb-2">🚧</div>
-              <p className="text-sm">준비 중</p>
+              <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">제출 히스토리 없음</p>
               <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
-                제출 히스토리가 여기에 표시됩니다
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Feedback Tab - Placeholder */}
-        {activeTab === "feedback" && (
-          <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
-            <div className="text-center">
-              <div className="text-4xl mb-2">🚧</div>
-              <p className="text-sm">준비 중</p>
-              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
-                AI 피드백이 여기에 표시됩니다
+                이전 제출 기록이 여기에 표시됩니다
               </p>
             </div>
           </div>
