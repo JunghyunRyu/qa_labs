@@ -351,33 +351,33 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
       </div>
 
       {/* ===== SCROLLABLE ACCORDION AREA ===== */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        {accordionSections.map((section, index) => {
-          const config = getSectionConfig(section.type);
-          const Icon = config.icon;
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {accordionSections.length > 0 ? (
+          <div className="p-3 space-y-2">
+            {accordionSections.map((section, index) => {
+              const config = getSectionConfig(section.type);
+              const Icon = config.icon;
 
-          // Default open for examples, closed for hints
-          const defaultOpen = section.type === 'examples';
+              // Default open for examples, closed for hints
+              const defaultOpen = section.type === 'examples';
 
-          return (
-            <Accordion
-              key={index}
-              title={section.title}
-              icon={Icon}
-              iconColor={config.iconColor}
-              bgColor={config.bgColor}
-              defaultOpen={defaultOpen}
-            >
-              <MarkdownContent content={section.content} />
-            </Accordion>
-          );
-        })}
-
-        {/* If no accordion sections, show full overview */}
-        {accordionSections.length === 0 && stickySections.length > 0 && (
-          <div className="text-sm text-gray-600 dark:text-gray-400 text-center py-4">
-            모든 정보가 상단에 표시되어 있습니다.
+              return (
+                <Accordion
+                  key={index}
+                  title={section.title}
+                  icon={Icon}
+                  iconColor={config.iconColor}
+                  bgColor={config.bgColor}
+                  defaultOpen={defaultOpen}
+                >
+                  <MarkdownContent content={section.content} />
+                </Accordion>
+              );
+            })}
           </div>
+        ) : (
+          // Empty spacer - fills remaining space with background color
+          <div className="h-full bg-gray-50 dark:bg-gray-800/50" />
         )}
       </div>
     </div>
