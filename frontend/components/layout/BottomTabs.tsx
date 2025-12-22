@@ -204,6 +204,7 @@ export default function BottomTabs({
 
         {/* Collapse Toggle */}
         <button
+          data-testid="btn-toggle-bottom-panel"
           onClick={onCollapseToggle ?? handleExpandToggle}
           className="ml-auto px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           title={isCollapsed ? "패널 펼치기" : "패널 접기"}

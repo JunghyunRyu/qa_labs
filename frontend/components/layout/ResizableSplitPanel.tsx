@@ -75,6 +75,7 @@ export default function ResizableSplitPanel({
       </Panel>
 
       <PanelResizeHandle
+        data-testid="drag-handle-horizontal"
         className="group w-1.5 hover:w-2 bg-gray-200 dark:bg-gray-700
                    hover:bg-sky-400 dark:hover:bg-sky-500
                    active:bg-sky-500 dark:active:bg-sky-600

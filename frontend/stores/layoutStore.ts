@@ -1,11 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// Panel sizing constants
+export const BOTTOM_PANEL_MIN = 120;
+export const BOTTOM_PANEL_MAX = 500;
+export const BOTTOM_PANEL_DEFAULT = 200;
+
 interface LayoutState {
   // Panel state
   panelWidth: number; // Left panel width percentage (22-55)
   isProblemCollapsed: boolean;
   isAIChatOpen: boolean;
+
+  // Bottom panel state
+  bottomPanelHeight: number; // Bottom panel height in pixels
 
   // Focus mode (minimizes header, collapses problem panel)
   isFocusMode: boolean;
@@ -23,6 +31,7 @@ interface LayoutState {
   setIsProblemCollapsed: (collapsed: boolean) => void;
   toggleAIChat: () => void;
   setIsAIChatOpen: (open: boolean) => void;
+  setBottomPanelHeight: (height: number) => void;
   setEditorFontSize: (size: number) => void;
   setActiveTab: (tab: "problem" | "code" | "ai") => void;
   toggleFocusMode: () => void;
@@ -36,6 +45,7 @@ const DEFAULT_STATE = {
   panelWidth: 35, // 35% problem / 65% code
   isProblemCollapsed: false,
   isAIChatOpen: false,
+  bottomPanelHeight: BOTTOM_PANEL_DEFAULT,
   isFocusMode: false,
   isProblemPeekOpen: false,
   editorFontSize: 14,
@@ -67,6 +77,11 @@ export const useLayoutStore = create<LayoutState>()(
 
       setIsAIChatOpen: (open: boolean) => {
         set({ isAIChatOpen: open });
+      },
+
+      setBottomPanelHeight: (height: number) => {
+        const clampedHeight = Math.min(BOTTOM_PANEL_MAX, Math.max(BOTTOM_PANEL_MIN, height));
+        set({ bottomPanelHeight: clampedHeight });
       },
 
       setEditorFontSize: (size: number) => {
@@ -115,11 +130,14 @@ export const useLayoutStore = create<LayoutState>()(
     {
       name: "qa-arena-layout",
       partialize: (state) => ({
+        // Persist panel sizes
         panelWidth: state.panelWidth,
+        bottomPanelHeight: state.bottomPanelHeight,
+        // Persist UI state
         isProblemCollapsed: state.isProblemCollapsed,
         editorFontSize: state.editorFontSize,
         isFocusMode: state.isFocusMode,
-        // Don't persist isAIChatOpen, isProblemPeekOpen, or activeTab
+        // Don't persist: isAIChatOpen, isProblemPeekOpen, activeTab (session-only)
       }),
     }
   )

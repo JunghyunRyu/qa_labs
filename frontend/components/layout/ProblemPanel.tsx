@@ -226,8 +226,12 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   // Collapsed state - minimal vertical bar
   if (isProblemCollapsed) {
     return (
-      <div className="h-full bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-2">
+      <div
+        data-testid="problem-panel-collapsed"
+        className="h-full bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-2"
+      >
         <button
+          data-testid="btn-expand-problem"
           onClick={toggleProblemPanel}
           className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700
                      bg-white dark:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-600
@@ -250,7 +254,10 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
 
   // Expanded state
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div
+      data-testid="problem-panel"
+      className="h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-hidden"
+    >
       {/* ===== STICKY AREA ===== */}
       <div className="flex-shrink-0 sticky top-0 z-10 bg-white dark:bg-gray-900">
         {/* Header with Back Link */}
@@ -264,6 +271,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               <span>문제 목록</span>
             </Link>
             <button
+              data-testid="btn-collapse-problem"
               onClick={toggleProblemPanel}
               className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               aria-label="문제 패널 접기"

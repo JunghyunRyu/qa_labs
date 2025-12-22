@@ -80,6 +80,7 @@ export default function Header() {
               Focus Mode
             </span>
             <button
+              data-testid="btn-exit-focus-mode"
               onClick={toggleFocusMode}
               className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs
                          bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300
@@ -126,6 +127,7 @@ export default function Header() {
           {/* Focus Mode Toggle (only on problem pages) */}
           {isProblemPage && mounted && (
             <button
+              data-testid="btn-focus-mode"
               onClick={toggleFocusMode}
               className="inline-flex items-center justify-center rounded-md p-2 transition-colors
                          hover:bg-[var(--card-background)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]
@@ -140,6 +142,7 @@ export default function Header() {
           {/* Theme Toggle */}
           {mounted ? (
             <button
+              data-testid="btn-theme-toggle"
               onClick={toggleTheme}
               className="inline-flex items-center justify-center rounded-md p-2 transition-colors hover:bg-[var(--card-background)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}

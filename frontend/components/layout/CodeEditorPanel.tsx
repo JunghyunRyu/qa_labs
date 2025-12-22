@@ -8,20 +8,19 @@ import {
   Loader2,
   FlaskConical,
   GripHorizontal,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import BottomTabs, { type TabId } from "@/components/layout/BottomTabs";
+import {
+  useLayoutStore,
+  BOTTOM_PANEL_MIN,
+  BOTTOM_PANEL_MAX,
+} from "@/stores/layoutStore";
 import type { Submission } from "@/types/problem";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 
-// Constants for bottom panel sizing
-const BOTTOM_PANEL_MIN = 120; // Minimum height when visible
-const BOTTOM_PANEL_MAX = 500; // Maximum height
-const BOTTOM_PANEL_DEFAULT = 200; // Default height when expanded
-const BOTTOM_PANEL_COLLAPSED = 36; // Height when collapsed (just tab bar)
-const STORAGE_KEY = "qa-arena-bottom-panel-height";
+// Height when collapsed (just tab bar)
+const BOTTOM_PANEL_COLLAPSED = 36;
 
 interface CodeEditorPanelProps {
   code: string;
@@ -67,15 +66,17 @@ export default function CodeEditorPanel({
   onLoadSubmission,
   sessionHistory = [],
 }: CodeEditorPanelProps) {
+  // Get bottom panel height from global store (persisted)
+  const { bottomPanelHeight, setBottomPanelHeight } = useLayoutStore();
+
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [editorHeight, setEditorHeight] = useState(400);
   const [activeTab, setActiveTab] = useState<TabId>("local");
 
-  // Bottom panel state
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(BOTTOM_PANEL_DEFAULT);
+  // Bottom panel state (session-only, not persisted)
   const [isBottomCollapsed, setIsBottomCollapsed] = useState(true); // Start collapsed
   const [isDragging, setIsDragging] = useState(false);
-  const [userHasManuallyCollapsed, setUserHasManuallyCollapsed] = useState(false); // Track manual collapse
+  const [userHasManuallyCollapsed, setUserHasManuallyCollapsed] = useState(false);
 
   // Check if there's any result to show
   const hasAnyResult = !!(localTestResult || localTestError || submission || submissionError);
@@ -85,36 +86,6 @@ export default function CodeEditorPanel({
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef(0);
   const dragStartHeight = useRef(0);
-
-  // Load saved height from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed.height === "number") {
-          setBottomPanelHeight(Math.max(BOTTOM_PANEL_MIN, Math.min(BOTTOM_PANEL_MAX, parsed.height)));
-        }
-        // Don't restore collapsed state - always start collapsed for clean UX
-      }
-    } catch {
-      // Ignore parse errors
-    }
-  }, []);
-
-  // Save height to localStorage when it changes (but not collapsed state)
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          height: bottomPanelHeight,
-        })
-      );
-    } catch {
-      // Ignore storage errors
-    }
-  }, [bottomPanelHeight]);
 
   // Measure container height for Monaco
   useEffect(() => {
@@ -255,6 +226,7 @@ export default function CodeEditorPanel({
   return (
     <div
       ref={containerRef}
+      data-testid="code-editor-panel"
       className="h-full flex flex-col bg-white dark:bg-gray-900 overflow-hidden"
       onKeyDown={handleKeyDown}
     >
@@ -386,6 +358,7 @@ export default function CodeEditorPanel({
 
       {/* ===== 드래그 핸들 ===== */}
       <div
+        data-testid="drag-handle-bottom"
         className={`flex-shrink-0 h-2 flex items-center justify-center cursor-row-resize
                     border-t border-gray-200 dark:border-gray-700
                     bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
@@ -401,6 +374,7 @@ export default function CodeEditorPanel({
 
       {/* ===== 하단 영역: 결과 탭 ===== */}
       <div
+        data-testid="bottom-panel"
         className={`flex-shrink-0 flex flex-col ${isDragging ? "" : "transition-all duration-150"}`}
         style={{
           height: currentBottomHeight,
