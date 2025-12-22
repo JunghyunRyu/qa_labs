@@ -233,19 +233,20 @@ export default function CodeEditorPanel({
       {/* ===== 상단 영역: 에디터 ===== */}
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Code2 className="w-5 h-5 text-purple-500" />
-            <h2 className="font-semibold text-gray-900 dark:text-white">
+        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+          {/* Left: Title area - flexible, can shrink */}
+          <div className="min-w-0 flex-1 flex items-center gap-2">
+            <Code2 className="w-5 h-5 text-purple-500 shrink-0" />
+            <h2 className="font-semibold text-gray-900 dark:text-white truncate">
               테스트 코드 작성
             </h2>
-            <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
+            <span className="shrink-0 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
               Python
             </span>
           </div>
 
-          {/* Buttons */}
-          <div className="flex items-center gap-2">
+          {/* Right: Buttons - fixed, don't shrink */}
+          <div className="shrink-0 flex items-center gap-2">
             {/* Local Test Button */}
             {onLocalTest && (
               <button
