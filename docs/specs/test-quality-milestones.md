@@ -10,7 +10,7 @@
 | Phase | 상태 | 완료율 |
 |-------|------|--------|
 | Phase 0: 스파이크 | ✅ 완료 | 5/5 |
-| Phase 1: 스키마 | 대기 | 0/5 |
+| Phase 1: 스키마 | ✅ 완료 | 5/5 |
 | Phase 2: 분석 엔진 | 대기 | 0/4 |
 | Phase 3: AI 연계 | 대기 | 0/3 |
 | Phase 4: 프론트엔드 | 대기 | 0/4 |
@@ -64,26 +64,25 @@
 
 ### 체크리스트
 
-- [ ] **P1-1**: 스파이크 결과 반영하여 스키마 확정
-  - [ ] 카테고리 정의 최종 확정
-  - [ ] JSONB 구조 최종 확정
+- [x] **P1-1**: 스파이크 결과 반영하여 스키마 확정
+  - [x] 카테고리 정의 최종 확정
+  - [x] JSONB 구조 최종 확정
 
-- [ ] **P1-2**: Pydantic 스키마 정의
+- [x] **P1-2**: Pydantic 스키마 정의
   - 파일: `backend/app/schemas/test_quality.py`
 
-- [ ] **P1-3**: SQLAlchemy 모델 정의
+- [x] **P1-3**: SQLAlchemy 모델 정의
   - 파일: `backend/app/models/test_quality.py`
-  - [ ] submissions 테이블 확장
-  - [ ] analysis_runs 테이블 생성
-  - [ ] problems 테이블 확장
+  - [x] submissions 테이블 확장
+  - [x] analysis_runs 테이블 생성
+  - [x] problems 테이블 확장
 
-- [ ] **P1-4**: Alembic 마이그레이션
-  - [ ] 백업 완료 확인
-  - [ ] 마이그레이션 파일 생성
-  - [ ] 로컬 테스트
-  - [ ] 프로덕션 적용
+- [x] **P1-4**: Alembic 마이그레이션
+  - [x] 마이그레이션 파일 생성 (`a1b2c3d4e5f6`)
+  - [x] 로컬 테스트
+  - [x] 프로덕션 적용
 
-- [ ] **P1-5**: Repository 클래스 구현
+- [x] **P1-5**: Repository 클래스 구현
   - 파일: `backend/app/repositories/test_quality_repository.py`
 
 ---
@@ -156,6 +155,22 @@
 ## 작업 로그
 
 > 세션별 진행 상황 기록
+
+### 2024-12-22 (세션 3)
+- [x] **Phase 1 완료**: 스키마 확정
+  - P1-2: Pydantic 스키마 정의 (`backend/app/schemas/test_quality.py`)
+    - AnalysisScope, AnalysisStatus, QualityGrade Enums
+    - TestQualityAnalysis, RubricAnalysis JSONB 스키마
+    - AnalysisRun CRUD 스키마
+  - P1-3: SQLAlchemy 모델 정의
+    - AnalysisRun 테이블 (4개 CHECK constraints)
+    - Submission 확장 (test_quality_score, grade, analysis)
+    - Problem 확장 (rubric_score, analysis)
+  - P1-4: Alembic 마이그레이션 (`a1b2c3d4e5f6`)
+    - 로컬 테스트 완료
+    - 프로덕션 적용 완료
+  - P1-5: TestQualityRepository 구현
+  - 단위 테스트 23개 작성 및 통과
 
 ### 2024-12-21 (세션 2)
 - [x] **P0-4 완료**: coverage_spike.py 스크립트 완성
