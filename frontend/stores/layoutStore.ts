@@ -4,7 +4,8 @@ import { persist } from "zustand/middleware";
 // Panel sizing constants
 export const BOTTOM_PANEL_MIN = 120;
 export const BOTTOM_PANEL_MAX = 500;
-export const BOTTOM_PANEL_DEFAULT = 200;
+export const BOTTOM_PANEL_DEFAULT = 250;
+export const BOTTOM_PANEL_EXPANDED = 300; // Height when auto-expanding for results
 
 interface LayoutState {
   // Panel state

@@ -7,7 +7,6 @@ import {
   Keyboard,
   Loader2,
   FlaskConical,
-  GripHorizontal,
 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import BottomTabs, { type TabId } from "@/components/layout/BottomTabs";
@@ -15,6 +14,8 @@ import {
   useLayoutStore,
   BOTTOM_PANEL_MIN,
   BOTTOM_PANEL_MAX,
+  BOTTOM_PANEL_DEFAULT,
+  BOTTOM_PANEL_EXPANDED,
 } from "@/stores/layoutStore";
 import type { Submission } from "@/types/problem";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
@@ -181,8 +182,12 @@ export default function CodeEditorPanel({
   useEffect(() => {
     if (hasAnyResult && !userHasManuallyCollapsed) {
       setIsBottomCollapsed(false);
+      // Also expand height if it's below the expanded threshold
+      if (bottomPanelHeight < BOTTOM_PANEL_EXPANDED) {
+        setBottomPanelHeight(BOTTOM_PANEL_EXPANDED);
+      }
     }
-  }, [hasAnyResult, userHasManuallyCollapsed]);
+  }, [hasAnyResult, userHasManuallyCollapsed, bottomPanelHeight, setBottomPanelHeight]);
 
   // Auto-collapse only when explicitly no results (e.g., new problem loaded)
   // This is tracked by problemId change, not by hasAnyResult becoming false
@@ -201,6 +206,13 @@ export default function CodeEditorPanel({
       return newCollapsed;
     });
   }, []);
+
+  // Double-click on drag handle: reset to default height
+  const handleDoubleClick = useCallback(() => {
+    setBottomPanelHeight(BOTTOM_PANEL_DEFAULT);
+    setIsBottomCollapsed(false);
+    setUserHasManuallyCollapsed(false);
+  }, [setBottomPanelHeight]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -360,16 +372,21 @@ export default function CodeEditorPanel({
       {/* ===== 드래그 핸들 ===== */}
       <div
         data-testid="drag-handle-bottom"
-        className={`flex-shrink-0 h-2 flex items-center justify-center cursor-row-resize
+        className={`flex-shrink-0 h-2.5 flex items-center justify-center cursor-row-resize
                     border-t border-gray-200 dark:border-gray-700
-                    bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
-                    transition-colors group ${isDragging ? "bg-sky-100 dark:bg-sky-900/30" : ""}`}
+                    bg-gray-100 dark:bg-gray-800
+                    hover:bg-sky-100 dark:hover:bg-sky-900/30
+                    active:bg-sky-200 dark:active:bg-sky-900/50
+                    transition-colors group ${isDragging ? "bg-sky-200 dark:bg-sky-900/50" : ""}`}
         onMouseDown={handleDragStart}
-        title="드래그하여 패널 크기 조절"
+        onDoubleClick={handleDoubleClick}
+        title="드래그: 크기 조절 | 더블클릭: 기본값"
       >
-        <GripHorizontal
-          className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300
-                      ${isDragging ? "text-sky-500" : ""}`}
+        {/* Grip indicator - more visible */}
+        <div className={`w-12 h-1 rounded-full transition-colors
+                        bg-gray-300 dark:bg-gray-600
+                        group-hover:bg-sky-400 dark:group-hover:bg-sky-500
+                        ${isDragging ? "bg-sky-500 dark:bg-sky-400" : ""}`}
         />
       </div>
 
