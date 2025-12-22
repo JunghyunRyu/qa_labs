@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLayoutStore } from "@/stores/layoutStore";
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   FileText,
   Sparkles,
   AlertTriangle,
@@ -211,6 +213,7 @@ function MarkdownContent({ content }: { content: string }) {
 
 export default function ProblemPanel({ problem }: ProblemPanelProps) {
   const { isProblemCollapsed, toggleProblemPanel } = useLayoutStore();
+  const [isSignatureExpanded, setIsSignatureExpanded] = useState(false);
 
   // Parse sections from description
   const sections = useMemo(() => parseDescription(problem.description_md), [problem.description_md]);
@@ -308,11 +311,32 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
                 함수 시그니처
               </span>
             </div>
-            <CopyButton text={problem.function_signature} />
+            <div className="flex items-center gap-1">
+              <CopyButton text={problem.function_signature} />
+              <button
+                onClick={() => setIsSignatureExpanded(!isSignatureExpanded)}
+                className="p-1 rounded hover:bg-purple-100 dark:hover:bg-purple-800/50 transition-colors"
+                title={isSignatureExpanded ? "접기" : "전체 보기"}
+              >
+                {isSignatureExpanded ? (
+                  <ChevronUp className="w-3.5 h-3.5 text-purple-500" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5 text-purple-500" />
+                )}
+              </button>
+            </div>
           </div>
-          <pre className="text-sm text-purple-900 dark:text-purple-100 font-mono bg-white dark:bg-gray-900 p-2 rounded border border-purple-200 dark:border-purple-700 overflow-x-auto">
-            {problem.function_signature}
-          </pre>
+          <div className="bg-white dark:bg-gray-900 rounded border border-purple-200 dark:border-purple-700">
+            {isSignatureExpanded ? (
+              <pre className="text-sm text-purple-900 dark:text-purple-100 font-mono p-2 whitespace-pre-wrap break-words">
+                {problem.function_signature}
+              </pre>
+            ) : (
+              <code className="block text-sm text-purple-900 dark:text-purple-100 font-mono p-2 truncate">
+                {problem.function_signature}
+              </code>
+            )}
+          </div>
         </div>
 
         {/* Summary - Quick glance (3 lines) */}
