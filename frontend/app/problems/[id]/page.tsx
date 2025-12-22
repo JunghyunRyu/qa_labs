@@ -53,6 +53,9 @@ export default function ProblemDetailPage() {
   const [localTestResult, setLocalTestResult] = useState<PytestResult | null>(null);
   const [localTestError, setLocalTestError] = useState<string | null>(null);
 
+  // Session history (for non-authenticated users)
+  const [sessionHistory, setSessionHistory] = useState<Submission[]>([]);
+
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
@@ -162,6 +165,13 @@ export default function ProblemDetailPage() {
       setLocalTestError(errorMessage);
     }
   }, [problem, code, isPyodideReady, runTests]);
+
+  // Load submission from history
+  const handleLoadSubmission = useCallback((loadedSubmission: Submission) => {
+    setSubmission(loadedSubmission);
+    // If the submission has code, optionally load it (but keep current code by default)
+    // Users can choose to view the result without changing their current code
+  }, []);
 
   // 로컬 테스트 진행률 (실행 중일 때만)
   const currentLocalTestProgress = isLocalTesting ? pyodideProgress?.message : undefined;
@@ -295,6 +305,15 @@ def test_edge_case():
 
           if (shouldContinuePolling) {
             scheduleNextPoll(BASE_POLL_INTERVAL);
+          } else {
+            // Add to session history when submission completes
+            setSessionHistory((prev) => {
+              // Avoid duplicates
+              if (prev.some((s) => s.id === updatedSubmission.id)) {
+                return prev;
+              }
+              return [updatedSubmission, ...prev];
+            });
           }
         } catch (err) {
           pollingErrorCountRef.current += 1;
@@ -485,6 +504,9 @@ def test_edge_case():
                 localTestResult={localTestResult}
                 localTestError={localTestError}
                 localTestProgress={currentLocalTestProgress}
+                problemId={problemId}
+                onLoadSubmission={handleLoadSubmission}
+                sessionHistory={sessionHistory}
               />
             }
           />
@@ -545,6 +567,9 @@ def test_edge_case():
               localTestResult={localTestResult}
               localTestError={localTestError}
               localTestProgress={currentLocalTestProgress}
+              problemId={problemId}
+              onLoadSubmission={handleLoadSubmission}
+              sessionHistory={sessionHistory}
             />
           }
           aiPanel={

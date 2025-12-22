@@ -26,6 +26,12 @@ interface CodeEditorPanelProps {
   localTestError?: string | null;
   /** Local test progress message */
   localTestProgress?: string;
+  /** Problem ID for history */
+  problemId?: number;
+  /** Load submission from history */
+  onLoadSubmission?: (submission: Submission) => void;
+  /** Session-based history for non-authenticated users */
+  sessionHistory?: Submission[];
 }
 
 export default function CodeEditorPanel({
@@ -41,6 +47,9 @@ export default function CodeEditorPanel({
   localTestResult,
   localTestError,
   localTestProgress,
+  problemId,
+  onLoadSubmission,
+  sessionHistory = [],
 }: CodeEditorPanelProps) {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [editorHeight, setEditorHeight] = useState(400);
@@ -261,6 +270,9 @@ export default function CodeEditorPanel({
           submissionError={submissionError}
           isSubmitting={isSubmitting}
           onSubmitRetry={onSubmit}
+          problemId={problemId}
+          onLoadSubmission={onLoadSubmission}
+          sessionHistory={sessionHistory}
         />
       </div>
     </div>
