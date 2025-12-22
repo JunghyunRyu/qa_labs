@@ -15,9 +15,9 @@ import { useLayoutStore } from "@/stores/layoutStore";
 import type { Problem, Submission, ClientExecutionResult } from "@/types/problem";
 import type { AIChatMode } from "@/types/ai";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
+import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
-import Breadcrumb from "@/components/Breadcrumb";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
 import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
 import ProblemPanel from "@/components/layout/ProblemPanel";
@@ -477,17 +477,7 @@ def test_edge_case():
   if (isDesktop) {
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)]">
-        {/* Header */}
-        <div className="flex-shrink-0 px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-          <Breadcrumb
-            items={[
-              { label: "문제 목록", href: "/problems" },
-              { label: problem.title || `문제 #${problem.id}` },
-            ]}
-          />
-        </div>
-
-        {/* Main content - Split panel */}
+        {/* Main content - Split panel (Breadcrumb integrated into ProblemPanel) */}
         <div className="flex-1 min-h-0">
           <ResizableSplitPanel
             leftPanel={<ProblemPanel problem={problem} />}
@@ -536,14 +526,20 @@ def test_edge_case():
   // Mobile/Tablet layout - Tab-based
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Header */}
-      <div className="flex-shrink-0 px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <Breadcrumb
-          items={[
-            { label: "문제 목록", href: "/problems" },
-            { label: problem.title || `문제 #${problem.id}` },
-          ]}
-        />
+      {/* Compact Mobile Header */}
+      <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/problems"
+            className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex-shrink-0"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden xs:inline">목록</span>
+          </Link>
+          <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex-1">
+            {problem.title || `문제 #${problem.id}`}
+          </h1>
+        </div>
       </div>
 
       {/* Tab Layout */}
