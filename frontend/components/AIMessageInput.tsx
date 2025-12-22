@@ -14,7 +14,7 @@ export default function AIMessageInput({
   onSend,
   disabled = false,
   loading = false,
-  placeholder = "AI 코치에게 질문하세요...",
+  placeholder = "AI 도우미에게 질문하세요...",
 }: AIMessageInputProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);

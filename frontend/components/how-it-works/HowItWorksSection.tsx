@@ -47,7 +47,7 @@ const defaultSteps: HowItWorksStep[] = [
     number: "05",
     title: "Score & Coaching",
     titleKo: "점수 & 코칭",
-    description: "버그 탐지율 + 테스트 품질 분석 + AI 코칭을 제공합니다.",
+    description: "버그 탐지율 + 테스트 품질 분석 + AI 피드백을 제공합니다.",
     icon: "trophy",
   },
 ];

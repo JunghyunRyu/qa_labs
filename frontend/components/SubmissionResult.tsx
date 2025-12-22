@@ -6,9 +6,11 @@ import ScoreDisplay from "./ScoreDisplay";
 import FeedbackDisplay from "./FeedbackDisplay";
 import TestResultsList from "./TestResultsList";
 import ErrorLogDisplay from "./ErrorLogDisplay";
+import { TestQualityPanel } from "./test-quality";
 import { parsePytestOutput } from "@/lib/pytestParser";
 import { AlertCircle, FileText, Sparkles, Lock } from "lucide-react";
 import { Github } from "lucide-react";
+import type { QualityGrade, TestQualityAnalysis } from "@/types/test-quality";
 
 interface SubmissionResultProps {
   submission: Submission;
@@ -64,6 +66,18 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
             totalMutants={submission.total_mutants}
           />
         </div>
+      )}
+
+      {/* Test Quality Analysis - Shown for SUCCESS status */}
+      {submission.status === "SUCCESS" && submission.test_quality_analysis && (
+        <TestQualityPanel
+          submissionId={submission.id}
+          score={submission.test_quality_score}
+          grade={submission.test_quality_grade as QualityGrade | undefined}
+          analysis={submission.test_quality_analysis as unknown as TestQualityAnalysis}
+          showHints={!!submission.user_id}
+          defaultExpanded={false}
+        />
       )}
 
       {/* FAILURE 상태 상세 정보 */}
@@ -157,7 +171,7 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
                 AI 피드백은 회원 전용 기능입니다
               </p>
               <p className="text-sm text-gray-500 mb-6">
-                로그인하면 상세한 AI 코칭과 개선 제안을 받을 수 있습니다.
+                로그인하면 상세한 AI 피드백과 개선 제안을 받을 수 있습니다.
               </p>
               <a
                 href="/api/v1/auth/github/login"

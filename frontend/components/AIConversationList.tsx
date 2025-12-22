@@ -31,7 +31,7 @@ export default function AIConversationList({
           <Bot className="w-8 h-8 text-sky-500" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-          AI 코치에게 질문해 보세요!
+          AI 도우미에게 질문해 보세요!
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
           테스트 케이스 작성, 경계값 분석, 버그 찾기 등에 대해 힌트를 드릴게요.

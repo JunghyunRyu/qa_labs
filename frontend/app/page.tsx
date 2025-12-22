@@ -9,7 +9,7 @@ import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
 const heroCopy = {
   headline: "AI가 코드를 더 빨리 쓰는 시대, 실력은 '숨은 버그를 찾아내는 설계'로 증명됩니다.",
   subLine1: "AI는 구현을 빠르게 돕습니다. 하지만 어떤 케이스가 위험한지는 업무 맥락이 정합니다.",
-  micro: "AI 코치는 정답이 아니라, 놓친 케이스와 다음 테스트 설계를 제안합니다.",
+  micro: "AI 도우미는 정답이 아니라, 놓친 케이스와 다음 테스트 설계를 제안합니다.",
   domainLabel: "실무 도메인으로 시작하기",
   domainHelper: "도메인을 선택하면 문제/추천 트랙이 해당 업무 시나리오로 맞춰집니다.",
 };
@@ -790,7 +790,7 @@ export default function Home() {
       <section className="py-16 sm:py-20 px-4 bg-[var(--background)]">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
-            AI 코치가 이렇게 피드백합니다
+            AI 도우미가 이렇게 피드백합니다
           </h2>
           <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
             채점 완료 후 AI가 코드를 분석하여 개선 방향을 제시합니다

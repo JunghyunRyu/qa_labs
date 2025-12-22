@@ -85,6 +85,10 @@ export interface Submission {
   feedback_json?: Record<string, unknown>;
   progress?: SubmissionProgress;
   created_at: string;
+  // Test Quality Analysis (Phase 4)
+  test_quality_score?: number;
+  test_quality_grade?: "A" | "B" | "C" | "D" | "F";
+  test_quality_analysis?: Record<string, unknown>;
 }
 
 /** Client-side execution result (from Pyodide) */

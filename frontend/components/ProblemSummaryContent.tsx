@@ -146,10 +146,10 @@ export default function ProblemSummaryContent({
         </div>
       )}
 
-      {/* AI 코치 토글 */}
+      {/* AI 도우미 토글 */}
       <div>
         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-          AI 코치
+          AI 도우미
         </span>
         <div className="mt-2">
           <button
@@ -159,7 +159,7 @@ export default function ProblemSummaryContent({
                 ? "bg-sky-500"
                 : "bg-gray-300 dark:bg-gray-600"
             }`}
-            aria-label="AI 코치 토글"
+            aria-label="AI 도우미 토글"
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
