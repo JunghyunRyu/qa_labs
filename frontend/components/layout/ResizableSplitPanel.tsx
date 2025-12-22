@@ -3,7 +3,6 @@
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { useCallback, useEffect, useState } from "react";
-import { GripVertical } from "lucide-react";
 
 interface ResizableSplitPanelProps {
   leftPanel: React.ReactNode;
@@ -76,20 +75,20 @@ export default function ResizableSplitPanel({
 
       <PanelResizeHandle
         data-testid="drag-handle-horizontal"
-        className="group w-1.5 hover:w-2 bg-gray-200 dark:bg-gray-700
+        className="group w-2 bg-gray-200 dark:bg-gray-700
                    hover:bg-sky-400 dark:hover:bg-sky-500
                    active:bg-sky-500 dark:active:bg-sky-600
                    transition-colors duration-150 flex items-center justify-center
-                   cursor-col-resize"
+                   cursor-col-resize touch-none select-none"
         onDoubleClick={handleDoubleClick}
-        title="드래그하여 패널 크기 조절 (더블클릭: 기본값)"
+        title="드래그: 크기 조절 | 더블클릭: 기본값"
       >
-        <div
-          className="opacity-0 group-hover:opacity-100 transition-opacity
-                      text-white"
-        >
-          <GripVertical size={14} />
-        </div>
+        {/* Vertical grip bar - always visible */}
+        <div className="h-8 w-1 rounded-full transition-colors
+                        bg-gray-400 dark:bg-gray-500
+                        group-hover:bg-white dark:group-hover:bg-white
+                        group-active:bg-white"
+        />
       </PanelResizeHandle>
 
       <Panel minSize={40} className="h-full">

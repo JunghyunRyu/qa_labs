@@ -377,12 +377,13 @@ export default function CodeEditorPanel({
                     bg-gray-100 dark:bg-gray-800
                     hover:bg-sky-100 dark:hover:bg-sky-900/30
                     active:bg-sky-200 dark:active:bg-sky-900/50
-                    transition-colors group ${isDragging ? "bg-sky-200 dark:bg-sky-900/50" : ""}`}
+                    transition-colors touch-none select-none group
+                    ${isDragging ? "bg-sky-200 dark:bg-sky-900/50" : ""}`}
         onMouseDown={handleDragStart}
         onDoubleClick={handleDoubleClick}
         title="드래그: 크기 조절 | 더블클릭: 기본값"
       >
-        {/* Grip indicator - more visible */}
+        {/* Grip indicator - always visible */}
         <div className={`w-12 h-1 rounded-full transition-colors
                         bg-gray-300 dark:bg-gray-600
                         group-hover:bg-sky-400 dark:group-hover:bg-sky-500
