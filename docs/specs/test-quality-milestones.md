@@ -11,7 +11,7 @@
 |-------|------|--------|
 | Phase 0: 스파이크 | ✅ 완료 | 5/5 |
 | Phase 1: 스키마 | ✅ 완료 | 5/5 |
-| Phase 2: 분석 엔진 | 대기 | 0/4 |
+| Phase 2: 분석 엔진 | ✅ 완료 | 4/4 |
 | Phase 3: AI 연계 | 대기 | 0/3 |
 | Phase 4: 프론트엔드 | 대기 | 0/4 |
 
@@ -93,22 +93,24 @@
 
 ### 체크리스트
 
-- [ ] **P2-1**: TestQualityAnalyzer 구현
-  - [ ] 포화 함수 적용
-  - [ ] 중복 가산 방지 로직
-  - [ ] AntiPattern 감점 적용
+- [x] **P2-1**: TestQualityAnalyzer 구현
+  - [x] 포화 함수 적용
+  - [x] 중복 가산 방지 로직
+  - [x] AntiPattern 감점 적용
   - 파일: `backend/app/services/test_quality_analyzer.py`
 
-- [ ] **P2-2**: API 엔드포인트 구현 (권한 분리)
-  - [ ] Admin 전용 엔드포인트
-  - [ ] 사용자 엔드포인트
+- [x] **P2-2**: API 엔드포인트 구현 (권한 분리)
+  - [x] Admin 전용 엔드포인트
+  - [x] 사용자 엔드포인트
   - 파일: `backend/app/api/test_quality.py`
 
-- [ ] **P2-3**: 제출 채점 후 자동 분석 연동
+- [x] **P2-3**: 제출 채점 후 자동 분석 연동
   - 수정 파일: `backend/app/services/submission_service.py`
+  - 수정 파일: `backend/app/api/submissions.py` (클라이언트 실행)
 
-- [ ] **P2-4**: 단위 테스트 작성
-  - 파일: `backend/tests/services/test_quality_analyzer_test.py`
+- [x] **P2-4**: 단위 테스트 작성
+  - 파일: `backend/tests/test_test_quality_analyzer.py`
+  - 테스트 30개 작성 및 통과
 
 ---
 
@@ -155,6 +157,23 @@
 ## 작업 로그
 
 > 세션별 진행 상황 기록
+
+### 2024-12-22 (세션 4)
+- [x] **Phase 2 완료**: 분석 엔진 + API 구현
+  - P2-1: TestQualityAnalyzer 구현
+    - 포화 함수 (0→0, 1→40, 2→70, 3→85, 4→95, 5→100)
+    - 중복 가산 방지 (MIN_UNIQUE_TESTS_FOR_CATEGORY = 2)
+    - AntiPattern 감점 적용
+    - 등급 결정 (A:90+, B:75+, C:60+, D:40+, F:0+)
+  - P2-2: API 엔드포인트
+    - User: `/api/v1/test-quality/submissions/{id}/quality`
+    - Admin: `/api/v1/test-quality/admin/analyze-submission/{id}`
+    - Admin: `/api/v1/test-quality/admin/analyze-problem/{id}`
+    - Admin: `/api/v1/test-quality/admin/statistics`
+  - P2-3: 자동 분석 연동
+    - 서버사이드: SubmissionService.process_submission()
+    - 클라이언트사이드: submissions.py create_submission()
+  - P2-4: 단위 테스트 30개 작성 및 통과
 
 ### 2024-12-22 (세션 3)
 - [x] **Phase 1 완료**: 스키마 확정

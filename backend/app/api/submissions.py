@@ -14,7 +14,9 @@ from app.models.submission import Submission
 from app.models.user import User
 from app.repositories.submission_repository import SubmissionRepository
 from app.repositories.problem_repository import ProblemRepository
+from app.repositories.test_quality_repository import TestQualityRepository
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
+from app.services.test_quality_analyzer import TestQualityAnalyzer
 from app.workers.tasks import process_submission_task, generate_feedback_task
 
 logger = logging.getLogger(__name__)
@@ -145,6 +147,32 @@ async def create_submission(
             f"status={submission_status} score={client_result.score} "
             f"killed={client_result.mutants_killed}/{client_result.total_mutants}"
         )
+
+        # 테스트 품질 분석 (Phase 2)
+        if submission_status == "SUCCESS":
+            try:
+                quality_repo = TestQualityRepository(db)
+                analyzer = TestQualityAnalyzer()
+                quality_result = analyzer.analyze(submission_data.code)
+
+                quality_repo.update_submission_quality(
+                    submission_id=submission.id,
+                    score=quality_result.score,
+                    grade=quality_result.grade.value,
+                    analysis=quality_result.analysis.model_dump(),
+                )
+
+                logger.info(
+                    f"[QUALITY_ANALYSIS_SUCCESS] submission_id={submission.id} "
+                    f"quality_score={quality_result.score} grade={quality_result.grade.value}"
+                )
+            except Exception as qe:
+                # 품질 분석 실패해도 채점 결과는 반환
+                logger.error(
+                    f"[QUALITY_ANALYSIS_ERROR] submission_id={submission.id} "
+                    f"error={type(qe).__name__}: {str(qe)}",
+                    exc_info=True,
+                )
 
         # 회원이고 SUCCESS인 경우 AI 피드백 비동기 생성
         if user_id and submission_status == "SUCCESS":

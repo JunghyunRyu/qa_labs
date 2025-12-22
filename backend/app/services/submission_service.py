@@ -13,6 +13,8 @@ from app.repositories.problem_repository import ProblemRepository
 from app.repositories.buggy_implementation_repository import BuggyImplementationRepository
 from app.services.judge_service import JudgeService
 from app.services.ai_feedback_engine import generate_feedback
+from app.services.test_quality_analyzer import TestQualityAnalyzer, PARSER_VERSION, SCORING_VERSION
+from app.repositories.test_quality_repository import TestQualityRepository
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,9 @@ class SubmissionService:
         self.submission_repo = SubmissionRepository(db)
         self.problem_repo = ProblemRepository(db)
         self.buggy_repo = BuggyImplementationRepository(db)
+        self.quality_repo = TestQualityRepository(db)
         self.judge_service = JudgeService()
+        self.quality_analyzer = TestQualityAnalyzer()
 
     def _is_golden_code_error(self, logs: str) -> bool:
         """
@@ -309,6 +313,31 @@ class SubmissionService:
                 f"[GRADING_COMPLETE] submission_id={submission_id} status=SUCCESS "
                 f"score={score} killed={killed}/{total_weight}"
             )
+
+            # 10. 테스트 품질 분석 (Phase 2)
+            try:
+                logger.info(f"[QUALITY_ANALYSIS_START] submission_id={submission_id}")
+                quality_result = self.quality_analyzer.analyze(submission.code)
+
+                # DB 업데이트
+                self.quality_repo.update_submission_quality(
+                    submission_id=submission_id,
+                    score=quality_result.score,
+                    grade=quality_result.grade.value,
+                    analysis=quality_result.analysis.model_dump(),
+                )
+
+                logger.info(
+                    f"[QUALITY_ANALYSIS_SUCCESS] submission_id={submission_id} "
+                    f"quality_score={quality_result.score} grade={quality_result.grade.value}"
+                )
+            except Exception as qe:
+                # 품질 분석 실패해도 채점 결과는 유지
+                logger.error(
+                    f"[QUALITY_ANALYSIS_ERROR] submission_id={submission_id} "
+                    f"error={type(qe).__name__}: {str(qe)}",
+                    exc_info=True,
+                )
 
         except Exception as e:
             logger.error(
