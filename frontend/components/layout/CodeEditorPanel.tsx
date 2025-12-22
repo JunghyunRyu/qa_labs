@@ -149,6 +149,7 @@ export default function CodeEditorPanel({
             {/* Local Test Button */}
             {onLocalTest && (
               <button
+                data-testid="btn-local-test"
                 onClick={onLocalTest}
                 disabled={isLocalTesting || isSubmitting || !code.trim()}
                 className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600
@@ -172,6 +173,7 @@ export default function CodeEditorPanel({
 
             {/* Submit Button */}
             <button
+              data-testid="btn-submit"
               onClick={onSubmit}
               disabled={isSubmitting || isLocalTesting || !code.trim()}
               className="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
@@ -197,6 +199,7 @@ export default function CodeEditorPanel({
         {/* Editor Area */}
         <div
           ref={editorContainerRef}
+          data-testid="code-editor-area"
           className="flex-1 min-h-0 overflow-hidden"
           onFocus={() => setIsEditorFocused(true)}
           onBlur={() => setIsEditorFocused(false)}

@@ -167,6 +167,7 @@ export default function BottomTabs({
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            data-testid={`tab-${tab.id}`}
             onClick={() => handleTabChange(tab.id)}
             className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors
               ${activeTab === tab.id
@@ -991,6 +992,7 @@ function HistoryTabContent({
         return (
           <div
             key={item.id}
+            data-testid={`history-item-${item.id}`}
             role="button"
             tabIndex={0}
             onClick={() => handleItemClick(item)}
