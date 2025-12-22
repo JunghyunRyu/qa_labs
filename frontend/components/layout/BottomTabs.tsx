@@ -8,6 +8,7 @@ import {
   History,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
   Loader2,
   CheckCircle,
   XCircle,
@@ -19,6 +20,9 @@ import {
   Bot,
   Lightbulb,
   ArrowRight,
+  Clock,
+  Code,
+  Terminal,
 } from "lucide-react";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import { useLayoutStore } from "@/stores/layoutStore";
@@ -83,7 +87,6 @@ export default function BottomTabs({
   // Internal state for uncontrolled mode
   const [internalActiveTab, setInternalActiveTab] = useState<TabId>("local");
   const [internalIsExpanded, setInternalIsExpanded] = useState(false);
-  const [logsCopied, setLogsCopied] = useState(false);
 
   // Use controlled or uncontrolled mode
   const activeTab = controlledActiveTab ?? internalActiveTab;
@@ -115,31 +118,6 @@ export default function BottomTabs({
   const hasSubmissionError = submissionError || (submission && submission.status === "ERROR");
   const hasSubmissionContent = isJudging || hasSubmissionResult || hasSubmissionError;
 
-  // Get logs content
-  const getLogsContent = (): string => {
-    if (submissionError) return submissionError;
-    if (submission?.execution_log) {
-      return JSON.stringify(submission.execution_log, null, 2);
-    }
-    if (localTestError) return localTestError;
-    if (localTestResult?.output) return localTestResult.output;
-    return "";
-  };
-
-  const logsContent = getLogsContent();
-  const hasLogs = logsContent.length > 0;
-
-  // Copy logs to clipboard
-  const handleCopyLogs = async () => {
-    try {
-      await navigator.clipboard.writeText(logsContent);
-      setLogsCopied(true);
-      setTimeout(() => setLogsCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy logs:", err);
-    }
-  };
-
   // Get result tab indicator
   const getResultIndicator = () => {
     if (isJudging) {
@@ -159,6 +137,13 @@ export default function BottomTabs({
     if (hasSubmissionError) {
       return <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" />;
     }
+    // Check if there's any log content
+    const hasLogs = !!(
+      submissionError ||
+      submission?.execution_log ||
+      localTestError ||
+      localTestResult?.output
+    );
     if (hasLogs) {
       return <span className="ml-1 w-2 h-2 bg-gray-400 rounded-full" />;
     }
@@ -273,46 +258,13 @@ export default function BottomTabs({
 
         {/* Logs Tab */}
         {activeTab === "logs" && (
-          <div className="h-full">
-            {hasLogs ? (
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    실행 로그
-                  </span>
-                  <button
-                    onClick={handleCopyLogs}
-                    className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-800 rounded transition-colors"
-                    title="로그 복사"
-                  >
-                    {logsCopied ? (
-                      <>
-                        <Check className="w-3 h-3 text-green-500" />
-                        복사됨
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3 h-3" />
-                        복사
-                      </>
-                    )}
-                  </button>
-                </div>
-                <pre className="p-3 bg-gray-900 text-gray-100 text-xs font-mono rounded overflow-x-auto max-h-[300px] overflow-y-auto whitespace-pre-wrap">
-                  {logsContent}
-                </pre>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
-                <div className="text-center">
-                  <ScrollText className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">로그 없음</p>
-                  <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
-                    테스트 실행 또는 채점 후 상세 로그가 여기에 표시됩니다
-                  </p>
-                </div>
-              </div>
-            )}
+          <div className="h-full overflow-y-auto">
+            <LogsTabContent
+              localTestResult={localTestResult}
+              localTestError={localTestError}
+              submission={submission}
+              submissionError={submissionError}
+            />
           </div>
         )}
 
@@ -615,6 +567,224 @@ function ResultCTAButtons() {
         <Bot className="w-4 h-4" />
         AI 도우미에게 물어보기
       </button>
+    </div>
+  );
+}
+
+// Logs Tab Content Component
+function LogsTabContent({
+  localTestResult,
+  localTestError,
+  submission,
+  submissionError,
+}: {
+  localTestResult?: PytestResult | null;
+  localTestError?: string | null;
+  submission?: Submission | null;
+  submissionError?: string | null;
+}) {
+  const [isSummaryOpen, setIsSummaryOpen] = useState(true);
+  const [isTestOutputOpen, setIsTestOutputOpen] = useState(true);
+  const [isRawLogOpen, setIsRawLogOpen] = useState(false);
+  const [summaryCopied, setSummaryCopied] = useState(false);
+  const [rawCopied, setRawCopied] = useState(false);
+
+  // Determine log source and type
+  const isLocalTest = !!(localTestResult || localTestError);
+  const isSubmission = !!(submission || submissionError);
+
+  // Get pytest output
+  const pytestOutput = localTestResult?.output || "";
+
+  // Get raw JSON data
+  const getRawJson = (): string => {
+    if (submissionError) return submissionError;
+    if (submission?.execution_log) {
+      return JSON.stringify(submission.execution_log, null, 2);
+    }
+    if (localTestError) return localTestError;
+    if (localTestResult) {
+      return JSON.stringify(localTestResult, null, 2);
+    }
+    return "";
+  };
+
+  const rawJson = getRawJson();
+  const hasContent = pytestOutput || rawJson;
+
+  // Generate summary text
+  const getSummaryText = (): string => {
+    const lines: string[] = [];
+
+    if (isLocalTest && localTestResult) {
+      lines.push(`실행 모드: 로컬 테스트`);
+      lines.push(`실행 시간: ${localTestResult.executionTime.toFixed(0)}ms`);
+      lines.push(`테스트 결과: ${localTestResult.passed}개 통과, ${localTestResult.failed}개 실패, ${localTestResult.errors}개 에러`);
+      if (localTestResult.failed > 0 || localTestResult.errors > 0) {
+        lines.push(`상태: 테스트 실패`);
+      } else {
+        lines.push(`상태: 테스트 통과`);
+      }
+    } else if (isSubmission && submission) {
+      lines.push(`실행 모드: 채점`);
+      lines.push(`상태: ${submission.status}`);
+      if (submission.killed_mutants !== undefined && submission.total_mutants !== undefined) {
+        lines.push(`버그 탐지: ${submission.killed_mutants}/${submission.total_mutants}개`);
+      }
+      lines.push(`점수: ${submission.score}점`);
+    } else if (submissionError) {
+      lines.push(`실행 모드: 채점`);
+      lines.push(`상태: 에러`);
+      lines.push(`에러: ${submissionError}`);
+    } else if (localTestError) {
+      lines.push(`실행 모드: 로컬 테스트`);
+      lines.push(`상태: 에러`);
+      lines.push(`에러: ${localTestError}`);
+    }
+
+    return lines.join("\n");
+  };
+
+  const summaryText = getSummaryText();
+
+  // Copy handlers
+  const handleCopySummary = async () => {
+    try {
+      await navigator.clipboard.writeText(summaryText);
+      setSummaryCopied(true);
+      setTimeout(() => setSummaryCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy summary:", err);
+    }
+  };
+
+  const handleCopyRaw = async () => {
+    try {
+      await navigator.clipboard.writeText(rawJson);
+      setRawCopied(true);
+      setTimeout(() => setRawCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy raw:", err);
+    }
+  };
+
+  if (!hasContent) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
+        <div className="text-center">
+          <ScrollText className="w-10 h-10 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">로그 없음</p>
+          <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
+            테스트 실행 또는 채점 후 상세 로그가 여기에 표시됩니다
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-3 space-y-2">
+      {/* Summary Section */}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsSummaryOpen(!isSummaryOpen)}
+          onKeyDown={(e) => e.key === "Enter" && setIsSummaryOpen(!isSummaryOpen)}
+          className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <ChevronRight className={`w-4 h-4 transition-transform ${isSummaryOpen ? "rotate-90" : ""}`} />
+            <Clock className="w-4 h-4 text-blue-500" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">요약</span>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleCopySummary(); }}
+            className="flex items-center gap-1 px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-700 rounded transition-colors"
+            title="요약 복사"
+          >
+            {summaryCopied ? (
+              <><Check className="w-3 h-3 text-green-500" /> 복사됨</>
+            ) : (
+              <><Copy className="w-3 h-3" /> 요약 복사</>
+            )}
+          </button>
+        </div>
+        {isSummaryOpen && (
+          <div className="p-3 bg-white dark:bg-gray-900 text-sm">
+            <div className="space-y-1">
+              {summaryText.split("\n").map((line, idx) => {
+                const [label, value] = line.split(": ");
+                return (
+                  <div key={idx} className="flex">
+                    <span className="text-gray-500 dark:text-gray-400 w-24 flex-shrink-0">{label}:</span>
+                    <span className="text-gray-900 dark:text-gray-100">{value}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Test Output Section (pytest stdout) */}
+      {pytestOutput && (
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <button
+            onClick={() => setIsTestOutputOpen(!isTestOutputOpen)}
+            className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <ChevronRight className={`w-4 h-4 transition-transform ${isTestOutputOpen ? "rotate-90" : ""}`} />
+              <Terminal className="w-4 h-4 text-green-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">테스트 출력</span>
+            </div>
+          </button>
+          {isTestOutputOpen && (
+            <pre className="p-3 bg-gray-900 text-gray-100 text-xs font-mono overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+              {pytestOutput}
+            </pre>
+          )}
+        </div>
+      )}
+
+      {/* Raw Data Section (JSON) */}
+      {rawJson && (
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setIsRawLogOpen(!isRawLogOpen)}
+            onKeyDown={(e) => e.key === "Enter" && setIsRawLogOpen(!isRawLogOpen)}
+            className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <ChevronRight className={`w-4 h-4 transition-transform ${isRawLogOpen ? "rotate-90" : ""}`} />
+              <Code className="w-4 h-4 text-orange-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">원시 데이터 (JSON)</span>
+              {!isRawLogOpen && (
+                <span className="text-xs text-gray-400 dark:text-gray-500">클릭하여 펼치기</span>
+              )}
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleCopyRaw(); }}
+              className="flex items-center gap-1 px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-700 rounded transition-colors"
+              title="원시 데이터 복사"
+            >
+              {rawCopied ? (
+                <><Check className="w-3 h-3 text-green-500" /> 복사됨</>
+              ) : (
+                <><Copy className="w-3 h-3" /> JSON 복사</>
+              )}
+            </button>
+          </div>
+          {isRawLogOpen && (
+            <pre className="p-3 bg-gray-900 text-gray-100 text-xs font-mono overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+              {rawJson}
+            </pre>
+          )}
+        </div>
+      )}
     </div>
   );
 }
