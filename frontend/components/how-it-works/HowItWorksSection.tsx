@@ -22,8 +22,8 @@ const defaultSteps: HowItWorksStep[] = [
     id: 2,
     number: "02",
     title: "Validate on Golden",
-    titleKo: "정상 코드 검증",
-    description: "정상 구현(Golden Code)에서 테스트가 통과하는지 확인합니다.",
+    titleKo: "기본 검증",
+    description: "정답 코드에서 테스트가 통과하는지 확인합니다.",
     icon: "check",
   },
   {
@@ -45,8 +45,8 @@ const defaultSteps: HowItWorksStep[] = [
   {
     id: 5,
     number: "05",
-    title: "Score & Coaching",
-    titleKo: "점수 & 코칭",
+    title: "Score & Feedback",
+    titleKo: "점수 & 피드백",
     description: "버그 탐지율 + 테스트 품질 분석 + AI 피드백을 제공합니다.",
     icon: "trophy",
   },

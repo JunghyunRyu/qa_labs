@@ -83,8 +83,8 @@ export default function ScoreDisplay({
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-3">
             <Target className="w-5 h-5 text-gray-600" />
-            <h4 className="text-sm font-semibold text-gray-700">
-              결함 검출률
+            <h4 className="text-sm font-semibold text-gray-700" title="Mutation Kill Rate - 테스트가 버그를 발견한 비율">
+              버그 탐지율
             </h4>
           </div>
           

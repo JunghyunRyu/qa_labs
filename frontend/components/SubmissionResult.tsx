@@ -90,11 +90,11 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium text-orange-800 mb-2">
-                Golden Code 테스트가 실패했습니다.
+                기본 검증에 실패했습니다
               </p>
               <p className="text-sm text-orange-700">
-                작성하신 테스트 코드가 정상 구현을 통과시키지 못했습니다.
-                테스트 케이스를 다시 확인해주세요.
+                작성하신 테스트가 정답 코드를 통과시키지 못했습니다.
+                테스트 코드를 확인해주세요.
               </p>
             </div>
 

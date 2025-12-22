@@ -479,8 +479,8 @@ function ResultTabContent({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <Target className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  결함 검출률
+                <span className="text-sm text-gray-600 dark:text-gray-400" title="테스트가 버그를 발견한 비율">
+                  버그 탐지율
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -498,7 +498,7 @@ function ResultTabContent({
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                {submission.killed_mutants}/{submission.total_mutants}개 결함 발견
+                {submission.killed_mutants}/{submission.total_mutants}개 버그 발견
               </p>
             </div>
           )}

@@ -99,29 +99,29 @@ export default function ScoringMethodDrawer({
                 </span>
               </div>
               <div className="space-y-2 text-sm text-green-700 dark:text-green-400">
-                <p className="font-medium">Golden 테스트 통과</p>
+                <p className="font-medium">기본 검증 통과</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li>정답 코드(Golden Code)에 대해 테스트 실행</li>
+                  <li>정답 코드에 대해 테스트 실행</li>
                   <li>모든 테스트가 통과하면 30점 획득</li>
                   <li>하나라도 실패하면 0점</li>
                 </ul>
               </div>
             </div>
 
-            {/* 결함 검출 점수 */}
+            {/* 버그 탐지 점수 */}
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Bug className="w-5 h-5 text-red-600 dark:text-red-400" />
                 <span className="font-semibold text-red-800 dark:text-red-300">
-                  결함 검출 점수: 70점
+                  버그 탐지 점수: 70점
                 </span>
               </div>
               <div className="space-y-2 text-sm text-red-700 dark:text-red-400">
-                <p className="font-medium">Mutant Kill Ratio</p>
+                <p className="font-medium">버그 탐지율 (Mutant Kill Ratio)</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li>버그가 심어진 코드(Mutant)들에 대해 테스트 실행</li>
-                  <li>테스트가 실패해야 버그를 &quot;검출&quot;한 것</li>
-                  <li>검출한 Mutant 수 / 전체 Mutant 수 × 70점</li>
+                  <li>버그가 심어진 코드에 대해 테스트 실행</li>
+                  <li>테스트가 실패해야 버그를 탐지한 것</li>
+                  <li>탐지한 버그 수 / 전체 버그 수 × 70점</li>
                 </ul>
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function ScoringMethodDrawer({
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
                   <span className="text-gray-600 dark:text-gray-400">
-                    Golden 테스트 통과
+                    기본 검증 통과
                   </span>
                   <span className="font-mono text-gray-900 dark:text-gray-100">
                     30점
@@ -142,7 +142,7 @@ export default function ScoringMethodDrawer({
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
                   <span className="text-gray-600 dark:text-gray-400">
-                    Mutant 5개 중 4개 검출
+                    버그 5개 중 4개 탐지
                   </span>
                   <span className="font-mono text-gray-900 dark:text-gray-100">
                     4/5 × 70 = 56점
@@ -163,7 +163,7 @@ export default function ScoringMethodDrawer({
                 높은 점수를 받으려면?
               </p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>정상 동작을 검증하는 테스트 작성 (Golden 통과)</li>
+                <li>정상 동작을 검증하는 테스트 작성 (기본 검증 통과)</li>
                 <li>경계값, 예외 상황을 철저히 테스트</li>
                 <li>버그를 놓치지 않도록 다양한 케이스 커버</li>
               </ul>
