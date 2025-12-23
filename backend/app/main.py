@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.sentry import init_sentry, capture_exception_with_context
-from app.api import problems, submissions, admin, health, auth, users, ai, test_quality
+from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress
 from app.middleware.anonymous import AnonymousIDMiddleware
 
 # 로깅 설정
@@ -236,6 +236,12 @@ app.include_router(
     test_quality.router,
     prefix="/api/v1/test-quality",
     tags=["test-quality"],
+)
+
+app.include_router(
+    progress.router,
+    prefix="/api/v1",
+    tags=["progress"],
 )
 
 
