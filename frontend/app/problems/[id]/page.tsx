@@ -19,6 +19,7 @@ import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
+import { generateTestTemplate, generateFallbackTemplate } from "@/lib/templateGenerator";
 import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
 import ProblemPanel from "@/components/layout/ProblemPanel";
 import CodeEditorPanel from "@/components/layout/CodeEditorPanel";
@@ -197,33 +198,14 @@ export default function ProblemDetailPage() {
     closeProblemPeek: () => setIsProblemPeekOpen(false),
   });
 
-  // Generate initial test template
+  // Generate initial test template using the template generator
   const getInitialTemplate = (problem: Problem): string => {
-    const functionNameMatch = problem.function_signature.match(/def\s+(\w+)/);
-    const functionName = functionNameMatch ? functionNameMatch[1] : "function";
-
-    return `import pytest
-from target import ${functionName}
-
-
-def test_basic():
-    """기본 테스트 케이스"""
-    # 정상 입력에 대한 테스트
-    # result = ${functionName}(...)  # TODO: 인자 입력
-    # assert result == ...  # TODO: 예상 결과
-    pass
-
-
-def test_edge_case():
-    """경계값/예외 테스트"""
-    # 경계값 테스트 예시
-    # assert ${functionName}([]) == 0
-
-    # 예외 테스트 예시
-    # with pytest.raises(ValueError):
-    #     ${functionName}(invalid_input)
-    pass
-`;
+    try {
+      return generateTestTemplate(problem);
+    } catch (err) {
+      console.warn("Failed to generate template, using fallback:", err);
+      return generateFallbackTemplate(problem.function_signature);
+    }
   };
 
   // Fetch problem data (code initialization is handled by initializeCode effect)
