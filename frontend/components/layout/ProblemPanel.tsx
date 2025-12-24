@@ -221,9 +221,8 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 export default function ProblemPanel({ problem }: ProblemPanelProps) {
-  const { isProblemCollapsed, toggleProblemPanel } = useLayoutStore();
+  const { isProblemCollapsed, toggleProblemPanel, toggleProblemPeek } = useLayoutStore();
   const [isSignatureExpanded, setIsSignatureExpanded] = useState(false);
-  const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Parse sections from description
   const sections = useMemo(() => parseDescription(problem.description_md), [problem.description_md]);
@@ -359,16 +358,15 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               </span>
             </div>
             <button
-              onClick={() => setShowFullDescription(!showFullDescription)}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
-                showFullDescription
-                  ? "bg-sky-600 text-white hover:bg-sky-700"
-                  : "bg-white dark:bg-gray-800 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-gray-700 border border-sky-200 dark:border-sky-700"
-              }`}
-              title={showFullDescription ? "요약 보기" : "전체 문제 보기"}
+              onClick={toggleProblemPeek}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors
+                         bg-white dark:bg-gray-800 text-sky-600 dark:text-sky-400
+                         hover:bg-sky-100 dark:hover:bg-gray-700
+                         border border-sky-200 dark:border-sky-700"
+              title="전체 문제 보기 (Alt+P)"
             >
               <BookOpen className="w-3 h-3" />
-              {showFullDescription ? "요약 보기" : "전체 문제"}
+              전체 문제
             </button>
           </div>
           {summary ? (
@@ -404,25 +402,9 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
         )}
       </div>
 
-      {/* ===== SCROLLABLE AREA ===== */}
+      {/* ===== SCROLLABLE ACCORDION AREA ===== */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {showFullDescription ? (
-          /* Full Description View */
-          <div className="p-3">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                <BookOpen className="w-4 h-4 text-sky-500" />
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  전체 문제 설명
-                </h3>
-              </div>
-              <div className="prose prose-sm max-w-none">
-                <MarkdownContent content={problem.description_md} />
-              </div>
-            </div>
-          </div>
-        ) : accordionSections.length > 0 ? (
-          /* Accordion View */
+        {accordionSections.length > 0 ? (
           <div className="p-3 space-y-2">
             {accordionSections.map((section, index) => {
               const config = getSectionConfig(section.type);
