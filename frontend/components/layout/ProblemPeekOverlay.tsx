@@ -8,6 +8,7 @@ import TagChips from "@/components/TagChips";
 import ProblemDescription from "@/components/ProblemDescription";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 interface ProblemPeekOverlayProps {
   problem: Problem;
@@ -204,7 +205,7 @@ export default function ProblemPeekOverlay({
           {!isSummaryCollapsed && (
             summary ? (
               <div className="mt-1.5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed prose prose-sm max-w-none max-h-[150px] overflow-auto">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                   {summary}
                 </ReactMarkdown>
               </div>

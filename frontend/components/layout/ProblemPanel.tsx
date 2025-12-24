@@ -26,6 +26,7 @@ import CopyButton from "@/components/CopyButton";
 import Accordion from "@/components/ui/Accordion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 // Difficulty color mapping
 const difficultyColors: Record<string, string> = {
@@ -153,7 +154,7 @@ function MarkdownContent({ content }: { content: string }) {
   return (
     <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
           h2: () => null,
           h3: ({ children }) => (
