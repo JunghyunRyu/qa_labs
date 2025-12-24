@@ -36,5 +36,6 @@
     "dictionary"
   ],
   "difficulty": "Easy",
-  "domain": "saas"
+  "domain": "saas",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • `params=None`을 빈 요청으로 취급해야 하는데\n\n🔀 **동등 분할**\n  • 값이 `0`\n\n🧠 **로직 검증**\n  • missing 계산에 `set`을 사용해 반환 순서가 비결정적이며\n  • 입력 리스트 `required_keys`를 함수 내부에서 정렬하여 호출자 데이터를 변형한다"
 }

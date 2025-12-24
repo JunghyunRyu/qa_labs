@@ -34,5 +34,6 @@
   ],
   "difficulty": "Easy",
   "problem_id": "E01",
-  "domain": "common"
+  "domain": "common",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 경계값(빈 문자열) 처리 오류: text가 빈 문자열이면 0이 아니라 1을 반환함\n  • 경계값/파티션 오류: 마지막 문자를 검사하지 않아\n\n🔀 **동등 분할**\n  • case_sensitive=False인 경우에도 대소문자를 무시하지 않고 그대로 비교하여\n  • equivalence partitioning 오류: 공백 문자(' ')를 카운트할 때..."
 }

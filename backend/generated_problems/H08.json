@@ -39,5 +39,6 @@
     "오류 처리"
   ],
   "difficulty": "Hard",
-  "domain": "platform"
+  "domain": "platform",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • event 문자열 정규화가 누락되어 대소문자 또는 공백이 포함된 입력이 실패합니다\n\n⚠️ **예외 처리**\n  • 잘못된 전이에서 InvalidTransitionError 대신 ValueError를 ...\n\n🧠 **로직 검증**\n  • allowed_events가 현재 상태를 무시하고 전체 이벤트 목록을 반환합니다\n  • history 메서드가 내부 히스토리 리스트를 그대로 반환합니다\n  • 전이 테이블이 비즈니스 규칙과 다릅니다"
 }

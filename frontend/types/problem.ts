@@ -19,6 +19,7 @@ export interface Problem {
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
   domain: DomainType;
   skills?: string[];
+  summary?: string;  // 핵심 테스트 포인트 요약 (마크다운)
   created_at: string;
   buggy_implementations: BuggyImplementation[];
 }
@@ -30,6 +31,7 @@ export interface ProblemListItem {
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
   domain: DomainType;
   skills?: string[];
+  summary?: string;  // 핵심 테스트 포인트 요약
   description_md?: string;  // For preview in list view
   success_rate?: number | null;  // 0.0~1.0, null if < 5 submissions
 }

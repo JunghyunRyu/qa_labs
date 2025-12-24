@@ -39,5 +39,6 @@
     "단위 테스트"
   ],
   "difficulty": "Medium",
-  "domain": "content"
+  "domain": "content",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • total_pages 계산 버그: 올림이 아니라 내림(floor)으로 계산하여 마지막...\n  • 범위 초과 페이지 처리 버그: page가 total_pages를 초과하면 빈 리스트를...\n  • 빈 리스트 처리 정책 오류: items가 비어 있어도 total_pages를 1로 고정하고\n  • 입력 검증 경계값 버그: page=0 또는 page_size=0을 허용해버림(조건이 ...\n\n🔀 **동등 분할**\n  • 오프셋 계산 오류: page를 0-based처럼 취급하여 start = page * ..."
 }

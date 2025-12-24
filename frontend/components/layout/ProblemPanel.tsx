@@ -106,13 +106,21 @@ function parseDescription(md: string): ParsedSection[] {
   return sections;
 }
 
-// Extract summary (first 3 meaningful lines)
+// Extract summary (first 3 meaningful lines) - fallback if no summary field
 function extractSummary(md: string): string {
   const lines = md
     .split('\n')
     .filter(line => line.trim() && !line.startsWith('#'))
     .slice(0, 3);
   return lines.join('\n');
+}
+
+// Get summary - prefer problem.summary field, fallback to extractSummary
+function getSummary(problem: Problem): string {
+  if (problem.summary) {
+    return problem.summary;
+  }
+  return extractSummary(problem.description_md);
 }
 
 // Section config for icons and colors
@@ -218,8 +226,8 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   // Parse sections from description
   const sections = useMemo(() => parseDescription(problem.description_md), [problem.description_md]);
 
-  // Extract summary for sticky area
-  const summary = useMemo(() => extractSummary(problem.description_md), [problem.description_md]);
+  // Get summary for sticky area - prefer problem.summary field
+  const summary = useMemo(() => getSummary(problem), [problem]);
 
   // Separate sticky sections (overview, io, constraints) from accordion sections
   const stickyTypes = new Set(['overview', 'io', 'constraints', 'task']);
@@ -339,17 +347,23 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           </div>
         </div>
 
-        {/* Summary - Quick glance (3 lines) */}
+        {/* Summary - Test point overview */}
         <div className="px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border-b border-sky-100 dark:border-sky-800/30">
           <div className="flex items-center gap-1.5 mb-1">
-            <Info className="w-3.5 h-3.5 text-sky-500" />
+            <Target className="w-3.5 h-3.5 text-sky-500" />
             <span className="text-xs font-medium text-sky-700 dark:text-sky-300">
-              핵심 요약
+              핵심 테스트 포인트
             </span>
           </div>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-3">
-            {summary || "문제 설명을 확인하세요."}
-          </p>
+          {summary ? (
+            <div className="text-sm">
+              <MarkdownContent content={summary} />
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+              문제 설명을 확인하세요.
+            </p>
+          )}
         </div>
 
         {/* Sticky Sections: Constraints, IO, Task */}
