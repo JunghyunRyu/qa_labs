@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { X, FileText, Code2, Sparkles } from "lucide-react";
+import { X, FileText, Code2, Sparkles, Target } from "lucide-react";
 import { Problem } from "@/types/problem";
 import CopyButton from "@/components/CopyButton";
 import TagChips from "@/components/TagChips";
 import ProblemDescription from "@/components/ProblemDescription";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ProblemPeekOverlayProps {
   problem: Problem;
@@ -73,16 +75,20 @@ export default function ProblemPeekOverlay({
 
   if (!isOpen) return null;
 
-  // Extract summary from description (first 3 meaningful lines)
-  const getSummary = (md: string): string => {
-    const lines = md
+  // Use problem.summary if available, fallback to extract from description
+  const getSummary = (): string => {
+    if (problem.summary) {
+      return problem.summary;
+    }
+    // Fallback: extract first 3 meaningful lines
+    const lines = problem.description_md
       .split("\n")
       .filter((line) => line.trim() && !line.startsWith("#"))
       .slice(0, 3);
     return lines.join("\n");
   };
 
-  const summary = getSummary(problem.description_md);
+  const summary = getSummary();
 
   return (
     <div
@@ -163,18 +169,26 @@ export default function ProblemPeekOverlay({
           </pre>
         </div>
 
-        {/* Summary - Quick glance (first 3 lines) */}
+        {/* Summary - Key test points */}
         <div className="flex-shrink-0 px-5 py-3 bg-sky-50 dark:bg-sky-900/20
                         border-b border-sky-100 dark:border-sky-800/30">
           <div className="flex items-center gap-2 mb-1.5">
-            <Code2 className="w-4 h-4 text-sky-500" />
+            <Target className="w-4 h-4 text-sky-500" />
             <span className="text-xs font-medium text-sky-700 dark:text-sky-300">
-              요약
+              핵심 테스트 포인트
             </span>
           </div>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-3">
-            {summary || "문제 설명을 확인하세요."}
-          </p>
+          {summary ? (
+            <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed prose prose-sm max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {summary}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+              문제 설명을 확인하세요.
+            </p>
+          )}
         </div>
 
         {/* Full Content - Scrollable */}
