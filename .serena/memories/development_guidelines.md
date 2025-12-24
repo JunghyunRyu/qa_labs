@@ -13,7 +13,8 @@
 - **OS**: Ubuntu 22.04 LTS
 - **Docker Compose**: `docker compose` (v2, 공백 사용)
 - **Instance**: t3.medium 이상 권장
-- **보안 그룹**: SSH(22), HTTP(80), HTTPS(443)
+- **EC2 접속**: AWS SSM (SSH 미사용)
+- **보안 그룹**: HTTP(80), HTTPS(443)
 
 ## Docker 환경 특성
 

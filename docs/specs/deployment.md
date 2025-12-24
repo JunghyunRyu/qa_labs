@@ -8,50 +8,62 @@ Defines the official and quick deployment flows for the QA-Arena production envi
 ---
 
 # 1. Prerequisites
-- SSH access to EC2
 - GitHub repo connected to EC2
 - `.env` file exists on EC2
 - Docker & Docker Compose installed
+- Claude Code CLI 설치 (로컬 환경)
+- AWS CLI 설치 및 SSM 권한 설정
+
+## EC2 접속 방법 (AWS SSM)
+```bash
+aws ssm start-session --target i-05b23ecec2bdcd44a --document-name AWS-StartInteractiveCommand --parameters command="bash -l"
+```
+> SSH 대신 AWS Systems Manager를 사용합니다.
 
 ---
 
 # 2. Standard Deployment Procedure
 
-## 1. EC2 접속
+## 방법 1: Claude Code 슬래시 명령어 사용 (권장)
 ```bash
-ssh -i C:\pem\my_proton_key.pem ubuntu@3.38.179.33
+# 터미널에서 Claude Code 실행 후
+/deploy
 ```
+> `/deploy` 명령은 git pull + docker compose rebuild를 자동으로 수행합니다.
 
-## 2. 프로젝트 디렉터리로 이동
+## 방법 2: 수동 배포 (EC2 콘솔에서)
+
+### 1. 프로젝트 디렉터리로 이동
 ```bash
 cd ~/qa_labs
 ```
 
-## 3. main 브랜치 동기화
-```bash 
+### 2. main 브랜치 동기화
+```bash
 git switch main
 git fetch origin
 git pull origin main
 ```
 
-## 4. (선택) DB 스키마 변경이 있을 때만 백업 실행
+### 3. (선택) DB 스키마 변경이 있을 때만 백업 실행
 - 모델/Alembic 마이그레이션 변경이 포함된 배포라면:
 
-``` bash
+```bash
 ./scripts/backup_db.sh
 # /backup/postgres/qa_arena_YYYYMMDD_HHMMSS.dump 가 생성되었는지 확인
 ```
-## 5. Docker Compose로 배포 (빌드 + 재기동)
+
+### 4. Docker Compose로 배포 (빌드 + 재기동)
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env up -d --build
-``` 
+```
 
-## 6. 컨테이너 상태 확인
+### 5. 컨테이너 상태 확인
 ```bash
 docker compose -f docker-compose.prod.yml ps
 ```
-## 7. 애플리케이션 헬스 체크
-- 또는 EC2에서:
+
+### 6. 애플리케이션 헬스 체크
 ```bash
 curl -I https://qa-arena.qalabs.kr -k
 ```
@@ -62,16 +74,21 @@ curl -I https://qa-arena.qalabs.kr -k
 > ⚠ DB 스키마/마이그레이션 변경이 없는, 순수 코드 변경 배포용이다.
 
 ```bash
-ssh -i C:\pem\my_proton_key.pem ubuntu@3.38.179.33 \
-  "cd ~/qa_labs && \
-   git switch main && git pull origin main && \
-   docker compose -f docker-compose.prod.yml --env-file .env up -d --build && \
-   docker compose -f docker-compose.prod.yml ps"
-
+# Claude Code에서 실행
+/deploy
 ```
+
+또는 EC2 콘솔에서 직접 실행:
+```bash
+cd ~/qa_labs && \
+git switch main && git pull origin main && \
+docker compose -f docker-compose.prod.yml --env-file .env up -d --build && \
+docker compose -f docker-compose.prod.yml ps
+```
+
 ---
 
-4. Notes
+# 4. Notes
 - env 변경, Backend 코드 변경, Frontend 정적 리소스 변경 시에는 항상 --build 포함 배포.
 - DB 스키마 변경 전에는 반드시 ./scripts/backup_db.sh 로 백업을 남긴다.
 - 프로덕션에서는 다음 명령은 사용하지 않는다:

@@ -122,8 +122,12 @@ echo "롤백 포인트: $PREV_COMMIT"
 ---
 
 ### Step 6: EC2 배포
+AWS SSM을 통해 EC2에 접속하여 배포합니다:
 ```bash
-ssh -i <ssh_key_path> <user>@<ec2_ip> << 'EOF'
+# SSM 세션 시작
+aws ssm start-session --target <instance_id> --document-name AWS-StartInteractiveCommand --parameters command="bash -l"
+
+# EC2에서 실행
 cd ~/qa_labs
 
 # 롤백 포인트 저장
@@ -134,7 +138,6 @@ echo $PREV_COMMIT > .rollback_point
 git pull origin main
 docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 docker ps
-EOF
 ```
 
 ---
@@ -178,10 +181,13 @@ Mode: quick (빠른 검증만)
 
 ### Step 9: 롤백 (실패 시)
 
-헬스체크 또는 Smoke Test 실패 시 자동 롤백:
+헬스체크 또는 Smoke Test 실패 시 AWS SSM을 통해 EC2에서 롤백:
 
 ```bash
-ssh -i <ssh_key_path> <user>@<ec2_ip> << 'EOF'
+# SSM 세션 시작
+aws ssm start-session --target <instance_id> --document-name AWS-StartInteractiveCommand --parameters command="bash -l"
+
+# EC2에서 실행
 cd ~/qa_labs
 
 # 저장된 롤백 포인트로 복원
@@ -192,7 +198,6 @@ git checkout $PREV_COMMIT
 docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 
 echo "롤백 완료: $PREV_COMMIT"
-EOF
 ```
 
 자세한 롤백 정책은 [rollback-config.md](rollback-config.md) 참조

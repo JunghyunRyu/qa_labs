@@ -174,13 +174,15 @@ git pull origin main
 git stash pop
 ```
 
-## Claude Code Slash Commands
+## Claude Code Slash Commands (권장)
+
+EC2 배포 및 운영은 Claude Code 슬래시 명령어를 사용합니다.
 
 ```bash
-# EC2 자동 배포
+# EC2 자동 배포 (git pull + docker rebuild)
 /deploy
 
-# 서비스 로그 확인
+# 모든 서비스 로그 확인
 /logs
 
 # 대화형 제출 테스트
@@ -188,7 +190,17 @@ git stash pop
 
 # 로컬-EC2 코드 싱크 확인
 /check-sync
+
+# Docker 컨테이너 문제 진단
+/docker-debug
 ```
+
+> **참고**: SSH 대신 AWS SSM을 사용하여 EC2에 접속합니다.
+>
+> ```bash
+> # SSM 세션 시작
+> aws ssm start-session --target i-05b23ecec2bdcd44a --document-name AWS-StartInteractiveCommand --parameters command="bash -l"
+> ```
 
 ## 자주 사용하는 패턴
 
