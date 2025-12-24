@@ -175,10 +175,11 @@ export default function BreakdownChart({
                     borderRadius: "8px",
                     color: "#fff",
                   }}
-                  formatter={(value: number, _name: string, props: { payload?: { max?: number } }) => [
-                    `${value.toFixed(1)} / ${props.payload?.max || 0}`,
-                    "점수",
-                  ]}
+                  formatter={(value, _name, props) => {
+                    const v = typeof value === "number" ? value : 0;
+                    const payload = props as { payload?: { max?: number } };
+                    return [`${v.toFixed(1)} / ${payload.payload?.max || 0}`, "점수"];
+                  }}
                 />
                 <Bar dataKey="score" radius={[0, 4, 4, 0]}>
                   {scoreData.map((entry, index) => (

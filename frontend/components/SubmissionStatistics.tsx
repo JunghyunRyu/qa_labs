@@ -165,10 +165,10 @@ export default function SubmissionStatistics({
                       borderRadius: "8px",
                       color: "#f3f4f6",
                     }}
-                    formatter={(value: number, name: string) => [
-                      value,
-                      name === "attempted" ? "시도" : "해결",
-                    ]}
+                    formatter={(value, name) => {
+                      const v = typeof value === "number" ? value : 0;
+                      return [v, name === "attempted" ? "시도" : "해결"];
+                    }}
                   />
                   <Legend
                     formatter={(value: string) => (
@@ -226,7 +226,10 @@ export default function SubmissionStatistics({
                       borderRadius: "8px",
                       color: "#f3f4f6",
                     }}
-                    formatter={(value: number) => [`${value}회`, "제출"]}
+                    formatter={(value) => {
+                      const v = typeof value === "number" ? value : 0;
+                      return [`${v}회`, "제출"];
+                    }}
                   />
                   <defs>
                     <linearGradient id="colorSubmissions" x1="0" y1="0" x2="0" y2="1">
