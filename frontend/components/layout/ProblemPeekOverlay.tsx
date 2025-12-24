@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import { X, FileText, Code2, Sparkles, Target } from "lucide-react";
+import { useEffect, useRef, useCallback, useState } from "react";
+import { X, FileText, Code2, Sparkles, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { Problem } from "@/types/problem";
 import CopyButton from "@/components/CopyButton";
 import TagChips from "@/components/TagChips";
@@ -30,6 +30,8 @@ export default function ProblemPeekOverlay({
 }: ProblemPeekOverlayProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [isSignatureCollapsed, setIsSignatureCollapsed] = useState(false);
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
 
   // Close on ESC key
   const handleKeyDown = useCallback(
@@ -101,7 +103,7 @@ export default function ProblemPeekOverlay({
     >
       <div
         ref={contentRef}
-        className="w-full max-w-2xl max-h-[75vh] bg-white dark:bg-gray-900
+        className="w-full max-w-4xl max-h-[90vh] bg-white dark:bg-gray-900
                    rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700
                    flex flex-col overflow-hidden
                    animate-in slide-in-from-top-4 duration-200"
@@ -150,44 +152,67 @@ export default function ProblemPeekOverlay({
           </div>
         </div>
 
-        {/* Function Signature - Highlighted */}
+        {/* Function Signature - Collapsible */}
         <div className="flex-shrink-0 px-5 py-3 bg-purple-50 dark:bg-purple-900/20
                         border-b border-purple-100 dark:border-purple-800/30">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setIsSignatureCollapsed(!isSignatureCollapsed)}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
               <Sparkles className="w-4 h-4 text-purple-500" />
               <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
                 함수 시그니처
               </span>
-            </div>
+              {isSignatureCollapsed ? (
+                <ChevronDown className="w-4 h-4 text-purple-500" />
+              ) : (
+                <ChevronUp className="w-4 h-4 text-purple-500" />
+              )}
+            </button>
             <CopyButton text={problem.function_signature} />
           </div>
-          <pre className="text-sm text-purple-900 dark:text-purple-100 font-mono
-                          bg-white dark:bg-gray-900 p-2.5 rounded-lg
-                          border border-purple-200 dark:border-purple-700 overflow-x-auto">
-            {problem.function_signature}
-          </pre>
+          {!isSignatureCollapsed && (
+            <pre className="mt-1.5 text-sm text-purple-900 dark:text-purple-100 font-mono
+                            bg-white dark:bg-gray-900 p-2.5 rounded-lg
+                            border border-purple-200 dark:border-purple-700
+                            max-h-[120px] overflow-auto">
+              {problem.function_signature}
+            </pre>
+          )}
         </div>
 
-        {/* Summary - Key test points */}
+        {/* Summary - Key test points - Collapsible */}
         <div className="flex-shrink-0 px-5 py-3 bg-sky-50 dark:bg-sky-900/20
                         border-b border-sky-100 dark:border-sky-800/30">
-          <div className="flex items-center gap-2 mb-1.5">
-            <Target className="w-4 h-4 text-sky-500" />
-            <span className="text-xs font-medium text-sky-700 dark:text-sky-300">
-              핵심 테스트 포인트
-            </span>
-          </div>
-          {summary ? (
-            <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed prose prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {summary}
-              </ReactMarkdown>
+          <button
+            onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-sky-500" />
+              <span className="text-xs font-medium text-sky-700 dark:text-sky-300">
+                핵심 테스트 포인트
+              </span>
             </div>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-              문제 설명을 확인하세요.
-            </p>
+            {isSummaryCollapsed ? (
+              <ChevronDown className="w-4 h-4 text-sky-500" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-sky-500" />
+            )}
+          </button>
+          {!isSummaryCollapsed && (
+            summary ? (
+              <div className="mt-1.5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed prose prose-sm max-w-none max-h-[150px] overflow-auto">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {summary}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400 italic">
+                문제 설명을 확인하세요.
+              </p>
+            )
           )}
         </div>
 
