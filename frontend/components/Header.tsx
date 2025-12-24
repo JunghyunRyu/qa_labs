@@ -28,6 +28,11 @@ const appNavItems = [
   { label: "Problems", href: "/problems" },
 ];
 
+// 로그인 사용자 전용 메뉴 항목
+const authNavItems = [
+  { label: "Dashboard", href: "/dashboard" },
+];
+
 export default function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
@@ -37,7 +42,12 @@ export default function Header() {
 
   // 홈페이지면 home variant, 그 외는 app variant
   const isHome = pathname === "/";
-  const navItems = isHome ? homeNavItems : appNavItems;
+  // 로그인한 사용자는 Dashboard 링크도 표시
+  const navItems = isHome
+    ? homeNavItems
+    : isAuthenticated
+      ? [...appNavItems, ...authNavItems]
+      : appNavItems;
 
   // Focus mode only applies to problem detail pages
   const isProblemPage = pathname.startsWith("/problems/") && pathname !== "/problems";
