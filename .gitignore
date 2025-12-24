@@ -88,3 +88,13 @@ settings.local.json
 
 .serena
 docs/issues/bash.exe.stackdump
+
+# Temp data files
+*.dump
+problems_data.csv
+problems_dump.sql
+problems_export.sql
+sync_problems.py
+sync_problems.sql
+sync_problems_clean.sql
+backend/problem_scan_results.csv
