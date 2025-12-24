@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import {
   FileText,
   Code2,
@@ -174,7 +175,7 @@ export default function ProblemDescription({ description_md }: ProblemDescriptio
             {/* 섹션 내용 */}
             <div className="prose prose-sm max-w-none text-gray-700">
               <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
+                remarkPlugins={[remarkGfm, remarkBreaks]}
                 components={{
                   h2: () => null, // h2는 이미 섹션 제목으로 표시
                   h3: ({ children }) => (

@@ -35,7 +35,7 @@ from app.services.test_hint_generator import (
     generate_hints_from_analysis,
     HintGenerationResult,
 )
-from app.core.dependencies import get_current_user_optional
+from app.core.dependencies import get_current_user_optional, require_ai_access, AIAccessResult
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +134,7 @@ async def get_test_improvement_hints(
     submission_id: UUID,
     max_hints: int = 3,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    ai_access: AIAccessResult = Depends(require_ai_access),
 ):
     """
     Get test improvement hints for a submission.
@@ -197,6 +197,9 @@ async def get_test_improvement_hints(
             f"[HINT_GENERATION_SUCCESS] submission_id={submission_id} "
             f"hints_count={len(result.hints)}"
         )
+
+        # Deduct AI token after successful hint generation
+        ai_access.deduct(cost=1)
 
         return result
 

@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api";
 import AIConversationList from "./AIConversationList";
 import AIMessageInput from "./AIMessageInput";
 import AIConversationHistory from "./AIConversationHistory";
+import TokenExhaustedModal from "./TokenExhaustedModal";
 import type { AIMessage, AIChatMode } from "@/types/ai";
 
 interface AICoachPanelProps {
@@ -33,6 +34,11 @@ export default function AICoachPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tokenExhausted, setTokenExhausted] = useState<{
+    tokensRemaining: number;
+    dailyBonusRemaining: number;
+    nextReset: string | null;
+  } | null>(null);
 
   // Reset conversation when problem changes
   useEffect(() => {
@@ -137,6 +143,20 @@ export default function AICoachPanel({
             setError(
               "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요."
             );
+          } else if (err.status === 402) {
+            // Token exhausted
+            const errorData = err.data as {
+              detail?: {
+                tokens_remaining?: number;
+                daily_bonus_remaining?: number;
+                next_reset?: string;
+              };
+            } | undefined;
+            setTokenExhausted({
+              tokensRemaining: errorData?.detail?.tokens_remaining ?? 0,
+              dailyBonusRemaining: errorData?.detail?.daily_bonus_remaining ?? 0,
+              nextReset: errorData?.detail?.next_reset ?? null,
+            });
           } else {
             const errorData = err.data as { detail?: string } | undefined;
             setError(errorData?.detail || "오류가 발생했습니다.");
@@ -267,6 +287,17 @@ export default function AICoachPanel({
             disabled={isOff}
           />
         </>
+      )}
+
+      {/* Token Exhausted Modal */}
+      {tokenExhausted && (
+        <TokenExhaustedModal
+          isOpen={true}
+          onClose={() => setTokenExhausted(null)}
+          tokensRemaining={tokenExhausted.tokensRemaining}
+          dailyBonusRemaining={tokenExhausted.dailyBonusRemaining}
+          nextReset={tokenExhausted.nextReset}
+        />
       )}
     </div>
   );

@@ -14,6 +14,7 @@ import { useLayoutStore } from "@/stores/layoutStore";
 import { Maximize2, Minimize2 } from "lucide-react";
 import LoginButton from "./LoginButton";
 import UserMenu from "./UserMenu";
+import TokenBalance from "./TokenBalance";
 
 // 홈 variant 메뉴 항목
 const homeNavItems = [
@@ -201,6 +202,9 @@ export default function Header() {
             // Placeholder to prevent layout shift
             <div className="w-9 h-9" />
           )}
+
+          {/* Token Balance (for authenticated users) */}
+          {mounted && !isLoading && isAuthenticated && <TokenBalance />}
 
           {/* Auth Section */}
           {mounted && !isLoading && (

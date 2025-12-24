@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_ai_access, AIAccessResult
 from app.core.rate_limiter import check_ai_rate_limit, AIRateLimitExceeded
 from app.models.db import get_db
 from app.models.user import User
@@ -33,42 +33,16 @@ async def chat(
     request: Request,
     chat_request: AIChatRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ai_access: AIAccessResult = Depends(require_ai_access),
 ):
-    """
-    Send a message to AI Coach.
-
-    Members only - requires authentication.
-
-    Rate limits:
-    - Member: 10/minute, 200/day
-
-    Args:
-        chat_request: Chat request data
-        db: Database session
-        current_user: Authenticated user (required)
-
-    Returns:
-        AI response with conversation and message IDs
-
-    Raises:
-        400: If mode is OFF
-        401: If not authenticated
-        404: If conversation or problem not found
-        429: If rate limit exceeded
-    """
-    # Check if mode is OFF
+    """Send a message to AI Coach. Requires auth + AI tokens."""
     if chat_request.mode == AIChatMode.OFF:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="AI mode is OFF"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="AI mode is OFF")
 
-    user_id = current_user.id
+    user_id = ai_access.user.id
 
-    # Rate limit check
     try:
-        check_ai_rate_limit(request, current_user, None)
+        check_ai_rate_limit(request, ai_access.user, None)
     except AIRateLimitExceeded as e:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -79,50 +53,24 @@ async def chat(
     ai_repo = AIRepository(db)
     problem_repo = ProblemRepository(db)
 
-    # Verify problem exists
     problem = problem_repo.get_by_id(chat_request.problem_id)
     if not problem:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Problem with id {chat_request.problem_id} not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Problem with id {chat_request.problem_id} not found")
 
-    # Get or create conversation
     conversation = None
     if chat_request.conversation_id:
         conversation = ai_repo.get_conversation_by_id(chat_request.conversation_id)
         if not conversation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Conversation not found"
-            )
-        # Verify ownership
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
         if conversation.user_id != user_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to access this conversation"
-            )
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this conversation")
     else:
-        # Create new conversation
-        conversation = AIConversation(
-            user_id=user_id,
-            problem_id=chat_request.problem_id,
-            mode=chat_request.mode.value,
-        )
+        conversation = AIConversation(user_id=user_id, problem_id=chat_request.problem_id, mode=chat_request.mode.value)
         conversation = ai_repo.create_conversation(conversation)
-        logger.info(
-            f"[AI_CHAT_NEW_CONVERSATION] conversation_id={conversation.id} "
-            f"problem_id={chat_request.problem_id} "
-            f"user_id={user_id}"
-        )
+        logger.info(f"[AI_CHAT_NEW_CONVERSATION] conversation_id={conversation.id} problem_id={chat_request.problem_id} user_id={user_id}")
 
-    # Get conversation history for context
-    conversation_messages = ai_repo.get_conversation_messages(
-        conversation.id,
-        limit=ai_coach_service.MAX_CONTEXT_MESSAGES
-    )
+    conversation_messages = ai_repo.get_conversation_messages(conversation.id, limit=ai_coach_service.MAX_CONTEXT_MESSAGES)
 
-    # Save user message
     user_message = AIMessage(
         conversation_id=conversation.id,
         role="user",
@@ -131,7 +79,6 @@ async def chat(
     )
     user_message = ai_repo.add_message(user_message)
 
-    # Generate AI response
     ai_response_text, token_estimate = ai_coach_service.generate_response(
         user_message=chat_request.message,
         conversation_messages=conversation_messages,
@@ -139,7 +86,6 @@ async def chat(
         code_context=chat_request.code_context,
     )
 
-    # Save AI response
     ai_message = AIMessage(
         conversation_id=conversation.id,
         role="assistant",
@@ -148,13 +94,10 @@ async def chat(
     )
     ai_message = ai_repo.add_message(ai_message)
 
-    logger.info(
-        f"[AI_CHAT] conversation_id={conversation.id} "
-        f"problem_id={chat_request.problem_id} "
-        f"user_tokens={user_message.token_estimate} "
-        f"ai_tokens={token_estimate} "
-        f"user_id={user_id}"
-    )
+    # Deduct AI token after successful operation
+    ai_access.deduct(cost=1)
+
+    logger.info(f"[AI_CHAT] conversation_id={conversation.id} problem_id={chat_request.problem_id} user_tokens={user_message.token_estimate} ai_tokens={token_estimate} user_id={user_id}")
 
     return AIChatResponse(
         reply=ai_response_text,
@@ -172,55 +115,23 @@ async def list_conversations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    List user's AI conversations.
-
-    Members only - requires authentication.
-
-    Args:
-        problem_id: Optional filter by problem ID
-        page: Page number (1-indexed)
-        page_size: Number of items per page
-        db: Database session
-        current_user: Authenticated user
-
-    Returns:
-        Paginated list of conversations
-    """
+    """List user AI conversations. No token cost."""
     ai_repo = AIRepository(db)
-
-    conversations, total = ai_repo.get_user_conversations(
-        user_id=current_user.id,
-        problem_id=problem_id,
-        page=page,
-        page_size=page_size,
-    )
+    conversations, total = ai_repo.get_user_conversations(user_id=current_user.id, problem_id=problem_id, page=page, page_size=page_size)
 
     items = []
     for conv in conversations:
         message_count = ai_repo.get_message_count(conv.id)
-        # Get first user message as preview
         preview = ai_repo.get_first_user_message_preview(conv.id, max_length=50)
         items.append(AIConversationListItem(
-            id=conv.id,
-            problem_id=conv.problem_id,
+            id=conv.id, problem_id=conv.problem_id,
             problem_title=conv.problem.title if conv.problem else None,
-            mode=conv.mode,
-            message_count=message_count,
-            preview=preview,
-            created_at=conv.created_at,
-            updated_at=conv.updated_at,
+            mode=conv.mode, message_count=message_count, preview=preview,
+            created_at=conv.created_at, updated_at=conv.updated_at,
         ))
 
     total_pages = (total + page_size - 1) // page_size
-
-    return AIConversationListResponse(
-        conversations=items,
-        total=total,
-        page=page,
-        page_size=page_size,
-        total_pages=total_pages,
-    )
+    return AIConversationListResponse(conversations=items, total=total, page=page, page_size=page_size, total_pages=total_pages)
 
 
 @router.get("/conversations/{conversation_id}", response_model=AIConversationResponse)
@@ -229,37 +140,15 @@ async def get_conversation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Get conversation details with all messages.
-
-    Members only - requires authentication.
-
-    Args:
-        conversation_id: Conversation ID
-        db: Database session
-        current_user: Authenticated user
-
-    Returns:
-        Conversation with messages
-
-    Raises:
-        403: If not authorized to access conversation
-        404: If conversation not found
-    """
+    """Get conversation details. No token cost."""
     ai_repo = AIRepository(db)
     conversation = ai_repo.get_conversation_by_id(conversation_id)
 
     if not conversation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Conversation not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
 
     if conversation.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this conversation"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this conversation")
 
     messages = ai_repo.get_conversation_messages(conversation_id)
 
@@ -269,13 +158,5 @@ async def get_conversation(
         mode=conversation.mode,
         created_at=conversation.created_at,
         updated_at=conversation.updated_at,
-        messages=[
-            AIMessageResponse(
-                id=msg.id,
-                role=msg.role,
-                content=msg.content,
-                created_at=msg.created_at,
-            )
-            for msg in messages
-        ],
+        messages=[AIMessageResponse(id=msg.id, role=msg.role, content=msg.content, created_at=msg.created_at) for msg in messages],
     )

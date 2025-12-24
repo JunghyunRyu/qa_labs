@@ -10,3 +10,13 @@ export interface AuthStatus {
   authenticated: boolean;
   user: User | null;
 }
+
+export interface TokenStatus {
+  token_balance: number;
+  token_used: number;
+  tokens_remaining: number;
+  daily_bonus_remaining: number;
+  daily_bonus_limit: number;
+  next_reset: string | null;
+  tier: string;
+}

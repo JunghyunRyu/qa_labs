@@ -1,5 +1,5 @@
 import { get, post } from "../api";
-import type { AuthStatus, User } from "@/types/auth";
+import type { AuthStatus, User, TokenStatus } from "@/types/auth";
 
 const AUTH_BASE = "/v1/auth";
 
@@ -22,4 +22,8 @@ export async function refreshToken(): Promise<void> {
 export function getGitHubLoginUrl(): string {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
   return `${apiBaseUrl}/v1/auth/github/login`;
+}
+
+export async function getTokenStatus(): Promise<TokenStatus> {
+  return get<TokenStatus>(`${AUTH_BASE}/tokens`);
 }
