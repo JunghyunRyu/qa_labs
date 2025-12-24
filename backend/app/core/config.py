@@ -139,6 +139,9 @@ class Settings(BaseSettings):
     # Frontend URL (for OAuth callback redirect)
     FRONTEND_URL: Optional[str] = None  # e.g., "https://qa-arena.qalabs.kr"
 
+    # Server-side execution (disabled in production for resource optimization)
+    ALLOW_SERVER_EXECUTION: bool = False
+
     model_config = SettingsConfigDict(
         env_file=get_env_file_path(),
         env_file_encoding="utf-8",

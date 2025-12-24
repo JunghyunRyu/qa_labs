@@ -190,6 +190,17 @@ async def create_submission(
         return submission
 
     # 서버 사이드 실행 (기존 Celery 플로우)
+    # prod에서는 서버 사이드 실행 비활성화 (리소스 최적화)
+    if not settings.ALLOW_SERVER_EXECUTION:
+        logger.warning(
+            f"[SUBMISSION_SERVER_BLOCKED] problem_id={submission_data.problem_id} "
+            f"reason=server_execution_disabled"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Server-side execution is disabled. Please use client-side execution.",
+        )
+
     submission = Submission(
         user_id=user_id,
         anonymous_id=anonymous_id,
