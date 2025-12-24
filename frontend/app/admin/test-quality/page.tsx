@@ -247,7 +247,10 @@ export default function AdminTestQualityPage() {
                     borderRadius: "8px",
                     color: "#fff",
                   }}
-                  formatter={(value: number) => [`${value}개`, "제출 수"]}
+                  formatter={(value) => {
+                    const v = typeof value === "number" ? value : 0;
+                    return [`${v}개`, "제출 수"];
+                  }}
                   labelFormatter={(label) =>
                     `${label}등급 (${GRADE_LABELS[label as QualityGrade]})`
                   }
