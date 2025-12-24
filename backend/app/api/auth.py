@@ -19,8 +19,9 @@ from app.core.auth import (
 from app.core.dependencies import get_current_user, get_current_user_optional
 from app.services.github_oauth import github_oauth_service
 from app.models.user import User
+from app.services.token_service import TokenService
 from app.models.submission import Submission
-from app.schemas.auth import UserResponse, AuthStatusResponse
+from app.schemas.auth import UserResponse, AuthStatusResponse, TokenStatusResponse
 
 logger = logging.getLogger(__name__)
 
@@ -244,3 +245,13 @@ async def get_auth_status(user: User = Depends(get_current_user_optional)):
             )
         )
     return AuthStatusResponse(authenticated=False, user=None)
+
+@router.get("/tokens", response_model=TokenStatusResponse)
+async def get_token_status(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get AI token status for the authenticated user."""
+    token_service = TokenService(db)
+    return TokenStatusResponse(**token_service.get_token_status(user))
+
