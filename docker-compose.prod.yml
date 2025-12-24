@@ -156,7 +156,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: qa_arena_celery_worker_prod
-    command: celery -A app.core.celery_app worker --loglevel=warning --concurrency=4
+    command: celery -A app.core.celery_app worker -Q feedback --pool=solo --concurrency=1 --loglevel=warning --prefetch-multiplier=1 -O fair
     environment:
       DOCKER_CONTAINER: "true"
       DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}

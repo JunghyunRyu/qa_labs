@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 from celery import Celery
+from kombu import Queue
 
 from app.core.config import settings
 
@@ -51,5 +52,18 @@ celery_app.conf.update(
             "schedule": timedelta(seconds=settings.WORKER_MONITOR_INTERVAL_SECONDS),
         },
     },
+    # Queue 라우팅 설정 (feedback 큐만 사용, grading 제외)
+    task_default_queue="feedback",
+    task_default_routing_key="feedback.default",
+    task_queues=(Queue("feedback", routing_key="feedback.#"),),
+    task_routes={
+        "app.workers.tasks.generate_feedback_task": {
+            "queue": "feedback",
+            "routing_key": "feedback.generate",
+        },
+        "app.workers.monitoring_tasks.check_worker_health": {
+            "queue": "feedback",
+            "routing_key": "feedback.health",
+        },
+    },
 )
-
