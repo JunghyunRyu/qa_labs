@@ -43,18 +43,28 @@ def create_slug_from_id(problem_id: str) -> str:
     return f"problem-{problem_id.lower()}"
 
 
-def load_problem_from_json(json_path: str, problem_id: str, db: Session):
+def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_update: bool = False):
     """Load a single problem from JSON file into database."""
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    
+
     slug = create_slug_from_id(problem_id)
-    
+
     # Check if problem already exists
     existing = db.query(Problem).filter(Problem.slug == slug).first()
     if existing:
-        print(f"⏭️  {problem_id} ({slug}) - 이미 존재함, 건너뜀")
-        return False
+        if force_update:
+            # Update existing problem
+            existing.description_md = data.get('description_md', existing.description_md or '')
+            existing.summary = data.get('summary', existing.summary)
+            existing.title = data.get('title', existing.title)
+            existing.skills = data.get('tags', existing.skills or [])
+            existing.domain = data.get('domain', existing.domain or 'common')
+            print(f"🔄 {problem_id} ({slug}) - 업데이트 완료")
+            return "updated"
+        else:
+            print(f"⏭️  {problem_id} ({slug}) - 이미 존재함, 건너뜀")
+            return False
     
     # Extract title - use JSON title field if available, otherwise extract from description
     title = data.get('title')
@@ -95,35 +105,40 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session):
     return True
 
 
-def load_all_generated_problems():
+def load_all_generated_problems(force_update: bool = False):
     """Load all generated problems from JSON files."""
     script_dir = Path(__file__).parent.parent
     generated_dir = script_dir / "generated_problems"
-    
+
     if not generated_dir.exists():
         print(f"❌ 디렉토리를 찾을 수 없습니다: {generated_dir}")
         return
-    
+
     json_files = sorted(generated_dir.glob("*.json"))
-    
+
     if not json_files:
         print(f"❌ JSON 파일을 찾을 수 없습니다: {generated_dir}")
         return
-    
+
     print(f"📁 {len(json_files)}개의 JSON 파일 발견")
+    if force_update:
+        print("🔄 강제 업데이트 모드: 기존 문제도 업데이트합니다")
     print("=" * 60)
-    
+
     db: Session = SessionLocal()
     try:
         loaded_count = 0
+        updated_count = 0
         skipped_count = 0
         error_count = 0
-        
+
         for json_file in json_files:
             problem_id = json_file.stem  # E01, E02, etc.
             try:
-                success = load_problem_from_json(str(json_file), problem_id, db)
-                if success:
+                result = load_problem_from_json(str(json_file), problem_id, db, force_update)
+                if result == "updated":
+                    updated_count += 1
+                elif result:
                     loaded_count += 1
                 else:
                     skipped_count += 1
@@ -132,11 +147,11 @@ def load_all_generated_problems():
                 import traceback
                 traceback.print_exc()
                 error_count += 1
-        
+
         db.commit()
-        
+
         print("=" * 60)
-        print(f"✅ 완료! (로드: {loaded_count}, 건너뜀: {skipped_count}, 실패: {error_count})")
+        print(f"✅ 완료! (로드: {loaded_count}, 업데이트: {updated_count}, 건너뜀: {skipped_count}, 실패: {error_count})")
         
     except Exception as e:
         db.rollback()
@@ -149,8 +164,14 @@ def load_all_generated_problems():
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Load generated problems into database")
+    parser.add_argument("--force", "-f", action="store_true",
+                        help="Force update existing problems with new data")
+    args = parser.parse_args()
+
     try:
-        load_all_generated_problems()
+        load_all_generated_problems(force_update=args.force)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         import traceback
