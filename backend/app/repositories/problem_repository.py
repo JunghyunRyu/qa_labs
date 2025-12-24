@@ -197,7 +197,8 @@ class ProblemRepository:
                 golden_code=problem_in.golden_code,
                 difficulty=problem_in.difficulty,
                 domain=getattr(problem_in, "domain", "common"),
-                skills=problem_in.skills,  # JSON 컬럼이면 리스트 그대로, Text면 ",".join(...) 해야 함
+                skills=problem_in.skills,
+                summary=getattr(problem_in, "summary", None),
             )
 
         self.db.add(problem)
