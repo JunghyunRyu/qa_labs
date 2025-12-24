@@ -94,6 +94,7 @@ class ProblemService:
                 difficulty=p["difficulty"],
                 domain=p.get("domain", "common"),
                 skills=p["skills"],
+                summary=p.get("summary"),
                 description_md=p["description_md"],
                 success_rate=p["success_rate"],
             )
@@ -143,6 +144,7 @@ class ProblemService:
             difficulty=problem.difficulty,
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
+            summary=problem.summary,
             created_at=problem.created_at,
             buggy_implementations=buggy_impl_responses,
         )
@@ -188,6 +190,7 @@ class ProblemService:
             difficulty=problem.difficulty,
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
+            summary=problem.summary,
             created_at=problem.created_at,
             buggy_implementations=buggy_impl_responses,
         )
