@@ -42,5 +42,6 @@
     "insurance"
   ],
   "difficulty": "Medium",
-  "domain": "common"
+  "domain": "common",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 상호작용 규칙이 잘못 구현되어\n\n🧠 **로직 검증**\n  • 고령(senior) 연령 가산이 잘못 적용되어\n  • 공제금(deductible) 레벨 조정이 반대로 매핑되어 high 공제가 오히려 보험...\n  • 변수 혼동으로 coverage_type 대신 deductible_level을 사용해 ...\n  • 위험요인 비율 가산 시 `ceil` 대신 `int()`로 내림 처리하여 소수점이 버려집니다"
 }

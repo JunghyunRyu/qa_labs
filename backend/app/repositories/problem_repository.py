@@ -140,6 +140,7 @@ class ProblemRepository:
                 "difficulty": problem.difficulty,
                 "domain": getattr(problem, 'domain', 'common'),
                 "skills": problem.skills,
+                "summary": problem.summary,
                 "description_md": problem.description_md,
                 "success_rate": float(success_rate) if success_rate is not None else None,
             }

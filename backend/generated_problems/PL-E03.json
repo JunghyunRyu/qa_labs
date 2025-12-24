@@ -35,5 +35,6 @@
     "comparison"
   ],
   "difficulty": "Easy",
-  "domain": "platform"
+  "domain": "platform",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • required_level이 0인 '공개 리소스' 상황을 잘못 처리하여 False를 ...\n  • 정수 레벨을 문자열로 변환해 비교하여\n\n🧠 **로직 검증**\n  • 권한 비교 방향이 뒤바뀌어 user_level이 높을수록 오히려 False가 나올 수 있다\n  • 비교 연산에서 '>=' 대신 '>'를 사용하여"
 }

@@ -16,6 +16,7 @@ class ProblemBase(BaseModel):
     difficulty: str
     domain: str = "common"
     skills: Optional[List[str]] = None
+    summary: Optional[str] = None  # 핵심 테스트 포인트 요약 (마크다운)
 
 
 class ProblemCreate(ProblemBase):
@@ -42,6 +43,7 @@ class ProblemListResponse(BaseModel):
     difficulty: str
     domain: str = "common"
     skills: Optional[List[str]] = None
+    summary: Optional[str] = None  # 핵심 테스트 포인트 요약
     description_md: Optional[str] = None  # For preview in list view
     success_rate: Optional[float] = None  # 0.0~1.0, None if < 5 submissions
 
@@ -107,4 +109,5 @@ class ProblemCreateWithBuggy(BaseModel):
     difficulty: str
     domain: str = "common"
     skills: Optional[List[str]] = None
+    summary: Optional[str] = None  # 핵심 테스트 포인트 요약
     buggy_implementations: List[BuggyImplementationCreate] = []

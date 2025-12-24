@@ -35,5 +35,6 @@
     "문자열"
   ],
   "difficulty": "Easy",
-  "domain": "saas"
+  "domain": "saas",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 빈 문자열\n\n⚠️ **예외 처리**\n  • NUL/제어 문자가 포함된 경로에서 ValueError 대신 일반 Exception을...\n  • None 입력에 대해 strip()을 호출하여 AttributeError가 발생하고\n\n🧠 **로직 검증**\n  • 백슬래시를 슬래시로 정규화하지 않아 Windows 스타일 경로에서 '"
 }

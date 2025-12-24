@@ -36,5 +36,6 @@
     "finance"
   ],
   "difficulty": "Easy",
-  "domain": "fintech"
+  "domain": "fintech",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 0원 출금 경계값 오류: amount가 0이면 출금을 불가로 판단한다\n  • 경계값 처리 오류: 잔액과 출금액이 정확히 같을 때도 출금을 불가로 판단한다(<= 대...\n\n🔀 **동등 분할**\n  • 잔액 검증 누락: balance가 음수여도 예외를 발생시키지 않고 단순 비교로 처리한다\n  • 출금액 검증 오류: amount가 음수일 때 ValueError 대신 False를 반환한다"
 }

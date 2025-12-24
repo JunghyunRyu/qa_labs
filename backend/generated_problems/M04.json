@@ -34,5 +34,6 @@
     "API 검증"
   ],
   "difficulty": "Medium",
-  "domain": "saas"
+  "domain": "saas",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • status='error'일 때 error가 빈 문자열이어도 통과시키는 버그\n\n⚠️ **예외 처리**\n  • status가 'success' 또는 'error'가 아닌 임의의 문자열도 허용하는 버그\n  • 추가 필드를 허용하는 버그\n\n🧠 **로직 검증**\n  • status='success'일 때 data가 dict가 아니라 list나 다른 타입..."
 }

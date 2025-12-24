@@ -41,5 +41,6 @@
     "pytest"
   ],
   "difficulty": "Hard",
-  "domain": "common"
+  "domain": "common",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • COMPLETED 또는 FAILED 같은 terminal state 이후에도 이벤트가...\n  • initial_state 파라미터를 무시하고 항상 IDLE에서 시작한다\n\n🔀 **동등 분할**\n  • 알 수 없는 이벤트(예: 'stop'\n\n🧠 **로직 검증**\n  • PAUSED 상태에서 complete 이벤트를 허용하여 PAUSED -> COMPLE...\n  • PAUSED 상태에서 resume 이벤트를 처리할 때 RUNNING으로 가지 않고 I..."
 }

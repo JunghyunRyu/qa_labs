@@ -32,6 +32,7 @@ class Problem(Base):
         index=True,
     )
     skills = Column(JSONB)
+    summary = Column(Text, nullable=True)  # 핵심 테스트 포인트 요약 (마크다운)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Rubric Evaluation (Phase 1)

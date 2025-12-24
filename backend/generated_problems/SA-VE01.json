@@ -36,5 +36,6 @@
     "equivalence partitioning"
   ],
   "difficulty": "Very Easy",
-  "domain": "saas"
+  "domain": "saas",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 상한 경계값 오류. 200~298만 성공으로 처리하여 299를 False로 반환하는 경우 실패.\n\n🔀 **동등 분할**\n  • 200만 성공으로 처리함. 201, 204 같은 다른 2xx 상태 코드를 False로 반환하는 경우 실패.\n  • 상한을 잘못 포함하여 300도 성공으로 처리함. 300에서 True를 반환하는 경우 실패.\n  • 타입 처리 오류"
 }

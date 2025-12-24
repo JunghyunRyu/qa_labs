@@ -42,5 +42,6 @@
     "e-commerce"
   ],
   "difficulty": "Medium",
-  "domain": "common"
+  "domain": "common",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 여러 규칙 위반이 동시에 발생하는 조합에서\n\n🧠 **로직 검증**\n  • `bank` 결제는 `express` 배송과 결합될 수 없는데\n  • `cash`는 국내 전용이어야 하는데 조건을 반대로 적용하여\n  • `pickup`에서는 `gift_wrap`이 불가해야 하지만\n  • 국제 배송에서 `pickup`이 금지되어야 하지만"
 }
