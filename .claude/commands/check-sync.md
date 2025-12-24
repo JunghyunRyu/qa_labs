@@ -25,9 +25,13 @@ git status
 ```
 
 ### 2. EC2 환경
-SSH로 접속하여 동일한 정보 수집:
+AWS SSM을 통해 EC2에서 동일한 정보 수집:
 ```bash
-ssh -i <ssh_key_path> <user>@<ec2_ip> "cd ~/qa_labs && git branch --show-current && git log -1 --oneline && git status --short"
+# SSM 세션 시작
+aws ssm start-session --target <instance_id> --document-name AWS-StartInteractiveCommand --parameters command="bash -l"
+
+# EC2에서 실행
+cd ~/qa_labs && git branch --show-current && git log -1 --oneline && git status --short
 ```
 
 ### 3. 비교 및 리포트
@@ -62,7 +66,7 @@ EC2 (Linux)
 권장 조치:
 1. 로컬 변경사항 커밋: git add . && git commit
 2. 원격에 푸시: git push origin main
-3. EC2에서 pull: ssh ... "cd ~/qa_labs && git pull origin main"
+3. EC2에서 pull: /deploy 명령 실행
 ```
 
 ### 4. 자동 제안
@@ -73,13 +77,12 @@ EC2 (Linux)
 ```bash
 # 로컬 → 원격 → EC2
 git push origin main
-ssh ... "cd ~/qa_labs && git pull origin main"
+# 이후 /deploy 명령으로 EC2 동기화
 ```
 
 **케이스 B: EC2가 최신**
 ```bash
-# EC2 → 원격 → 로컬
-ssh ... "cd ~/qa_labs && git push origin main"
+# EC2에서 원격으로 push 후 로컬 pull
 git pull origin main
 ```
 
