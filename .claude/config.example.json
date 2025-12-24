@@ -1,8 +1,7 @@
 {
   "ec2": {
-    "ip": "3.38.179.33 ",
-    "ssh_key_path": "C:\\pem\\my_proton_key.pem",
-    "user": "ubuntu",
-    "project_path": "~/qa_labs"
+    "instance_id": "i-xxxxxxxxxxxxxxxxx",
+    "project_path": "/home/ssm-user/qa_labs",
+    "connection_method": "ssm"
   }
 }
