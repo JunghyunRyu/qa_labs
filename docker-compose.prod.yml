@@ -185,6 +185,7 @@ services:
     # 보안 옵션
     security_opt:
       - no-new-privileges:true
+    user: "1000:1000"  # 비-root 유저로 실행
     deploy:
       resources:
         limits:
