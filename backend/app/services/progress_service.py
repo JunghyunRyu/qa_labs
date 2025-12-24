@@ -176,11 +176,13 @@ class ProgressService:
 
         Uses PostgreSQL's jsonb_array_elements_text to unpack the skills array.
         """
-        # Build user filter as SQL condition
+        # Determine which filter to use
         if user_id:
-            user_condition = f"s.user_id = '{user_id}'"
+            user_condition = "s.user_id = :user_id"
+            params = {"user_id": str(user_id)}
         elif anonymous_id:
-            user_condition = f"s.anonymous_id = '{anonymous_id}'"
+            user_condition = "s.anonymous_id = :anonymous_id"
+            params = {"anonymous_id": anonymous_id}
         else:
             return []
 
@@ -203,7 +205,7 @@ class ProgressService:
         )
 
         try:
-            results = self.db.execute(query).fetchall()
+            results = self.db.execute(query, params).fetchall()
             return [
                 SkillStats(
                     skill=row.skill,
