@@ -1,0 +1,82 @@
+{
+  "problem_id": "CO-E01",
+  "title": "나이 범위 검증 함수 테스트",
+  "difficulty": "Easy",
+  "domain": "common",
+  "tags": [
+    "비교 연산자",
+    "경계값 분석",
+    "parametrize",
+    "범위 검증"
+  ],
+  "function_signature": "def is_valid_age(age: int) -> bool:",
+  "golden_code": "def is_valid_age(age: int) -> bool:\n    \"\"\"나이가 유효한 범위(0-120)인지 확인합니다.\n    \n    Args:\n        age: 검증할 나이\n    \n    Returns:\n        0 <= age <= 120이면 True, 아니면 False\n    \"\"\"\n    return 0 <= age <= 120\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "0을 유효하지 않은 값으로 처리 (0 < age 사용)",
+      "buggy_code": "def is_valid_age(age: int) -> bool:\n    \"\"\"Buggy: 0을 유효하지 않은 값으로 처리 (0 < age 사용)\"\"\"\n    return 0 < age <= 120\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "age": 0,
+          "expected": true
+        },
+        {
+          "age": 1,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "bug_description": "120을 유효하지 않은 값으로 처리 (age < 120 사용)",
+      "buggy_code": "def is_valid_age(age: int) -> bool:\n    \"\"\"Buggy: 120을 유효하지 않은 값으로 처리 (age < 120 사용)\"\"\"\n    return 0 <= age < 120\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "age": 120,
+          "expected": true
+        },
+        {
+          "age": 119,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "bug_description": "양쪽 모두 exclusive (0 < age < 120)",
+      "buggy_code": "def is_valid_age(age: int) -> bool:\n    \"\"\"Buggy: 양쪽 모두 exclusive (0 < age < 120)\"\"\"\n    return 0 < age < 120\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "age": 0,
+          "expected": true
+        },
+        {
+          "age": 120,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "bug_description": "상한값이 100으로 잘못 설정",
+      "buggy_code": "def is_valid_age(age: int) -> bool:\n    \"\"\"Buggy: 상한값이 100으로 잘못 설정\"\"\"\n    return 0 <= age <= 100\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 3,
+      "detecting_inputs": [
+        {
+          "age": 101,
+          "expected": true
+        },
+        {
+          "age": 120,
+          "expected": true
+        }
+      ]
+    }
+  ],
+  "description_md": "## 문제 설명\n\n`is_valid_age` 함수에 버그가 숨어 있을 수 있습니다.\n\n### 함수 시그니처\n\n```python\ndef is_valid_age(age: int) -> bool:\n```\n\n### 동작 규칙\n- 0세부터 120세까지 유효한 나이로 인정\n- 범위 밖의 값은 `False` 반환\n\n### 경계값 분석 (Boundary Value Analysis)\n\n| 경계 | 유효한 값 | 유효하지 않은 값 |\n|------|-----------|------------------|\n| 하한 | 0 | -1 |\n| 상한 | 120 | 121 |\n\n### pytest.mark.parametrize 활용\n\n```python\n@pytest.mark.parametrize(\"age,expected\", [\n    (0, True),    # 하한 경계\n    (-1, False),  # 하한 바로 아래\n    (120, True),  # 상한 경계\n    (121, False), # 상한 바로 위\n])\ndef test_boundaries(age, expected):\n    assert is_valid_age(age) == expected\n```",
+  "initial_test_template": "import pytest\nfrom target import is_valid_age\n\n\n@pytest.mark.parametrize(\"age,expected\", [\n    # TODO: 경계값 테스트 케이스 추가\n    # (0, True),   # 하한 경계\n    # (120, True), # 상한 경계\n    # (-1, False), # 하한 바로 아래\n    # (121, False),# 상한 바로 위\n])\ndef test_boundary_values(age, expected):\n    assert is_valid_age(age) == expected\n\n\ndef test_typical_values():\n    # TODO: 일반적인 값 테스트\n    pass\n\n\ndef test_negative_age():\n    # TODO: 음수 나이 테스트\n    pass"
+}

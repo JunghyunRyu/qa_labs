@@ -1,0 +1,244 @@
+bug_type: MUTABLE_DEFAULT_ARGUMENT
+learning_objective: "Python의 가변 기본 인자 함정과 fixture를 통한 테스트 격리"
+pytest_feature: fixture
+
+problems:
+  - id: MD-E01
+    difficulty: Easy
+    title: "리스트에 아이템 추가 함수 테스트"
+    domain: common
+    tags: ["Python 함정", "가변 기본 인자", "fixture", "상태 격리"]
+
+    function:
+      name: add_item
+      signature: "def add_item(item: str, items: list = None) -> list:"
+      docstring: |
+        아이템을 리스트에 추가합니다.
+
+        Args:
+            item: 추가할 아이템
+            items: 아이템을 추가할 리스트 (기본값: 새 빈 리스트)
+
+        Returns:
+            아이템이 추가된 리스트
+      golden_logic: |
+        if items is None:
+            items = []
+        items.append(item)
+        return items
+
+    buggy_variants:
+      - id: mutable_default
+        description: "가변 기본 인자(list=[])를 사용하여 호출 간 상태가 공유됨"
+        weight: 5
+        signature: "def add_item(item: str, items: list = []) -> list:"
+        logic: |
+          items.append(item)
+          return items
+        skip_auto_validation: true
+        detecting_inputs:
+          - { item: "a", expected: ["a"], note: "연속 호출 시 상태 누적 발생" }
+
+      - id: no_return
+        description: "리스트를 반환하지 않음"
+        weight: 3
+        logic: |
+          if items is None:
+              items = []
+          items.append(item)
+        detecting_inputs:
+          - { item: "test", expected: ["test"] }
+
+      - id: wrong_append
+        description: "append 대신 extend 사용하여 문자열이 개별 문자로 분리됨"
+        weight: 4
+        logic: |
+          if items is None:
+              items = []
+          items.extend(item)
+          return items
+        detecting_inputs:
+          - { item: "ab", expected: ["ab"] }
+
+    test_template: |
+      import pytest
+      from target import add_item
+
+
+      def test_add_single_item():
+          # TODO: 단일 아이템 추가 테스트
+          pass
+
+
+      def test_multiple_calls_isolated():
+          # TODO: 여러 번 호출 시 상태가 격리되는지 테스트
+          # 힌트: 이 테스트로 가변 기본 인자 버그를 발견할 수 있음
+          result1 = add_item("a")
+          result2 = add_item("b")
+          # result1과 result2가 서로 독립적인지 확인
+          pass
+
+
+      def test_with_existing_list():
+          # TODO: 기존 리스트에 아이템 추가
+          pass
+
+    description_md: |
+      ## 문제 설명
+
+      `add_item` 함수에 버그가 숨어 있을 수 있습니다.
+
+      ### 함수 시그니처
+
+      ```python
+      def add_item(item: str, items: list = None) -> list:
+      ```
+
+      ### Python 가변 기본 인자의 함정
+
+      Python에서 기본 인자값은 함수 정의 시 **한 번만** 평가됩니다.
+
+      ```python
+      # 위험한 코드!
+      def bad_add(item, items=[]):
+          items.append(item)
+          return items
+
+      >>> bad_add("a")
+      ['a']
+      >>> bad_add("b")  # 예상: ['b'], 실제: ['a', 'b']!
+      ['a', 'b']
+      ```
+
+      ### 올바른 패턴
+
+      ```python
+      def good_add(item, items=None):
+          if items is None:
+              items = []
+          items.append(item)
+          return items
+      ```
+
+      ### 테스트 힌트
+      - 함수를 여러 번 호출하고 각 결과가 독립적인지 확인
+      - pytest fixture를 사용하면 테스트 간 상태 격리 가능
+
+  - id: MD-M01
+    difficulty: Medium
+    title: "이벤트 핸들러 등록 함수 테스트"
+    domain: platform
+    tags: ["Python 함정", "가변 기본 인자", "콜백", "상태 관리"]
+
+    function:
+      name: register_handler
+      signature: "def register_handler(event: str, callback, handlers: dict = None) -> dict:"
+      docstring: |
+        이벤트 핸들러를 등록합니다.
+
+        Args:
+            event: 이벤트 이름
+            callback: 콜백 함수
+            handlers: 핸들러 딕셔너리 (기본값: 새 빈 딕셔너리)
+
+        Returns:
+            업데이트된 핸들러 딕셔너리
+      golden_logic: |
+        if handlers is None:
+            handlers = {}
+        if event not in handlers:
+            handlers[event] = []
+        handlers[event].append(callback)
+        return handlers
+
+    buggy_variants:
+      - id: mutable_dict_default
+        description: "가변 기본 인자(dict={})를 사용하여 핸들러가 공유됨"
+        weight: 5
+        signature: "def register_handler(event: str, callback, handlers: dict = {}) -> dict:"
+        logic: |
+          if event not in handlers:
+              handlers[event] = []
+          handlers[event].append(callback)
+          return handlers
+        skip_auto_validation: true
+        detecting_inputs:
+          - { event: "click", callback: "print", expected: {"click": ["print"]}, note: "연속 호출 시 상태 누적 발생" }
+
+      - id: overwrite_handlers
+        description: "기존 핸들러를 덮어쓰고 새 리스트로 교체"
+        weight: 4
+        logic: |
+          if handlers is None:
+              handlers = {}
+          handlers[event] = [callback]
+          return handlers
+        skip_auto_validation: true
+        detecting_inputs:
+          - { event: "click", callback: "print", handlers: {"click": ["len"]}, expected: {"click": ["len", "print"]}, note: "append 대신 덮어쓰기" }
+
+      - id: no_list_initialization
+        description: "이벤트 키가 없을 때 리스트 초기화 누락 (KeyError 발생)"
+        weight: 3
+        logic: |
+          if handlers is None:
+              handlers = {}
+          handlers[event].append(callback)
+          return handlers
+        detecting_inputs:
+          - { event: "new_event", callback: "print", expected: {"new_event": ["print"]} }
+
+    test_template: |
+      import pytest
+      from target import register_handler
+
+
+      def test_register_single_handler():
+          # TODO: 단일 핸들러 등록
+          pass
+
+
+      def test_multiple_registrations_isolated():
+          # TODO: 여러 번 등록 시 상태가 격리되는지 테스트
+          h1 = register_handler("click", lambda: 1)
+          h2 = register_handler("hover", lambda: 2)
+          # h1과 h2가 독립적인지 확인
+          pass
+
+
+      def test_same_event_multiple_handlers():
+          # TODO: 같은 이벤트에 여러 핸들러 등록
+          pass
+
+    description_md: |
+      ## 문제 설명
+
+      `register_handler` 함수에 버그가 숨어 있을 수 있습니다.
+
+      ### 함수 시그니처
+
+      ```python
+      def register_handler(event: str, callback, handlers: dict = None) -> dict:
+      ```
+
+      ### 동작 규칙
+      - 이벤트에 콜백 함수를 등록
+      - 같은 이벤트에 여러 핸들러 등록 가능
+      - 기존 handlers 딕셔너리가 없으면 새로 생성
+
+      ### 주의: 딕셔너리도 가변 객체
+
+      ```python
+      # 위험!
+      def bad(handlers={}):  # 공유됨!
+          ...
+      ```
+
+      ### 예시
+      ```python
+      h = register_handler("click", my_func)
+      # h = {"click": [my_func]}
+
+      h = register_handler("click", another_func, h)
+      # h = {"click": [my_func, another_func]}
+      ```

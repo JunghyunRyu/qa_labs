@@ -1,0 +1,263 @@
+bug_type: FLOATING_POINT_COMPARISON
+learning_objective: "부동소수점 비교의 위험성과 pytest.approx 사용법"
+pytest_feature: pytest.approx
+
+problems:
+  - id: FP-E01
+    difficulty: Easy
+    title: "부동소수점 근사 비교 테스트"
+    domain: common
+    tags: ["부동소수점", "pytest.approx", "수치 비교", "경계값 분석"]
+
+    function:
+      name: is_close
+      signature: "def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:"
+      docstring: |
+        두 부동소수점 수가 허용 오차 내에서 같은지 비교합니다.
+
+        Args:
+            a: 첫 번째 숫자
+            b: 두 번째 숫자
+            tolerance: 허용 오차 (기본값: 1e-9)
+
+        Returns:
+            두 수의 차이가 tolerance보다 작으면 True
+      golden_logic: |
+        return abs(a - b) < tolerance
+
+    buggy_variants:
+      - id: direct_comparison
+        description: "부동소수점을 == 연산자로 직접 비교하여 0.1+0.2==0.3이 False가 됨"
+        weight: 5
+        logic: |
+          return a == b
+        detecting_inputs:
+          - { a: 0.1, b: 0.1, expected: true }
+          - { a: "0.1 + 0.2", b: 0.3, expected: true, note: "이 테스트로 버그 발견" }
+
+      - id: wrong_tolerance_ignored
+        description: "tolerance 파라미터를 무시하고 고정값 0.01 사용"
+        weight: 4
+        logic: |
+          return abs(a - b) < 0.01
+        detecting_inputs:
+          - { a: 1.0, b: 1.000001, tolerance: 0.0000001, expected: false }
+
+      - id: greater_instead_of_less
+        description: "< 대신 > 사용하여 로직이 반대로 동작"
+        weight: 3
+        logic: |
+          return abs(a - b) > tolerance
+        detecting_inputs:
+          - { a: 1.0, b: 1.0, expected: true }
+
+      - id: missing_abs
+        description: "abs() 없이 단순 차이 비교로 음수 케이스 실패"
+        weight: 4
+        logic: |
+          return (a - b) < tolerance
+        detecting_inputs:
+          - { a: 1.0, b: 2.0, tolerance: 0.5, expected: false }
+
+    test_template: |
+      import pytest
+      from target import is_close
+
+
+      def test_same_values():
+          # TODO: 동일한 값 비교
+          pass
+
+
+      def test_floating_point_addition():
+          # TODO: 0.1 + 0.2 == 0.3 문제 확인
+          # 힌트: pytest.approx 사용
+          pass
+
+
+      def test_custom_tolerance():
+          # TODO: tolerance 파라미터 동작 확인
+          pass
+
+
+      def test_negative_difference():
+          # TODO: a < b인 경우도 테스트
+          pass
+
+    description_md: |
+      ## 문제 설명
+
+      `is_close` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.
+
+      ### 함수 시그니처
+
+      ```python
+      def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:
+      ```
+
+      ### 동작 규칙
+      - 두 부동소수점 수 `a`와 `b`의 차이가 `tolerance`보다 작으면 `True` 반환
+      - 그렇지 않으면 `False` 반환
+
+      ### 핵심 개념: 부동소수점의 함정
+
+      부동소수점 연산은 정밀도 한계로 인해 예상치 못한 결과가 발생할 수 있습니다.
+
+      ```python
+      >>> 0.1 + 0.2 == 0.3
+      False  # 놀랍게도 False!
+      >>> 0.1 + 0.2
+      0.30000000000000004
+      ```
+
+      ### pytest.approx 활용
+
+      ```python
+      # 직접 비교 (위험!)
+      assert result == 0.3  # 실패할 수 있음
+
+      # pytest.approx 사용 (안전!)
+      assert result == pytest.approx(0.3)  # 허용 오차 내 비교
+      ```
+
+      ### 예시
+      - `is_close(1.0, 1.0)` → `True`
+      - `is_close(0.1 + 0.2, 0.3)` → `True` (차이가 tolerance 이내)
+      - `is_close(1.0, 2.0)` → `False`
+
+  - id: FP-M01
+    difficulty: Medium
+    title: "금융 계산 부동소수점 정밀도 테스트"
+    domain: fintech
+    tags: ["부동소수점", "금융 계산", "반올림", "pytest.approx"]
+
+    function:
+      name: calculate_compound_interest
+      signature: "def calculate_compound_interest(principal: float, rate: float, years: int) -> float:"
+      docstring: |
+        복리 이자를 계산합니다.
+
+        Args:
+            principal: 원금
+            rate: 연이율 (예: 0.05 = 5%)
+            years: 기간 (년)
+
+        Returns:
+            최종 금액 (소수점 2자리까지 반올림)
+
+        Raises:
+            ValueError: principal이 음수이거나, rate가 음수이거나, years가 0 이하일 때
+      golden_logic: |
+        if principal < 0:
+            raise ValueError("principal must be non-negative")
+        if rate < 0:
+            raise ValueError("rate must be non-negative")
+        if years <= 0:
+            raise ValueError("years must be positive")
+        result = principal * ((1 + rate) ** years)
+        return round(result, 2)
+
+    buggy_variants:
+      - id: no_rounding
+        description: "반올림 없이 부동소수점 결과를 그대로 반환하여 정밀도 오차 발생"
+        weight: 5
+        logic: |
+          if principal < 0:
+              raise ValueError("principal must be non-negative")
+          if rate < 0:
+              raise ValueError("rate must be non-negative")
+          if years <= 0:
+              raise ValueError("years must be positive")
+          return principal * ((1 + rate) ** years)
+        detecting_inputs:
+          - { principal: 1000.0, rate: 0.1, years: 3, expected: 1331.0 }
+
+      - id: simple_interest
+        description: "복리 대신 단리로 계산 (곱하기 대신 덧셈)"
+        weight: 4
+        logic: |
+          if principal < 0:
+              raise ValueError("principal must be non-negative")
+          if rate < 0:
+              raise ValueError("rate must be non-negative")
+          if years <= 0:
+              raise ValueError("years must be positive")
+          return round(principal * (1 + rate * years), 2)
+        detecting_inputs:
+          - { principal: 1000.0, rate: 0.1, years: 2, expected: 1210.0 }
+
+      - id: wrong_formula
+        description: "지수 계산에서 1+rate 대신 rate만 사용"
+        weight: 3
+        logic: |
+          if principal < 0:
+              raise ValueError("principal must be non-negative")
+          if rate < 0:
+              raise ValueError("rate must be non-negative")
+          if years <= 0:
+              raise ValueError("years must be positive")
+          return round(principal * (rate ** years), 2)
+        detecting_inputs:
+          - { principal: 1000.0, rate: 0.1, years: 2, expected: 1210.0 }
+
+      - id: missing_validation
+        description: "입력값 검증 누락으로 음수 principal 허용"
+        weight: 4
+        logic: |
+          if rate < 0:
+              raise ValueError("rate must be non-negative")
+          if years <= 0:
+              raise ValueError("years must be positive")
+          return round(principal * ((1 + rate) ** years), 2)
+        detecting_inputs:
+          - { principal: -1000.0, rate: 0.1, years: 1, expected: "ValueError" }
+
+    test_template: |
+      import pytest
+      from target import calculate_compound_interest
+
+
+      def test_basic_compound():
+          # TODO: 기본 복리 계산 검증
+          pass
+
+
+      def test_precision():
+          # TODO: 소수점 2자리 반올림 검증
+          # 힌트: pytest.approx 사용
+          pass
+
+
+      def test_negative_principal():
+          # TODO: 음수 원금에서 ValueError 발생 확인
+          pass
+
+
+      def test_zero_years():
+          # TODO: years가 0일 때 ValueError 발생 확인
+          pass
+
+    description_md: |
+      ## 문제 설명
+
+      `calculate_compound_interest` 함수에 버그가 숨어 있을 수 있습니다.
+
+      ### 함수 시그니처
+
+      ```python
+      def calculate_compound_interest(principal: float, rate: float, years: int) -> float:
+      ```
+
+      ### 복리 공식
+
+      ```
+      최종금액 = 원금 × (1 + 이율)^기간
+      ```
+
+      ### 주의사항
+      - 결과는 소수점 2자리까지 반올림
+      - 음수 원금, 음수 이율, 0 이하 기간은 ValueError 발생
+
+      ### 예시
+      - `calculate_compound_interest(1000, 0.1, 2)` → `1210.0`
+      - `calculate_compound_interest(1000, 0.1, 3)` → `1331.0`

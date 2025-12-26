@@ -1,0 +1,79 @@
+{
+  "problem_id": "MD-M01",
+  "title": "이벤트 핸들러 등록 함수 테스트",
+  "difficulty": "Medium",
+  "domain": "platform",
+  "tags": [
+    "Python 함정",
+    "가변 기본 인자",
+    "콜백",
+    "상태 관리"
+  ],
+  "function_signature": "def register_handler(event: str, callback, handlers: dict = None) -> dict:",
+  "golden_code": "def register_handler(event: str, callback, handlers: dict = None) -> dict:\n    \"\"\"이벤트 핸들러를 등록합니다.\n    \n    Args:\n        event: 이벤트 이름\n        callback: 콜백 함수\n        handlers: 핸들러 딕셔너리 (기본값: 새 빈 딕셔너리)\n    \n    Returns:\n        업데이트된 핸들러 딕셔너리\n    \"\"\"\n    if handlers is None:\n        handlers = {}\n    if event not in handlers:\n        handlers[event] = []\n    handlers[event].append(callback)\n    return handlers\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "가변 기본 인자(dict={})를 사용하여 핸들러가 공유됨",
+      "buggy_code": "def register_handler(event: str, callback, handlers: dict = {}) -> dict:\n    \"\"\"Buggy: 가변 기본 인자(dict={})를 사용하여 핸들러가 공유됨\"\"\"\n    if event not in handlers:\n        handlers[event] = []\n    handlers[event].append(callback)\n    return handlers\n",
+      "bug_type": "MUTABLE_DEFAULT_ARGUMENT",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "event": "click",
+          "callback": "print",
+          "expected": {
+            "click": [
+              "print"
+            ]
+          },
+          "note": "연속 호출 시 상태 누적 발생"
+        }
+      ],
+      "skip_auto_validation": true
+    },
+    {
+      "bug_description": "기존 핸들러를 덮어쓰고 새 리스트로 교체",
+      "buggy_code": "def register_handler(event: str, callback, handlers: dict = None) -> dict:\n    \"\"\"Buggy: 기존 핸들러를 덮어쓰고 새 리스트로 교체\"\"\"\n    if handlers is None:\n        handlers = {}\n    handlers[event] = [callback]\n    return handlers\n",
+      "bug_type": "MUTABLE_DEFAULT_ARGUMENT",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "event": "click",
+          "callback": "print",
+          "handlers": {
+            "click": [
+              "len"
+            ]
+          },
+          "expected": {
+            "click": [
+              "len",
+              "print"
+            ]
+          },
+          "note": "append 대신 덮어쓰기"
+        }
+      ],
+      "skip_auto_validation": true
+    },
+    {
+      "bug_description": "이벤트 키가 없을 때 리스트 초기화 누락 (KeyError 발생)",
+      "buggy_code": "def register_handler(event: str, callback, handlers: dict = None) -> dict:\n    \"\"\"Buggy: 이벤트 키가 없을 때 리스트 초기화 누락 (KeyError 발생)\"\"\"\n    if handlers is None:\n        handlers = {}\n    handlers[event].append(callback)\n    return handlers\n",
+      "bug_type": "MUTABLE_DEFAULT_ARGUMENT",
+      "weight": 3,
+      "detecting_inputs": [
+        {
+          "event": "new_event",
+          "callback": "print",
+          "expected": {
+            "new_event": [
+              "print"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "description_md": "## 문제 설명\n\n`register_handler` 함수에 버그가 숨어 있을 수 있습니다.\n\n### 함수 시그니처\n\n```python\ndef register_handler(event: str, callback, handlers: dict = None) -> dict:\n```\n\n### 동작 규칙\n- 이벤트에 콜백 함수를 등록\n- 같은 이벤트에 여러 핸들러 등록 가능\n- 기존 handlers 딕셔너리가 없으면 새로 생성\n\n### 주의: 딕셔너리도 가변 객체\n\n```python\n# 위험!\ndef bad(handlers={}):  # 공유됨!\n    ...\n```\n\n### 예시\n```python\nh = register_handler(\"click\", my_func)\n# h = {\"click\": [my_func]}\n\nh = register_handler(\"click\", another_func, h)\n# h = {\"click\": [my_func, another_func]}\n```",
+  "initial_test_template": "import pytest\nfrom target import register_handler\n\n\ndef test_register_single_handler():\n    # TODO: 단일 핸들러 등록\n    pass\n\n\ndef test_multiple_registrations_isolated():\n    # TODO: 여러 번 등록 시 상태가 격리되는지 테스트\n    h1 = register_handler(\"click\", lambda: 1)\n    h2 = register_handler(\"hover\", lambda: 2)\n    # h1과 h2가 독립적인지 확인\n    pass\n\n\ndef test_same_event_multiple_handlers():\n    # TODO: 같은 이벤트에 여러 핸들러 등록\n    pass"
+}

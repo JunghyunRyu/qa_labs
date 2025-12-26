@@ -1,0 +1,78 @@
+{
+  "problem_id": "FP-E01",
+  "title": "부동소수점 근사 비교 테스트",
+  "difficulty": "Easy",
+  "domain": "common",
+  "tags": [
+    "부동소수점",
+    "pytest.approx",
+    "수치 비교",
+    "경계값 분석"
+  ],
+  "function_signature": "def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:",
+  "golden_code": "def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:\n    \"\"\"두 부동소수점 수가 허용 오차 내에서 같은지 비교합니다.\n    \n    Args:\n        a: 첫 번째 숫자\n        b: 두 번째 숫자\n        tolerance: 허용 오차 (기본값: 1e-9)\n    \n    Returns:\n        두 수의 차이가 tolerance보다 작으면 True\n    \"\"\"\n    return abs(a - b) < tolerance\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "부동소수점을 == 연산자로 직접 비교하여 0.1+0.2==0.3이 False가 됨",
+      "buggy_code": "def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:\n    \"\"\"Buggy: 부동소수점을 == 연산자로 직접 비교하여 0.1+0.2==0.3이 False가 됨\"\"\"\n    return a == b\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "a": 0.1,
+          "b": 0.1,
+          "expected": true
+        },
+        {
+          "a": "0.1 + 0.2",
+          "b": 0.3,
+          "expected": true,
+          "note": "이 테스트로 버그 발견"
+        }
+      ]
+    },
+    {
+      "bug_description": "tolerance 파라미터를 무시하고 고정값 0.01 사용",
+      "buggy_code": "def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:\n    \"\"\"Buggy: tolerance 파라미터를 무시하고 고정값 0.01 사용\"\"\"\n    return abs(a - b) < 0.01\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "a": 1.0,
+          "b": 1.000001,
+          "tolerance": 1e-07,
+          "expected": false
+        }
+      ]
+    },
+    {
+      "bug_description": "< 대신 > 사용하여 로직이 반대로 동작",
+      "buggy_code": "def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:\n    \"\"\"Buggy: < 대신 > 사용하여 로직이 반대로 동작\"\"\"\n    return abs(a - b) > tolerance\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 3,
+      "detecting_inputs": [
+        {
+          "a": 1.0,
+          "b": 1.0,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "bug_description": "abs() 없이 단순 차이 비교로 음수 케이스 실패",
+      "buggy_code": "def is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:\n    \"\"\"Buggy: abs() 없이 단순 차이 비교로 음수 케이스 실패\"\"\"\n    return (a - b) < tolerance\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "a": 1.0,
+          "b": 2.0,
+          "tolerance": 0.5,
+          "expected": false
+        }
+      ]
+    }
+  ],
+  "description_md": "## 문제 설명\n\n`is_close` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef is_close(a: float, b: float, tolerance: float = 1e-9) -> bool:\n```\n\n### 동작 규칙\n- 두 부동소수점 수 `a`와 `b`의 차이가 `tolerance`보다 작으면 `True` 반환\n- 그렇지 않으면 `False` 반환\n\n### 핵심 개념: 부동소수점의 함정\n\n부동소수점 연산은 정밀도 한계로 인해 예상치 못한 결과가 발생할 수 있습니다.\n\n```python\n>>> 0.1 + 0.2 == 0.3\nFalse  # 놀랍게도 False!\n>>> 0.1 + 0.2\n0.30000000000000004\n```\n\n### pytest.approx 활용\n\n```python\n# 직접 비교 (위험!)\nassert result == 0.3  # 실패할 수 있음\n\n# pytest.approx 사용 (안전!)\nassert result == pytest.approx(0.3)  # 허용 오차 내 비교\n```\n\n### 예시\n- `is_close(1.0, 1.0)` → `True`\n- `is_close(0.1 + 0.2, 0.3)` → `True` (차이가 tolerance 이내)\n- `is_close(1.0, 2.0)` → `False`",
+  "initial_test_template": "import pytest\nfrom target import is_close\n\n\ndef test_same_values():\n    # TODO: 동일한 값 비교\n    pass\n\n\ndef test_floating_point_addition():\n    # TODO: 0.1 + 0.2 == 0.3 문제 확인\n    # 힌트: pytest.approx 사용\n    pass\n\n\ndef test_custom_tolerance():\n    # TODO: tolerance 파라미터 동작 확인\n    pass\n\n\ndef test_negative_difference():\n    # TODO: a < b인 경우도 테스트\n    pass"
+}

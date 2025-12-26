@@ -1,0 +1,74 @@
+{
+  "problem_id": "FP-M01",
+  "title": "금융 계산 부동소수점 정밀도 테스트",
+  "difficulty": "Medium",
+  "domain": "fintech",
+  "tags": [
+    "부동소수점",
+    "금융 계산",
+    "반올림",
+    "pytest.approx"
+  ],
+  "function_signature": "def calculate_compound_interest(principal: float, rate: float, years: int) -> float:",
+  "golden_code": "def calculate_compound_interest(principal: float, rate: float, years: int) -> float:\n    \"\"\"복리 이자를 계산합니다.\n    \n    Args:\n        principal: 원금\n        rate: 연이율 (예: 0.05 = 5%)\n        years: 기간 (년)\n    \n    Returns:\n        최종 금액 (소수점 2자리까지 반올림)\n    \n    Raises:\n        ValueError: principal이 음수이거나, rate가 음수이거나, years가 0 이하일 때\n    \"\"\"\n    if principal < 0:\n        raise ValueError(\"principal must be non-negative\")\n    if rate < 0:\n        raise ValueError(\"rate must be non-negative\")\n    if years <= 0:\n        raise ValueError(\"years must be positive\")\n    result = principal * ((1 + rate) ** years)\n    return round(result, 2)\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "반올림 없이 부동소수점 결과를 그대로 반환하여 정밀도 오차 발생",
+      "buggy_code": "def calculate_compound_interest(principal: float, rate: float, years: int) -> float:\n    \"\"\"Buggy: 반올림 없이 부동소수점 결과를 그대로 반환하여 정밀도 오차 발생\"\"\"\n    if principal < 0:\n        raise ValueError(\"principal must be non-negative\")\n    if rate < 0:\n        raise ValueError(\"rate must be non-negative\")\n    if years <= 0:\n        raise ValueError(\"years must be positive\")\n    return principal * ((1 + rate) ** years)\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "principal": 1000.0,
+          "rate": 0.1,
+          "years": 3,
+          "expected": 1331.0
+        }
+      ]
+    },
+    {
+      "bug_description": "복리 대신 단리로 계산 (곱하기 대신 덧셈)",
+      "buggy_code": "def calculate_compound_interest(principal: float, rate: float, years: int) -> float:\n    \"\"\"Buggy: 복리 대신 단리로 계산 (곱하기 대신 덧셈)\"\"\"\n    if principal < 0:\n        raise ValueError(\"principal must be non-negative\")\n    if rate < 0:\n        raise ValueError(\"rate must be non-negative\")\n    if years <= 0:\n        raise ValueError(\"years must be positive\")\n    return round(principal * (1 + rate * years), 2)\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "principal": 1000.0,
+          "rate": 0.1,
+          "years": 2,
+          "expected": 1210.0
+        }
+      ]
+    },
+    {
+      "bug_description": "지수 계산에서 1+rate 대신 rate만 사용",
+      "buggy_code": "def calculate_compound_interest(principal: float, rate: float, years: int) -> float:\n    \"\"\"Buggy: 지수 계산에서 1+rate 대신 rate만 사용\"\"\"\n    if principal < 0:\n        raise ValueError(\"principal must be non-negative\")\n    if rate < 0:\n        raise ValueError(\"rate must be non-negative\")\n    if years <= 0:\n        raise ValueError(\"years must be positive\")\n    return round(principal * (rate ** years), 2)\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 3,
+      "detecting_inputs": [
+        {
+          "principal": 1000.0,
+          "rate": 0.1,
+          "years": 2,
+          "expected": 1210.0
+        }
+      ]
+    },
+    {
+      "bug_description": "입력값 검증 누락으로 음수 principal 허용",
+      "buggy_code": "def calculate_compound_interest(principal: float, rate: float, years: int) -> float:\n    \"\"\"Buggy: 입력값 검증 누락으로 음수 principal 허용\"\"\"\n    if rate < 0:\n        raise ValueError(\"rate must be non-negative\")\n    if years <= 0:\n        raise ValueError(\"years must be positive\")\n    return round(principal * ((1 + rate) ** years), 2)\n",
+      "bug_type": "FLOATING_POINT_COMPARISON",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "principal": -1000.0,
+          "rate": 0.1,
+          "years": 1,
+          "expected": "ValueError"
+        }
+      ]
+    }
+  ],
+  "description_md": "## 문제 설명\n\n`calculate_compound_interest` 함수에 버그가 숨어 있을 수 있습니다.\n\n### 함수 시그니처\n\n```python\ndef calculate_compound_interest(principal: float, rate: float, years: int) -> float:\n```\n\n### 복리 공식\n\n```\n최종금액 = 원금 × (1 + 이율)^기간\n```\n\n### 주의사항\n- 결과는 소수점 2자리까지 반올림\n- 음수 원금, 음수 이율, 0 이하 기간은 ValueError 발생\n\n### 예시\n- `calculate_compound_interest(1000, 0.1, 2)` → `1210.0`\n- `calculate_compound_interest(1000, 0.1, 3)` → `1331.0`",
+  "initial_test_template": "import pytest\nfrom target import calculate_compound_interest\n\n\ndef test_basic_compound():\n    # TODO: 기본 복리 계산 검증\n    pass\n\n\ndef test_precision():\n    # TODO: 소수점 2자리 반올림 검증\n    # 힌트: pytest.approx 사용\n    pass\n\n\ndef test_negative_principal():\n    # TODO: 음수 원금에서 ValueError 발생 확인\n    pass\n\n\ndef test_zero_years():\n    # TODO: years가 0일 때 ValueError 발생 확인\n    pass"
+}

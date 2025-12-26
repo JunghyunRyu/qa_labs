@@ -1,0 +1,62 @@
+{
+  "problem_id": "MD-E01",
+  "title": "리스트에 아이템 추가 함수 테스트",
+  "difficulty": "Easy",
+  "domain": "common",
+  "tags": [
+    "Python 함정",
+    "가변 기본 인자",
+    "fixture",
+    "상태 격리"
+  ],
+  "function_signature": "def add_item(item: str, items: list = None) -> list:",
+  "golden_code": "def add_item(item: str, items: list = None) -> list:\n    \"\"\"아이템을 리스트에 추가합니다.\n    \n    Args:\n        item: 추가할 아이템\n        items: 아이템을 추가할 리스트 (기본값: 새 빈 리스트)\n    \n    Returns:\n        아이템이 추가된 리스트\n    \"\"\"\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "가변 기본 인자(list=[])를 사용하여 호출 간 상태가 공유됨",
+      "buggy_code": "def add_item(item: str, items: list = []) -> list:\n    \"\"\"Buggy: 가변 기본 인자(list=[])를 사용하여 호출 간 상태가 공유됨\"\"\"\n    items.append(item)\n    return items\n",
+      "bug_type": "MUTABLE_DEFAULT_ARGUMENT",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "item": "a",
+          "expected": [
+            "a"
+          ],
+          "note": "연속 호출 시 상태 누적 발생"
+        }
+      ],
+      "skip_auto_validation": true
+    },
+    {
+      "bug_description": "리스트를 반환하지 않음",
+      "buggy_code": "def add_item(item: str, items: list = None) -> list:\n    \"\"\"Buggy: 리스트를 반환하지 않음\"\"\"\n    if items is None:\n        items = []\n    items.append(item)\n",
+      "bug_type": "MUTABLE_DEFAULT_ARGUMENT",
+      "weight": 3,
+      "detecting_inputs": [
+        {
+          "item": "test",
+          "expected": [
+            "test"
+          ]
+        }
+      ]
+    },
+    {
+      "bug_description": "append 대신 extend 사용하여 문자열이 개별 문자로 분리됨",
+      "buggy_code": "def add_item(item: str, items: list = None) -> list:\n    \"\"\"Buggy: append 대신 extend 사용하여 문자열이 개별 문자로 분리됨\"\"\"\n    if items is None:\n        items = []\n    items.extend(item)\n    return items\n",
+      "bug_type": "MUTABLE_DEFAULT_ARGUMENT",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "item": "ab",
+          "expected": [
+            "ab"
+          ]
+        }
+      ]
+    }
+  ],
+  "description_md": "## 문제 설명\n\n`add_item` 함수에 버그가 숨어 있을 수 있습니다.\n\n### 함수 시그니처\n\n```python\ndef add_item(item: str, items: list = None) -> list:\n```\n\n### Python 가변 기본 인자의 함정\n\nPython에서 기본 인자값은 함수 정의 시 **한 번만** 평가됩니다.\n\n```python\n# 위험한 코드!\ndef bad_add(item, items=[]):\n    items.append(item)\n    return items\n\n>>> bad_add(\"a\")\n['a']\n>>> bad_add(\"b\")  # 예상: ['b'], 실제: ['a', 'b']!\n['a', 'b']\n```\n\n### 올바른 패턴\n\n```python\ndef good_add(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n```\n\n### 테스트 힌트\n- 함수를 여러 번 호출하고 각 결과가 독립적인지 확인\n- pytest fixture를 사용하면 테스트 간 상태 격리 가능",
+  "initial_test_template": "import pytest\nfrom target import add_item\n\n\ndef test_add_single_item():\n    # TODO: 단일 아이템 추가 테스트\n    pass\n\n\ndef test_multiple_calls_isolated():\n    # TODO: 여러 번 호출 시 상태가 격리되는지 테스트\n    # 힌트: 이 테스트로 가변 기본 인자 버그를 발견할 수 있음\n    result1 = add_item(\"a\")\n    result2 = add_item(\"b\")\n    # result1과 result2가 서로 독립적인지 확인\n    pass\n\n\ndef test_with_existing_list():\n    # TODO: 기존 리스트에 아이템 추가\n    pass"
+}

@@ -1,0 +1,250 @@
+bug_type: COMPARISON_OPERATOR
+learning_objective: "비교 연산자(< vs <=)의 정확한 사용과 경계값 테스트"
+pytest_feature: pytest.mark.parametrize
+
+problems:
+  - id: CO-E01
+    difficulty: Easy
+    title: "나이 범위 검증 함수 테스트"
+    domain: common
+    tags: ["비교 연산자", "경계값 분석", "parametrize", "범위 검증"]
+
+    function:
+      name: is_valid_age
+      signature: "def is_valid_age(age: int) -> bool:"
+      docstring: |
+        나이가 유효한 범위(0-120)인지 확인합니다.
+
+        Args:
+            age: 검증할 나이
+
+        Returns:
+            0 <= age <= 120이면 True, 아니면 False
+      golden_logic: |
+        return 0 <= age <= 120
+
+    buggy_variants:
+      - id: exclusive_lower
+        description: "0을 유효하지 않은 값으로 처리 (0 < age 사용)"
+        weight: 5
+        logic: |
+          return 0 < age <= 120
+        detecting_inputs:
+          - { age: 0, expected: true }
+          - { age: 1, expected: true }
+
+      - id: exclusive_upper
+        description: "120을 유효하지 않은 값으로 처리 (age < 120 사용)"
+        weight: 5
+        logic: |
+          return 0 <= age < 120
+        detecting_inputs:
+          - { age: 120, expected: true }
+          - { age: 119, expected: true }
+
+      - id: both_exclusive
+        description: "양쪽 모두 exclusive (0 < age < 120)"
+        weight: 4
+        logic: |
+          return 0 < age < 120
+        detecting_inputs:
+          - { age: 0, expected: true }
+          - { age: 120, expected: true }
+
+      - id: wrong_upper_bound
+        description: "상한값이 100으로 잘못 설정"
+        weight: 3
+        logic: |
+          return 0 <= age <= 100
+        detecting_inputs:
+          - { age: 101, expected: true }
+          - { age: 120, expected: true }
+
+    test_template: |
+      import pytest
+      from target import is_valid_age
+
+
+      @pytest.mark.parametrize("age,expected", [
+          # TODO: 경계값 테스트 케이스 추가
+          # (0, True),   # 하한 경계
+          # (120, True), # 상한 경계
+          # (-1, False), # 하한 바로 아래
+          # (121, False),# 상한 바로 위
+      ])
+      def test_boundary_values(age, expected):
+          assert is_valid_age(age) == expected
+
+
+      def test_typical_values():
+          # TODO: 일반적인 값 테스트
+          pass
+
+
+      def test_negative_age():
+          # TODO: 음수 나이 테스트
+          pass
+
+    description_md: |
+      ## 문제 설명
+
+      `is_valid_age` 함수에 버그가 숨어 있을 수 있습니다.
+
+      ### 함수 시그니처
+
+      ```python
+      def is_valid_age(age: int) -> bool:
+      ```
+
+      ### 동작 규칙
+      - 0세부터 120세까지 유효한 나이로 인정
+      - 범위 밖의 값은 `False` 반환
+
+      ### 경계값 분석 (Boundary Value Analysis)
+
+      | 경계 | 유효한 값 | 유효하지 않은 값 |
+      |------|-----------|------------------|
+      | 하한 | 0 | -1 |
+      | 상한 | 120 | 121 |
+
+      ### pytest.mark.parametrize 활용
+
+      ```python
+      @pytest.mark.parametrize("age,expected", [
+          (0, True),    # 하한 경계
+          (-1, False),  # 하한 바로 아래
+          (120, True),  # 상한 경계
+          (121, False), # 상한 바로 위
+      ])
+      def test_boundaries(age, expected):
+          assert is_valid_age(age) == expected
+      ```
+
+  - id: CO-M01
+    difficulty: Medium
+    title: "배열 인덱스 유효성 검증 테스트"
+    domain: common
+    tags: ["비교 연산자", "off-by-one", "인덱스 경계", "parametrize"]
+
+    function:
+      name: is_valid_index
+      signature: "def is_valid_index(index: int, length: int) -> bool:"
+      docstring: |
+        배열 인덱스가 유효한지 확인합니다.
+
+        Args:
+            index: 확인할 인덱스
+            length: 배열 길이
+
+        Returns:
+            0 <= index < length이면 True, 아니면 False
+            (length가 0 이하면 항상 False)
+      golden_logic: |
+        if length <= 0:
+            return False
+        return 0 <= index < length
+
+    buggy_variants:
+      - id: inclusive_upper
+        description: "상한이 inclusive (index <= length-1이 아닌 index <= length)"
+        weight: 5
+        logic: |
+          if length <= 0:
+              return False
+          return 0 <= index <= length
+        detecting_inputs:
+          - { index: 5, length: 5, expected: false }
+          - { index: 4, length: 5, expected: true }
+
+      - id: exclusive_lower
+        description: "0번 인덱스를 유효하지 않다고 판단 (0 < index)"
+        weight: 5
+        logic: |
+          if length <= 0:
+              return False
+          return 0 < index < length
+        detecting_inputs:
+          - { index: 0, length: 5, expected: true }
+
+      - id: negative_index_accepted
+        description: "음수 인덱스를 유효하다고 판단 (-1을 마지막 요소로 해석)"
+        weight: 4
+        logic: |
+          if length <= 0:
+              return False
+          return -length <= index < length
+        detecting_inputs:
+          - { index: -1, length: 5, expected: false }
+
+      - id: off_by_one
+        description: "length - 1이 아닌 length를 상한으로 사용 (전형적인 off-by-one)"
+        weight: 5
+        logic: |
+          if length <= 0:
+              return False
+          return 0 <= index < length + 1
+        detecting_inputs:
+          - { index: 5, length: 5, expected: false }
+
+    test_template: |
+      import pytest
+      from target import is_valid_index
+
+
+      @pytest.mark.parametrize("index,length,expected", [
+          # TODO: 경계값 테스트
+          # (0, 5, True),    # 첫 번째 인덱스
+          # (4, 5, True),    # 마지막 인덱스
+          # (5, 5, False),   # length와 같은 인덱스 (invalid)
+          # (-1, 5, False),  # 음수 인덱스
+      ])
+      def test_boundaries(index, length, expected):
+          assert is_valid_index(index, length) == expected
+
+
+      def test_empty_array():
+          # TODO: 빈 배열 (length=0) 테스트
+          pass
+
+
+      def test_single_element():
+          # TODO: 요소가 하나인 배열 테스트
+          pass
+
+    description_md: |
+      ## 문제 설명
+
+      `is_valid_index` 함수에 버그가 숨어 있을 수 있습니다.
+
+      ### 함수 시그니처
+
+      ```python
+      def is_valid_index(index: int, length: int) -> bool:
+      ```
+
+      ### 동작 규칙
+      - 0-based 인덱싱 사용
+      - 유효 범위: `0 <= index < length`
+      - 빈 배열(length=0)은 어떤 인덱스도 유효하지 않음
+
+      ### Off-by-One 에러
+
+      가장 흔한 프로그래밍 실수 중 하나:
+
+      ```python
+      # 잘못된 코드
+      for i in range(len(arr) + 1):  # 하나 많음!
+          arr[i]  # IndexError 발생
+
+      # 올바른 코드
+      for i in range(len(arr)):
+          arr[i]  # OK
+      ```
+
+      ### 경계값 테스트
+
+      | 배열 길이 | 유효한 인덱스 | 유효하지 않은 인덱스 |
+      |-----------|---------------|---------------------|
+      | 5 | 0, 1, 2, 3, 4 | -1, 5, 6 |
+      | 1 | 0 | -1, 1 |
+      | 0 | (없음) | 0, -1, 1 |

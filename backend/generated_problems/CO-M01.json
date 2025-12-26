@@ -1,0 +1,75 @@
+{
+  "problem_id": "CO-M01",
+  "title": "배열 인덱스 유효성 검증 테스트",
+  "difficulty": "Medium",
+  "domain": "common",
+  "tags": [
+    "비교 연산자",
+    "off-by-one",
+    "인덱스 경계",
+    "parametrize"
+  ],
+  "function_signature": "def is_valid_index(index: int, length: int) -> bool:",
+  "golden_code": "def is_valid_index(index: int, length: int) -> bool:\n    \"\"\"배열 인덱스가 유효한지 확인합니다.\n    \n    Args:\n        index: 확인할 인덱스\n        length: 배열 길이\n    \n    Returns:\n        0 <= index < length이면 True, 아니면 False\n        (length가 0 이하면 항상 False)\n    \"\"\"\n    if length <= 0:\n        return False\n    return 0 <= index < length\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "상한이 inclusive (index <= length-1이 아닌 index <= length)",
+      "buggy_code": "def is_valid_index(index: int, length: int) -> bool:\n    \"\"\"Buggy: 상한이 inclusive (index <= length-1이 아닌 index <= length)\"\"\"\n    if length <= 0:\n        return False\n    return 0 <= index <= length\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "index": 5,
+          "length": 5,
+          "expected": false
+        },
+        {
+          "index": 4,
+          "length": 5,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "bug_description": "0번 인덱스를 유효하지 않다고 판단 (0 < index)",
+      "buggy_code": "def is_valid_index(index: int, length: int) -> bool:\n    \"\"\"Buggy: 0번 인덱스를 유효하지 않다고 판단 (0 < index)\"\"\"\n    if length <= 0:\n        return False\n    return 0 < index < length\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "index": 0,
+          "length": 5,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "bug_description": "음수 인덱스를 유효하다고 판단 (-1을 마지막 요소로 해석)",
+      "buggy_code": "def is_valid_index(index: int, length: int) -> bool:\n    \"\"\"Buggy: 음수 인덱스를 유효하다고 판단 (-1을 마지막 요소로 해석)\"\"\"\n    if length <= 0:\n        return False\n    return -length <= index < length\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 4,
+      "detecting_inputs": [
+        {
+          "index": -1,
+          "length": 5,
+          "expected": false
+        }
+      ]
+    },
+    {
+      "bug_description": "length - 1이 아닌 length를 상한으로 사용 (전형적인 off-by-one)",
+      "buggy_code": "def is_valid_index(index: int, length: int) -> bool:\n    \"\"\"Buggy: length - 1이 아닌 length를 상한으로 사용 (전형적인 off-by-one)\"\"\"\n    if length <= 0:\n        return False\n    return 0 <= index < length + 1\n",
+      "bug_type": "COMPARISON_OPERATOR",
+      "weight": 5,
+      "detecting_inputs": [
+        {
+          "index": 5,
+          "length": 5,
+          "expected": false
+        }
+      ]
+    }
+  ],
+  "description_md": "## 문제 설명\n\n`is_valid_index` 함수에 버그가 숨어 있을 수 있습니다.\n\n### 함수 시그니처\n\n```python\ndef is_valid_index(index: int, length: int) -> bool:\n```\n\n### 동작 규칙\n- 0-based 인덱싱 사용\n- 유효 범위: `0 <= index < length`\n- 빈 배열(length=0)은 어떤 인덱스도 유효하지 않음\n\n### Off-by-One 에러\n\n가장 흔한 프로그래밍 실수 중 하나:\n\n```python\n# 잘못된 코드\nfor i in range(len(arr) + 1):  # 하나 많음!\n    arr[i]  # IndexError 발생\n\n# 올바른 코드\nfor i in range(len(arr)):\n    arr[i]  # OK\n```\n\n### 경계값 테스트\n\n| 배열 길이 | 유효한 인덱스 | 유효하지 않은 인덱스 |\n|-----------|---------------|---------------------|\n| 5 | 0, 1, 2, 3, 4 | -1, 5, 6 |\n| 1 | 0 | -1, 1 |\n| 0 | (없음) | 0, -1, 1 |",
+  "initial_test_template": "import pytest\nfrom target import is_valid_index\n\n\n@pytest.mark.parametrize(\"index,length,expected\", [\n    # TODO: 경계값 테스트\n    # (0, 5, True),    # 첫 번째 인덱스\n    # (4, 5, True),    # 마지막 인덱스\n    # (5, 5, False),   # length와 같은 인덱스 (invalid)\n    # (-1, 5, False),  # 음수 인덱스\n])\ndef test_boundaries(index, length, expected):\n    assert is_valid_index(index, length) == expected\n\n\ndef test_empty_array():\n    # TODO: 빈 배열 (length=0) 테스트\n    pass\n\n\ndef test_single_element():\n    # TODO: 요소가 하나인 배열 테스트\n    pass"
+}
