@@ -175,14 +175,15 @@ export default function BottomTabs({
             key={tab.id}
             data-testid={`tab-${tab.id}`}
             onClick={() => handleTabChange(tab.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors
+            title={tab.label}
+            className={`flex items-center gap-1 xl:gap-1.5 px-2 xl:px-4 py-2 text-sm font-medium transition-colors
               ${activeTab === tab.id
                 ? "text-sky-600 dark:text-sky-400 border-b-2 border-sky-500 -mb-px bg-sky-50 dark:bg-sky-900/20"
                 : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
           >
             {tab.icon}
-            {tab.label}
+            <span className="hidden xl:inline">{tab.label}</span>
             {/* Indicator dots */}
             {tab.id === "local" && isLocalTesting && (
               <span className="ml-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
