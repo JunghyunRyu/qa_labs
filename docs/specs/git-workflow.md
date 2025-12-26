@@ -79,8 +79,14 @@ git push origin main
 
 ## 5. 프로덕션 EC2 배포 루틴
 
+### 방법 1: Claude Code 사용 (권장)
 ```bash
-ssh -i C:\pem\my_proton_key.pem ubuntu@3.38.179.33
+# 터미널에서 Claude Code 실행 후
+/deploy
+```
+
+### 방법 2: EC2 콘솔에서 직접 실행
+```bash
 cd ~/qa_labs
 git fetch origin
 git switch main
