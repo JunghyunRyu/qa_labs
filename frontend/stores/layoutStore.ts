@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// Accordion section types for problem panel
+export type AccordionSectionType = 'examples' | 'hints' | 'exceptions' | 'function' | 'other';
+
 // Panel sizing constants
 export const BOTTOM_PANEL_MIN = 120;
 export const BOTTOM_PANEL_MAX = 500;
@@ -29,6 +32,9 @@ interface LayoutState {
   // Mobile tab
   activeTab: "problem" | "code" | "ai";
 
+  // Accordion defaults (section type -> default open state)
+  accordionDefaults: Record<AccordionSectionType, boolean>;
+
   // Actions
   setPanelWidth: (width: number) => void;
   toggleProblemPanel: () => void;
@@ -45,6 +51,7 @@ interface LayoutState {
   openProblemSearch: () => void;
   closeProblemSearch: () => void;
   toggleProblemSearch: () => void;
+  setAccordionDefault: (sectionType: AccordionSectionType, isOpen: boolean) => void;
   resetLayout: () => void;
 }
 
@@ -58,6 +65,13 @@ const DEFAULT_STATE = {
   isProblemSearchOpen: false,
   editorFontSize: 14,
   activeTab: "code" as const,
+  accordionDefaults: {
+    examples: true,      // 예시: 기본 열림
+    hints: false,        // 힌트: 기본 닫힘 (스포일러 방지)
+    exceptions: true,    // 예외: 기본 열림
+    function: true,      // 함수: 기본 열림
+    other: true,         // 기타: 기본 열림
+  } as Record<AccordionSectionType, boolean>,
 };
 
 export const useLayoutStore = create<LayoutState>()(
@@ -151,6 +165,15 @@ export const useLayoutStore = create<LayoutState>()(
         }));
       },
 
+      setAccordionDefault: (sectionType: AccordionSectionType, isOpen: boolean) => {
+        set((state) => ({
+          accordionDefaults: {
+            ...state.accordionDefaults,
+            [sectionType]: isOpen,
+          },
+        }));
+      },
+
       resetLayout: () => {
         set(DEFAULT_STATE);
       },
@@ -165,6 +188,8 @@ export const useLayoutStore = create<LayoutState>()(
         isProblemCollapsed: state.isProblemCollapsed,
         editorFontSize: state.editorFontSize,
         isFocusMode: state.isFocusMode,
+        // Persist accordion defaults
+        accordionDefaults: state.accordionDefaults,
         // Don't persist: isAIChatOpen, isProblemPeekOpen, activeTab (session-only)
       }),
     }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
-import { useLayoutStore } from "@/stores/layoutStore";
+import { useLayoutStore, type AccordionSectionType } from "@/stores/layoutStore";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -233,18 +233,23 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
     openProblemSearch,
     closeProblemSearch,
     toggleProblemSearch,
+    accordionDefaults,
   } = useLayoutStore();
   const [isSignatureExpanded, setIsSignatureExpanded] = useState(false);
 
   // Content ref for search highlighting
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Accordion open state management
-  const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set());
+  // Session-level accordion state overrides (explicit user interactions this session)
+  const [sessionOverrides, setSessionOverrides] = useState<Map<string, boolean>>(new Map());
 
-  // Text search hook
+  // Text search hook - open sections when search finds matches
   const handleSectionsToOpen = useCallback((sectionIds: Set<string>) => {
-    setOpenAccordions((prev) => new Set([...prev, ...sectionIds]));
+    setSessionOverrides((prev) => {
+      const next = new Map(prev);
+      sectionIds.forEach(id => next.set(id, true));
+      return next;
+    });
   }, []);
 
   // Sync search open state with layout store
@@ -277,31 +282,31 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   const stickySections = sections.filter(s => stickyTypes.has(s.type));
   const accordionSections = sections.filter(s => !stickyTypes.has(s.type));
 
-  // Accordion toggle handler
-  const handleAccordionToggle = useCallback((sectionId: string) => {
-    setOpenAccordions((prev) => {
-      const next = new Set(prev);
-      if (next.has(sectionId)) {
-        next.delete(sectionId);
-      } else {
-        next.add(sectionId);
-      }
+  // Accordion toggle handler - toggle section and record in session overrides
+  const handleAccordionToggle = useCallback((sectionId: string, sectionType: AccordionSectionType) => {
+    setSessionOverrides((prev) => {
+      const next = new Map(prev);
+      // Get current state: session override > global default
+      const currentState = prev.has(sectionId)
+        ? prev.get(sectionId)!
+        : accordionDefaults[sectionType] ?? true;
+      // Toggle to opposite state
+      next.set(sectionId, !currentState);
       return next;
     });
-  }, []);
+  }, [accordionDefaults]);
 
-  // Get accordion open state
+  // Get accordion open state: session override takes precedence over global default
   const isAccordionOpen = useCallback(
-    (sectionId: string, defaultOpen: boolean) => {
-      // If explicitly set in openAccordions, use that
-      if (openAccordions.has(sectionId)) {
-        return true;
+    (sectionId: string, sectionType: AccordionSectionType) => {
+      // Session override takes precedence
+      if (sessionOverrides.has(sectionId)) {
+        return sessionOverrides.get(sectionId)!;
       }
-      // Otherwise, check if it's in the initial "not opened" state
-      // For default open items, they should be open unless explicitly closed
-      return defaultOpen && openAccordions.size === 0;
+      // Fall back to global default from store
+      return accordionDefaults[sectionType] ?? true;
     },
-    [openAccordions]
+    [sessionOverrides, accordionDefaults]
   );
 
   // Collapsed state - minimal vertical bar
@@ -516,8 +521,12 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               const Icon = config.icon;
               const sectionId = `section-${section.type}-${index}`;
 
-              // Default open for examples, closed for hints
-              const defaultOpen = section.type === 'examples';
+              // Map section type to accordion section type for store lookup
+              const accordionType = (
+                ['examples', 'hints', 'exceptions', 'function'].includes(section.type)
+                  ? section.type
+                  : 'other'
+              ) as AccordionSectionType;
 
               return (
                 <Accordion
@@ -526,10 +535,9 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
                   icon={Icon}
                   iconColor={config.iconColor}
                   bgColor={config.bgColor}
-                  defaultOpen={defaultOpen}
                   sectionId={sectionId}
-                  isOpen={openAccordions.has(sectionId) ? true : undefined}
-                  onToggle={() => handleAccordionToggle(sectionId)}
+                  isOpen={isAccordionOpen(sectionId, accordionType)}
+                  onToggle={() => handleAccordionToggle(sectionId, accordionType)}
                 >
                   <MarkdownContent content={section.content} />
                 </Accordion>
