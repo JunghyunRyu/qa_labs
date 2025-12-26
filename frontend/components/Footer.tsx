@@ -17,7 +17,7 @@ export default function Footer() {
 
       <div className="py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
           {/* Logo & Description */}
           <div className="md:col-span-2">
             <h3 className="text-xl font-bold text-white mb-2">QA-Arena</h3>
@@ -40,6 +40,23 @@ export default function Footer() {
               <li>
                 <Link href="/submissions" className="hover:text-white transition-colors">
                   내 제출 기록
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="font-semibold text-white mb-3">법적 고지</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/terms" className="hover:text-white transition-colors">
+                  이용약관
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="hover:text-white transition-colors">
+                  개인정보처리방침
                 </Link>
               </li>
             </ul>
