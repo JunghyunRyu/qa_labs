@@ -53,17 +53,30 @@ async def get_current_user(
 class AIAccessResult:
     """Result of AI access check with token deduction capability."""
 
-    def __init__(self, user: User, token_service: TokenService, can_use: bool, reason: str):
+    def __init__(self, user: User, token_service: TokenService, can_use: bool, reason: str, action_type: str = "AI_CHAT"):
         self.user = user
         self.token_service = token_service
         self.can_use = can_use
         self.reason = reason
+        self.action_type = action_type
         self._deducted = False
 
     def deduct(self, cost: int = 1) -> Tuple[bool, str]:
-        """Deduct token after successful AI operation."""
+        """
+        Deduct token after successful AI operation.
+
+        token-policy.md §6.2 중복 차감 방지:
+        - 더블 클릭/네트워크 재시도 시 중복 차감 방지
+        """
         if self._deducted:
             return True, "already_deducted"
+
+        # Idempotency check (5초 내 중복 요청 방지)
+        from app.services.idempotency_guard import idempotency_guard
+        is_allowed, idem_reason = idempotency_guard.check_and_mark(self.user.id, self.action_type)
+        if not is_allowed:
+            return True, "idempotent_skip"  # 중복이므로 차감 없이 성공 반환
+
         success, deduction_type = self.token_service.deduct_token(self.user, cost)
         self._deducted = success
         return success, deduction_type
@@ -81,8 +94,13 @@ async def require_ai_access(
     Dependency that requires authentication and checks AI token availability.
 
     - Non-members: 401 Unauthorized
-    - No tokens left (and no daily bonus): 402 Payment Required
+    - No tokens left (and no daily free): 402 Payment Required
     - OK: Returns AIAccessResult for token deduction after operation
+
+    token-policy.md 준수:
+    - §4.3: 차감 우선순위 (Daily Free → Monthly)
+    - §6.2: 중복 차감 방지 (Idempotency)
+    - §8.2: 표준 에러 규격 (TOKEN_INSUFFICIENT)
 
     Usage:
         @router.post("/ai/chat")
@@ -110,18 +128,32 @@ async def require_ai_access(
 
     if not can_use:
         status_info = token_service.get_token_status(user)
+        # token-policy.md §8.2 표준 에러 규격
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail={
-                "message": "이번 달 AI 토큰이 소진되었습니다. 다음 달 1일에 리셋됩니다.",
-                "tokens_remaining": status_info["tokens_remaining"],
-                "daily_bonus_remaining": status_info["daily_bonus_remaining"],
-                "next_reset": status_info["next_reset"],
+                "error": {
+                    "code": "TOKEN_INSUFFICIENT",
+                    "message": "토큰이 부족합니다.",
+                    "details": {
+                        "daily_free_remaining": status_info["daily_bonus_remaining"],
+                        "monthly_remaining": status_info["tokens_remaining"],
+                        "next_daily_reset_at": status_info.get("daily_reset_at"),
+                        "next_monthly_reset_at": status_info["next_reset"],
+                    }
+                }
             },
-            headers={"X-Error-Code": "TOKEN_EXHAUSTED"}
+            headers={"X-Error-Code": "TOKEN_INSUFFICIENT"}
         )
 
-    return AIAccessResult(user, token_service, can_use, reason)
+    # Extract action type from request path
+    action_type = "AI_CHAT"  # Default
+    if "/hint" in request.url.path:
+        action_type = "AI_HINT"
+    elif "/feedback" in request.url.path:
+        action_type = "FEEDBACK"
+
+    return AIAccessResult(user, token_service, can_use, reason, action_type)
 
 
 def get_token_service(db: Session = Depends(get_db)) -> TokenService:

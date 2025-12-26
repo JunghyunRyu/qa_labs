@@ -144,18 +144,31 @@ export default function AICoachPanel({
               "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요."
             );
           } else if (err.status === 402) {
-            // Token exhausted
+            // Token exhausted (token-policy.md §8.2 표준 에러 규격)
             const errorData = err.data as {
               detail?: {
+                error?: {
+                  code?: string;
+                  details?: {
+                    daily_free_remaining?: number;
+                    monthly_remaining?: number;
+                    next_monthly_reset_at?: string;
+                  };
+                };
+                // Legacy format fallback
                 tokens_remaining?: number;
                 daily_bonus_remaining?: number;
                 next_reset?: string;
               };
             } | undefined;
+
+            const details = errorData?.detail?.error?.details;
+            const legacy = errorData?.detail;
+
             setTokenExhausted({
-              tokensRemaining: errorData?.detail?.tokens_remaining ?? 0,
-              dailyBonusRemaining: errorData?.detail?.daily_bonus_remaining ?? 0,
-              nextReset: errorData?.detail?.next_reset ?? null,
+              tokensRemaining: details?.monthly_remaining ?? legacy?.tokens_remaining ?? 0,
+              dailyBonusRemaining: details?.daily_free_remaining ?? legacy?.daily_bonus_remaining ?? 0,
+              nextReset: details?.next_monthly_reset_at ?? legacy?.next_reset ?? null,
             });
           } else {
             const errorData = err.data as { detail?: string } | undefined;

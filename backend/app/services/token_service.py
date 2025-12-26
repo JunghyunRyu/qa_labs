@@ -47,6 +47,10 @@ class TokenService:
         """
         Check if user can use an AI feature.
 
+        차감 우선순위 (token-policy.md §4.3):
+        1) Daily Free에서 먼저 차감
+        2) Daily Free 소진 시 Monthly에서 차감
+
         Args:
             user: User instance
             cost: Token cost for the feature (default 1)
@@ -56,15 +60,14 @@ class TokenService:
         """
         self._check_and_reset_if_needed(user)
 
-        tokens_remaining = user.token_balance - user.token_used
-
-        # Has enough tokens
-        if tokens_remaining >= cost:
-            return True, "ok"
-
-        # Check daily bonus
+        # 1순위: Daily Free 토큰 확인
         if user.daily_bonus_used < DAILY_BONUS_LIMIT:
-            return True, "bonus"
+            return True, "daily_free"
+
+        # 2순위: Monthly 토큰 확인
+        tokens_remaining = user.token_balance - user.token_used
+        if tokens_remaining >= cost:
+            return True, "monthly"
 
         return False, "exhausted"
 
@@ -72,29 +75,32 @@ class TokenService:
         """
         Deduct token(s) from user's balance.
 
+        차감 우선순위 (token-policy.md §4.3):
+        1) Daily Free에서 먼저 차감
+        2) Daily Free 소진 시 Monthly에서 차감
+
         Args:
             user: User instance
             cost: Number of tokens to deduct
 
         Returns:
             Tuple of (success: bool, deduction_type: str)
-            deduction_type: "token" | "bonus" | "failed"
+            deduction_type: "daily_free" | "monthly" | "failed"
         """
         self._check_and_reset_if_needed(user)
 
-        tokens_remaining = user.token_balance - user.token_used
-
-        # Deduct from regular tokens
-        if tokens_remaining >= cost:
-            user.token_used += cost
-            self.db.commit()
-            return True, "token"
-
-        # Use daily bonus
+        # 1순위: Daily Free에서 차감
         if user.daily_bonus_used < DAILY_BONUS_LIMIT:
             user.daily_bonus_used += 1
             self.db.commit()
-            return True, "bonus"
+            return True, "daily_free"
+
+        # 2순위: Monthly에서 차감
+        tokens_remaining = user.token_balance - user.token_used
+        if tokens_remaining >= cost:
+            user.token_used += cost
+            self.db.commit()
+            return True, "monthly"
 
         return False, "failed"
 
