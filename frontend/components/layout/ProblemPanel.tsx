@@ -497,6 +497,14 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             </div>
           </div>
         )}
+
+        {/* Standard Library Notice */}
+        <div className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+            <Info className="w-3 h-3 flex-shrink-0" />
+            <span>이 환경에서는 Python 표준 라이브러리만 사용할 수 있습니다.</span>
+          </p>
+        </div>
       </div>
 
       {/* ===== SCROLLABLE ACCORDION AREA ===== */}
