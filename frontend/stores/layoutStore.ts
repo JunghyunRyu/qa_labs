@@ -20,6 +20,9 @@ interface LayoutState {
   isFocusMode: boolean;
   isProblemPeekOpen: boolean;
 
+  // Problem search state (session-only)
+  isProblemSearchOpen: boolean;
+
   // Editor settings
   editorFontSize: number;
 
@@ -39,6 +42,9 @@ interface LayoutState {
   setIsFocusMode: (focus: boolean) => void;
   toggleProblemPeek: () => void;
   setIsProblemPeekOpen: (open: boolean) => void;
+  openProblemSearch: () => void;
+  closeProblemSearch: () => void;
+  toggleProblemSearch: () => void;
   resetLayout: () => void;
 }
 
@@ -49,6 +55,7 @@ const DEFAULT_STATE = {
   bottomPanelHeight: BOTTOM_PANEL_DEFAULT,
   isFocusMode: false,
   isProblemPeekOpen: false,
+  isProblemSearchOpen: false,
   editorFontSize: 14,
   activeTab: "code" as const,
 };
@@ -122,6 +129,26 @@ export const useLayoutStore = create<LayoutState>()(
 
       setIsProblemPeekOpen: (open: boolean) => {
         set({ isProblemPeekOpen: open });
+      },
+
+      openProblemSearch: () => {
+        set({
+          isProblemSearchOpen: true,
+          // Also expand problem panel if collapsed
+          isProblemCollapsed: false,
+        });
+      },
+
+      closeProblemSearch: () => {
+        set({ isProblemSearchOpen: false });
+      },
+
+      toggleProblemSearch: () => {
+        set((state) => ({
+          isProblemSearchOpen: !state.isProblemSearchOpen,
+          // Expand problem panel when opening search
+          isProblemCollapsed: state.isProblemSearchOpen ? state.isProblemCollapsed : false,
+        }));
       },
 
       resetLayout: () => {

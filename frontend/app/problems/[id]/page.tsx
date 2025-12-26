@@ -46,6 +46,7 @@ export default function ProblemDetailPage() {
     isProblemPeekOpen,
     toggleProblemPeek,
     setIsProblemPeekOpen,
+    openProblemSearch,
   } = useLayoutStore();
 
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -196,6 +197,7 @@ export default function ProblemDetailPage() {
     toggleFocusMode,
     toggleProblemPeek,
     closeProblemPeek: () => setIsProblemPeekOpen(false),
+    openProblemSearch,
   });
 
   // Generate initial test template using the template generator

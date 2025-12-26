@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { useLayoutStore } from "@/stores/layoutStore";
 import {
   ArrowLeft,
@@ -19,11 +19,14 @@ import {
   Info,
   Code2,
   BookOpen,
+  Search,
 } from "lucide-react";
 import { Problem } from "@/types/problem";
 import TagChips from "@/components/TagChips";
 import CopyButton from "@/components/CopyButton";
 import Accordion from "@/components/ui/Accordion";
+import ProblemSearchBar from "@/components/layout/ProblemSearchBar";
+import { useTextSearch } from "@/hooks/useTextSearch";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
@@ -222,8 +225,46 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 export default function ProblemPanel({ problem }: ProblemPanelProps) {
-  const { isProblemCollapsed, toggleProblemPanel, toggleProblemPeek } = useLayoutStore();
+  const {
+    isProblemCollapsed,
+    toggleProblemPanel,
+    toggleProblemPeek,
+    isProblemSearchOpen,
+    openProblemSearch,
+    closeProblemSearch,
+    toggleProblemSearch,
+  } = useLayoutStore();
   const [isSignatureExpanded, setIsSignatureExpanded] = useState(false);
+
+  // Content ref for search highlighting
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Accordion open state management
+  const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set());
+
+  // Text search hook
+  const handleSectionsToOpen = useCallback((sectionIds: Set<string>) => {
+    setOpenAccordions((prev) => new Set([...prev, ...sectionIds]));
+  }, []);
+
+  // Sync search open state with layout store
+  const handleSearchClose = useCallback(() => {
+    closeProblemSearch();
+  }, [closeProblemSearch]);
+
+  const search = useTextSearch({
+    containerRef: contentRef,
+    onSectionsToOpen: handleSectionsToOpen,
+  });
+
+  // Sync isProblemSearchOpen with search.isOpen
+  useEffect(() => {
+    if (isProblemSearchOpen && !search.isOpen) {
+      search.open();
+    } else if (!isProblemSearchOpen && search.isOpen) {
+      search.close();
+    }
+  }, [isProblemSearchOpen, search]);
 
   // Parse sections from description
   const sections = useMemo(() => parseDescription(problem.description_md), [problem.description_md]);
@@ -235,6 +276,33 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   const stickyTypes = new Set(['overview', 'io', 'constraints', 'task']);
   const stickySections = sections.filter(s => stickyTypes.has(s.type));
   const accordionSections = sections.filter(s => !stickyTypes.has(s.type));
+
+  // Accordion toggle handler
+  const handleAccordionToggle = useCallback((sectionId: string) => {
+    setOpenAccordions((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  }, []);
+
+  // Get accordion open state
+  const isAccordionOpen = useCallback(
+    (sectionId: string, defaultOpen: boolean) => {
+      // If explicitly set in openAccordions, use that
+      if (openAccordions.has(sectionId)) {
+        return true;
+      }
+      // Otherwise, check if it's in the initial "not opened" state
+      // For default open items, they should be open unless explicitly closed
+      return defaultOpen && openAccordions.size === 0;
+    },
+    [openAccordions]
+  );
 
   // Collapsed state - minimal vertical bar
   if (isProblemCollapsed) {
@@ -297,6 +365,19 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             <h1 className="text-base font-bold text-gray-900 dark:text-white truncate flex-1">
               {problem.title}
             </h1>
+            <button
+              onClick={toggleProblemSearch}
+              className={`p-1 rounded transition-colors ${
+                isProblemSearchOpen
+                  ? "bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400"
+                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              aria-label="문제 내 검색"
+              title="문제 내 검색 (Ctrl+F)"
+              data-testid="btn-problem-search"
+            >
+              <Search className="w-4 h-4" />
+            </button>
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
                 difficultyColors[problem.difficulty] || difficultyColors["Medium"]
@@ -311,6 +392,21 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             </div>
           )}
         </div>
+
+        {/* Search Bar - conditionally visible */}
+        {isProblemSearchOpen && (
+          <ProblemSearchBar
+            query={search.query}
+            onQueryChange={search.setQuery}
+            currentIndex={search.currentIndex}
+            totalCount={search.totalCount}
+            caseSensitive={search.caseSensitive}
+            onToggleCaseSensitive={search.toggleCaseSensitive}
+            onNext={search.goNext}
+            onPrev={search.goPrev}
+            onClose={handleSearchClose}
+          />
+        )}
 
         {/* Function Signature - Always visible */}
         <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/30">
@@ -404,12 +500,13 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
       </div>
 
       {/* ===== SCROLLABLE ACCORDION AREA ===== */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div ref={contentRef} className="flex-1 min-h-0 overflow-y-auto">
         {accordionSections.length > 0 ? (
           <div className="p-3 space-y-2">
             {accordionSections.map((section, index) => {
               const config = getSectionConfig(section.type);
               const Icon = config.icon;
+              const sectionId = `section-${section.type}-${index}`;
 
               // Default open for examples, closed for hints
               const defaultOpen = section.type === 'examples';
@@ -422,6 +519,9 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
                   iconColor={config.iconColor}
                   bgColor={config.bgColor}
                   defaultOpen={defaultOpen}
+                  sectionId={sectionId}
+                  isOpen={openAccordions.has(sectionId) ? true : undefined}
+                  onToggle={() => handleAccordionToggle(sectionId)}
                 >
                   <MarkdownContent content={section.content} />
                 </Accordion>

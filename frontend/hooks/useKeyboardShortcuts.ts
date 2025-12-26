@@ -10,23 +10,19 @@ interface ShortcutConfig {
   metaKey?: boolean;
   action: () => void;
   preventDefault?: boolean;
+  /** Allow this shortcut to work even in input fields */
+  allowInInput?: boolean;
 }
 
 export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // Ignore shortcuts when typing in input/textarea
+      // Check if typing in input/textarea
       const target = event.target as HTMLElement;
-      if (
+      const isInInput =
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-      ) {
-        // Only allow Escape in inputs
-        if (event.key !== "Escape") {
-          return;
-        }
-      }
+        target.isContentEditable;
 
       for (const shortcut of shortcuts) {
         const ctrlOrMeta = event.ctrlKey || event.metaKey;
@@ -40,6 +36,11 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
         const matchesAlt = shortcut.altKey ? event.altKey : !event.altKey;
 
         if (matchesKey && matchesCtrl && matchesShift && matchesAlt) {
+          // Check if shortcut should be blocked in input fields
+          if (isInInput && !shortcut.allowInInput && event.key !== "Escape") {
+            continue;
+          }
+
           if (shortcut.preventDefault !== false) {
             event.preventDefault();
           }
@@ -67,6 +68,7 @@ export function useProblemSolverShortcuts(handlers: {
   toggleFocusMode?: () => void;
   toggleProblemPeek?: () => void;
   closeProblemPeek?: () => void;
+  openProblemSearch?: () => void;
 }) {
   useKeyboardShortcuts([
     {
@@ -107,6 +109,17 @@ export function useProblemSolverShortcuts(handlers: {
             key: "f",
             altKey: true,
             action: handlers.toggleFocusMode,
+          },
+        ]
+      : []),
+    // Ctrl+F: Open problem search
+    ...(handlers.openProblemSearch
+      ? [
+          {
+            key: "f",
+            ctrlKey: true,
+            action: handlers.openProblemSearch,
+            allowInInput: true, // Allow Ctrl+F even in search input (goes to next match)
           },
         ]
       : []),

@@ -82,3 +82,25 @@ body {
   overflow-wrap: break-word;
   padding: 0 8px;
 }
+
+/* Search Highlight Styles - 문제 패널 검색 */
+.search-highlight {
+  background-color: rgb(254 240 138); /* yellow-200 */
+  border-radius: 0.125rem;
+  padding: 0 0.125rem;
+}
+
+.dark .search-highlight {
+  background-color: rgba(161, 98, 7, 0.6); /* yellow-700/60 */
+}
+
+.search-highlight-current {
+  background-color: rgb(251 146 60); /* orange-400 */
+  outline: 2px solid rgb(249 115 22); /* orange-500 */
+  outline-offset: 0;
+}
+
+.dark .search-highlight-current {
+  background-color: rgb(249 115 22); /* orange-500 */
+  outline-color: rgb(251 146 60); /* orange-400 */
+}

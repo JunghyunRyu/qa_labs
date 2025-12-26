@@ -10,6 +10,12 @@ interface AccordionProps {
   bgColor?: string;
   borderColor?: string;
   defaultOpen?: boolean;
+  /** Controlled mode: external open state */
+  isOpen?: boolean;
+  /** Controlled mode: callback when toggle is clicked */
+  onToggle?: () => void;
+  /** Optional data attribute for section identification */
+  sectionId?: string;
   children: ReactNode;
 }
 
@@ -20,15 +26,33 @@ export default function Accordion({
   bgColor = "bg-gray-50 dark:bg-gray-800",
   borderColor = "border-gray-200 dark:border-gray-700",
   defaultOpen = false,
+  isOpen: controlledIsOpen,
+  onToggle,
+  sectionId,
   children,
 }: AccordionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [internalIsOpen, setInternalIsOpen] = useState(defaultOpen);
+
+  // Controlled vs uncontrolled mode
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
+
+  const handleToggle = () => {
+    if (isControlled && onToggle) {
+      onToggle();
+    } else {
+      setInternalIsOpen(!internalIsOpen);
+    }
+  };
 
   return (
-    <div className={`${borderColor} border rounded-lg overflow-hidden`}>
+    <div
+      className={`${borderColor} border rounded-lg overflow-hidden`}
+      data-section-id={sectionId}
+    >
       {/* Header - Always visible */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className={`w-full flex items-center gap-2 px-3 py-2 ${bgColor}
                     hover:bg-opacity-80 transition-colors text-left`}
         aria-expanded={isOpen}
