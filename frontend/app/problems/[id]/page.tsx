@@ -19,6 +19,7 @@ import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
+import MobileNotice from "@/components/MobileNotice";
 import { generateTestTemplate, generateFallbackTemplate } from "@/lib/templateGenerator";
 import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
 import ProblemPanel from "@/components/layout/ProblemPanel";
@@ -595,6 +596,9 @@ export default function ProblemDetailPage() {
         isOpen={isScoringDrawerOpen}
         onClose={() => setIsScoringDrawerOpen(false)}
       />
+
+      {/* Mobile Notice - PC 권장 안내 */}
+      <MobileNotice />
     </div>
   );
 }
