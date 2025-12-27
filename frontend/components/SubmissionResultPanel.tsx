@@ -98,7 +98,7 @@ export default function SubmissionResultPanel({
     return (
       <div className="mt-8 bg-white rounded-lg shadow-md p-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">채점 결과</h3>
-        <SubmissionResult submission={submission} />
+        <SubmissionResult submission={submission} onRetry={onRetry} />
       </div>
     );
   }

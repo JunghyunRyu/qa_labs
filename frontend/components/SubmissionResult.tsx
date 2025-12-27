@@ -8,15 +8,18 @@ import TestResultsList from "./TestResultsList";
 import ErrorLogDisplay from "./ErrorLogDisplay";
 import { TestQualityPanel } from "./test-quality";
 import { parsePytestOutput } from "@/lib/pytestParser";
-import { AlertCircle, FileText, Sparkles, Lock } from "lucide-react";
+import { AlertCircle, FileText, Sparkles, Lock, RefreshCw, ArrowRight, Lightbulb } from "lucide-react";
 import { Github } from "lucide-react";
+import Link from "next/link";
 import type { QualityGrade, TestQualityAnalysis } from "@/types/test-quality";
 
 interface SubmissionResultProps {
   submission: Submission;
+  onRetry?: () => void;
+  problemId?: string;
 }
 
-export default function SubmissionResult({ submission }: SubmissionResultProps) {
+export default function SubmissionResult({ submission, onRetry, problemId }: SubmissionResultProps) {
   // FAILURE 상태일 때 Golden Code 테스트 실패 정보 추출
   const getFailureInfo = () => {
     if (submission.status !== "FAILURE" || !submission.execution_log) return null;
@@ -96,6 +99,22 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
                 작성하신 테스트가 정답 코드를 통과시키지 못했습니다.
                 테스트 코드를 확인해주세요.
               </p>
+            </div>
+
+            {/* 수정 가이드 */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900 mb-2">어떻게 수정할까요?</p>
+                  <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                    <li>테스트가 <strong>정상 동작하는 코드</strong>를 통과해야 합니다</li>
+                    <li>assert 문의 기대값이 올바른지 확인하세요</li>
+                    <li>함수 이름, 파라미터가 문제 설명과 일치하는지 확인하세요</li>
+                    <li>경계값이나 특수 케이스에서 예상치 못한 결과가 나오지 않는지 점검하세요</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Test results breakdown */}
@@ -181,6 +200,41 @@ export default function SubmissionResult({ submission }: SubmissionResultProps) 
                 GitHub로 로그인
               </a>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* CTA 버튼 섹션 - SUCCESS 또는 FAILURE 상태에서 표시 */}
+      {(submission.status === "SUCCESS" || submission.status === "FAILURE") && (
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">다음 단계</h3>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* 다시 제출 버튼 */}
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                <RefreshCw className="w-5 h-5" />
+                {submission.status === "FAILURE" ? "코드 수정 후 다시 제출" : "다시 제출하기"}
+              </button>
+            )}
+
+            {/* 다른 문제 풀기 링크 */}
+            <Link
+              href="/problems"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              <ArrowRight className="w-5 h-5" />
+              다른 문제 풀기
+            </Link>
+          </div>
+
+          {/* SUCCESS 상태에서 추가 안내 */}
+          {submission.status === "SUCCESS" && submission.score !== undefined && submission.score < 100 && (
+            <p className="mt-4 text-sm text-gray-600 text-center">
+              더 많은 엣지 케이스를 찾아 점수를 높여보세요!
+            </p>
           )}
         </div>
       )}

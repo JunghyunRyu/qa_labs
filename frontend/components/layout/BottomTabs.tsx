@@ -24,6 +24,7 @@ import {
   Code,
   Terminal,
 } from "lucide-react";
+import Link from "next/link";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { getMySubmissions } from "@/lib/api/users";
@@ -406,7 +407,7 @@ function ResultTabContent({
   // Failure state (test failed on golden code)
   if (submission?.status === "FAILURE") {
     return (
-      <div className="p-4">
+      <div className="p-4 space-y-4">
         <div className="flex items-start gap-3">
           <XCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -417,11 +418,37 @@ function ResultTabContent({
               작성하신 테스트 코드가 정상 구현에서 실패했습니다.
               테스트 케이스를 다시 확인해주세요.
             </p>
-            <p className="text-xs text-gray-500 mt-2">
-              로그 탭에서 상세 실패 내용을 확인할 수 있습니다.
-            </p>
           </div>
         </div>
+
+        {/* 수정 가이드 */}
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div className="flex items-start gap-2">
+            <Lightbulb className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">어떻게 수정할까요?</p>
+              <ul className="text-blue-700 dark:text-blue-400 space-y-0.5 list-disc list-inside text-xs">
+                <li>테스트가 <strong>정상 동작하는 코드</strong>를 통과해야 합니다</li>
+                <li>assert 문의 기대값이 올바른지 확인하세요</li>
+                <li>함수 이름, 파라미터가 문제 설명과 일치하는지 확인하세요</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA 버튼 */}
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="w-full px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            코드 수정 후 다시 제출
+          </button>
+        )}
+
+        <p className="text-xs text-gray-500 text-center">
+          로그 탭에서 상세 실패 내용을 확인할 수 있습니다.
+        </p>
       </div>
     );
   }
@@ -576,7 +603,7 @@ function ResultCTAButtons() {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       <button
         onClick={handleAskAI}
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium
@@ -587,6 +614,16 @@ function ResultCTAButtons() {
         <Bot className="w-4 h-4" />
         AI 도우미에게 물어보기
       </button>
+      <Link
+        href="/problems"
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium
+                   bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
+                   hover:bg-gray-200 dark:hover:bg-gray-700
+                   rounded-lg transition-colors"
+      >
+        <ArrowRight className="w-4 h-4" />
+        다른 문제 풀기
+      </Link>
     </div>
   );
 }
