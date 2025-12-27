@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.sentry import init_sentry, capture_exception_with_context
+from app.core.security_utils import sanitize_log_message, sanitize_url_path
 from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress
 from app.middleware.anonymous import AnonymousIDMiddleware
 
@@ -40,8 +41,10 @@ app.state.limiter = limiter
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     """Rate limit 초과 시 일관된 형식으로 응답."""
     logger.warning(
-        f"Rate limit exceeded: {request.client.host} - Path: {request.url.path} - "
-        f"Limit: {exc.detail}"
+        sanitize_log_message(
+            f"Rate limit exceeded: {request.client.host} - "
+            f"Path: {sanitize_url_path(str(request.url))} - Limit: {exc.detail}"
+        )
     )
     return JSONResponse(
         status_code=429,
@@ -59,7 +62,10 @@ async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """HTTP 예외 핸들러."""
     logger.warning(
-        f"HTTP {exc.status_code} error: {exc.detail} - Path: {request.url.path}"
+        sanitize_log_message(
+            f"HTTP {exc.status_code} error: {exc.detail} - "
+            f"Path: {sanitize_url_path(str(request.url))}"
+        )
     )
 
     # 에러 타입 결정
@@ -86,14 +92,34 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """요청 검증 예외 핸들러."""
     logger.warning(
-        f"Validation error: {exc.errors()} - Path: {request.url.path}"
+        sanitize_log_message(
+            f"Validation error: {exc.errors()} - "
+            f"Path: {sanitize_url_path(str(request.url))}"
+        )
     )
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
+
+    # 프로덕션에서는 상세 정보 숨김
+    if settings.DEBUG:
+        content = {
             "detail": exc.errors(),
             "type": "validation_error",
-        },
+        }
+    else:
+        # 프로덕션: 필드 위치만 반환, 상세 에러 메시지 숨김
+        fields = []
+        for err in exc.errors():
+            loc = err.get("loc", [])
+            if loc:
+                fields.append(loc[-1] if len(loc) > 0 else "unknown")
+        content = {
+            "detail": "요청 형식이 올바르지 않습니다.",
+            "type": "validation_error",
+            "fields": fields,
+        }
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=content,
     )
 
 
@@ -103,7 +129,7 @@ async def general_exception_handler(request: Request, exc: Exception):
     # 에러 ID 생성
     error_id = str(uuid.uuid4())[:8]
 
-    # Sentry에 에러 보고
+    # Sentry에 에러 보고 (URL은 마스킹하지 않음 - Sentry 자체 필터 사용)
     sentry_event_id = capture_exception_with_context(
         exc,
         context={
@@ -120,17 +146,20 @@ async def general_exception_handler(request: Request, exc: Exception):
         }
     )
 
-    # 로깅
+    # 로깅 (민감정보 마스킹 적용)
+    sanitized_path = sanitize_url_path(str(request.url))
+    sanitized_error = sanitize_log_message(str(exc))
+
     if not settings.DEBUG:
         logger.error(
             f"Unhandled exception [ID: {error_id}] [Sentry: {sentry_event_id}]: "
-            f"{type(exc).__name__}: {str(exc)} - Path: {request.url.path}",
+            f"{type(exc).__name__}: {sanitized_error} - Path: {sanitized_path}",
             exc_info=True,
         )
     else:
         logger.error(
-            f"Unhandled exception: {type(exc).__name__}: {str(exc)} - "
-            f"Path: {request.url.path}",
+            f"Unhandled exception: {type(exc).__name__}: {sanitized_error} - "
+            f"Path: {sanitized_path}",
             exc_info=True,
         )
 
@@ -158,6 +187,7 @@ async def log_requests(request: Request, call_next):
     import time
 
     start_time = time.time()
+    # URL 경로만 로깅 (쿼리 파라미터 제외하여 민감정보 노출 방지)
     logger.info(f"Request: {request.method} {request.url.path}")
 
     try:
@@ -170,9 +200,10 @@ async def log_requests(request: Request, call_next):
         return response
     except Exception as e:
         process_time = time.time() - start_time
+        # 에러 메시지 마스킹
         logger.error(
             f"Request failed: {request.method} {request.url.path} - "
-            f"Error: {e} - Time: {process_time:.3f}s",
+            f"Error: {sanitize_log_message(str(e))} - Time: {process_time:.3f}s",
             exc_info=True,
         )
         raise

@@ -106,14 +106,42 @@ def _filter_sensitive_data(event, hint):
 
     # 요청 데이터에서 민감한 필드 제거
     if "request" in event and "data" in event["request"]:
-        sensitive_fields = ["password", "token", "api_key", "secret", "authorization"]
+        sensitive_fields = [
+            # 인증/보안 관련
+            "password", "token", "api_key", "secret", "authorization",
+            "access_token", "refresh_token", "jwt", "bearer",
+            # PII (개인식별정보)
+            "email", "username", "phone", "mobile", "address",
+            "ssn", "social_security", "credit_card", "card_number",
+        ]
         data = event["request"]["data"]
         if isinstance(data, dict):
-            for field in sensitive_fields:
-                if field in data:
-                    data[field] = "[FILTERED]"
+            _filter_dict_fields(data, sensitive_fields)
+
+    # 요청 헤더에서 민감한 필드 제거
+    if "request" in event and "headers" in event["request"]:
+        headers = event["request"]["headers"]
+        if isinstance(headers, dict):
+            sensitive_headers = ["authorization", "cookie", "x-api-key", "x-auth-token"]
+            for header in sensitive_headers:
+                if header in headers:
+                    headers[header] = "[FILTERED]"
 
     return event
+
+
+def _filter_dict_fields(data: dict, sensitive_fields: list) -> None:
+    """딕셔너리에서 민감한 필드를 재귀적으로 필터링합니다."""
+    for key in list(data.keys()):
+        key_lower = key.lower()
+        if any(field in key_lower for field in sensitive_fields):
+            data[key] = "[FILTERED]"
+        elif isinstance(data[key], dict):
+            _filter_dict_fields(data[key], sensitive_fields)
+        elif isinstance(data[key], list):
+            for item in data[key]:
+                if isinstance(item, dict):
+                    _filter_dict_fields(item, sensitive_fields)
 
 
 def capture_exception_with_context(
