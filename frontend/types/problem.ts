@@ -113,5 +113,7 @@ export interface SubmissionCreate {
   code: string;
   /** If provided, server skips Celery task and saves results directly */
   client_result?: ClientExecutionResult;
+  /** Honeypot field - should always be empty (bots fill this) */
+  website?: string;
 }
 

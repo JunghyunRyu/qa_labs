@@ -2,9 +2,9 @@
 
 - Product: QA-Arena / QA-Labs Arena
 - Doc: docs/spec/ai-feedback.md
-- Version: v0.1
-- Status: Draft (Implementable)
-- Date (KST): 2025-12-25
+- Version: v0.2
+- Status: Partially Implemented (Base만 구현됨)
+- Date (KST): 2025-12-28
 - Owner: Product/Backend
 
 ## 0. 목적 (Purpose)
@@ -62,8 +62,25 @@
 
 ## 4. 출력 포맷 (Output Schema)
 
-### 4.1 Base Feedback JSON (고정 스키마)
-Base Feedback은 “짧고 구조화된” 형태로 고정한다.
+### 4.1 Base Feedback JSON (현재 구현)
+
+> **참고**: 현재 구현된 스키마입니다. 아래 "설계 스키마"는 향후 구현 목표입니다.
+
+```json
+{
+  "summary": "한 줄 요약",
+  "strengths": ["잘한 점 1", "잘한 점 2"],
+  "weaknesses": ["아쉬운 점 1", "아쉬운 점 2"],
+  "suggested_tests": ["제안 1 (구체적인 입력 예시 포함)", "제안 2"],
+  "score_adjustment": 0
+}
+```
+
+**구현 위치**: `backend/app/services/ai_feedback_engine.py`
+
+### 4.1.1 Base Feedback JSON (설계 스키마 - 향후 목표)
+
+Base Feedback은 "짧고 구조화된" 형태로 고정한다.
 
 ```json
 {

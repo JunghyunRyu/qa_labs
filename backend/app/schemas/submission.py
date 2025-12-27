@@ -40,6 +40,7 @@ class SubmissionCreate(BaseModel):
     problem_id: int
     code: str
     client_result: Optional[ClientExecutionResult] = None
+    website: Optional[str] = None  # Honeypot field - should always be empty
 
 
 class SubmissionResponse(BaseModel):

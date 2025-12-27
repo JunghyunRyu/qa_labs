@@ -6,8 +6,29 @@
 > ⚠ AI / 코드 어시스턴트로 트러블슈팅을 진행할 때는
 > 반드시 `docs/specs/AI_SAFETY_PROTOCOLS.md`의 **절대 금지 사항**을 먼저 확인한다.
 
-> 📅 Last Updated: 2025-12-18
+> 📅 Last Updated: 2025-12-28
 > 하이브리드 아키텍처 (클라이언트 + 서버 사이드 실행) 반영
+
+## 0. Claude Code 슬래시 명령어
+
+운영 관련 작업은 Claude Code 슬래시 명령어를 활용하면 편리합니다.
+
+| 명령어 | 설명 |
+|--------|------|
+| `/logs` | 주요 서비스 로그 한 번에 확인 |
+| `/deploy` | EC2 자동 배포 (git pull + docker rebuild) |
+| `/check-sync` | 로컬-EC2 코드 싱크 상태 확인 |
+| `/docker-debug` | Docker 컨테이너 문제 진단 |
+
+### EC2 접속 방법
+
+EC2 서버 접속은 **AWS Systems Manager (SSM)**을 사용합니다.
+SSH는 보안상 사용하지 않습니다.
+
+```bash
+# AWS SSM으로 EC2 접속 (AWS CLI 필요)
+aws ssm start-session --target <instance-id>
+```
 
 ---
 
@@ -125,12 +146,14 @@ docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 ### 4.1 백업 생성 (정기 + 중요 배포 전)
 ```bash
 cd ~/qa_labs
-./scripts/backup_db.sh
-ls -lh /backup/postgres
-# 예: /backup/postgres/qa_arena_YYYYMMDD_HHMMSS.dump
+./scripts/backup_db.sh [backup_directory]
+ls -lh ./backups
+# 예: ./backups/qa_arena_backup_YYYYMMDD_HHMMSS.sql.gz
 ```
 - **DB 스키마 변경, 중요 배포 직전에는 반드시 백업**을 남긴다.
-- 백업 파일은 EC2의 __/backup/postgres__ 디렉터리에 저장된다.
+- 백업 디렉터리: 기본값 `./backups`, 인자로 지정 가능
+- 백업 형식: `.sql` (gzip 압축 시 `.sql.gz`)
+- 30일 이상 된 백업은 자동 삭제됨
 
 ### 4.2 백업 유효성 간단 검증
 (필요 시) Postgres 컨테이너에서 목록 확인:
@@ -301,3 +324,4 @@ docker logs qa_arena_backend_prod --tail 100
 |------|----------|--------|
 | 2025-12 | 초기 문서 생성 | AI Copilot |
 | 2025-12-18 | 하이브리드 아키텍처(Pyodide + Celery) 장애 영향 범위 추가 | AI Copilot |
+| 2025-12-28 | Section 0 슬래시 명령어 및 SSM 접속 방법 추가, 백업 스크립트 경로/형식 수정 | AI Copilot |

@@ -1,8 +1,8 @@
 
 # QA-Arena – AI-Assisted QA Coding Test Platform Spec
 
-> Version: 0.4 (Updated 2025-12)
-> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합 + **클라이언트 사이드 실행(Pyodide)**
+> Version: 0.5 (Updated 2025-12-28)
+> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합 + **클라이언트 사이드 실행(Pyodide)** + **토큰 시스템** + **테스트 품질 분석** + **AI 코치**
 
 ---
 
@@ -59,10 +59,24 @@
 - **AI Services**
   - `AI Problem Designer` (문제 자동 생성 보조)
   - `AI Feedback Engine` (채점 결과 → 자연어 피드백 변환)
-  - OpenAI API 기반 (gpt-5-mini 등)
+  - `AI Coach` (실시간 학습 도우미 채팅)
+  - `AI Test Generator` (Admin용 테스트 코드 자동 생성)
+  - `Test Hint Generator` (사용자용 텍스트 힌트 생성)
+  - OpenAI API 기반 (gpt-4o-mini 등)
+
+- **Test Quality System**
+  - 테스트 코드 품질 자동 분석 (AST 기반)
+  - 카테고리 분류 (ValueType, InputDiversity, TestPurpose)
+  - AntiPattern 감지 및 감점
+  - 등급 산출 (A/B/C/D/F)
+
+- **Token System**
+  - 일/월 단위 토큰 할당 및 리셋
+  - AI 기능 사용량 관리
+  - 기본 피드백 무료, 고급 기능 토큰 차감
 
 - **Storage**
-  - PostgreSQL: users, problems, buggy_implementations, submissions, bookmarked_problems
+  - PostgreSQL: users, problems, buggy_implementations, submissions, bookmarked_problems, ai_conversations, analysis_runs
   - Redis: Celery broker + result backend + 캐싱
 
 - **Infra**
@@ -109,7 +123,15 @@ CREATE TABLE users (
 
     -- Account status
     last_login_at TIMESTAMP WITH TIME ZONE,
-    is_active BOOLEAN DEFAULT TRUE
+    is_active BOOLEAN DEFAULT TRUE,
+
+    -- Token system for AI features
+    token_balance INTEGER DEFAULT 100 NOT NULL,      -- 월간 토큰 할당량
+    token_used INTEGER DEFAULT 0 NOT NULL,           -- 이번 달 사용량
+    token_reset_at TIMESTAMP WITH TIME ZONE,         -- 다음 월간 리셋 시각
+    daily_bonus_used INTEGER DEFAULT 0 NOT NULL,     -- 오늘 사용한 보너스 (최대 3)
+    daily_bonus_reset_at TIMESTAMP WITH TIME ZONE,   -- 다음 일간 리셋 시각
+    tier VARCHAR(20) DEFAULT 'free' NOT NULL         -- free / premium
 );
 ```
 
@@ -124,8 +146,15 @@ CREATE TABLE problems (
     function_signature TEXT NOT NULL,
     golden_code TEXT NOT NULL,
     difficulty VARCHAR(20) CHECK (difficulty IN ('Very Easy', 'Easy', 'Medium', 'Hard')) NOT NULL,
-    skills JSONB,                -- 예: ["boundary", "exception", "negative_values"]
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    domain VARCHAR(20) CHECK (domain IN ('common', 'fintech', 'commerce', 'saas', 'platform', 'content'))
+           DEFAULT 'common' NOT NULL,     -- 문제 도메인 분류
+    skills JSONB,                          -- 예: ["boundary", "exception", "negative_values"]
+    summary TEXT,                          -- 핵심 테스트 포인트 요약 (마크다운)
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- Rubric Evaluation (테스트 품질 시스템)
+    rubric_score FLOAT,                    -- 문제 루브릭 점수 (0.0 ~ 100.0)
+    rubric_analysis JSONB                  -- RubricAnalysis JSON
 );
 ```
 
@@ -147,7 +176,8 @@ CREATE TABLE buggy_implementations (
 ```sql
 CREATE TABLE submissions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id),
+    user_id UUID REFERENCES users(id),              -- nullable (비회원 제출 지원)
+    anonymous_id VARCHAR(36),                        -- 비회원 식별자
     problem_id INTEGER NOT NULL REFERENCES problems(id),
     code TEXT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING'
@@ -157,8 +187,16 @@ CREATE TABLE submissions (
     total_mutants INTEGER,
     execution_log JSONB,
     feedback_json JSONB,
-    progress JSONB,            -- {"step": "testing_buggy", "current": 2, "total": 4, "percent": 50}
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    progress JSONB,                                  -- {"step": "testing_buggy", "current": 2, "total": 4, "percent": 50}
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- Test Quality Evaluation (테스트 품질 시스템)
+    test_quality_score FLOAT,                        -- 품질 점수 (0.0 ~ 100.0)
+    test_quality_grade VARCHAR(1),                   -- 등급 (A/B/C/D/F)
+    test_quality_analysis JSONB,                     -- TestQualityAnalysis JSON
+
+    -- Constraint: 회원 또는 비회원 중 하나는 반드시 존재
+    CONSTRAINT submissions_user_or_anonymous_check CHECK (user_id IS NOT NULL OR anonymous_id IS NOT NULL)
 );
 ```
 
@@ -171,6 +209,45 @@ CREATE TABLE bookmarked_problems (
     problem_id INTEGER NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE (user_id, problem_id)
+);
+```
+
+### 3.6. AI Conversations (AI 코치 대화)
+
+```sql
+CREATE TABLE ai_conversations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    problem_id INTEGER REFERENCES problems(id) ON DELETE SET NULL,
+    submission_id UUID REFERENCES submissions(id) ON DELETE SET NULL,
+    messages JSONB NOT NULL DEFAULT '[]',            -- 대화 메시지 배열
+    token_cost INTEGER DEFAULT 0,                     -- 소비된 토큰
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### 3.7. Analysis Runs (테스트 품질 분석 기록)
+
+```sql
+CREATE TABLE analysis_runs (
+    id SERIAL PRIMARY KEY,
+    submission_id UUID REFERENCES submissions(id),   -- 제출 분석 시
+    problem_id INTEGER REFERENCES problems(id),      -- 문제 루브릭 분석 시
+    scope VARCHAR(20) NOT NULL,                      -- 'submission' / 'problem_rubric'
+    parser_version VARCHAR(10),                      -- 파서 버전
+    scoring_version VARCHAR(10),                     -- 점수 모델 버전
+    source_hash VARCHAR(32),                         -- 분석 대상 코드의 MD5
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',   -- PENDING/RUNNING/SUCCESS/ERROR
+    confidence_score FLOAT,                          -- 분석 신뢰도 (0.0~1.0)
+    result JSONB,                                    -- 분석 결과
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- Constraint: submission 또는 problem 중 하나만 존재
+    CONSTRAINT analysis_runs_scope_check CHECK (
+        (scope = 'submission' AND submission_id IS NOT NULL AND problem_id IS NULL) OR
+        (scope = 'problem_rubric' AND problem_id IS NOT NULL AND submission_id IS NULL)
+    )
 );
 ```
 
@@ -361,12 +438,25 @@ LLM Output → JSON 파싱 검증 → DB에 저장.
     ```json
     {
       "problem_id": 1,
-      "code": "import pytest\nfrom target import sum_list\n..."
+      "code": "import pytest\nfrom target import sum_list\n...",
+      "client_result": {
+        "golden_code_passed": true,
+        "mutants_killed": 4,
+        "total_mutants": 5,
+        "score": 86,
+        "details": [...],
+        "total_execution_time": 1234.56
+      }
     }
     ```
   - 처리:
-    - submissions row 생성 (status=PENDING)
-    - Celery Task 발행 (`process_submission.delay(submission_id)`)
+    - `client_result` 존재 시 (클라이언트 사이드 실행):
+      - 결과 저장만 수행 (Celery 스킵)
+      - status = SUCCESS 또는 FAILURE 즉시 설정
+      - 회원인 경우 `generate_feedback_task.delay()` 발행
+    - `client_result` 없을 시 (서버 사이드 Fallback):
+      - submissions row 생성 (status=PENDING)
+      - Celery Task 발행 (`process_submission_task.delay(submission_id)`)
     - `submission_id` 반환
 
 - `GET /api/v1/submissions/{id}` - 제출 결과 조회
@@ -389,6 +479,37 @@ LLM Output → JSON 파싱 검증 → DB에 저장.
 
 - `GET /healthz` - 전체 시스템 헬스 체크
 - `GET /healthz/worker` - Celery Worker 상태 확인
+
+### 6.7. AI 코치 API (`/api/v1/ai`)
+
+- `POST /api/v1/ai/coach` - AI 코치와 채팅
+  - Body:
+    ```json
+    {
+      "message": "경계값 테스트가 뭔가요?",
+      "problem_id": 1,
+      "submission_id": "uuid"
+    }
+    ```
+  - 토큰: 1 토큰 차감
+- `GET /api/v1/ai/conversations` - 대화 이력 조회
+- `GET /api/v1/ai/conversations/{id}` - 특정 대화 조회
+
+### 6.8. 테스트 품질 API (`/api/v1/test-quality`)
+
+**사용자 엔드포인트:**
+- `GET /api/v1/test-quality/submissions/{id}/quality` - 품질 분석 조회
+- `GET /api/v1/test-quality/submissions/{id}/hints` - 힌트 조회 (코드 미포함)
+
+**Admin 엔드포인트:**
+- `POST /api/v1/test-quality/admin/analyze-submission/{id}` - 제출 분석 실행
+- `POST /api/v1/test-quality/admin/analyze-problem/{id}` - 문제 루브릭 분석
+- `GET /api/v1/test-quality/admin/statistics` - 통계 조회
+- `POST /api/v1/test-quality/admin/generate-tests/{problem_id}` - AI 테스트 생성
+
+### 6.9. 진행률 API (`/api/v1`)
+
+- `GET /api/v1/problems/{id}/progress` - 문제 진행률 조회 (현재 사용자 기준)
 
 ---
 
@@ -506,49 +627,72 @@ backend/
     api/
       __init__.py
       admin.py                   # 관리자 API (문제 생성)
+      ai.py                      # AI 코치 API
       auth.py                    # GitHub OAuth + JWT 인증
       health.py                  # 헬스 체크 엔드포인트
       problems.py                # 문제 CRUD
+      progress.py                # 진행률 API
       submissions.py             # 제출 처리
+      test_quality.py            # 테스트 품질 API
       users.py                   # 사용자 정보
     services/
+      ai_coach_service.py        # AI 코치 서비스
       ai_feedback_engine.py      # AI 피드백 생성
       ai_problem_designer.py     # AI 문제 생성
+      ai_test_generator.py       # AI 테스트 코드 생성 (Admin용)
       docker_service.py          # Docker 컨테이너 관리
       github_oauth.py            # GitHub OAuth 클라이언트
+      idempotency_guard.py       # 중복 요청 방지
       judge_service.py           # 채점 로직
       problem_service.py         # 문제 비즈니스 로직
+      progress_service.py        # 진행률 서비스
       slack_notifier.py          # Slack 알림
       submission_service.py      # 제출 비즈니스 로직
+      test_case_parser.py        # 테스트 코드 AST 파싱
+      test_hint_generator.py     # 사용자용 힌트 생성
+      test_quality_analyzer.py   # 테스트 품질 분석 엔진
+      test_quality_classifier.py # 테스트 분류기
+      token_service.py           # 토큰 관리 서비스
       worker_monitor.py          # 워커 모니터링
     repositories/
+      ai_repository.py           # AI 대화 데이터 접근
+      buggy_implementation_repository.py
       problem_repository.py      # 문제 데이터 접근
       submission_repository.py   # 제출 데이터 접근
-      buggy_implementation_repository.py
+      test_quality_repository.py # 테스트 품질 데이터 접근
     schemas/
+      ai.py                      # AI 관련 스키마
       auth.py                    # 인증 Pydantic 스키마
-      problem.py                 # 문제 스키마
-      submission.py              # 제출 스키마
-      user.py                    # 사용자 스키마
       buggy_implementation.py
+      problem.py                 # 문제 스키마
+      progress.py                # 진행률 스키마
+      submission.py              # 제출 스키마
+      test_quality.py            # 테스트 품질 스키마
+      user.py                    # 사용자 스키마
     models/
       __init__.py
+      ai_conversation.py         # AI 대화 모델
+      bookmarked_problem.py      # BookmarkedProblem ORM 모델
+      buggy_implementation.py    # BuggyImplementation ORM 모델
       db.py                      # DB 연결 설정
-      user.py                    # User ORM 모델
       problem.py                 # Problem ORM 모델
       submission.py              # Submission ORM 모델
-      buggy_implementation.py    # BuggyImplementation ORM 모델
-      bookmarked_problem.py      # BookmarkedProblem ORM 모델
+      test_quality.py            # AnalysisRun ORM 모델
+      user.py                    # User ORM 모델
+    middleware/
+      anonymous.py               # 비회원 ID 미들웨어
     workers/
       tasks.py                   # Celery 태스크 정의
       monitor_scheduler.py       # 워커 모니터 스케줄러
     core/
+      celery_app.py              # Celery 앱 설정
       config.py                  # 설정 (환경 변수)
       logging.py                 # 로깅 설정
-      celery_app.py              # Celery 앱 설정
       rate_limiter.py            # Rate Limiter 설정
       sentry.py                  # Sentry 설정
   alembic/                       # DB 마이그레이션
+  scripts/                       # 유틸리티 스크립트
+    coverage_spike.py            # 테스트 품질 스파이크
   tests/                         # 테스트 코드
   Dockerfile
   requirements.txt
@@ -558,11 +702,13 @@ backend/
 
 ```python
 from fastapi import FastAPI
-from app.api import problems, submissions, admin, health, auth, users
+from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress
+from app.middleware.anonymous import AnonymousIDMiddleware
 
 app = FastAPI()
 
 # Rate Limiter, CORS, Exception Handlers 설정...
+app.add_middleware(AnonymousIDMiddleware)  # 비회원 ID 미들웨어
 
 app.include_router(problems.router, prefix="/api/v1/problems", tags=["problems"])
 app.include_router(submissions.router, prefix="/api/v1/submissions", tags=["submissions"])
@@ -570,6 +716,9 @@ app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(health.router, prefix="/healthz", tags=["health"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+app.include_router(ai.router, prefix="/api/v1/ai", tags=["ai"])
+app.include_router(test_quality.router, prefix="/api/v1/test-quality", tags=["test-quality"])
+app.include_router(progress.router, prefix="/api/v1", tags=["progress"])
 ```
 
 ### 9.2. Celery Task Skeleton
@@ -719,3 +868,19 @@ export interface ClientExecutionResult {
 |------|------|----------|--------|
 | 2025-12 | 0.3 | 초기 버전 (Celery 기반) | - |
 | 2025-12-18 | 0.4 | 클라이언트 사이드 실행(Pyodide) 하이브리드 아키텍처 반영 | AI Copilot |
+| 2025-12-28 | 0.5 | 실제 구현과 스펙 동기화: 토큰 시스템, 테스트 품질 시스템, AI 코치, 비회원 제출, 도메인 분류 등 추가 | AI Copilot |
+
+---
+
+## 관련 문서
+
+| 문서 | 용도 |
+|------|------|
+| [token-policy.md](./token-policy.md) | 토큰 정책 상세 |
+| [ai-feedback.md](./ai-feedback.md) | AI 피드백 정책 상세 |
+| [test-quality-system.md](./test-quality-system.md) | 테스트 품질 평가 시스템 상세 |
+| [SUBMISSION_STATUS_FLOW.md](./SUBMISSION_STATUS_FLOW.md) | Submission 상태 전이 규칙 |
+| [ERROR_HANDLING.md](./ERROR_HANDLING.md) | 에러 처리 가이드 |
+| [operations.md](./operations.md) | 운영/인시던트 가이드 |
+| [deployment.md](./deployment.md) | 배포 가이드 |
+| [AI_SAFETY_PROTOCOLS.md](./AI_SAFETY_PROTOCOLS.md) | AI 작업 안전 수칙 |

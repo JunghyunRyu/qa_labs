@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.rate_limiter import limiter, check_submission_rate_limit, SubmissionRateLimitExceeded
+from app.core.rate_limiter import limiter, check_submission_rate_limit, SubmissionRateLimitExceeded, get_client_ip
 from app.core.dependencies import get_current_user_optional
 from app.models.db import get_db
 from app.models.submission import Submission
@@ -63,6 +63,17 @@ async def create_submission(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Rate limit exceeded: {e.limit_str}",
             headers={"Retry-After": str(e.retry_after)},
+        )
+
+    # Honeypot check - bots fill this hidden field
+    if submission_data.website:
+        logger.warning(
+            f"[HONEYPOT_TRIGGERED] problem_id={submission_data.problem_id} "
+            f"ip={get_client_ip(request)}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid request format",
         )
 
     # 회원/게스트 구분

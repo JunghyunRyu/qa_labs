@@ -2,9 +2,9 @@
 
 - Product: QA-Arena / QA-Labs Arena
 - Doc: docs/spec/token-policy.md
-- Version: v0.1
-- Status: Draft (Implementable)
-- Date (KST): 2025-12-25
+- Version: v0.2
+- Status: Implemented
+- Date (KST): 2025-12-28
 - Owner: Product/Backend
 
 ## 0. 목적 (Purpose)

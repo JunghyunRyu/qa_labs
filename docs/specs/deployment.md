@@ -3,7 +3,7 @@
 ## 📌 Purpose
 Defines the official and quick deployment flows for the QA-Arena production environment.
 
-> 📅 Last Updated: 2025-12
+> 📅 Last Updated: 2025-12-28
 
 ---
 
@@ -50,7 +50,8 @@ git pull origin main
 
 ```bash
 ./scripts/backup_db.sh
-# /backup/postgres/qa_arena_YYYYMMDD_HHMMSS.dump 가 생성되었는지 확인
+ls -lh ./backups
+# ./backups/qa_arena_backup_YYYYMMDD_HHMMSS.sql.gz 가 생성되었는지 확인
 ```
 
 ### 4. Docker Compose로 배포 (빌드 + 재기동)
