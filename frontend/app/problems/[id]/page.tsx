@@ -11,6 +11,7 @@ import { useSubmit } from "@/hooks/useSubmit";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useProblemSolverShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useCodeRunner } from "@/hooks/useCodeRunner";
+import { useCodeDraft, loadDraft, clearDraft } from "@/hooks/useCodeDraft";
 import { useLayoutStore } from "@/stores/layoutStore";
 import type { Problem, Submission, ClientExecutionResult } from "@/types/problem";
 import type { AIChatMode } from "@/types/ai";
@@ -69,6 +70,9 @@ export default function ProblemDetailPage() {
 
   // Session history (for non-authenticated users)
   const [sessionHistory, setSessionHistory] = useState<Submission[]>([]);
+
+  // Honeypot for bot prevention (should always be empty)
+  const [honeypot, setHoneypot] = useState("");
 
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -146,8 +150,17 @@ export default function ProblemDetailPage() {
           setCode(getInitialTemplate(problem));
         }
       } else {
-        // No submission param - set template
-        setCode(getInitialTemplate(problem));
+        // No submission param - check for saved draft first
+        const template = getInitialTemplate(problem);
+        const savedDraft = loadDraft(problem.slug);
+
+        if (savedDraft && savedDraft.trim() !== template.trim()) {
+          // Restore saved draft
+          setCode(savedDraft);
+        } else {
+          // Use template
+          setCode(template);
+        }
       }
     };
 
@@ -210,6 +223,17 @@ export default function ProblemDetailPage() {
       return generateFallbackTemplate(problem.function_signature);
     }
   };
+
+  // Get current template for auto-save comparison
+  const currentTemplate = problem ? getInitialTemplate(problem) : "";
+
+  // Auto-save code to localStorage (debounced)
+  useCodeDraft(
+    problem?.slug ?? null,
+    code,
+    currentTemplate,
+    !loading && !!problem // Only save when problem is loaded
+  );
 
   // Fetch problem data (code initialization is handled by initializeCode effect)
   useEffect(() => {
@@ -396,6 +420,7 @@ export default function ProblemDetailPage() {
         problem_id: problem.id,
         code: code.trim(),
         client_result: clientResult,
+        website: honeypot || undefined,  // Honeypot - should be empty
       });
 
       setSubmission(newSubmission);
@@ -406,11 +431,12 @@ export default function ProblemDetailPage() {
     const newSubmission = await createSubmission({
       problem_id: problem.id,
       code: code.trim(),
+      website: honeypot || undefined,  // Honeypot - should be empty
     });
 
     setSubmission(newSubmission);
     return newSubmission;
-  }, [problem, code, isPyodideReady, runMutationTest]);
+  }, [problem, code, isPyodideReady, runMutationTest, honeypot]);
 
   // useSubmit hook with debounce
   const { submit: handleSubmit, isSubmitting: submitting } = useSubmit(doSubmit, {
@@ -478,6 +504,18 @@ export default function ProblemDetailPage() {
 
     return (
       <div className="flex flex-col" style={{ height: `calc(100vh - ${headerHeight})` }}>
+        {/* Honeypot - hidden input for bot prevention */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          className="absolute -left-[9999px] opacity-0 pointer-events-none"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+        />
+
         {/* Main content - Split panel (Breadcrumb integrated into ProblemPanel) */}
         <div className="flex-1 min-h-0">
           <ResizableSplitPanel
@@ -534,6 +572,18 @@ export default function ProblemDetailPage() {
   // Mobile/Tablet layout - Tab-based
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
+      {/* Honeypot - hidden input for bot prevention */}
+      <input
+        type="text"
+        name="website"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        className="absolute -left-[9999px] opacity-0 pointer-events-none"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+      />
+
       {/* Compact Mobile Header */}
       <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <div className="flex items-center gap-2">

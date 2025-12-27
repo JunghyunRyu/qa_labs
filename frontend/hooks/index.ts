@@ -15,3 +15,4 @@ export type { TestRunResult, UseCodeRunnerOptions, UseCodeRunnerReturn } from '.
 export { useSubmit } from './useSubmit';
 export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useMediaQuery } from './useMediaQuery';
+export { useCodeDraft, loadDraft, clearDraft, hasDraft } from './useCodeDraft';
