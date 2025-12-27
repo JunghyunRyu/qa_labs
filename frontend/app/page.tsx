@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
 
 // Hero copy constants
@@ -302,7 +303,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative min-h-[75svh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[70svh] flex items-center justify-center overflow-hidden py-8">
         {/* Background Image */}
         <Image
           src="/images/hero-background.png"
@@ -315,31 +316,21 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
 
         {/* Content - with panel background for better readability */}
-        <div className="relative z-10 flex flex-col items-center gap-6 px-4 text-center">
-          <div className="bg-black/25 backdrop-blur-sm rounded-2xl px-6 py-8 sm:px-10 sm:py-10">
+        <div className="relative z-10 flex flex-col items-center gap-5 px-4 text-center">
+          <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-10 sm:py-8">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg hero-headline">
               AI가 코드를 더 빨리 쓰는 시대,<br className="desktop-break" />{' '}
               실력은 <span className="highlight">&apos;숨은 버그를 찾아내는 설계&apos;</span>로 증명됩니다.
             </h1>
-            <div className="mt-6 text-base sm:text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
-              <span className="block">{heroCopy.subLine1}</span>
-              <span className="block mt-2">
-                실무 시나리오에서{" "}
-                <span className="font-semibold text-white underline underline-offset-4 decoration-white/40">
-                  숨은 버그를 얼마나 잡는지(탐지율)
-                </span>
-                로 검증 범위를 숫자로 확인하세요.
-              </span>
-            </div>
-
-            {/* Micro copy */}
-            <p className="mt-4 text-sm text-white/60 max-w-xl mx-auto">
-              {heroCopy.micro}
+            <p className="mt-5 text-base sm:text-lg text-white/85 max-w-2xl mx-auto">
+              실무 시나리오에서{" "}
+              <span className="font-semibold text-white">숨은 버그를 얼마나 잡는지</span>
+              , 탐지율로 확인하세요.
             </p>
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+          <div className="flex flex-col sm:flex-row gap-3 mt-3">
             <Link
               href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
               className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
@@ -348,15 +339,52 @@ export default function Home() {
             </Link>
             <a
               href="#how-it-works"
-              className="px-8 py-3 bg-white/10 text-white rounded-lg font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/30"
+              className="px-6 py-3 text-white/80 text-sm font-medium hover:text-white transition-colors"
             >
-              실무 시나리오 둘러보기
+              진행 방식 보기 ↓
             </a>
           </div>
 
+          {/* Featured Problem Card - CTA 바로 아래 배치 */}
+          <div className="mt-6 mx-auto w-full max-w-xl">
+            <p className="mb-2 text-xs text-white/50 text-center">
+              처음이라면 이 문제로 시작 →
+            </p>
+            <Link
+              href="/problems/problem-e04"
+              className="group cursor-pointer
+                         flex items-center justify-between gap-4 rounded-2xl
+                         border-2 border-white/20 bg-white/10 px-5 py-4 backdrop-blur
+                         transition-colors transition-shadow transition-transform
+                         hover:bg-white/15 hover:border-blue-400/60
+                         hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]
+                         active:scale-[0.985]
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70
+                         focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+            >
+              <div className="min-w-0 text-left">
+                <span className="block text-base font-semibold text-white truncate
+                                 group-hover:text-blue-100 group-focus-visible:text-blue-100 transition-colors">
+                  점수 등급 계산 함수 테스트
+                </span>
+                <span className="block mt-1 text-sm text-white/75
+                                 group-hover:text-white/90 group-focus-visible:text-white/90 transition-colors">
+                  Easy · 숨은 버그 5개 · 경계값 · 동등분할
+                </span>
+              </div>
+              <span className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold
+                               bg-blue-600 text-white shadow-lg transition-colors
+                               group-hover:bg-blue-500 group-focus-visible:bg-blue-500">
+                도전하기
+                <ChevronRight className="w-4 h-4 transition-transform
+                                         group-hover:translate-x-1 group-focus-visible:translate-x-1" />
+              </span>
+            </Link>
+          </div>
+
           {/* Domain Badges */}
-          <div className="mt-12 text-center">
-            <p className="text-sm md:text-base font-medium text-white/75 mb-3">{heroCopy.domainLabel}</p>
+          <div className="mt-6 text-center">
+            <p className="text-xs text-white/60 mb-2">{heroCopy.domainLabel}</p>
             <div className="flex flex-wrap justify-center gap-2">
               {domains.map((d) => (
                 <button
@@ -400,10 +428,8 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-sm text-white/65 leading-relaxed">{heroCopy.domainHelper}</p>
-            {/* Domain hint - changes based on selection */}
-            <p className="mt-3 text-xs text-blue-300/80 font-medium tracking-wide">
-              {currentDomain.hint}
+            <p className="mt-2 text-xs text-white/50">
+              도메인을 고르면 추천 문제가 바뀝니다 · {currentDomain.hint}
             </p>
           </div>
         </div>
