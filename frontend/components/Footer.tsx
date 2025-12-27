@@ -38,6 +38,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/dashboard" className="hover:text-white transition-colors">
+                  학습 현황
+                </Link>
+              </li>
+              <li>
                 <Link href="/submissions" className="hover:text-white transition-colors">
                   내 제출 기록
                 </Link>
