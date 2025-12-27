@@ -143,16 +143,16 @@ docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 > @docs/specs/backup_restore.md를 참고하고, 임의로 데이터를 되돌리지 않는다.
 
 ## 4. DB Backup & Restore (요약)
-### 4.1 백업 생성 (정기 + 중요 배포 전)
+### 4.1 백업 생성 (수동 - 배포/스키마 변경 전)
 ```bash
 cd ~/qa_labs
-./scripts/backup_db.sh [backup_directory]
+./scripts/backup_db.sh
 ls -lh ./backups
 # 예: ./backups/qa_arena_backup_YYYYMMDD_HHMMSS.sql.gz
 ```
 - **DB 스키마 변경, 중요 배포 직전에는 반드시 백업**을 남긴다.
-- 백업 디렉터리: 기본값 `./backups`, 인자로 지정 가능
-- 백업 형식: `.sql` (gzip 압축 시 `.sql.gz`)
+- 백업 디렉터리: `./backups`
+- 백업 형식: `.sql.gz` (gzip 압축)
 - 30일 이상 된 백업은 자동 삭제됨
 
 ### 4.2 백업 유효성 간단 검증
@@ -182,11 +182,11 @@ htop   # 설치되어 있다면
 ```
 
 ### 5.2 Weekly
-- DB 백업 생성 (./scripts/backup_db.sh)
 - SSL 인증서 만료일 확인 (/etc/letsencrypt/live/qa-arena.qalabs.kr/)
-- Git 리포지토리와 EC2 코드 싱크 확인
-    - git status, git log
+- Git 리포지토리와 EC2 코드 싱크 확인 (git status, git log)
 - 주요 로그(nginx/backend)에 비정상 응답 패턴이 없는지 확인
+
+> **백업**: 정기 스케줄 없음. 배포/스키마 변경 전 수동 실행.
 
 ## 6. 에러 모니터링 (Sentry)
 
@@ -324,4 +324,4 @@ docker logs qa_arena_backend_prod --tail 100
 |------|----------|--------|
 | 2025-12 | 초기 문서 생성 | AI Copilot |
 | 2025-12-18 | 하이브리드 아키텍처(Pyodide + Celery) 장애 영향 범위 추가 | AI Copilot |
-| 2025-12-28 | Section 0 슬래시 명령어 및 SSM 접속 방법 추가, 백업 스크립트 경로/형식 수정 | AI Copilot |
+| 2025-12-28 | 슬래시 명령어/SSM 추가, 백업 정책을 수동(배포 전)으로 단순화 | AI Copilot |

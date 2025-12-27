@@ -150,30 +150,22 @@ grep "CREATE TABLE" backup_20251218_120000.sql
 - 프로덕션 복구 전 반드시 현재 상태 백업
 - 서비스 중단 고려 (복구 중 데이터 정합성 문제 가능)
 
-### 6.3 권장 백업 주기
-- **프로덕션**: 매일 자동 백업 (cron 설정 권장)
+### 6.3 백업 시점 (수동)
 - **중요 배포 전**: 수동 백업 필수
 - **DB 스키마 변경 전**: 수동 백업 필수
 
----
-
-## 7. 자동 백업 설정 (Cron)
-
-EC2에서 매일 자동 백업 설정:
-
 ```bash
-# crontab 편집
-crontab -e
-
-# 매일 새벽 3시에 백업 실행
-0 3 * * * cd /home/ubuntu/qa_labs && ./scripts/backup_db.sh /backup/postgres >> /var/log/qa_arena_backup.log 2>&1
+# 배포/스키마 변경 전 백업
+cd ~/qa_labs
+./scripts/backup_db.sh
 ```
 
 ---
 
-## 8. 변경 이력
+## 7. 변경 이력
 
 | 날짜 | 변경 내용 | 작성자 |
 |------|----------|--------|
 | 2025-12 | 초기 문서 생성 | AI Copilot |
-| 2025-12-18 | 환경별 구분 추가, 실제 스크립트(backup_db.sh, restore_db.sh)와 동기화 | AI Copilot |
+| 2025-12-18 | 환경별 구분 추가, 실제 스크립트와 동기화 | AI Copilot |
+| 2025-12-28 | 자동 백업(cron) 제거, 수동 백업으로 단순화 | AI Copilot |
