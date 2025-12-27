@@ -1,7 +1,7 @@
 # 에러 처리 가이드
 
 > 작성일: 2025-12-07
-> 최종 수정: 2025-12-18
+> 최종 수정: 2025-12-28
 > 목적: QA-Arena 프로젝트의 에러 처리 전략 및 가이드 문서화 (하이브리드 아키텍처 반영)
 
 ---
@@ -40,6 +40,7 @@ QA-Arena는 다음과 같은 에러 처리 전략을 사용합니다:
 | 403 | `forbidden` | 권한 없음 |
 | 404 | `not_found` | 리소스 없음 |
 | 422 | `validation_error` | 요청 검증 실패 |
+| 429 | `rate_limit_exceeded` | 요청 빈도 초과 |
 | 500 | `internal_server_error` | 서버 내부 오류 |
 
 ### 2.3. 예외 핸들러
@@ -72,6 +73,16 @@ async def general_exception_handler(request: Request, exc: Exception):
     # 프로덕션: 일반적인 메시지만 반환 + 에러 ID
     # DEBUG 모드: 상세한 에러 정보 반환
     # 실제 에러는 로그에만 기록
+```
+
+#### Rate Limit 예외 핸들러
+
+```python
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    # 429 상태 코드 반환
+    # Retry-After 헤더 포함
+    # 에러 타입: rate_limit_exceeded
 ```
 
 ### 2.4. 프로덕션 vs 개발 모드
@@ -348,6 +359,61 @@ grep "\[GRADING_ERROR\]" logs/app.log
 
 ---
 
+## 9. Rate Limit 에러 처리
+
+> 제출 및 AI 기능에 대한 요청 빈도 제한 에러 처리입니다.
+
+### 9.1. Rate Limit 종류
+
+**위치**: `backend/app/core/rate_limiter.py`
+
+| 제한 대상 | 회원 | 게스트 |
+|----------|------|--------|
+| 제출 (분당) | RATE_LIMIT_MEMBER_SUBMISSIONS | RATE_LIMIT_GUEST_SUBMISSIONS |
+| 제출 (일당) | RATE_LIMIT_MEMBER_SUBMISSIONS_DAILY | RATE_LIMIT_GUEST_SUBMISSIONS_DAILY |
+| AI 채팅 (분당) | RATE_LIMIT_AI_MEMBER | RATE_LIMIT_AI_GUEST |
+| AI 채팅 (일당) | RATE_LIMIT_AI_MEMBER_DAILY | RATE_LIMIT_AI_GUEST_DAILY |
+
+### 9.2. 커스텀 예외 클래스
+
+```python
+class SubmissionRateLimitExceeded(Exception):
+    """제출 rate limit 초과 예외."""
+    def __init__(self, limit_str: str, retry_after: int):
+        self.limit_str = limit_str
+        self.retry_after = retry_after
+
+class AIRateLimitExceeded(Exception):
+    """AI rate limit 초과 예외."""
+    def __init__(self, limit_str: str, retry_after: int):
+        self.limit_str = limit_str
+        self.retry_after = retry_after
+```
+
+### 9.3. Rate Limit 키 생성
+
+- **회원**: `user:{user_id}`
+- **게스트**: `guest:{ip}:{anonymous_id}`
+
+IP 추출 우선순위:
+1. `X-Real-IP` 헤더 (Nginx 설정)
+2. `X-Forwarded-For` 헤더 (첫 번째 IP)
+3. 직접 연결 IP
+
+### 9.4. 에러 응답 형식
+
+```json
+{
+  "detail": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+  "type": "rate_limit_exceeded",
+  "retry_after": "60"
+}
+```
+
+헤더: `Retry-After: 60`
+
+---
+
 ## 10. 클라이언트 사이드 에러 처리
 
 > 클라이언트 사이드 실행(Pyodide)에서 발생하는 에러에 대한 처리 전략입니다.
@@ -428,6 +494,8 @@ def generate_feedback_task(self, submission_id: str):
 - 채점 결과는 이미 저장되어 있음
 - 피드백 생성 실패해도 채점 결과는 유지됨
 - 최대 2회 재시도 (30초, 60초 간격)
+- **게스트 유저 스킵**: `user_id`가 없으면 피드백 생성 건너뜀
+- **중복 방지**: 이미 `feedback_json`이 있으면 스킵
 
 ### 10.5. Fallback 메커니즘
 
@@ -448,11 +516,118 @@ if (isPyodideReady && problem.buggy_implementations?.length > 0) {
 
 ---
 
-## 11. 변경 이력
+## 11. 민감정보 마스킹 (Sensitive Data Masking)
+
+> 프로덕션 환경에서 로그 및 에러 응답에 민감정보가 노출되지 않도록 보호합니다.
+
+### 11.1. 마스킹 유틸리티
+
+**위치**: `backend/app/core/security_utils.py`
+
+#### sanitize_log_message()
+
+로그 메시지에서 민감정보를 자동 마스킹합니다.
+
+| 패턴 | 마스킹 결과 | 예시 |
+|------|------------|------|
+| 이메일 | `[EMAIL]` | `user@example.com` → `[EMAIL]` |
+| 휴대폰 | `[PHONE]` | `010-1234-5678` → `[PHONE]` |
+| API 키 파라미터 | `[MASKED]` | `api_key=sk_123` → `api_key=[MASKED]` |
+| Bearer 토큰 | `[MASKED]` | `Bearer eyJ...` → `Bearer [MASKED]` |
+| JWT 토큰 | `[JWT_TOKEN]` | `eyJhbG...` → `[JWT_TOKEN]` |
+| 신용카드 | `[CARD_NUMBER]` | `1234-5678-9012-3456` → `[CARD_NUMBER]` |
+
+#### sanitize_url_path()
+
+URL 쿼리 파라미터에서 민감정보를 마스킹합니다.
+
+```
+입력: /api/v1/auth?password=secret123&name=john
+출력: /api/v1/auth?password=[MASKED]&name=john
+```
+
+### 11.2. 예외 핸들러 적용
+
+**위치**: `backend/app/main.py`
+
+모든 예외 핸들러에서 로깅 시 마스킹 적용:
+
+```python
+from app.core.security_utils import sanitize_log_message, sanitize_url_path
+
+# Rate Limit 예외
+logger.warning(
+    sanitize_log_message(
+        f"Rate limit exceeded: {request.client.host} - "
+        f"Path: {sanitize_url_path(str(request.url))}"
+    )
+)
+
+# HTTP 예외
+logger.warning(
+    sanitize_log_message(
+        f"HTTP {exc.status_code} error: {exc.detail} - "
+        f"Path: {sanitize_url_path(str(request.url))}"
+    )
+)
+```
+
+### 11.3. Validation 에러 프로덕션 단순화
+
+프로덕션 환경에서 검증 에러 응답을 단순화하여 내부 정보 노출 방지:
+
+```python
+# 개발 모드 (DEBUG=True)
+{
+    "detail": [{"loc": ["body", "email"], "msg": "invalid email", "type": "value_error"}],
+    "type": "validation_error"
+}
+
+# 프로덕션 모드 (DEBUG=False)
+{
+    "detail": "요청 형식이 올바르지 않습니다.",
+    "type": "validation_error",
+    "fields": ["email"]
+}
+```
+
+### 11.4. Sentry PII 필터
+
+**위치**: `backend/app/core/sentry.py`
+
+Sentry로 전송되는 데이터에서 민감정보 필터링:
+
+#### 필터링 대상 필드
+
+| 카테고리 | 필드 |
+|----------|------|
+| 인증/보안 | password, token, api_key, secret, authorization, access_token, refresh_token, jwt, bearer |
+| PII | email, username, phone, mobile, address, ssn, social_security, credit_card, card_number |
+
+#### 필터링 대상 헤더
+
+- `authorization`
+- `cookie`
+- `x-api-key`
+- `x-auth-token`
+
+### 11.5. 체크리스트
+
+- [x] 로그 메시지 마스킹 함수 구현
+- [x] 모든 예외 핸들러에 마스킹 적용
+- [x] Validation 에러 프로덕션 단순화
+- [x] Sentry PII 필터 확장
+- [x] 요청 로깅 미들웨어 마스킹 적용
+
+---
+
+## 12. 변경 이력
 
 | 날짜 | 변경 내용 | 작성자 |
 |------|----------|--------|
 | 2025-12-07 | 초기 문서 생성 | AI Copilot |
 | 2025-12-13 | Sentry 에러 모니터링 섹션 추가 | AI Copilot |
 | 2025-12-18 | 클라이언트 사이드 에러 처리(Pyodide) 섹션 추가 | AI Copilot |
+| 2025-12-28 | Section 9 Rate Limit 에러 처리 추가, 429 상태 코드 추가, generate_feedback_task 상세 설명 보완 | AI Copilot |
+| 2025-12-28 | Section 11 민감정보 마스킹 추가 (security_utils, Sentry PII 필터, Validation 단순화) | AI Copilot |
 
