@@ -43,7 +43,7 @@
 |-------|------|--------|
 | Phase 0: 디자인 토큰 + 리듬 통일 | ✅ 완료 | 4/4 |
 | Phase 1: 시그니처 비주얼 (HeroResultPanel) | ✅ 완료 | 5/5 |
-| Phase 1.5: HowItWorks 최소 인터랙션 | ⬜ 대기 | 0/4 |
+| Phase 1.5: HowItWorks 최소 인터랙션 | ✅ 완료 | 4/4 |
 | Phase 2: HowItWorks 정교화 | ⬜ 대기 | 0/4 |
 
 ---
@@ -244,32 +244,32 @@
 
 ### 체크리스트
 
-- [ ] **P1.5-1**: StepCard 클릭 기능 추가
-  - [ ] onClick 핸들러 추가
-  - [ ] 활성 상태 스타일 강화 (보더/배경 변경)
-  - [ ] 커서 포인터 추가
+- [x] **P1.5-1**: StepCard 클릭 기능 추가 ✅
+  - [x] onClick 핸들러 추가
+  - [x] 활성 상태 스타일 강화 (보더/배경 변경)
+  - [x] 커서 포인터 추가
   - 파일: `frontend/components/how-it-works/StepCard.tsx`
 
-- [ ] **P1.5-2**: 기본 활성 Step 변경
-  - [ ] 기본값: Step 04 (탐지율) 또는 Step 05 (피드백)
-  - [ ] 첫 인상에서 "결과"가 보이도록
+- [x] **P1.5-2**: 기본 활성 Step 변경 ✅
+  - [x] 기본값: Step 04 (탐지율)
+  - [x] 첫 인상에서 "결과"가 보이도록
   - 파일: `frontend/components/how-it-works/HowItWorksSection.tsx`
 
-- [ ] **P1.5-3**: MutationDiagram → PreviewPanel 교체
-  - [ ] 자동재생 로직 제거
-  - [ ] 클릭 시 해당 Step 프리뷰 렌더링
-  - [ ] 단계별 프리뷰: 간단한 설명 + 아이콘/일러스트 (정교화는 P2)
-  - 파일: `frontend/components/how-it-works/HowItWorksSection.tsx`
+- [x] **P1.5-3**: MutationDiagram → PreviewPanel 교체 ✅
+  - [x] 자동재생 로직 제거
+  - [x] 클릭 시 해당 Step 프리뷰 렌더링
+  - [x] 단계별 프리뷰: 간단한 설명 + 아이콘/일러스트 (정교화는 P2)
+  - 파일: `frontend/components/how-it-works/PreviewPanel.tsx` (신규)
 
-- [ ] **P1.5-4**: 전환 애니메이션 (간단)
-  - [ ] fade-in 또는 slide 전환
-  - [ ] framer-motion 활용 (기존 의존성)
+- [x] **P1.5-4**: 전환 애니메이션 (간단) ✅
+  - [x] fade-in + slide 전환
+  - [x] framer-motion AnimatePresence 활용
 
 ### 완료 기준
-- [ ] StepCard 클릭 시 오른쪽 프리뷰가 해당 단계로 변경됨
-- [ ] 자동재생 없음 (사용자 제어)
-- [ ] 기본 활성 Step이 04 또는 05로 설정됨
-- [ ] 모바일에서도 탭/터치로 동작
+- [x] StepCard 클릭 시 오른쪽 프리뷰가 해당 단계로 변경됨 ✅
+- [x] 자동재생 없음 (사용자 제어) ✅
+- [x] 기본 활성 Step이 04로 설정됨 ✅
+- [x] 모바일에서도 탭/터치로 동작 ✅
 
 ---
 
@@ -392,6 +392,22 @@ PR 1 (P0)          PR 2 (P1)           PR 3-1 (P1.5)       PR 3-2 (P2)
   - 반응형 테스트 통과 (데스크톱/모바일)
   - 다크모드 테스트 통과
 
+### 2025-12-29 (세션 3)
+- [x] **Phase 1.5 (PR3-1) 완료** ✅
+  - StepCard 클릭 기능 구현 (`frontend/components/how-it-works/StepCard.tsx`)
+    - `<div>` → `<button>` 변환
+    - onClick prop 추가
+    - 호버/포커스 스타일 강화
+  - PreviewPanel 컴포넌트 생성 (`frontend/components/how-it-works/PreviewPanel.tsx`)
+    - 5개 단계별 프리뷰 구현 (WriteTests, Validate, Mutants, Detection, Score)
+    - framer-motion AnimatePresence로 전환 애니메이션
+  - HowItWorksSection 수정
+    - MutationDiagram → PreviewPanel 교체
+    - 기본 활성 Step: 1 → 4 변경
+    - 자동재생 로직 완전 제거
+  - 반응형 테스트 통과 (데스크톱/모바일)
+  - 다크/라이트 모드 테스트 통과
+
 ---
 
 ## 참고
@@ -411,9 +427,10 @@ frontend/
 │   ├── hero/
 │   │   └── HeroResultPanel.tsx     # 시그니처 비주얼 패널 (P1에서 생성)
 │   ├── how-it-works/
-│   │   ├── HowItWorksSection.tsx   # How It Works 섹션
+│   │   ├── HowItWorksSection.tsx   # How It Works 섹션 (P1.5에서 수정)
 │   │   ├── StepCard.tsx            # 단계 카드 (P1.5에서 수정)
-│   │   ├── MutationDiagram.tsx     # 현재 다이어그램 (P1.5에서 교체)
+│   │   ├── PreviewPanel.tsx        # Step별 프리뷰 패널 (P1.5에서 생성)
+│   │   ├── MutationDiagram.tsx     # 기존 다이어그램 (미사용)
 │   │   └── previews/               # (P2에서 생성)
 │   └── test-quality/
 │       └── QualityGauge.tsx        # (재사용 가능)

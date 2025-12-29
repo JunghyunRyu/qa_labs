@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import StepCard, { HowItWorksStep } from "./StepCard";
-import MutationDiagram from "./MutationDiagram";
+import PreviewPanel from "./PreviewPanel";
 import QualityChips from "./QualityChips";
 
 type Props = {
@@ -54,12 +54,8 @@ const defaultSteps: HowItWorksStep[] = [
 
 export default function HowItWorksSection({ steps }: Props) {
   const data = useMemo(() => steps ?? defaultSteps, [steps]);
-  const [activeStepId, setActiveStepId] = useState<number>(1);
-
-  // 콜백을 useCallback으로 고정
-  const handleStageChange = useCallback((stageId: number) => {
-    setActiveStepId(stageId);
-  }, []);
+  // 기본 활성 Step: 04 (탐지율) - 첫 인상에서 "결과"가 보이도록
+  const [activeStepId, setActiveStepId] = useState<number>(4);
 
   return (
     <section
@@ -90,16 +86,14 @@ export default function HowItWorksSection({ steps }: Props) {
                 key={step.id}
                 step={step}
                 active={step.id === activeStepId}
+                onClick={() => setActiveStepId(step.id)}
               />
             ))}
           </div>
 
-          {/* Diagram (Right on desktop, top on mobile) */}
+          {/* Preview Panel (Right on desktop, top on mobile) */}
           <div className="order-1 lg:order-2">
-            <MutationDiagram
-              onStageChange={handleStageChange}
-              initialStage={1}
-            />
+            <PreviewPanel activeStepId={activeStepId} />
           </div>
         </div>
 

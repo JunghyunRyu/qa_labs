@@ -37,9 +37,11 @@ function Icon({ name }: { name: HowItWorksStep["icon"] }) {
 export default function StepCard({
   step,
   active,
+  onClick,
 }: {
   step: HowItWorksStep;
   active: boolean;
+  onClick?: () => void;
 }) {
   const [isPulsing, setIsPulsing] = useState(false);
 
@@ -53,12 +55,15 @@ export default function StepCard({
   }, [active]);
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
       className={[
-        "relative rounded-2xl border p-4 transition-all duration-300",
+        "relative w-full rounded-2xl border p-4 text-left transition-all duration-300",
+        "cursor-pointer hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400/50",
         active
           ? "border-blue-500/50 bg-blue-50 shadow-md ring-2 ring-blue-400/30 dark:border-blue-400/50 dark:bg-blue-950/40 dark:ring-blue-500/20"
-          : "border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950/30",
+          : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950/30 dark:hover:border-gray-700",
         isPulsing ? "scale-[1.02]" : "scale-100",
       ].join(" ")}
       aria-current={active ? "step" : undefined}
@@ -109,6 +114,6 @@ export default function StepCard({
           </p>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
