@@ -33,6 +33,7 @@ class Problem(Base):
     )
     skills = Column(JSONB)
     summary = Column(Text, nullable=True)  # 핵심 테스트 포인트 요약 (마크다운)
+    short_description = Column(String(200), nullable=True)  # 카드용 짧은 설명 (1-2문장)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Rubric Evaluation (Phase 1)

@@ -20,6 +20,7 @@ export interface Problem {
   domain: DomainType;
   skills?: string[];
   summary?: string;  // 핵심 테스트 포인트 요약 (마크다운)
+  short_description?: string;  // 카드용 짧은 설명 (1-2문장)
   created_at: string;
   buggy_implementations: BuggyImplementation[];
 }
@@ -32,6 +33,7 @@ export interface ProblemListItem {
   domain: DomainType;
   skills?: string[];
   summary?: string;  // 핵심 테스트 포인트 요약
+  short_description?: string;  // 카드용 짧은 설명 (1-2문장)
   description_md?: string;  // For preview in list view
   success_rate?: number | null;  // 0.0~1.0, null if < 5 submissions
 }
