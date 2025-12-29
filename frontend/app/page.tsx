@@ -333,7 +333,7 @@ export default function Home() {
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center lg:justify-start">
+              <div className="flex flex-col gap-3 mt-6 items-center lg:items-start">
                 <Link
                   href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
                   className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
@@ -342,9 +342,12 @@ export default function Home() {
                 </Link>
                 <a
                   href="#how-it-works"
-                  className="px-6 py-3 text-white/80 text-sm font-medium hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-white/70 text-sm font-medium hover:text-white hover:bg-white/10 rounded-lg transition-all"
                 >
-                  진행 방식 보기 ↓
+                  진행 방식
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </a>
               </div>
             </div>
@@ -359,12 +362,9 @@ export default function Home() {
           <div className="mt-10 lg:mt-12">
             {/* Featured Problem Card */}
             <div className="mx-auto w-full max-w-xl">
-              <p className="mb-2 text-xs text-white/50 text-center">
-                처음이라면 이 문제로 시작 →
-              </p>
               <Link
                 href="/problems/problem-e04"
-                className="group cursor-pointer
+                className="group cursor-pointer relative
                            flex items-center justify-between gap-4 rounded-2xl
                            border-2 border-white/20 bg-white/10 px-5 py-4 backdrop-blur
                            transition-colors transition-shadow transition-transform
@@ -374,6 +374,11 @@ export default function Home() {
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70
                            focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
               >
+                {/* 추천 배지 */}
+                <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider
+                                 bg-emerald-500 text-white rounded-full shadow-sm">
+                  추천
+                </span>
                 <div className="min-w-0 text-left">
                   <span className="block text-base font-semibold text-white truncate
                                    group-hover:text-blue-100 group-focus-visible:text-blue-100 transition-colors">

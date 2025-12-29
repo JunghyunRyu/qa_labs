@@ -81,10 +81,11 @@ function DetectionRateCard({
 
       {/* 하단 라벨 */}
       <div className="mt-2 text-sm text-white/75">
+        숨은 버그{" "}
         <span className="font-semibold text-emerald-400">
-          {killed}개
+          {total}개 중 {killed}개
         </span>{" "}
-        버그 탐지
+        발견
       </div>
     </div>
   );
@@ -185,7 +186,7 @@ const defaultProps: Required<HeroResultPanelProps> = {
   grade: "B+",
   chips: ["경계값", "예외처리", "다중케이스"],
   aiSummary: {
-    summary: "음수/빈 리스트 케이스 누락 → 우선순위 1",
+    summary: "케이스 누락: 음수·빈 리스트",
     suggestions: [
       "빈 리스트 테스트 추가",
       "음수 값 테스트 추가",
