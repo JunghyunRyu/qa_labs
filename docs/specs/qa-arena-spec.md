@@ -872,6 +872,63 @@ export interface ClientExecutionResult {
 
 ---
 
+## 10. 랜딩 페이지 UI
+
+### 10.1. 디자인 시스템
+
+**서페이스 계층** (CSS 변수):
+- `--surface`: 섹션 바닥 (slate-50 / slate-900)
+- `--surface-elevated`: 일반 카드 (white / slate-800)
+- `--surface-float`: 강조 카드 (white+shadow / slate-800+shadow)
+
+**섹션 리듬**:
+- 섹션 패딩: `py-16 sm:py-20`
+- 컨테이너 폭: `max-w-6xl mx-auto px-4 sm:px-6`
+- 섹션 헤더 마진: `mb-12`
+
+**카드 클래스**:
+- `.card-base`: 기본 카드
+- `.card-float`: 강조 카드 (shadow 추가)
+- `.card-dark`: Showcase용 다크 카드
+
+### 10.2. Hero 섹션
+
+**HeroResultPanel** - 시그니처 비주얼 패널:
+- 탐지율 카드: 원형 게이지 + "Killed 3/4" + "75%"
+- 품질 등급 카드: B+ 뱃지 + 커버리지 칩 3개
+- AI 요약 카드: 1-2줄 요약 + 개선 제안
+
+레이아웃:
+- 데스크톱: 2컬럼 (좌: 카피/CTA, 우: ResultPanel)
+- 모바일: 세로 스택
+
+### 10.3. HowItWorks 섹션
+
+**인터랙션**:
+- StepCard 클릭 시 PreviewPanel 변경
+- 기본 활성 Step: 04 (탐지율)
+- 선택적 자동재생: 1회만 진행 후 멈춤
+- `prefers-reduced-motion` 존중
+
+**단계별 프리뷰**:
+| Step | 프리뷰 컴포넌트 | 내용 |
+|------|----------------|------|
+| 01 | WriteTestsPreview | 코드 에디터 스타일 + 문법 하이라이팅 |
+| 02 | ValidatePreview | 터미널 스타일 테스트 결과 |
+| 03 | MutantsPreview | 2x2 그리드 뮤테이션 타입별 before→after |
+| 04 | DetectionPreview | 테이블 형태 KILLED/SURVIVED + 요약 |
+| 05 | ScorePreview | 탐지율/품질등급 카드 + AI 피드백 |
+
+### 10.4. SEO
+
+**구현 완료**:
+- `robots.ts`: 크롤러 규칙 (/api, /dashboard, /auth 차단)
+- `sitemap.ts`: 정적 페이지 4개 (/, /problems, /privacy, /terms)
+- Open Graph 태그: layout.tsx에 전역 설정
+- OG 이미지: og_image.jpg (77KB, 1200x630)
+
+---
+
 ## 관련 문서
 
 | 문서 | 용도 |
