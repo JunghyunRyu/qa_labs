@@ -144,7 +144,7 @@ function AISummaryCard({
       </div>
 
       {/* 요약 */}
-      <p className="text-sm text-white/90 mb-3 leading-relaxed">{summary}</p>
+      <p className="text-sm font-medium text-white/90 mb-3 whitespace-nowrap">{summary}</p>
 
       {/* 개선 제안 */}
       <div className="space-y-1.5">
@@ -201,7 +201,7 @@ export default function HeroResultPanel({
   aiSummary = defaultProps.aiSummary,
 }: HeroResultPanelProps) {
   return (
-    <div className="w-full max-w-md lg:max-w-lg">
+    <div className="w-full max-w-xl lg:max-w-2xl">
       {/* 상단 라벨 */}
       <div className="flex items-center justify-center gap-2 mb-3">
         <div className="h-px flex-1 bg-white/20" />
