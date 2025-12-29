@@ -136,6 +136,9 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = False  # True in production (HTTPS only)
     COOKIE_SAMESITE: str = "lax"  # "strict", "lax", or "none"
 
+    # Admin API Security
+    ADMIN_SECRET_KEY: Optional[str] = None  # .env에서 설정 필수 (Admin API 보호용)
+
     # Frontend URL (for OAuth callback redirect)
     FRONTEND_URL: Optional[str] = None  # e.g., "https://qa-arena.qalabs.kr"
 

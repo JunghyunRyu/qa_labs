@@ -3,11 +3,12 @@
 from typing import Optional, Tuple
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status, Request
+from fastapi import Depends, HTTPException, status, Request, Header
 from sqlalchemy.orm import Session
 
 from app.models.db import get_db
 from app.core.auth import decode_token
+from app.core.config import settings
 from app.models.user import User
 from app.services.token_service import TokenService
 
@@ -159,3 +160,35 @@ async def require_ai_access(
 def get_token_service(db: Session = Depends(get_db)) -> TokenService:
     """Get TokenService instance."""
     return TokenService(db)
+
+
+async def require_admin_key(
+    x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key")
+) -> str:
+    """
+    Admin API 인증을 위한 의존성.
+
+    X-Admin-Key 헤더로 관리자 인증을 수행합니다.
+    ADMIN_SECRET_KEY 환경변수와 일치해야 합니다.
+
+    Usage:
+        @router.patch("/admin/endpoint")
+        async def admin_endpoint(
+            admin_key: str = Depends(require_admin_key),
+        ):
+            # Admin-only operation
+            ...
+    """
+    if not settings.ADMIN_SECRET_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Admin key not configured on server"
+        )
+
+    if not x_admin_key or x_admin_key != settings.ADMIN_SECRET_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing admin key"
+        )
+
+    return x_admin_key

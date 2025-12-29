@@ -1,14 +1,16 @@
 """Admin API endpoints."""
 
 import logging
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.rate_limiter import limiter
+from app.core.dependencies import require_admin_key
 from app.models.db import get_db
 from app.models.problem import Problem
 from app.models.buggy_implementation import BuggyImplementation
@@ -257,4 +259,71 @@ async def generate_tests_for_problem(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Test generation failed: {str(e)}",
         )
+
+
+# ============================================
+# Admin Protected Endpoints (X-Admin-Key 필요)
+# ============================================
+
+class ShortDescriptionUpdate(BaseModel):
+    """Short description update request schema."""
+    id: int
+    short_description: str
+
+
+class BulkUpdateResult(BaseModel):
+    """Bulk update result schema."""
+    updated: List[int]
+    failed: List[int]
+
+
+@router.patch("/problems/short-descriptions", response_model=BulkUpdateResult)
+async def bulk_update_short_descriptions(
+    updates: List[ShortDescriptionUpdate],
+    admin_key: str = Depends(require_admin_key),
+    db: Session = Depends(get_db),
+):
+    """
+    Bulk update short_description for multiple problems.
+
+    Requires X-Admin-Key header for authentication.
+    This endpoint is designed to be called from a local machine (UTF-8 environment)
+    to bypass SSM terminal encoding issues.
+
+    Args:
+        updates: List of {id, short_description} objects
+        admin_key: Admin authentication key (via X-Admin-Key header)
+        db: Database session
+
+    Returns:
+        {updated: [list of updated IDs], failed: [list of failed IDs]}
+
+    Example:
+        curl -X PATCH "https://api.example.com/api/admin/problems/short-descriptions" \\
+            -H "Content-Type: application/json" \\
+            -H "X-Admin-Key: your-secret-key" \\
+            -d '[{"id": 1, "short_description": "원화 가격 표시 함수를 테스트합니다."}]'
+    """
+    problem_repo = ProblemRepository(db)
+    result = BulkUpdateResult(updated=[], failed=[])
+
+    for item in updates:
+        try:
+            success = problem_repo.update_short_description(
+                problem_id=item.id,
+                short_description=item.short_description
+            )
+            if success:
+                result.updated.append(item.id)
+            else:
+                result.failed.append(item.id)
+        except Exception as e:
+            logger.error(f"Failed to update problem {item.id}: {e}")
+            result.failed.append(item.id)
+
+    logger.info(
+        f"[BULK_UPDATE_SHORT_DESC] updated={len(result.updated)} failed={len(result.failed)}"
+    )
+
+    return result
 

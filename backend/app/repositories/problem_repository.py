@@ -206,3 +206,22 @@ class ProblemRepository:
         self.db.commit()
         self.db.refresh(problem)
         return problem
+
+    def update_short_description(self, problem_id: int, short_description: str) -> bool:
+        """
+        Update short_description field for a single problem.
+
+        Args:
+            problem_id: Problem ID to update
+            short_description: New short description text
+
+        Returns:
+            True if updated successfully, False if problem not found
+        """
+        problem = self.get_by_id(problem_id)
+        if not problem:
+            return False
+
+        problem.short_description = short_description
+        self.db.commit()
+        return True
