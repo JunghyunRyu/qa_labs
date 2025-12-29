@@ -44,7 +44,7 @@
 | Phase 0: 디자인 토큰 + 리듬 통일 | ✅ 완료 | 4/4 |
 | Phase 1: 시그니처 비주얼 (HeroResultPanel) | ✅ 완료 | 5/5 |
 | Phase 1.5: HowItWorks 최소 인터랙션 | ✅ 완료 | 4/4 |
-| Phase 2: HowItWorks 정교화 | ⬜ 대기 | 0/4 |
+| Phase 2: HowItWorks 정교화 | ✅ 완료 | 4/4 |
 
 ---
 
@@ -281,31 +281,31 @@
 
 ### 체크리스트
 
-- [ ] **P2-1**: 단계별 프리뷰 컴포넌트 정교화
-  - [ ] Step 1 (Write Tests): 코드 에디터 스냅샷
-  - [ ] Step 2 (Validate): "정상 코드 통과" 비주얼
-  - [ ] Step 3 (Mutants): 뮤턴트 생성 일러스트
-  - [ ] Step 4 (Detection): 탐지 결과 표 (탐지됨/미탐지)
-  - [ ] Step 5 (Score): HeroResultPanel 축약 버전
+- [x] **P2-1**: 단계별 프리뷰 컴포넌트 정교화 ✅
+  - [x] Step 1 (Write Tests): 코드 에디터 스냅샷
+  - [x] Step 2 (Validate): "정상 코드 통과" 비주얼
+  - [x] Step 3 (Mutants): 뮤턴트 생성 일러스트
+  - [x] Step 4 (Detection): 탐지 결과 표 (탐지됨/미탐지)
+  - [x] Step 5 (Score): HeroResultPanel 축약 버전
   - 디렉토리: `frontend/components/how-it-works/previews/`
 
-- [ ] **P2-2**: 프리뷰-품질 칩 연동
-  - [ ] QualityChips와 PreviewPanel 연동
-  - [ ] Step 선택 시 관련 칩 하이라이트
+- [x] **P2-2**: 프리뷰-품질 칩 연동 ✅
+  - [x] QualityChips와 PreviewPanel 연동
+  - [x] Step 선택 시 관련 칩 하이라이트
 
-- [ ] **P2-3**: 선택적 자동재생 (옵션)
-  - [ ] "1회만 천천히 진행 후 멈춤" 형태
-  - [ ] 사용자가 클릭하면 자동재생 중단
-  - [ ] 접근성: prefers-reduced-motion 존중
+- [x] **P2-3**: 선택적 자동재생 (옵션) ✅
+  - [x] "1회만 천천히 진행 후 멈춤" 형태
+  - [x] 사용자가 클릭하면 자동재생 중단
+  - [x] 접근성: prefers-reduced-motion 존중
 
-- [ ] **P2-4**: 애니메이션 정교화
-  - [ ] 단계 간 전환 애니메이션 개선
-  - [ ] 프리뷰 내부 마이크로 인터랙션
+- [x] **P2-4**: 애니메이션 정교화 ✅
+  - [x] 단계 간 전환 애니메이션 개선
+  - [x] 프리뷰 내부 마이크로 인터랙션
 
 ### 완료 기준
-- [ ] 각 단계 프리뷰가 제품 경험을 명확히 전달함
-- [ ] 자동재생 시 모션 피로 없음 (1회 제한)
-- [ ] 전체적으로 "설득력 있는" 데모 경험
+- [x] 각 단계 프리뷰가 제품 경험을 명확히 전달함 ✅
+- [x] 자동재생 시 모션 피로 없음 (1회 제한) ✅
+- [x] 전체적으로 "설득력 있는" 데모 경험 ✅
 
 ---
 
@@ -407,6 +407,28 @@ PR 1 (P0)          PR 2 (P1)           PR 3-1 (P1.5)       PR 3-2 (P2)
     - 자동재생 로직 완전 제거
   - 반응형 테스트 통과 (데스크톱/모바일)
   - 다크/라이트 모드 테스트 통과
+
+### 2025-12-29 (세션 4)
+- [x] **Phase 2 (PR3-2) 완료** ✅
+  - 단계별 프리뷰 컴포넌트 정교화 (`frontend/components/how-it-works/previews/`)
+    - `WriteTestsPreview.tsx`: 코드 에디터 스타일 + 문법 하이라이팅 + 라인 넘버
+    - `ValidatePreview.tsx`: 터미널 스타일 테스트 결과 (pass/fail 표시)
+    - `MutantsPreview.tsx`: 2x2 그리드 뮤테이션 타입별 before→after
+    - `DetectionPreview.tsx`: 테이블 형태 KILLED/SURVIVED + 요약
+    - `ScorePreview.tsx`: 탐지율/품질등급 카드 + AI 피드백
+  - QualityChips 연동
+    - `stepRelevantChips` 매핑 추가
+    - 활성 Step에 따른 칩 하이라이팅
+  - 선택적 자동재생 구현
+    - IntersectionObserver로 뷰포트 진입 감지
+    - 1회만 진행 후 자동 멈춤
+    - 사용자 클릭 시 즉시 중단
+    - `prefers-reduced-motion` 존중
+  - 애니메이션 정교화
+    - PreviewPanel: scale + opacity + y축 전환
+    - StepCard: 좌측 진행 바 높이 애니메이션, 아이콘 scale 애니메이션
+    - custom easing: `[0.25, 0.1, 0.25, 1]`
+  - 커밋: `f124352 feat(how-it-works): Phase 2 정교화 완료`
 
 ---
 
