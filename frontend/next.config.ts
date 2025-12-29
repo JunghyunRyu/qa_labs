@@ -3,6 +3,8 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // 프로덕션 빌드에서 소스맵 비활성화 (보안)
+  productionBrowserSourceMaps: false,
   // 프로덕션 환경에서 API URL 설정
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "",
