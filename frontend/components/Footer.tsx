@@ -20,11 +20,20 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
           {/* Logo & Description */}
           <div className="md:col-span-2">
-            <h3 className="text-xl font-bold text-white mb-2">QA-Arena</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <Image
+                src="/icon.svg"
+                alt="QA-Arena Logo"
+                width={28}
+                height={28}
+                className="rounded-md"
+              />
+              <h3 className="text-xl font-bold text-white">QA-Arena</h3>
+            </div>
             <p className="text-sm">
-              AI 기반 QA 코딩 테스트 플랫폼.
+              코드 속 버그를 찾아내는 테스트 작성 능력을 키우세요.
               <br />
-              pytest로 버그를 잡는 실력을 키우세요.
+              실전 문제와 AI 피드백으로 QA 역량을 성장시키는 트레이닝 플랫폼.
             </p>
           </div>
 
@@ -88,9 +97,15 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="border-t border-gray-800 pt-8 text-sm text-center">
-          <p>&copy; {new Date().getFullYear()} QA-Arena. All rights reserved.</p>
+        {/* Non-profit Disclaimer */}
+        <div className="border-t border-gray-800 pt-8 text-sm text-center space-y-2">
+          <p className="text-gray-500">
+            <span className="font-medium text-gray-400">QA-Arena</span> | 개인 개발자의 비영리 기술 연구 프로젝트
+          </p>
+          <p className="text-xs text-gray-500">
+            본 서비스는 수익을 창출하지 않으며, QA 엔지니어의 역량 강화를 위한 학습 목적으로 운영됩니다.
+          </p>
+          <p className="mt-4">&copy; {new Date().getFullYear()} QA-Arena. All rights reserved.</p>
         </div>
       </div>
       </div>

@@ -13,7 +13,7 @@ import { Target, Award, Sparkles, CheckCircle, AlertCircle } from "lucide-react"
 // Sub-Components
 // ============================================================
 
-/** 버그 탐지율 카드 */
+/** 버그 탐지 카드 */
 function DetectionRateCard({
   killed,
   total,
@@ -21,19 +21,17 @@ function DetectionRateCard({
   killed: number;
   total: number;
 }) {
-  const percentage = Math.round((killed / total) * 100);
-
   // SVG 원형 게이지
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const strokeDashoffset = circumference - (killed / total) * circumference;
 
   return (
     <div className="flex flex-col items-center p-4 bg-white/[0.08] backdrop-blur border border-white/15 rounded-xl hover:bg-white/[0.12] hover:border-white/25 transition-colors">
       {/* 라벨 */}
       <div className="flex items-center gap-1.5 mb-3">
         <Target className="w-4 h-4 text-emerald-400" />
-        <span className="text-xs font-medium text-white/60">버그 탐지율</span>
+        <span className="text-xs font-medium text-white/60">잡은 버그</span>
       </div>
 
       {/* 원형 게이지 */}
@@ -75,18 +73,18 @@ function DetectionRateCard({
             className="transition-all duration-1000 ease-out"
           />
         </svg>
-        {/* 중앙 퍼센트 */}
+        {/* 중앙 분수 표기 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-white">{percentage}%</span>
+          <span className="text-2xl font-bold text-white">{killed}/{total}</span>
         </div>
       </div>
 
-      {/* Killed 비율 */}
+      {/* 하단 라벨 */}
       <div className="mt-2 text-sm text-white/75">
-        Killed{" "}
         <span className="font-semibold text-emerald-400">
-          {killed}/{total}
-        </span>
+          {killed}개
+        </span>{" "}
+        버그 탐지
       </div>
     </div>
   );

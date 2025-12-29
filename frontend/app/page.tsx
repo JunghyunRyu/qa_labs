@@ -9,15 +9,15 @@ import HeroResultPanel from "@/components/hero/HeroResultPanel";
 
 // Hero copy constants
 const heroCopy = {
-  headline: "AI가 코드를 더 빨리 쓰는 시대, 실력은 '숨은 버그를 찾아내는 설계'로 증명됩니다.",
-  subLine1: "AI는 구현을 빠르게 돕습니다. 하지만 어떤 케이스가 위험한지는 업무 맥락이 정합니다.",
+  headline: "숨은 버그, 얼마나 잡아내나요?",
+  subLine1: "당신의 테스트 시나리오가 얼마나 강력한지, 지금 바로 확인해보세요.",
   micro: "AI 도우미는 정답이 아니라, 놓친 케이스와 다음 테스트 설계를 제안합니다.",
   domainLabel: "실무 도메인으로 시작하기",
   domainHelper: "도메인을 선택하면 문제/추천 트랙이 해당 업무 시나리오로 맞춰집니다.",
 };
 
 const domains = [
-  { key: "common", label: "Common", title: "공통 시나리오", cta: "내 버그 탐지율 측정하기", hint: "경계값 · 예외처리 · 타입검증 · 널체크" },
+  { key: "common", label: "Common", title: "공통 시나리오", cta: "내 실력 측정하기", hint: "경계값 · 예외처리 · 타입검증 · 널체크" },
   { key: "fintech", label: "Fintech", title: "결제/정산/수수료", cta: "Fintech 시나리오로 진단하기", hint: "정산 · 수수료 · 반올림 · 중복결제" },
   { key: "commerce", label: "Commerce", title: "재고/주문/쿠폰", cta: "Commerce 시나리오로 진단하기", hint: "쿠폰 · 재고 · 주문 · 가격우선순위" },
   { key: "saas", label: "SaaS", title: "권한/요금제/쿼터", cta: "SaaS 시나리오로 진단하기", hint: "권한 · 요금제 · 쿼터 · 레이트리밋" },
@@ -324,13 +324,11 @@ export default function Home() {
             <div className="text-center lg:text-left">
               <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-8 sm:py-8 inline-block">
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
-                  AI가 코드를 더 빨리 쓰는 시대,<br className="hidden sm:block" />{' '}
-                  실력은 <span className="highlight">&apos;숨은 버그를 찾아내는 설계&apos;</span>로 증명됩니다.
+                  숨은 버그,<br className="hidden sm:block" />{' '}
+                  <span className="highlight">얼마나 잡아내나요?</span>
                 </h1>
                 <p className="mt-5 text-base sm:text-lg text-white/85 max-w-xl lg:max-w-none">
-                  실무 시나리오에서{" "}
-                  <span className="font-semibold text-white">숨은 버그를 얼마나 잡는지</span>
-                  , 탐지율로 확인하세요.
+                  당신의 테스트 시나리오가 얼마나 강력한지, 지금 바로 확인해보세요.
                 </p>
               </div>
 
