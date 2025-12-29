@@ -94,10 +94,12 @@ const colorClasses: Record<QualityChip["color"], string> = {
 function Chip({
   chip,
   isActive,
+  isRelevant,
   onToggle,
 }: {
   chip: QualityChip;
   isActive: boolean;
+  isRelevant: boolean;
   onToggle: () => void;
 }) {
   return (
@@ -107,9 +109,13 @@ function Chip({
         onClick={onToggle}
         className={[
           "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium",
-          "cursor-pointer transition-colors",
+          "cursor-pointer transition-all duration-300",
           colorClasses[chip.color],
           isActive ? "ring-2 ring-offset-1 ring-blue-400" : "",
+          // 관련 칩은 scale 및 shadow로 강조
+          isRelevant
+            ? "scale-105 shadow-md ring-1 ring-offset-1 ring-blue-300 dark:ring-blue-600"
+            : "opacity-70 hover:opacity-100",
         ].join(" ")}
         aria-expanded={isActive}
         aria-describedby={`tooltip-${chip.id}`}
@@ -148,9 +154,25 @@ function Chip({
   );
 }
 
-export default function QualityChips() {
+// 각 Step에서 관련된 품질 칩 ID
+const stepRelevantChips: Record<number, string[]> = {
+  1: ["normal", "boundary", "edge", "error_handling"], // 테스트 작성 시 고려할 요소
+  2: ["happy_path"], // Golden Code 검증
+  3: [], // 뮤턴트 생성 - 품질 칩 무관
+  4: ["boundary", "edge", "error_handling"], // 탐지에 기여한 요소
+  5: ["boundary", "error_handling", "multiple"], // 최종 점수에 반영된 요소
+};
+
+interface QualityChipsProps {
+  activeStepId?: number;
+}
+
+export default function QualityChips({ activeStepId }: QualityChipsProps) {
   const [activeChip, setActiveChip] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 현재 Step에서 관련된 칩들
+  const relevantChipIds = activeStepId ? stepRelevantChips[activeStepId] || [] : [];
 
   // Close tooltip when clicking outside
   useEffect(() => {
@@ -205,6 +227,7 @@ export default function QualityChips() {
               key={chip.id}
               chip={chip}
               isActive={activeChip === chip.id}
+              isRelevant={relevantChipIds.includes(chip.id)}
               onToggle={() => handleToggle(chip.id)}
             />
           ))}
@@ -222,6 +245,7 @@ export default function QualityChips() {
               key={chip.id}
               chip={chip}
               isActive={activeChip === chip.id}
+              isRelevant={false}
               onToggle={() => handleToggle(chip.id)}
             />
           ))}

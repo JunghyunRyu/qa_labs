@@ -71,10 +71,10 @@ export default function StepCard({
       {/* 좌측 진행 표시 바 */}
       <div
         className={[
-          "absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full transition-all duration-300",
+          "absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full transition-all duration-500 ease-out",
           active
-            ? "bg-blue-500 dark:bg-blue-400"
-            : "bg-transparent",
+            ? "h-10 bg-blue-500 dark:bg-blue-400 opacity-100"
+            : "h-0 bg-blue-500 dark:bg-blue-400 opacity-0",
         ].join(" ")}
       />
 
@@ -83,8 +83,8 @@ export default function StepCard({
           className={[
             "mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border transition-all duration-300",
             active
-              ? "border-blue-500/30 bg-white text-blue-600 shadow-sm dark:border-blue-400/30 dark:bg-gray-950 dark:text-blue-400"
-              : "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200",
+              ? "border-blue-500/30 bg-white text-blue-600 shadow-md scale-110 dark:border-blue-400/30 dark:bg-gray-950 dark:text-blue-400"
+              : "border-gray-200 bg-gray-50 text-gray-700 scale-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200",
           ].join(" ")}
         >
           <Icon name={step.icon} />
