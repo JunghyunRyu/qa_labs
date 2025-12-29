@@ -32,13 +32,10 @@
   "description_md": "## 문제 설명\n\n`process_task_events` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef process_task_events(events: list[str], initial_state: str = \"IDLE\") -> tuple[str, list[str]]:\n```\n\n### 동작 규칙\n- Any unknown event must raise ValueError.\n- Any event not allowed from the current state must raise ValueError.\n\n### 예시\n- `process_task_events(...)` → 결과\n\n### 테스트 힌트\n- 상태 기반 테스트\n- `FSM` 전이 규칙 검증: 특정 이벤트가 특정 상태에서만 가능한지 확인\n- 잘못된 전이가 들어왔을 때 `ValueError`를 발생시키는지 확인\n- `terminal state` 이후에 이벤트가 추가로 주어졌을 때의 동작\n",
   "initial_test_template": "import pytest\nfrom target import process_task_events\n\n\ndef test_happy_path_full_lifecycle():\n    # TODO: IDLE -> RUNNING -> PAUSED -> RUNNING -> COMPLETED 같은 대표 성공 시나리오를 검증하세요.\n    # 힌트: final_state 뿐 아니라 history(방문한 상태들)도 함께 검증하면 FSM 버그를 더 잘 잡을 수 있습니다.\n    pass\n\n\ndef test_invalid_transition_detection_from_paused():\n    # TODO: 특정 상태(PAUSED 등)에서 허용되지 않는 이벤트(예: 완료/시작 등)가 왔을 때 ValueError가 나는지 검증하세요.\n    # 힌트: state-based testing 관점에서 '상태 x 이벤트' 매트릭스를 일부라도 커버하도록 설계해 보세요.\n    pass\n\n\ndef test_terminal_state_rejects_additional_events():\n    # TODO: COMPLETED 또는 FAILED에 도달한 뒤 추가 이벤트가 오면 ValueError가 발생해야 합니다.\n    # 힌트: terminal state 성질을 확인하는 시나리오를 구성해 보세요.\n    pass\n\n\ndef test_unknown_event_is_rejected():\n    # TODO: 정의되지 않은 이벤트 문자열이 포함되면 ValueError가 발생해야 합니다.\n    # 힌트: equivalence partitioning으로 '정상 이벤트' vs '비정상 이벤트' 파티션을 나누어 테스트하세요.\n    pass\n\n\ndef test_initial_state_is_respected():\n    # TODO: initial_state를 RUNNING/PAUSED 등으로 주고, 그에 맞는 유효/무효 전이를 검증하세요.\n    # 힌트: 초기 상태가 바뀌면 첫 이벤트의 유효성도 달라집니다.\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "hard",
-    "state-based testing",
-    "fsm",
-    "state transition",
-    "unit-test",
-    "python",
-    "pytest"
+    "상태 기반 테스트",
+    "유한 상태 머신",
+    "상태 전이",
+    "단위 테스트"
   ],
   "difficulty": "Hard",
   "domain": "common",

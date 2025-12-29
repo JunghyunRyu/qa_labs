@@ -27,15 +27,13 @@
   "description_md": "## 문제 설명\n\n`format_price` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef format_price(price: int) -> str:\n```\n\n### 동작 규칙\n- 함수 명세에 따라 정확한 결과를 반환해야 함\n\n### 예시\n- `format_price(0)` → `\"0원\"`\n- `format_price(1234)` → `\"1,234원\"`\n- `format_price(1000000)` → `\"1,000,000원\"`\n\n### 테스트 힌트\n- 기본 동작 검증\n- 대표적인 정상 입력(예: 1234)에서 결과 문자열이 기대한 형태인지 확인\n- 경계값 검증\n- `0`은 정상 입력입니다. `\"0원\"`이 반환되어야 합니다.\n",
   "initial_test_template": "import pytest\nfrom target import format_price\n\n\ndef test_basic_formatting():\n    \"\"\"대표적인 정상 입력에서 올바른 형식이 반환되는지 검증합니다.\"\"\"\n    # TODO: 1234 같은 값이 '1,234원' 형태로 반환되는지 확인하세요.\n    pass\n\n\ndef test_zero_price():\n    \"\"\"경계값 0이 '0원'으로 올바르게 반환되는지 검증합니다.\"\"\"\n    # TODO: 0은 정상 입력입니다. '0원'이 반환되어야 합니다.\n    # - 빈 문자열이나 '원'만 반환되면 버그입니다.\n    pass\n\n\ndef test_thousands_separator():\n    \"\"\"천 단위 구분자(,)가 정확히 적용되는지 검증합니다.\"\"\"\n    # TODO: 1000, 1000000 등에서 쉼표가 올바른 위치에 있는지 확인하세요.\n    # - '1000원' vs '1,000원'\n    # - '1000000원' vs '1,000,000원'\n    pass\n\n\ndef test_no_space_before_won():\n    \"\"\"'원' 접미사 앞에 공백이 없는지 검증합니다.\"\"\"\n    # TODO: '1,234원'이 맞고, '1,234 원'은 버그입니다.\n    pass\n\n\ndef test_negative_price_raises_value_error():\n    \"\"\"음수 가격이 ValueError를 발생시키는지 검증합니다.\"\"\"\n    # TODO: pytest.raises(ValueError)를 사용하세요.\n    # - 음수가 절댓값으로 변환되어 정상 반환되면 버그입니다.\n    pass\n\n\ndef test_invalid_type_raises_type_error():\n    \"\"\"잘못된 타입이 TypeError를 발생시키는지 검증합니다.\"\"\"\n    # TODO: bool, float, str, None 등을 테스트하세요.\n    # - 특히 True, False는 int의 서브클래스이지만 거부되어야 합니다.\n    pass\n",
   "tags": [
-    "very easy",
-    "unit-test",
-    "pytest",
-    "string",
-    "formatting",
-    "price",
-    "basic testing",
-    "type-validation",
-    "exception-handling"
+    "단위 테스트",
+    "문자열",
+    "포매팅",
+    "가격",
+    "기본 테스트",
+    "타입 검증",
+    "예외 처리"
   ],
   "difficulty": "Very Easy",
   "domain": "commerce",

@@ -27,12 +27,10 @@
   "description_md": "## 문제 설명\n\n`calculate_simple_interest` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef calculate_simple_interest(principal: float, rate: float) -> float:\n```\n\n### 동작 규칙\n- A float representing the interest amount for 1 year.\n- Interest = principal * (rate / 100) for 1 year.\n- `principal` must be >= 0.\n\n### 예시\n- `calculate_simple_interest(...)` → 결과\n\n### 테스트 힌트\n- 금융 계산 기본: 퍼센트 단위(`rate`)를 올바르게 처리하는지 확인 (`%`와 소수 표현 혼동)\n- 기본 테스트: 정상 입력에서 정확한 계산 결과가 나오는지\n- 경계값: `principal=0`, `rate=0` 같은 입력\n- 소수 이율: `2.5%`처럼 소수점이 있는 이율에서 정확도가 유지되는지\n",
   "initial_test_template": "import pytest\nfrom target import calculate_simple_interest\n\n\ndef test_basic_interest_calculation():\n    # TODO: 대표적인 정상 케이스에서 퍼센트 이율이 올바르게 적용되는지 검증하세요.\n    # 예: 원금과 이율이 주어졌을 때 기대 이자 금액이 정확한지\n    pass\n\n\ndef test_zero_boundary_values():\n    # TODO: 경계값 테스트\n    # - principal=0 일 때\n    # - rate=0 일 때\n    # 반환값이 0.0인지 등을 검증하세요.\n    pass\n\n\ndef test_negative_inputs_error_handling():\n    # TODO: 오류 처리 테스트\n    # - principal < 0 인 경우 ValueError 발생 여부\n    # - rate < 0 인 경우 ValueError 발생 여부\n    pass\n\n\ndef test_fractional_rate_precision():\n    # TODO: 금융 계산에서 흔한 소수 이율(예: 2.5%)에 대해\n    # 정수 변환/반올림으로 값이 왜곡되지 않는지 검증하세요.\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "very easy",
-    "unit-test",
-    "pytest",
-    "finance",
-    "basic testing",
-    "financial calculation"
+    "단위 테스트",
+    "금융",
+    "기본 테스트",
+    "금융 계산"
   ],
   "difficulty": "Very Easy",
   "domain": "fintech",

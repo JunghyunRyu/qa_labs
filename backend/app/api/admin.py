@@ -327,3 +327,52 @@ async def bulk_update_short_descriptions(
 
     return result
 
+
+class SkillsUpdate(BaseModel):
+    """Skills update request schema."""
+    id: int
+    skills: List[str]
+
+
+@router.patch("/problems/skills", response_model=BulkUpdateResult)
+async def bulk_update_skills(
+    updates: List[SkillsUpdate],
+    admin_key: str = Depends(require_admin_key),
+    db: Session = Depends(get_db),
+):
+    """
+    Bulk update skills (tags) for multiple problems.
+
+    Requires X-Admin-Key header for authentication.
+
+    Args:
+        updates: List of {id, skills} objects
+        admin_key: Admin authentication key (via X-Admin-Key header)
+        db: Database session
+
+    Returns:
+        {updated: [list of updated IDs], failed: [list of failed IDs]}
+    """
+    problem_repo = ProblemRepository(db)
+    result = BulkUpdateResult(updated=[], failed=[])
+
+    for item in updates:
+        try:
+            success = problem_repo.update_skills(
+                problem_id=item.id,
+                skills=item.skills
+            )
+            if success:
+                result.updated.append(item.id)
+            else:
+                result.failed.append(item.id)
+        except Exception as e:
+            logger.error(f"Failed to update skills for problem {item.id}: {e}")
+            result.failed.append(item.id)
+
+    logger.info(
+        f"[BULK_UPDATE_SKILLS] updated={len(result.updated)} failed={len(result.failed)}"
+    )
+
+    return result
+

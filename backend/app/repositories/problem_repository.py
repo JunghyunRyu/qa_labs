@@ -225,3 +225,22 @@ class ProblemRepository:
         problem.short_description = short_description
         self.db.commit()
         return True
+
+    def update_skills(self, problem_id: int, skills: list) -> bool:
+        """
+        Update skills (tags) field for a single problem.
+
+        Args:
+            problem_id: Problem ID to update
+            skills: New skills list
+
+        Returns:
+            True if updated successfully, False if problem not found
+        """
+        problem = self.get_by_id(problem_id)
+        if not problem:
+            return False
+
+        problem.skills = skills
+        self.db.commit()
+        return True

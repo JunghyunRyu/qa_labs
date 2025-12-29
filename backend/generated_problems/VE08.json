@@ -27,14 +27,11 @@
   "description_md": "## 문제 설명\n\n`can_access` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef can_access(is_logged_in: bool, is_admin: bool) -> bool:\n```\n\n### 동작 규칙\n- 접근 가능하면 `True`, 불가능하면 `False`\n\n### 예시\n- `can_access(is_logged_in=True, is_admin=False)` → `True`\n- `can_access(is_logged_in=False, is_admin=False)` → `False`\n\n### 테스트 힌트\n- 이 함수는 불리언 입력 2개로 구성되어 있으므로 가능한 조합은 총 4개입니다.\n- `조합 테스트` 관점에서 4가지 조합을 빠짐없이 커버하는 테스트를 작성해 보세요.\n- `불리언 조합`에서 `and` / `or` 혼동, 예외 규칙(관리자는 항상 허용) 누락, 플래그 혼동 같은 실수가 흔합니다.\n",
   "initial_test_template": "import pytest\nfrom target import can_access\n\ndef test_combination_logged_in_user_not_admin():\n    # TODO: (is_logged_in=True, is_admin=False) 조합의 기대 결과를 검증하세요.\n    # 조합 테스트(`combinatorial testing`)에서 가장 기본이 되는 케이스입니다.\n    pass\n\ndef test_combination_not_logged_in_admin():\n    # TODO: (is_logged_in=False, is_admin=True) 조합의 기대 결과를 검증하세요.\n    # 접근 제어 규칙 중 \"관리자는 항상 접근 가능\" 예외를 검증하는 케이스입니다.\n    pass\n\ndef test_combination_not_logged_in_not_admin():\n    # TODO: (is_logged_in=False, is_admin=False) 조합의 기대 결과를 검증하세요.\n    # 잘못된 `or`/부정 처리로 인해 권한이 열리는 버그를 잡는 데 유용합니다.\n    pass\n\ndef test_combination_logged_in_admin():\n    # TODO: (is_logged_in=True, is_admin=True) 조합의 기대 결과를 검증하세요.\n    # 두 플래그가 모두 True인 경우도 명시적으로 확인해 보세요.\n    pass\n",
   "tags": [
-    "very easy",
-    "unit-test",
-    "pytest",
-    "boolean",
-    "access-control",
-    "combinatorial testing",
-    "불리언 조합",
-    "조합 테스트"
+    "단위 테스트",
+    "불리언",
+    "접근 제어",
+    "조합 테스트",
+    "불리언 조합"
   ],
   "difficulty": "Very Easy",
   "domain": "common",

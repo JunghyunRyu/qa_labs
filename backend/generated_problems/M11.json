@@ -27,14 +27,12 @@
   "description_md": "## 문제 설명\n\n`is_valid_card_number` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef is_valid_card_number(card_number: str) -> bool:\n```\n\n### 동작 규칙\n- 모든 규칙을 만족하면 `True`\n\n### 예시\n- `is_valid_card_number(\"4111111111111111\")` → `True`\n- `is_valid_card_number(\"4111-1111-1111-1111\")` → `False`\n\n### 테스트 힌트\n- 경계값 분석\n- 체크섬 검증\n- 문자열 처리\n",
   "initial_test_template": "import pytest\nfrom target import is_valid_card_number\n\n\ndef test_length_boundaries_min_and_max():\n    # TODO: boundary value 분석\n    # - 길이 13과 19는 허용되어야 함\n    # - 길이 12와 20은 거부되어야 함\n    # 힌트: Luhn을 통과하는 샘플과 통과하지 않는 샘플을 각각 준비하면 좋습니다.\n    pass\n\n\ndef test_digits_only_rejects_whitespace_and_hyphen():\n    # TODO: 문자열 파티션 테스트\n    # - 숫자만 입력은 규칙에 따라 True/False가 Luhn에 의해 결정\n    # - 공백/하이픈이 포함된 입력은 (길이/체크섬과 무관하게) False여야 함\n    # 예: \"4111 1111 1111 1111\", \"4111-1111-1111-1111\", \" 4111111111111111 \"\n    pass\n\n\ndef test_luhn_checksum_correctness_with_near_miss():\n    # TODO: Luhn 알고리즘 검증\n    # - 유효한 번호 1개를 선정한 뒤, 마지막 자리(체크 디짓)를 바꾼 번호는 보통 False가 되어야 함\n    # - doubling 시작 위치(오른쪽에서 두 번째 자리) 관련 오류를 잡아낼 수 있는 케이스를 고민해보세요.\n    pass\n\n\ndef test_equivalence_partitions_various_lengths_that_pass_luhn():\n    # TODO: 13~19 범위에서 서로 다른 길이의 번호를 준비하여 Luhn 통과/실패를 확인\n    # - 길이만 맞고 체크섬이 틀린 케이스\n    # - 길이도 맞고 체크섬도 맞는 케이스\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "medium",
-    "unit-test",
-    "pytest",
-    "string",
-    "boundary value analysis",
-    "luhn",
-    "checksum validation",
-    "length validation"
+    "단위 테스트",
+    "문자열",
+    "경계값 분석",
+    "Luhn 알고리즘",
+    "체크섬 검증",
+    "길이 검증"
   ],
   "difficulty": "Medium",
   "domain": "common",

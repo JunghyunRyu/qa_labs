@@ -6,7 +6,7 @@
   "tags": [
     "Python 함정",
     "가변 기본 인자",
-    "fixture",
+    "픽스처",
     "상태 격리"
   ],
   "function_signature": "def add_item(item: str, items: list = None) -> list:",

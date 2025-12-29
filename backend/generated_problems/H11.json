@@ -27,13 +27,11 @@
   "description_md": "## 문제 설명\n\n`create_counter` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef create_counter(initial: int = 0) -> object:\n```\n\n### 동작 규칙\n- `initial` 과 `delta` 는 `int` 여야 합니다.\n- `delta` 는 0 이상이어야 합니다.\n\n### 예시\n- `create_counter(...)` → 결과\n\n### 테스트 힌트\n- 동시성 버그는 단일 스레드 테스트로는 잘 드러나지 않습니다. `threading.Thread` 로 여러 스레드를 만들고\n- 시키는 장치를 고려하세요.\n- 증가만 있는 시나리오, 증가와 감소가 섞인 시나리오, 감소 경쟁으로 인해 일부 호출만 성공해야 하는 시나리오 등 다양한 `equivalence partition` 을 떠올릴 수 있습니다.\n- 단발성 실행으로는 재현이 어려울 수 있으니, 충분한 반복 횟수와 스레드 수를 사용해 `race condition` 을 드러내세요.\n",
   "initial_test_template": "import threading\nimport sys\nimport pytest\n\nfrom target import create_counter\n\n\ndef test_single_thread_basic_semantics():\n    # TODO: 단일 스레드에서 increment/decrement/get_value 기본 동작을 검증하세요.\n    # - increment 후 값 증가\n    # - decrement 후 값 감소\n    # - 0 미만으로 내려가려 하면 ValueError\n    pass\n\n\ndef test_concurrent_increment_race_condition_detection():\n    # TODO: 여러 스레드가 동시에 increment를 반복 호출할 때 최종 값 정합성을 검증하세요.\n    # 아이디어:\n    # - threading.Barrier로 스레드들을 동시에 출발시키기\n    # - threads * iterations 와 최종 get_value() 비교\n    # - 필요하다면 sys.setswitchinterval(...) 로 문맥 전환 빈도를 높여 재현성을 올리기\n    pass\n\n\ndef test_concurrent_decrement_competing_for_last_unit_linearizability():\n    # TODO: decrement 경쟁 상황을 구성해 원자성 및 예외 처리를 검증하세요.\n    # 아이디어:\n    # - initial=1에서 두 스레드가 동시에 decrement(1)을 수행\n    # - 정확히 하나는 성공하고, 나머지는 ValueError 여야 함\n    # - 최종 값이 음수가 아니고 0인지 확인\n    pass\n\n\ndef test_concurrent_mixed_increment_decrement_no_lost_update():\n    # TODO: increment와 decrement가 섞여도 업데이트 유실이 없는지 검증하세요.\n    # 아이디어:\n    # - initial을 충분히 크게 두고\n    # - N개 스레드가 increment(1) M번, 다른 N개 스레드가 decrement(1) M번 수행\n    # - 최종 값이 initial과 동일해야 함\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "hard",
-    "concurrency testing",
-    "race condition",
-    "thread safety",
-    "stateful",
-    "pytest",
-    "unit-test"
+    "동시성 테스트",
+    "경쟁 상태",
+    "스레드 안전성",
+    "상태 유지",
+    "단위 테스트"
   ],
   "difficulty": "Hard",
   "domain": "common",

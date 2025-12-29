@@ -27,14 +27,12 @@
   "description_md": "## 문제 설명\n\n`matches_filter` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef matches_filter(product: dict, category: str | None, min_price: int | None, in_stock: bool | None) -> bool:\n```\n\n### 동작 규칙\n- Each filter is optional. If a filter is None, that condition is ignored.\n- If a filter has a value, the product must satisfy it.\n\n### 예시\n- `matches_filter(...)` → 결과\n\n### 테스트 힌트\n- 선택적 매개변수에서 `None`의 의미가 올바르게 처리되는지\n- 필터가 0개, 1개, 2개, 3개 적용되는 다양한 조합에서 결과가 일관적인지 (조합 테스트)\n- `min_price`의 경계값(같은 값 포함 여부)\n- 불리언 필터의 함정: `False`도 유효한 필터 값이라는 점\n",
   "initial_test_template": "import pytest\nfrom target import matches_filter\n\ndef test_all_filters_none_should_match_any_valid_product():\n    # TODO: category/min_price/in_stock이 모두 None일 때는 조건을 모두 무시하므로 True가 되어야 합니다.\n    # TODO: 유효한 product 예시를 하나 만들어 검증하세요.\n    pass\n\ndef test_single_filter_equivalence_partitions():\n    # TODO: 각 필터를 '단독'으로 적용해보세요.\n    # - category만 적용 (일치/불일치)\n    # - min_price만 적용 (미달/같음/초과)\n    # - in_stock만 적용 (True/False)\n    # 선택적 매개변수와 null 처리 관점에서 None과 값의 차이를 검증하세요.\n    pass\n\ndef test_combination_and_logic_with_none_mix():\n    # TODO: 2개 이상 필터가 동시에 주어질 때 AND로 결합되는지 검증하세요.\n    # 예: category는 맞지만 min_price는 틀린 경우 -> False\n    # 예: in_stock=False를 명시했을 때 품절 상품만 True가 되는지\n    # None이 섞인 조합도 포함해 조합 테스트를 구성해보세요.\n    pass\n\ndef test_missing_required_keys_returns_false():\n    # TODO: product에 'category'/'price'/'in_stock' 중 하나가 빠진 경우 False를 반환해야 합니다.\n    # 조합 테스트를 할 때도, 입력 데이터의 형태가 깨졌을 때의 결과를 확인해보세요.\n    pass\n",
   "tags": [
-    "easy",
-    "unit-test",
-    "pytest",
-    "combinatorial testing",
-    "optional parameters",
-    "null handling",
-    "filter",
-    "dict"
+    "단위 테스트",
+    "조합 테스트",
+    "선택적 파라미터",
+    "null 처리",
+    "필터",
+    "딕셔너리"
   ],
   "difficulty": "Easy",
   "domain": "common",

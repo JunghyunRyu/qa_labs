@@ -27,14 +27,12 @@
   "description_md": "## 문제 설명\n\n`get_discount_rate` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef get_discount_rate(member_tier: str, is_first_purchase: bool, has_coupon: bool) -> int:\n```\n\n### 동작 규칙\n- `int`: 최종 할인율(%)\n\n### 예시\n- `get_discount_rate(...)` → 결과\n\n### 테스트 힌트\n- 다양한 입력 케이스를 테스트하세요\n",
   "initial_test_template": "import pytest\nfrom target import get_discount_rate\n\n\n# TODO: 조합 테스트 전략을 세워 12개 조합(3등급 x 2 x 2)을 효율적으로 커버하세요.\n# 힌트: pytest.mark.parametrize를 활용하면 테스트 케이스를 테이블 형태로 관리할 수 있습니다.\n\n\ndef test_equivalence_partitioning_basic_tiers():\n    # TODO: 등급별 기본 할인율이 올바른지 검증하는 케이스들을 구성하세요.\n    # 예: (tier, first=False, coupon=False) 파티션\n    pass\n\n\ndef test_pairwise_interactions_tier_and_coupon():\n    # TODO: `pairwise testing` 관점에서 (member_tier, has_coupon) 상호작용을 커버하세요.\n    # - 특정 등급에서만 쿠폰 조합이 잘못 처리될 수 있습니다.\n    pass\n\n\ndef test_pairwise_interactions_first_purchase_and_coupon_non_stack_rule():\n    # TODO: 첫 구매와 쿠폰이 동시에 True인 경우의 중복 적용 규칙을 검증하세요.\n    # - 둘 다 True일 때 \"둘 중 하나만\" 적용되는지, \"더 큰 혜택\"이 적용되는지 등 규칙을 확인하세요.\n    pass\n\n\ndef test_boundary_value_max_cap():\n    # TODO: 최대 할인율 제한(캡) 경계값을 검증하세요.\n    # - 정확히 캡 값이 되는 조합과, 캡을 초과하는 조합을 모두 고려해보세요.\n    pass\n\n\ndef test_invalid_member_tier_raises():\n    # TODO: 잘못된 member_tier 입력에 대한 예외 처리를 검증하세요.\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "easy",
-    "unit-test",
-    "pytest",
-    "combinatorial testing",
-    "pairwise testing",
-    "business-logic",
-    "boolean-flags",
-    "string"
+    "단위 테스트",
+    "조합 테스트",
+    "페어와이즈 테스트",
+    "비즈니스 로직",
+    "불리언 플래그",
+    "문자열"
   ],
   "difficulty": "Easy",
   "domain": "common",

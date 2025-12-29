@@ -27,12 +27,10 @@
   "description_md": "## 문제 설명\n\n`calculate_fee` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef calculate_fee(amount: int) -> int:\n```\n\n### 동작 규칙\n- `int`: 수수료(원)\n- 퍼센트 수수료는 **원 단위 내림**으로 계산합니다\n\n### 예시\n- `calculate_fee(...)` → 결과\n\n### 테스트 힌트\n- `equivalence partitioning` 관점에서 소액/일반/대금 구간 각각을 대표값으로 검증해 보세요.\n- 구간이 바뀌는 지점(예: 기준 금액의 바로 아래/같음/바로 위)에서 결과가 바뀌는지 확인해 보세요.\n- 수수료는 `fee calculation` 관점에서 계산 비율과\n- 가 일관적인지 확인해 보세요.\n",
   "initial_test_template": "import pytest\nfrom target import calculate_fee\n\n\ndef test_equivalence_partition_small_amount_free():\n    # TODO: 소액 구간 대표값으로 수수료가 0인지 검증\n    # 예: 기준 금액보다 충분히 작은 값\n    pass\n\n\ndef test_equivalence_partition_normal_amount_one_percent():\n    # TODO: 일반 구간 대표값으로 1%가 적용되는지 검증\n    # 포인트: 정수 내림(원 단위) 결과 확인\n    pass\n\n\ndef test_equivalence_partition_large_amount_half_percent():\n    # TODO: 대금 구간 대표값으로 0.5%가 적용되는지 검증\n    # 포인트: 0.5% 계산과 내림 규칙\n    pass\n\n\ndef test_boundaries_around_thresholds():\n    # TODO: 구간 경계값 근처(바로 아래/같음/바로 위)에서 결과가 올바른지 검증\n    # 예: 10,000과 1,000,000 주변\n    pass\n\n\ndef test_invalid_input_handling():\n    # TODO: 음수 입력 또는 int가 아닌 입력에서 예외가 발생하는지 검증\n    # 추가 아이디어: bool 입력이 허용되면 안 되는지 확인\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "easy",
-    "unit-test",
-    "pytest",
-    "equivalence partitioning",
-    "fee calculation",
-    "numeric"
+    "단위 테스트",
+    "동등 분할",
+    "수수료 계산",
+    "숫자"
   ],
   "difficulty": "Easy",
   "domain": "fintech",

@@ -32,13 +32,11 @@
   "description_md": "## 문제 설명\n\n`calculate_rate` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef calculate_rate(hour: int, day_of_week: int, is_holiday: bool) -> float:\n```\n\n### 동작 규칙\n- Final rate as a float rounded to 2 decimals.\n\n### 예시\n- `calculate_rate(...)` → 결과\n\n### 테스트 힌트\n- 경계값 분석\n- `시간 기반 경계`: 입력이 `hour` 단위라 하더라도 구간 포함 여부(이상, 이하)가 중요합니다.\n- `요금 계산`: 기본 요금과 할증이 어떻게 결합되는지(누적 여부 등) 조합 테스트로 검증해 보세요.\n- `다차원 경계`: (시간대) × (평일/주말) × (공휴일 여부)의 조합에서 대표 케이스와 경계 케이스를 선별해 커버리지를 확보하세요.\n",
   "initial_test_template": "import pytest\nfrom target import calculate_rate\n\n\ndef test_time_band_boundaries_hour_switching():\n    # TODO: 시간대 경계값을 집중 공략하세요.\n    # 예: 5 vs 6, 8 vs 9, 17 vs 18, 21 vs 22 등에서\n    # 서로 다른 시간대 요금이 적용되는지 검증\n    pass\n\n\ndef test_weekend_and_holiday_combinations_non_stacking_policy():\n    # TODO: 다차원 조합 테스트를 작성하세요.\n    # 평일/주말 + 공휴일 True/False 조합에서 요금이 어떻게 달라지는지 확인\n    # 특히 주말이면서 공휴일인 조합도 포함\n    pass\n\n\ndef test_invalid_inputs_error_handling():\n    # TODO: 입력 검증(예외)을 테스트하세요.\n    # - hour 범위 밖(음수, 24 등)\n    # - day_of_week 범위 밖(-1, 7 등)\n    # - 타입 오류(문자열, None, float 등)\n    # 예외 타입(TypeError/ValueError)도 확인 포인트\n    pass\n",
   "tags": [
-    "medium",
-    "unit-test",
-    "pytest",
-    "boundary value analysis",
-    "time boundary",
-    "pricing",
-    "multidimensional testing"
+    "단위 테스트",
+    "경계값 분석",
+    "시간 경계값",
+    "가격 책정",
+    "다차원 테스트"
   ],
   "difficulty": "Medium",
   "domain": "common",

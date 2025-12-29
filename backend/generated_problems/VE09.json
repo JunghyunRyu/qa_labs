@@ -27,12 +27,10 @@
   "description_md": "## 문제 설명\n\n`should_send_notification` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef should_send_notification(email_enabled: bool, push_enabled: bool, is_urgent: bool) -> str:\n```\n\n### 동작 규칙\n- `is_urgent`가 True이면: 활성화된 모든 채널로 발송합니다.\n- `is_urgent`가 False이면: 이메일을 우선합니다.\n- `'email'`: 이메일로 발송\n\n### 예시\n- `should_send_notification(...)` → 결과\n\n### 테스트 힌트\n- (combinational testing) 입문입니다.\n- 불리언 입력 3개는 총 8가지 조합이 있습니다. 각 조합을 빠짐없이 검증해 보세요.\n- `pytest.mark.parametrize`를 사용하면 삼변수 조합 테스트를 간결하게 작성할 수 있습니다.\n",
   "initial_test_template": "import pytest\nfrom target import should_send_notification\n\ndef test_all_combinations_table_driven():\n    # TODO: 조합 테스트 (삼변수 조합)\n    # 힌트: (email_enabled, push_enabled, is_urgent, expected) 형태의 테이블을 만들고\n    # pytest.mark.parametrize로 8가지 조합을 모두 검증해 보세요.\n    pass\n\ndef test_non_urgent_email_priority():\n    # TODO: 비긴급일 때는 email 우선 규칙을 검증하세요.\n    # 예: email과 push가 모두 True여도 결과는 'email'이어야 합니다.\n    pass\n\ndef test_urgent_sends_all_enabled_channels():\n    # TODO: 긴급일 때는 활성화된 모든 채널로 발송되는지 검증하세요.\n    # 예: 둘 다 True면 'both', 하나만 True면 해당 채널, 둘 다 False면 'none'\n    pass\n",
   "tags": [
-    "very easy",
-    "pytest",
-    "unit-test",
-    "combinational testing",
-    "boolean logic",
-    "notification"
+    "단위 테스트",
+    "조합 테스트",
+    "불리언 로직",
+    "알림"
   ],
   "difficulty": "Very Easy",
   "domain": "common",

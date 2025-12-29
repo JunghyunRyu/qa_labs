@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "QA-Arena",
     images: [
       {
-        url: "/og_image.png", // public 폴더에 저장된 OG 이미지
+        url: "/og_image.jpg",
         width: 1200,
         height: 630,
         alt: "QA-Arena OG Image",

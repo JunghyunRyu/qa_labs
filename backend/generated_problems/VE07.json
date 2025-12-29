@@ -27,13 +27,11 @@
   "description_md": "## 문제 설명\n\n`is_valid_index` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef is_valid_index(index: int, array_length: int) -> bool:\n```\n\n### 동작 규칙\n- `bool` : 유효하면 `True`, 아니면 `False`\n\n### 예시\n- `is_valid_index(0, 3)` → `True`\n- `is_valid_index(3, 3)` → `False`\n\n### 테스트 힌트\n- 경계값 분석\n- 이변수 관계\n- `index`의 하한 경계(0) 주변 값: -1, 0, 1\n- `index`의 상한 경계(`array_length - 1`, `array_length`) 주변 값\n",
   "initial_test_template": "import pytest\nfrom target import is_valid_index\n\ndef test_lower_bound_boundary_values():\n    # TODO: 경계값 분석: index가 -1, 0, 1일 때를 점검해 보세요.\n    # - array_length는 1 이상인 값으로 고정해서 하한 경계만 관찰하거나,\n    # - 여러 array_length와 조합하여 이변수 경계를 같이 확인해도 좋습니다.\n    pass\n\ndef test_upper_bound_off_by_one_cases():\n    # TODO: 경계값 분석: index가 array_length-1, array_length, array_length+1일 때를 점검해 보세요.\n    # 특히 index == array_length는 항상 False여야 합니다.\n    pass\n\ndef test_length_edge_cases_and_two_variable_relationship():\n    # TODO: 이변수 경계: array_length가 0일 때, 1일 때를 우선 점검하세요.\n    # 추가로 array_length가 0 이하인 입력(예: -1)에서도 결과가 일관적인지 확인해 보세요.\n    pass\n",
   "tags": [
-    "very easy",
-    "unit-test",
-    "pytest",
-    "boundary value analysis",
-    "index validation",
-    "two-variable boundary",
-    "integer"
+    "단위 테스트",
+    "경계값 분석",
+    "인덱스 검증",
+    "이변수 경계값",
+    "정수"
   ],
   "difficulty": "Very Easy",
   "domain": "common",

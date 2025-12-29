@@ -32,14 +32,12 @@
   "description_md": "## 문제 설명\n\n`validate_order` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef validate_order(payment_method: str, shipping_method: str, has_gift_wrap: bool, is_international: bool) -> dict:\n```\n\n### 동작 규칙\n- is_valid: bool\n- errors: list[str] (error codes)\n\n### 예시\n- `validate_order(...)` → 결과\n\n### 테스트 힌트\n- 단일 파라미터만 바꿔보는 방식은 결함을 놓치기 쉽습니다. 네 가지 입력 간\n- 이 얽혀 있으므로\n- 으로 접근하세요.\n- 모든 조합을 다 테스트하지 않고도, 각 입력값 쌍의 상호작용을 커버하는 `pairwise testing` 방식으로 테스트를 구성해보세요.\n",
   "initial_test_template": "import pytest\nfrom target import validate_order\n\n\n# TODO: pairwise testing 관점에서 payment_method/shipping_method/옵션 간 상호작용을 커버하는 조합을 설계하세요.\n# 힌트: 모든 조합 전수 대신, 각 값의 '쌍'이 최소 한 번 이상 등장하도록 케이스를 구성해보세요.\n\ndef test_pairwise_valid_combinations():\n    # TODO: 여러 입력 조합이 유효할 때 is_valid=True, errors=[] 인지 확인\n    # TODO: normalized의 문자열 소문자/공백 제거도 함께 확인\n    pass\n\n\ndef test_constraints_international_and_pickup_and_payment():\n    # TODO: 국제 배송과 배송수단/결제수단의 제약 조합을 검증하는 케이스를 포함\n    # 예: 국제배송에서 특정 배송수단이 허용되지 않아야 하는 상황\n    # 예: 특정 결제수단이 국제배송에서 허용되지 않아야 하는 상황\n    pass\n\n\ndef test_constraints_gift_wrap_interactions():\n    # TODO: gift_wrap 옵션이 배송수단과 충돌하는 조합을 검증\n    # TODO: 국제배송에서 gift_wrap 처리도 함께 고려\n    pass\n\n\ndef test_multiple_violations_report_all_errors():\n    # TODO: 한 주문이 여러 규칙을 동시에 위반하는 조합을 만들고,\n    # errors가 '모든' 위반을 반영하는지 확인\n    pass\n\n\ndef test_invalid_enums_and_types():\n    # TODO: 허용되지 않는 payment_method/shipping_method에서 ValueError가 발생하는지 확인\n    # TODO: has_gift_wrap/is_international이 bool이 아니면 TypeError가 발생하는지 확인\n    pass\n",
   "tags": [
-    "medium",
-    "pytest",
-    "unit-test",
-    "combinatorial testing",
-    "pairwise testing",
-    "constraint handling",
-    "validation",
-    "e-commerce"
+    "단위 테스트",
+    "조합 테스트",
+    "페어와이즈 테스트",
+    "제약조건 처리",
+    "검증",
+    "이커머스"
   ],
   "difficulty": "Medium",
   "domain": "common",

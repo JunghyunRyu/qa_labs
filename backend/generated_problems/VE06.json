@@ -27,13 +27,10 @@
   "description_md": "## 문제 설명\n\n`is_valid_percentage` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef is_valid_percentage(value: int) -> bool:\n```\n\n### 동작 규칙\n- This function assumes `value` is an `int` as indicated by the type hint.\n- The boundary values (0 and 100) are included.\n\n### 예시\n- `is_valid_percentage(0)` → `True`\n- `is_valid_percentage(100)` → `True`\n\n### 테스트 힌트\n- `boundary value`에 집중해\n- 를 확인해 보세요. 예를 들면 0과 100이 포함되는지 여부입니다.\n- 범위 밖의 대표값도 함께 확인해 보세요. 예를 들면 음수나 100 초과 값입니다.\n- `equivalence partitioning` 관점에서, 유효 범위 내부와 외부를 각각 대표하는 값들을 선정해 보세요.\n",
   "initial_test_template": "import pytest\nfrom target import is_valid_percentage\n\ndef test_valid_boundaries_inclusive():\n    # TODO: boundary value analysis\n    # 힌트: 0과 100이 유효(True)인지 확인하세요.\n    pass\n\ndef test_valid_values_inside_range():\n    # TODO: equivalence partitioning\n    # 힌트: 범위 내부 대표값(예: 1, 99 등)이 True인지 확인하세요.\n    pass\n\ndef test_invalid_values_outside_range():\n    # TODO: range validation\n    # 힌트: 범위 밖 대표값(예: -1, 101 등)이 False인지 확인하세요.\n    pass\n",
   "tags": [
-    "very easy",
-    "boundary value analysis",
-    "range validation",
-    "basic testing",
-    "unit-test",
-    "python",
-    "pytest"
+    "경계값 분석",
+    "범위 검증",
+    "기본 테스트",
+    "단위 테스트"
   ],
   "difficulty": "Very Easy",
   "domain": "common",

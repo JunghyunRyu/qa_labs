@@ -27,15 +27,12 @@
   "description_md": "## 문제 설명\n\n`convert_krw_to_usd` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef convert_krw_to_usd(amount: float, rate: float) -> float:\n```\n\n### 동작 규칙\n- 함수 명세에 따라 정확한 결과를 반환해야 함\n\n### 예시\n- `convert_krw_to_usd(1330, 1330)` → `1.0`\n- `convert_krw_to_usd(0, 1300)` → `0.0`\n\n### 테스트 힌트\n- `boundary value` 관점: 금액이 0인 경우, 환율이 0에 가까운 경우, 음수 입력\n- `equivalence partitioning` 관점: 정상 범위 입력과 비정상 입력을 나누어 검증\n- 반올림 검증: 소수점 셋째 자리에서 올림이 발생해야 하는 케이스와, 발생하지 않아야 하는 케이스\n- 예외 처리: 잘못된 입력에서 어떤 예외 타입이 나와야 하는지\n",
   "initial_test_template": "import pytest\nfrom target import convert_krw_to_usd\n\n\ndef test_zero_amount_boundary_value():\n    # TODO: amount가 0일 때도 정상적으로 0.0 USD가 반환되는지 확인\n    # 힌트: 예외가 나면 안 됩니다.\n    pass\n\n\ndef test_basic_conversion_equivalence_partitioning():\n    # TODO: 일반적인 정상 입력 파티션에서 변환 공식이 올바른지 확인\n    # 힌트: amount / rate 관계를 이용해 쉬운 숫자로 검증해보세요.\n    pass\n\n\ndef test_rounding_to_two_decimals():\n    # TODO: 소수점 2자리 반올림이 기대대로 동작하는지 확인\n    # 힌트: 소수점 셋째 자리가 5 이상인 케이스(올림)와 4 이하인 케이스(유지)를 포함하세요.\n    pass\n\n\ndef test_invalid_rate_error_handling():\n    # TODO: rate가 0 또는 음수인 경우 예외 처리(예: ValueError)가 일관되게 되는지 확인\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "very easy",
-    "unit-test",
-    "pytest",
-    "qa",
-    "finance",
-    "currency",
-    "basic testing",
-    "boundary value analysis",
-    "error handling"
+    "단위 테스트",
+    "금융",
+    "통화",
+    "기본 테스트",
+    "경계값 분석",
+    "오류 처리"
   ],
   "difficulty": "Very Easy",
   "domain": "fintech",

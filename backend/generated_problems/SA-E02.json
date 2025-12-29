@@ -27,11 +27,9 @@
   "description_md": "## 문제 설명\n\n`calculate_pagination` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef calculate_pagination(page: int, page_size: int) -> tuple[int, int]:\n```\n\n### 동작 규칙\n- offset is 0-based index of the first item to fetch\n- limit equals page_size\n\n### 예시\n- `calculate_pagination(1, 20)` → `(0, 20)`\n- `calculate_pagination(3, 10)` → `(20, 10)`\n\n### 테스트 힌트\n- `boundary value` 관점에서 `page`가 1일 때, 0일 때, 음수일 때\n- `page_size`가 1일 때, 0일 때, 음수일 때\n- 반환값의 의미가 올바른지 (offset과 limit의 위치/정의)\n- 잘못된 입력에 대해 예외가 발생하는지 (예외 타입과 조건)\n",
   "initial_test_template": "import pytest\nfrom target import calculate_pagination\n\n\ndef test_first_page_boundary_value():\n    # TODO: boundary value 관점에서 page=1일 때 offset/limit이 올바른지 검증\n    # 힌트: 첫 페이지의 offset은 0이어야 함\n    pass\n\n\ndef test_page_zero_and_negative_should_error():\n    # TODO: boundary value 관점에서 page=0, page<0 입력을 검증\n    # 힌트: page는 1부터 시작. 예외 타입/메시지도 함께 검증해볼 수 있음\n    pass\n\n\ndef test_page_size_zero_and_negative_should_error():\n    # TODO: page_size=0, page_size<0 경계값을 검증\n    # 힌트: limit이 0 또는 음수가 되면 실제 API/DB에서 문제를 일으킬 수 있음\n    pass\n\n\ndef test_return_shape_and_order():\n    # TODO: (offset, limit) 반환 순서와 의미를 검증\n    # 힌트: 튜플 길이, 각 값의 의미(어느 쪽이 offset인지)를 확인\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "easy",
-    "pytest",
-    "unit-test",
-    "pagination",
-    "boundary value analysis"
+    "단위 테스트",
+    "페이지네이션",
+    "경계값 분석"
   ],
   "difficulty": "Easy",
   "domain": "saas",

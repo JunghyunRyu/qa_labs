@@ -27,13 +27,11 @@
   "description_md": "## 문제 설명\n\n`can_withdraw` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef can_withdraw(balance: int, amount: int) -> bool:\n```\n\n### 동작 규칙\n- 함수 명세에 따라 정확한 결과를 반환해야 함\n\n### 예시\n- `can_withdraw(...)` → 결과\n\n### 테스트 힌트\n- `boundary value` 관점에서,\n- 는 매우 중요한 경계입니다.\n- `잔액 검증` 관점에서, 음수 잔액이나 음수 출금액처럼\n",
   "initial_test_template": "import pytest\nfrom target import can_withdraw\n\n\ndef test_boundary_amount_equals_balance():\n    # TODO: boundary value - amount == balance 일 때 허용되는지 확인\n    # 예: balance=1000, amount=1000\n    pass\n\n\ndef test_boundary_zero_amount():\n    # TODO: boundary value - 0원 출금 정책 확인 (일반적으로는 허용되는 케이스)\n    # 예: balance=10, amount=0\n    pass\n\n\ndef test_invalid_negative_amount_raises():\n    # TODO: error handling/validation - amount < 0 일 때 ValueError 발생 여부 확인\n    pass\n\n\ndef test_invalid_negative_balance_raises():\n    # TODO: 잔액 검증 - balance < 0 일 때 ValueError 발생 여부 확인\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "easy",
-    "unit-test",
-    "pytest",
-    "boundary value analysis",
-    "validation",
-    "integer",
-    "finance"
+    "단위 테스트",
+    "경계값 분석",
+    "검증",
+    "정수",
+    "금융"
   ],
   "difficulty": "Easy",
   "domain": "fintech",

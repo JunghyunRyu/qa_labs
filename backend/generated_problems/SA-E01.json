@@ -27,13 +27,11 @@
   "description_md": "## 문제 설명\n\n`validate_required_params` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef validate_required_params(params: dict[str, object] | None, required_keys: list[str]) -> list[str]:\n```\n\n### 동작 규칙\n- A parameter is considered \"present\" if the key exists in `params`, regardless of the value.\n- `params=None` is treated as an empty parameter mapping.\n\n### 예시\n- `validate_required_params(...)` → 결과\n\n### 테스트 힌트\n- API 설계 관점\n- 필수 키의 \"존재\"와 값의\n- 를 혼동하지 않는지\n",
   "initial_test_template": "import pytest\nfrom target import validate_required_params\n\n\ndef test_missing_keys_basic_equivalence_partitioning():\n    # TODO: 대표적인 정상/누락 케이스를 나누어 테스트하세요.\n    # - required_keys 일부만 params에 존재\n    # - 모두 존재\n    pass\n\n\ndef test_presence_vs_falsy_values_input_validation():\n    # TODO: 값이 0, False, \"\", None 이어도 \"키가 존재\"하면 누락이 아니어야 하는지 확인하세요.\n    # API 파라미터 검증에서 '존재' 기준을 명확히 하는 테스트를 작성하세요.\n    pass\n\n\ndef test_params_none_and_empty_cases():\n    # TODO: params=None, params={} 와 required_keys 조합을 테스트하세요.\n    # - params가 None일 때를 어떻게 해석해야 하는지(빈 요청으로 간주 등)\n    pass\n\n\ndef test_required_keys_validation_and_side_effects():\n    # TODO: required_keys 타입/원소 검증(예: 빈 문자열, 비문자열)을 테스트하세요.\n    # TODO: 함수 호출 후 required_keys 리스트가 변형되지 않는지(정렬 등)도 확인해보세요.\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "easy",
-    "unit-test",
-    "pytest",
-    "api",
-    "input validation",
-    "api design",
-    "dictionary"
+    "단위 테스트",
+    "API",
+    "입력 검증",
+    "API 설계",
+    "딕셔너리"
   ],
   "difficulty": "Easy",
   "domain": "saas",

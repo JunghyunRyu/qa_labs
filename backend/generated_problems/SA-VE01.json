@@ -27,13 +27,12 @@
   "description_md": "## 문제 설명\n\n`is_success_status` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef is_success_status(status_code: int) -> bool:\n```\n\n### 동작 규칙\n- `bool`\n\n### 예시\n- `is_success_status(200)` → `True`\n- `is_success_status(204)` → `True`\n- `is_success_status(404)` → `False`\n\n### 테스트 힌트\n- `boundary value` 관점에서 성공 범위의 시작과 끝 값을 점검해 보세요.\n- `equivalence partitioning` 관점에서 1xx, 2xx, 3xx, 4xx, 5xx 등 대표 값을 나누어 테스트해 보세요.\n- 입력 타입이 올바르지 않을 때의 동작도 고려해 보세요. 예를 들어 문자열이나 실수 등이 들어오면 어떻게 되어야 할지 명세를 기반으로 확인해 보세요.\n",
   "initial_test_template": "import pytest\nfrom target import is_success_status\n\n\ndef test_success_range_basic_partitions():\n    # TODO: HTTP 상태 코드 파티션(1xx/2xx/3xx/4xx/5xx)을 대표값으로 나눠 테스트해 보세요.\n    # 예: 200대는 성공, 300대는 비성공 등\n    pass\n\n\ndef test_success_range_boundaries():\n    # TODO: boundary value 관점에서 2xx 범위의 최소/최대 경계값을 검증하세요.\n    # 힌트: 199, 200, 299, 300 같은 값들이 중요합니다.\n    pass\n\n\ndef test_invalid_type_handling():\n    # TODO: status_code가 int가 아닐 때의 동작을 테스트하세요.\n    # 예: '200', 200.0, None 등의 입력에서 예외 타입을 확인해 보세요.\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "very easy",
-    "unit-test",
-    "http",
-    "status-code",
-    "basic testing",
-    "boundary value analysis",
-    "equivalence partitioning"
+    "단위 테스트",
+    "HTTP",
+    "상태 코드",
+    "기본 테스트",
+    "경계값 분석",
+    "동등 분할"
   ],
   "difficulty": "Very Easy",
   "domain": "saas",

@@ -27,11 +27,9 @@
   "description_md": "## 문제 설명\n\n`truncate_text` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef truncate_text(text: str, max_length: int) -> str:\n```\n\n### 동작 규칙\n- `str` : 원본 그대로 또는 말줄임 처리된 문자열\n\n### 예시\n- `truncate_text(\"Hello\", 5)` → `\"Hello\"`\n- `truncate_text(\"Hello world\", 8)` → `\"Hello...\"`\n\n### 테스트 힌트\n- `boundary value` 관점: 길이가 `max_length`와\n- , 1 더 길 때, 아주 짧은 `max_length` 값(0, 1, 2, 3 등)\n- 문자열 처리: 말줄임표 `...`가 붙는 조건, 결과 문자열의 최종 길이 검증\n- 에러 처리: `max_length`가 음수인 경우, 타입이 잘못 들어오는 경우\n",
   "initial_test_template": "import pytest\nfrom target import truncate_text\n\n\ndef test_no_truncation_when_length_is_within_limit():\n    # TODO: 기본 케이스. len(text) < max_length 및 len(text) == max_length 포함해서 확인해보세요.\n    pass\n\n\ndef test_truncation_adds_ellipsis_and_respects_total_length():\n    # TODO: 잘리는 케이스에서 말줄임표 `...`가 붙는지, 그리고 결과 길이가 정확히 max_length인지 확인해보세요.\n    pass\n\n\ndef test_very_small_max_length_behavior():\n    # TODO: max_length가 0, 1, 2, 3일 때의 동작을 테스트하세요.\n    # 힌트: truncation이 필요한 상황(긴 text)과 필요 없는 상황(짧은 text)을 나누어 보세요.\n    pass\n\n\ndef test_invalid_inputs_error_handling():\n    # TODO: max_length 음수, 타입이 잘못된 입력(예: max_length가 str) 등의 예외 처리를 확인해보세요.\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "very easy",
-    "unit-test",
-    "pytest",
-    "string",
-    "basic testing"
+    "단위 테스트",
+    "문자열",
+    "기본 테스트"
   ],
   "difficulty": "Very Easy",
   "domain": "content",

@@ -27,12 +27,10 @@
   "description_md": "## 문제 설명\n\n`do_ranges_overlap` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef do_ranges_overlap(start1: int, end1: int, start2: int, end2: int) -> bool:\n```\n\n### 동작 규칙\n- `bool`: 겹치면 `True`, 겹치지 않으면 `False`\n\n### 예시\n- `do_ranges_overlap(...)` → 결과\n\n### 테스트 힌트\n- `boundary value` 관점: `end1 == start2`, `end2 == start1` 같은\n- - `equivalence partitioning` 관점(구간 관계): 완전 분리, 부분 겹침, 한쪽이 다른 쪽을 완전히 포함\n- 사변수 관계 테스트: `start1/end1/start2/end2`의 상대적 크기 관계가 바뀌는 다양한 케이스\n- 입력이 잘못된 경우: `start > end` 형태의 구간이 들어오면 어떻게 되어야 하는지(예외 발생 여부)\n",
   "initial_test_template": "import pytest\nfrom target import do_ranges_overlap\n\n\ndef test_boundary_touch_should_overlap():\n    # TODO: 경계값 분석: end1 == start2, end2 == start1 케이스에서 inclusive 정책을 검증하세요.\n    # 예: [1,3] vs [3,5], [3,3] vs [3,10] 등\n    pass\n\n\ndef test_containment_and_partial_overlap_partitions():\n    # TODO: 구간 관계 파티션 테스트: 완전 포함, 부분 겹침(좌/우), 완전 분리 케이스를 구성하세요.\n    # 핵심은 4개 변수(start1,end1,start2,end2)의 상대적 순서를 바꿔가며 검증하는 것입니다.\n    pass\n\n\ndef test_invalid_ranges_raise_value_error():\n    # TODO: 에러 처리/입력 경계: start > end 인 입력에서 예외 타입(ValueError)과 동작을 검증하세요.\n    # range1만 잘못된 경우, range2만 잘못된 경우를 각각 확인해보세요.\n    pass\n\ndef test_type_error_for_invalid_input():\n    # TODO: None 입력 시 TypeError 발생 검증\n    # TODO: 잘못된 타입 입력 시 TypeError 발생 검증\n    pass\n",
   "tags": [
-    "easy",
-    "boundary value analysis",
-    "interval",
-    "range overlap",
-    "unit-test",
-    "pytest"
+    "경계값 분석",
+    "구간",
+    "범위 중첩",
+    "단위 테스트"
   ],
   "difficulty": "Easy",
   "domain": "common",
