@@ -36,5 +36,6 @@
   "difficulty": "Very Easy",
   "strong_test_code": "import pytest\nfrom target import is_positive\n\n\ndef test_positive_numbers():\n    # 양수는 True\n    assert is_positive(1) is True\n    assert is_positive(10) is True\n    assert is_positive(100) is True\n\n\ndef test_zero_boundary():\n    # 0은 양수가 아님 - n >= 0 버그 잡기\n    assert is_positive(0) is False\n\n\ndef test_negative_numbers():\n    # 음수는 False - abs() 버그, truthiness 버그, 반전 버그 잡기\n    assert is_positive(-1) is False\n    assert is_positive(-10) is False\n    assert is_positive(-100) is False\n",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • 0을 양수로 잘못 처리함. n >= 0 비교를 사용하여 is_positive(0)이 True를 반환함.\n  • 부호 판단을 완전히 반대로 구현함. 음수일 때만 True를 반환하고, 0과 양수는 모두 False를 반환함.\n  • 절댓값을 사용하여 음수도 양수로 잘못 처리함. 0을 제외한 모든 정수에 대해 True를 반환함.\n  • 정수의 진리값(truthiness)을 사용하여 0만 False, 나머지 양수/음수를 모두 True로 처리함."
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • 0을 양수로 잘못 처리함. n >= 0 비교를 사용하여 is_positive(0)이 True를 반환함.\n  • 부호 판단을 완전히 반대로 구현함. 음수일 때만 True를 반환하고, 0과 양수는 모두 False를 반환함.\n  • 절댓값을 사용하여 음수도 양수로 잘못 처리함. 0을 제외한 모든 정수에 대해 True를 반환함.\n  • 정수의 진리값(truthiness)을 사용하여 0만 False, 나머지 양수/음수를 모두 True로 처리함.",
+  "short_description": "공통 로직인 양수 판별: 정수·경계값 검증 (경계값 포함)"
 }

@@ -37,5 +37,6 @@
   ],
   "difficulty": "Hard",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • decrement에서 잔액 확인은 락 안에서 하지만 실제 차감은 락 밖에서 수행하는 ...\n  • increment와 decrement가 락 없이 read-modify-write를 수행한다\n\n🧠 **로직 검증**\n  • increment/decrement에서 매 호출마다 새로운 Lock을 생성해 잠근다\n  • increment와 decrement가 서로 다른 락으로 보호된다"
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • decrement에서 잔액 확인은 락 안에서 하지만 실제 차감은 락 밖에서 수행하는 ...\n  • increment와 decrement가 락 없이 read-modify-write를 수행한다\n\n🧠 **로직 검증**\n  • increment/decrement에서 매 호출마다 새로운 Lock을 생성해 잠근다\n  • increment와 decrement가 서로 다른 락으로 보호된다",
+  "short_description": "공통 로직인 동시성 정합성: 우회 입력 방어·stateful 검증"
 }

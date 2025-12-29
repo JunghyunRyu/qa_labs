@@ -35,5 +35,6 @@
   ],
   "difficulty": "Very Easy",
   "domain": "content",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 경계값 처리 오류: 문자열 길이가 max_length와 정확히 같아도 무조건 말줄임표(\"\n  • 오프바이원 오류: 말줄임표를 붙인 결과의 전체 길이가 max_length보다 1 더 ...\n  • 입력 검증 누락: max_length가 음수여도 예외를 발생시키지 않고 파이썬 슬라이...\n  • 짧은 max_length 처리 오류: max_length가 0"
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 경계값 처리 오류: 문자열 길이가 max_length와 정확히 같아도 무조건 말줄임표(\"\n  • 오프바이원 오류: 말줄임표를 붙인 결과의 전체 길이가 max_length보다 1 더 ...\n  • 입력 검증 누락: max_length가 음수여도 예외를 발생시키지 않고 파이썬 슬라이...\n  • 짧은 max_length 처리 오류: max_length가 0",
+  "short_description": "콘텐츠 서비스에서 흔한 문자열 말줄임 처리: 오프바이원·예외 처리 검증"
 }

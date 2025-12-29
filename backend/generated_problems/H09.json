@@ -41,5 +41,6 @@
   ],
   "difficulty": "Hard",
   "domain": "platform",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 복구 타임아웃 경계값(time boundary) 처리 오류: OPEN에서 HALF_O...\n  • 실패 임계값 `failure_threshold` 경계값 처리 오류: 연속 실패가 임계...\n\n🔀 **동등 분할**\n  • 연속 실패(consecutive failures) 처리 오류: CLOSED에서 성공해...\n\n⚠️ **예외 처리**\n  • HALF_OPEN 상태 전이 오류: HALF_OPEN에서 성공해도 CLOSED로 복귀...\n  • OPEN 상태에서 차단이 제대로 동작하지 않음: 복구 타임아웃이 지나지 않았는데도 `..."
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 복구 타임아웃 경계값(time boundary) 처리 오류: OPEN에서 HALF_O...\n  • 실패 임계값 `failure_threshold` 경계값 처리 오류: 연속 실패가 임계...\n\n🔀 **동등 분할**\n  • 연속 실패(consecutive failures) 처리 오류: CLOSED에서 성공해...\n\n⚠️ **예외 처리**\n  • HALF_OPEN 상태 전이 오류: HALF_OPEN에서 성공해도 CLOSED로 복귀...\n  • OPEN 상태에서 차단이 제대로 동작하지 않음: 복구 타임아웃이 지나지 않았는데도 `...",
+  "short_description": "플랫폼에서 흔한 상태 머신 테스트 (//): 예외 처리·우회 입력 방어 검증"
 }

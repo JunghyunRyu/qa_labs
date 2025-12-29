@@ -38,5 +38,6 @@
   ],
   "difficulty": "Easy",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • min_price 경계값을 잘못 처리함\n  • 여러 조건을 AND가 아니라 OR처럼 처리함\n\n⚠️ **예외 처리**\n  • None인 필터를 무시하지 않고 비교해버림\n  • in_stock 필터가 True일 때만 적용되고 False를 요청하면 무시됨"
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • min_price 경계값을 잘못 처리함\n  • 여러 조건을 AND가 아니라 OR처럼 처리함\n\n⚠️ **예외 처리**\n  • None인 필터를 무시하지 않고 비교해버림\n  • in_stock 필터가 True일 때만 적용되고 False를 요청하면 무시됨",
+  "short_description": "공통 로직인 상품 필터 조합: 타입 검증·예외 처리 검증 (경계값 포함)"
 }

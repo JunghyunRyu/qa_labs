@@ -39,5 +39,6 @@
   ],
   "difficulty": "Very Easy",
   "domain": "fintech",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • amount가 0인 경우도 유효한 입력인데\n  • rate가 0인 경우 명확한 ValueError를 발생시켜야 하는데\n  • 소수점 반올림이 아니라 내림 또는 절사 방식으로 2자리로 맞춰서\n\n🧠 **로직 검증**\n  • 환율 적용 방향을 반대로 적용하여 amount / rate가 아니라 amount * ..."
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • amount가 0인 경우도 유효한 입력인데\n  • rate가 0인 경우 명확한 ValueError를 발생시켜야 하는데\n  • 소수점 반올림이 아니라 내림 또는 절사 방식으로 2자리로 맞춰서\n\n🧠 **로직 검증**\n  • 환율 적용 방향을 반대로 적용하여 amount / rate가 아니라 amount * ...",
+  "short_description": "핀테크에서 자주 쓰는 원화-달러 환율 변환: 예외 처리·우회 입력 방어 검증"
 }

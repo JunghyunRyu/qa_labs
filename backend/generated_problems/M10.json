@@ -37,5 +37,6 @@
   ],
   "difficulty": "Medium",
   "domain": "commerce",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • `in_stock=False` 필터를 적용해야 하는데\n  • 가격 경계값에서 `inclusive`여야 하는데 `exclusive`로 처리한다\n  • 빈 필터(또는 None)에서 전체 상품을 반환해야 하는데\n  • 여러 조건을 AND로 조합해야 하는데"
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • `in_stock=False` 필터를 적용해야 하는데\n  • 가격 경계값에서 `inclusive`여야 하는데 `exclusive`로 처리한다\n  • 빈 필터(또는 None)에서 전체 상품을 반환해야 하는데\n  • 여러 조건을 AND로 조합해야 하는데",
+  "short_description": "커머스에서 자주 쓰는 상품 검색 필터 조합: 타입 검증·필터 검증"
 }
