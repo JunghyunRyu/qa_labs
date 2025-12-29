@@ -47,36 +47,76 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
   // 제목이 없을 때 fallback 처리
   const displayTitle = problem.title || `문제 #${problem.id}`;
 
-  // description_md에서 첫 문장 추출 (마크다운 제거)
-  const extractPreview = (description_md?: string): string => {
-    if (!description_md) return "";
+  // summary에서 첫 문장 추출 (이모지와 마크다운 제거)
+  const extractPreviewFromSummary = (summary?: string): string => {
+    if (!summary) return "";
 
+    // 이모지 제거 (유니코드 이모지 범위)
+    let text = summary.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "");
     // 마크다운 헤더 제거
-    let text = description_md.replace(/^#+\s+/gm, "");
-    // "문제 설명" 텍스트 제거 (헤더 제거 후 남는 텍스트)
-    text = text.replace(/^문제\s*설명\s*/gm, "");
+    text = text.replace(/^#+\s+/gm, "");
     // 마크다운 강조 제거
     text = text.replace(/\*\*/g, "").replace(/\*/g, "");
-    // 코드 블록 제거
-    text = text.replace(/```[\s\S]*?```/g, "");
-    // 인라인 코드 제거
-    text = text.replace(/`[^`]+`/g, "");
-    // 링크 제거
-    text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
+    // 불릿 포인트 제거
+    text = text.replace(/^[•\-]\s*/gm, "");
     // 줄바꿈을 공백으로
     text = text.replace(/\n+/g, " ").trim();
-    
-    // 첫 문장 추출 (마침표, 느낌표, 물음표 기준)
+    // 연속 공백 정리
+    text = text.replace(/\s+/g, " ");
+
+    // 첫 120자 + 말줄임
+    return text.length > 120 ? text.substring(0, 120).trim() + "..." : text;
+  };
+
+  // description_md에서 미리보기 추출 (fallback용)
+  const extractPreviewFromDescription = (description_md?: string): string => {
+    if (!description_md) return "";
+
+    // "동작 규칙" 섹션 이후 내용 추출 시도
+    const rulesMatch = description_md.match(/###?\s*동작\s*규칙\s*\n([\s\S]*?)(?=###|$)/);
+    if (rulesMatch) {
+      const rules = rulesMatch[1];
+      // 불릿 포인트에서 텍스트 추출
+      const bulletPoints = rules.match(/^[-*]\s*(.+)$/gm);
+      if (bulletPoints && bulletPoints.length > 0) {
+        const cleanedPoints = bulletPoints
+          .slice(0, 2) // 최대 2개
+          .map((p) => p.replace(/^[-*]\s*/, "").replace(/`[^`]+`/g, "").trim())
+          .join(" / ");
+        return cleanedPoints.length > 120 ? cleanedPoints.substring(0, 120).trim() + "..." : cleanedPoints;
+      }
+    }
+
+    // 함수 docstring에서 추출 시도 (Args: 이전의 설명)
+    const docMatch = description_md.match(/함수 시그니처[\s\S]*?```[\s\S]*?"""([\s\S]*?)(?:Args:|Returns:|$)/);
+    if (docMatch && docMatch[1]) {
+      const docText = docMatch[1].replace(/\n+/g, " ").trim();
+      if (docText && docText.length > 10) {
+        return docText.length > 120 ? docText.substring(0, 120).trim() + "..." : docText;
+      }
+    }
+
+    // 기본 fallback: 마크다운 정리 후 첫 문장
+    let text = description_md.replace(/^#+\s+/gm, "");
+    text = text.replace(/^문제\s*설명\s*/gm, "");
+    text = text.replace(/\*\*/g, "").replace(/\*/g, "");
+    text = text.replace(/```[\s\S]*?```/g, "");
+    text = text.replace(/`[^`]+`/g, "");
+    text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
+    text = text.replace(/\n+/g, " ").trim();
+
     const sentences = text.match(/[^.!?]+[.!?]+/g);
     if (sentences && sentences.length > 0) {
       return sentences[0].trim();
     }
-    
-    // 문장이 없으면 첫 150자
+
     return text.length > 150 ? text.substring(0, 150) + "..." : text;
   };
 
-  const preview = extractPreview(problem.description_md);
+  // summary 우선 사용, 없으면 description_md에서 추출
+  const preview = problem.summary
+    ? extractPreviewFromSummary(problem.summary)
+    : extractPreviewFromDescription(problem.description_md);
 
   const difficulty = difficultyConfig[problem.difficulty];
 
