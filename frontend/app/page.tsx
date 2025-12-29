@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -11,18 +8,18 @@ import HeroResultPanel from "@/components/hero/HeroResultPanel";
 const heroCopy = {
   headline: "숨은 버그, 얼마나 잡아내나요?",
   subLine1: "당신의 테스트 시나리오가 얼마나 강력한지, 지금 바로 확인해보세요.",
-  micro: "AI 도우미는 정답이 아니라, 놓친 케이스와 다음 테스트 설계를 제안합니다.",
-  domainLabel: "실무 도메인으로 시작하기",
-  domainHelper: "도메인을 선택하면 문제/추천 트랙이 해당 업무 시나리오로 맞춰집니다.",
+  todayProblem: "오늘의 문제",
+  domainLabel: "도메인별로 시작하기",
+  domainHelper: "선택한 도메인의 문제로 바로 이동합니다",
 };
 
 const domains = [
-  { key: "common", label: "Common", title: "공통 시나리오", cta: "내 실력 측정하기", hint: "경계값 · 예외처리 · 타입검증 · 널체크" },
-  { key: "fintech", label: "Fintech", title: "결제/정산/수수료", cta: "Fintech 시나리오로 진단하기", hint: "정산 · 수수료 · 반올림 · 중복결제" },
-  { key: "commerce", label: "Commerce", title: "재고/주문/쿠폰", cta: "Commerce 시나리오로 진단하기", hint: "쿠폰 · 재고 · 주문 · 가격우선순위" },
-  { key: "saas", label: "SaaS", title: "권한/요금제/쿼터", cta: "SaaS 시나리오로 진단하기", hint: "권한 · 요금제 · 쿼터 · 레이트리밋" },
-  { key: "platform", label: "Platform", title: "상태전이/복구/장애", cta: "Platform 시나리오로 진단하기", hint: "상태전이 · 재시도 · 서킷브레이커" },
-  { key: "content", label: "Content", title: "문자열/정규화/발송", cta: "Content 시나리오로 진단하기", hint: "길이 · 정규화 · 금칙어 · 발송제한" },
+  { key: "common", label: "공통", title: "공통 시나리오", hint: "경계값 · 예외처리 · 타입검증 · 널체크" },
+  { key: "fintech", label: "핀테크", title: "결제/정산/수수료", hint: "정산 · 수수료 · 반올림 · 중복결제" },
+  { key: "commerce", label: "커머스", title: "재고/주문/쿠폰", hint: "쿠폰 · 재고 · 주문 · 가격우선순위" },
+  { key: "saas", label: "SaaS", title: "권한/요금제/쿼터", hint: "권한 · 요금제 · 쿼터 · 레이트리밋" },
+  { key: "platform", label: "플랫폼", title: "상태전이/복구/장애", hint: "상태전이 · 재시도 · 서킷브레이커" },
+  { key: "content", label: "콘텐츠", title: "문자열/정규화/발송", hint: "길이 · 정규화 · 금칙어 · 발송제한" },
 ];
 
 // Feature Card 데이터
@@ -41,8 +38,8 @@ const features = [
   },
   {
     image: "/images/auto-grading-card.png",
-    title: "STEP 02. 탐지력(킬 비율)로 검증",
-    description: "숨은 버그(변이)를 심어, 내 테스트가 결함을 얼마나 잡는지 점수로 확인합니다.",
+    title: "STEP 02. 테스트 강도 검증",
+    description: "숨겨진 버그를 찾는 능력으로 테스트의 강도를 객관적으로 평가받아보세요.",
     iconBg: "bg-amber-100 dark:bg-amber-900/30",
     iconColor: "text-amber-600 dark:text-amber-400",
     icon: (
@@ -54,7 +51,7 @@ const features = [
   {
     image: "/images/ai-code-review-card.png",
     title: "STEP 03. AI 분석 리포트로 회고",
-    description: "놓친 케이스와 취약 지점을 요약하고, 보완할 테스트 우선순위를 제안합니다.",
+    description: "'어떤 시나리오를 놓쳤을까?' AI가 커버리지 사각지대를 분석하고, 더 견고한 테스트를 위한 인사이트를 제공합니다.",
     iconBg: "bg-sky-100 dark:bg-sky-900/30",
     iconColor: "text-sky-600 dark:text-sky-400",
     icon: (
@@ -298,9 +295,6 @@ const showcase = [
 ];
 
 export default function Home() {
-  const [selectedDomain, setSelectedDomain] = useState("common");
-  const currentDomain = domains.find((d) => d.key === selectedDomain) || domains[0];
-
   return (
     <div className="flex flex-col">
       {/* Hero Section - 2컬럼 레이아웃 */}
@@ -332,23 +326,14 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col gap-3 mt-6 items-center lg:items-start">
+              {/* CTA Button */}
+              <div className="mt-6 flex justify-center lg:justify-start">
                 <Link
-                  href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
+                  href="/problems"
                   className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
                 >
-                  {currentDomain.cta}
+                  내 실력 측정하기
                 </Link>
-                <a
-                  href="#how-it-works"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-white/70 text-sm font-medium hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                >
-                  진행 방식
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </a>
               </div>
             </div>
 
@@ -358,95 +343,53 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 하단: Featured Problem + Domain Badges (전체 폭) */}
-          <div className="mt-10 lg:mt-12">
-            {/* Featured Problem Card */}
-            <div className="mx-auto w-full max-w-xl">
+          {/* 하단: 2컬럼 (오늘의 문제 + 도메인별로 시작하기) */}
+          <div className="mt-10 lg:mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* 좌측: 오늘의 문제 */}
+            <div className="rounded-2xl border border-white/20 bg-white/[0.08] backdrop-blur p-5">
+              <p className="text-xs text-white/60 mb-3">{heroCopy.todayProblem}</p>
               <Link
                 href="/problems/problem-e04"
-                className="group cursor-pointer relative
-                           flex items-center justify-between gap-4 rounded-2xl
-                           border-2 border-white/20 bg-white/10 px-5 py-4 backdrop-blur
-                           transition-colors transition-shadow transition-transform
-                           hover:bg-white/15 hover:border-blue-400/60
-                           hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]
-                           active:scale-[0.985]
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70
-                           focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+                className="group flex items-center justify-between gap-4 transition-colors"
               >
-                {/* 추천 배지 */}
-                <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider
-                                 bg-emerald-500 text-white rounded-full shadow-sm">
-                  추천
-                </span>
                 <div className="min-w-0 text-left">
                   <span className="block text-base font-semibold text-white truncate
-                                   group-hover:text-blue-100 group-focus-visible:text-blue-100 transition-colors">
+                                   group-hover:text-blue-200 transition-colors">
                     점수 등급 계산 함수 테스트
                   </span>
-                  <span className="block mt-1 text-sm text-white/75
-                                   group-hover:text-white/90 group-focus-visible:text-white/90 transition-colors">
-                    Easy · 숨은 버그 5개 · 경계값 · 동등분할
+                  <span className="block mt-1 text-sm text-white/70">
+                    Easy · 숨은 버그 5개
                   </span>
                 </div>
-                <span className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold
-                                 bg-blue-600 text-white shadow-lg transition-colors
-                                 group-hover:bg-blue-500 group-focus-visible:bg-blue-500">
-                  도전하기
+                <span className="shrink-0 flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium
+                                 bg-blue-600 text-white transition-colors
+                                 group-hover:bg-blue-500">
+                  도전
                   <ChevronRight className="w-4 h-4 transition-transform
-                                           group-hover:translate-x-1 group-focus-visible:translate-x-1" />
+                                           group-hover:translate-x-0.5" />
                 </span>
               </Link>
             </div>
 
-            {/* Domain Badges */}
-            <div className="mt-6 text-center">
-              <p className="text-xs text-white/60 mb-2">{heroCopy.domainLabel}</p>
-              <div className="flex flex-wrap justify-center gap-2">
+            {/* 우측: 도메인별로 시작하기 */}
+            <div className="rounded-2xl border border-white/20 bg-white/[0.08] backdrop-blur p-5">
+              <p className="text-xs text-white/60 mb-3">{heroCopy.domainLabel}</p>
+              <div className="flex flex-wrap gap-2">
                 {domains.map((d) => (
-                  <button
+                  <Link
                     key={d.key}
+                    href={`/problems?domain=${d.key}`}
                     title={d.title}
-                    onClick={() => {
-                      setSelectedDomain(d.key);
-                      // 커스텀 스무스 스크롤 (브라우저 smooth 무시 문제 해결)
-                      requestAnimationFrame(() => {
-                        const el = document.getElementById("scenario-showcase");
-                        if (!el) return;
-                        const headerOffset = 96;
-                        const targetY = el.getBoundingClientRect().top + window.scrollY - headerOffset;
-                        const startY = window.scrollY;
-                        const diff = targetY - startY;
-                        const duration = 600; // ms
-                        let startTime: number | null = null;
-
-                        const easeInOutCubic = (t: number) =>
-                          t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-                        const animateScroll = (currentTime: number) => {
-                          if (!startTime) startTime = currentTime;
-                          const elapsed = currentTime - startTime;
-                          const progress = Math.min(elapsed / duration, 1);
-                          const easeProgress = easeInOutCubic(progress);
-                          window.scrollTo(0, startY + diff * easeProgress);
-                          if (progress < 1) requestAnimationFrame(animateScroll);
-                        };
-
-                        requestAnimationFrame(animateScroll);
-                      });
-                    }}
-                    className={`px-3.5 py-1.5 text-sm rounded-full border transition-all cursor-pointer ${
-                      selectedDomain === d.key
-                        ? "bg-white/30 text-white border-white/50 font-semibold"
-                        : "text-white/90 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 hover:border-white/40"
-                    }`}
+                    className="px-3 py-1.5 text-sm rounded-full border transition-all
+                               text-white/90 bg-white/10 border-white/20
+                               hover:bg-white/20 hover:border-white/40 hover:text-white"
                   >
                     {d.label}
-                  </button>
+                  </Link>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-white/50">
-                도메인을 고르면 추천 문제가 바뀝니다 · {currentDomain.hint}
+              <p className="mt-3 text-xs text-white/50">
+                {heroCopy.domainHelper}
               </p>
             </div>
           </div>
@@ -462,7 +405,7 @@ export default function Home() {
               왜 정답 통과만으로는 부족할까요?
             </h2>
             <p className="section-subtitle break-keep">
-              정답 여부를 넘어, 숨은 버그를 잡는 힘을 측정하고 개선합니다.
+              테스트가 초록불(Pass)이라고 해서, 버그가 없는 것은 아닙니다.
             </p>
           </div>
 
@@ -505,10 +448,10 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">숨은 버그 탐지율 채점</h3>
               <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
-                정답 통과가 아니라, 테스트가 결함을 얼마나 잡는지{' '}
-                <span className="font-semibold text-blue-600 dark:text-blue-400">검증 강도</span>를
-                점수로 확인합니다.
-              </p>
+                단순 커버리지가 아닙니다. </p>
+              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
+                <span className="font-semibold text-blue-600 dark:text-blue-400">{''}결함 발견률</span>{' '}
+              로 진짜 검증 강도를 측정합니다.</p>
             </div>
 
             {/* Card 2: 브라우저 즉시 실행 */}
@@ -614,20 +557,17 @@ export default function Home() {
         <div className="section-container relative z-10">
           <div className="section-header">
             <h2 className="section-title !text-white">
-              {selectedDomain === "common"
-                ? "이런 버그, 찾아낼 수 있나요?"
-                : `${currentDomain.label} 시나리오 추천`}
+              이런 버그, 찾아낼 수 있나요?
             </h2>
             <p className="section-subtitle !text-slate-300">
-              {selectedDomain === "common"
-                ? <>평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.<br className="hidden sm:block" />실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.</>
-                : <>{currentDomain.title} 도메인에서 자주 발생하는 버그 시나리오입니다.<br className="hidden sm:block" />실무에서 놓치기 쉬운 케이스를 미리 연습해보세요.</>}
+              평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.<br className="hidden sm:block" />
+              실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.
             </p>
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {showcase
-              .filter((p) => p.domain === selectedDomain)
+              .filter((p) => p.domain === "common")
               .slice(0, 3)
               .map((p) => (
               <Link
@@ -688,19 +628,7 @@ export default function Home() {
           </div>
 
           {/* CTA 버튼 - 섹션 하단 중앙 */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* 도메인별 더 보기 버튼 */}
-            {selectedDomain !== "common" && (
-              <Link
-                href={`/problems?domain=${selectedDomain}`}
-                className="inline-flex items-center justify-center rounded-full border border-white/30 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 hover:border-white transition-colors"
-              >
-                {currentDomain.label} 더 보기
-                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            )}
+          <div className="mt-10 flex items-center justify-center">
             {/* 전체 문제 보기 버튼 */}
             <Link
               href="/problems"
