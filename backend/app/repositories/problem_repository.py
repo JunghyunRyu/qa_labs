@@ -141,6 +141,7 @@ class ProblemRepository:
                 "domain": getattr(problem, 'domain', 'common'),
                 "skills": problem.skills,
                 "summary": problem.summary,
+                "short_description": problem.short_description,
                 "description_md": problem.description_md,
                 "success_rate": float(success_rate) if success_rate is not None else None,
             }

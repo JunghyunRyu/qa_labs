@@ -95,6 +95,7 @@ class ProblemService:
                 domain=p.get("domain", "common"),
                 skills=p["skills"],
                 summary=p.get("summary"),
+                short_description=p.get("short_description"),
                 description_md=p["description_md"],
                 success_rate=p["success_rate"],
             )
