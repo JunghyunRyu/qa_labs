@@ -436,24 +436,21 @@ export default function Home() {
       </section>
 
       {/* Proof Points Section */}
-      <section id="why" className="proof-points-section py-16 bg-slate-50 dark:bg-gray-900/50 relative scroll-mt-16">
-        {/* Top Divider */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent" />
-
-        <div className="max-w-6xl mx-auto px-4">
+      <section id="why" className="section-base bg-[var(--surface)] relative scroll-mt-16">
+        <div className="section-container">
           {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4 break-keep">
+          <div className="section-header">
+            <h2 className="section-title break-keep">
               왜 정답 통과만으로는 부족할까요?
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto break-keep">
+            <p className="section-subtitle break-keep">
               정답 여부를 넘어, 숨은 버그를 잡는 힘을 측정하고 개선합니다.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1: 버그 탐지율 채점 */}
-            <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
+            <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
                 {/* 타겟 + 버그 아이콘 */}
                 <svg
@@ -497,7 +494,7 @@ export default function Home() {
             </div>
 
             {/* Card 2: 브라우저 즉시 실행 */}
-            <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
+            <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
                 {/* 브라우저 + 플레이 아이콘 */}
                 <svg
@@ -530,7 +527,7 @@ export default function Home() {
             </div>
 
             {/* Card 3: AI 분석 리포트 */}
-            <div className="proof-card bg-white dark:bg-gray-800 p-8 rounded-2xl text-center border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 min-h-[280px] flex flex-col items-center">
+            <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
                 {/* 문서 + 돋보기 + AI 노드 아이콘 */}
                 <svg
@@ -579,35 +576,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Showcase Section - Dark Theme with Spotlight */}
+      {/* Showcase Section - Dark Theme */}
       <section
         id="scenario-showcase"
-        className="relative overflow-hidden py-16 scroll-mt-24"
-        style={{
-          backgroundColor: '#0f172a',
-          backgroundImage: `
-            radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 60%),
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '100% 100%, 40px 40px, 40px 40px',
-        }}
+        className="section-base bg-slate-900 dark:bg-slate-950 relative overflow-hidden scroll-mt-24"
       >
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-white">
+        {/* Grid Pattern Overlay */}
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 60%),
+              linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: '100% 100%, 40px 40px, 40px 40px',
+          }}
+        />
+        <div className="section-container relative z-10">
+          <div className="section-header">
+            <h2 className="section-title !text-white">
               {selectedDomain === "common"
                 ? "이런 버그, 찾아낼 수 있나요?"
                 : `${currentDomain.label} 시나리오 추천`}
             </h2>
-            <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-slate-300">
+            <p className="section-subtitle !text-slate-300">
               {selectedDomain === "common"
                 ? <>평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.<br className="hidden sm:block" />실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.</>
                 : <>{currentDomain.title} 도메인에서 자주 발생하는 버그 시나리오입니다.<br className="hidden sm:block" />실무에서 놓치기 쉬운 케이스를 미리 연습해보세요.</>}
             </p>
           </div>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {showcase
               .filter((p) => p.domain === selectedDomain)
               .slice(0, 3)
@@ -615,7 +615,7 @@ export default function Home() {
               <Link
                 key={p.title}
                 href={p.href}
-                className="group flex flex-col h-full rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-600"
+                className="card-dark group flex flex-col h-full"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2">
@@ -698,19 +698,21 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-16 sm:py-20 px-4 bg-[var(--background)]">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)] break-keep">
-            막막했던 테스트 설계, 3단계로 완성됩니다
-          </h2>
-          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto break-keep">
-            이론이 아니라 실전입니다. 시나리오 → 검증 → 회고로 테스트 설계를 완성하세요.
-          </p>
+      <section id="features" className="section-base bg-[var(--background)]">
+        <div className="section-container">
+          <div className="section-header">
+            <h2 className="section-title break-keep">
+              막막했던 테스트 설계, 3단계로 완성됩니다
+            </h2>
+            <p className="section-subtitle break-keep">
+              이론이 아니라 실전입니다. 시나리오 → 검증 → 회고로 테스트 설계를 완성하세요.
+            </p>
+          </div>
 
           {/* Feature Cards Grid with Flow Arrows (5-column layout) */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-8 md:gap-6 md:items-center">
             {/* STEP 01 Card */}
-            <div className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md">
+            <div className="card-base group overflow-hidden !p-0">
               <div className="relative aspect-square">
                 <Image
                   src={features[0].image}
@@ -747,7 +749,7 @@ export default function Home() {
             </div>
 
             {/* STEP 02 Card */}
-            <div className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md">
+            <div className="card-base group overflow-hidden !p-0">
               <div className="relative aspect-square">
                 <Image
                   src={features[1].image}
@@ -784,7 +786,7 @@ export default function Home() {
             </div>
 
             {/* STEP 03 Card */}
-            <div className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md">
+            <div className="card-base group overflow-hidden !p-0">
               <div className="relative aspect-square">
                 <Image
                   src={features[2].image}
@@ -813,14 +815,16 @@ export default function Home() {
       <HowItWorksSection />
 
       {/* AI Feedback Sample Section */}
-      <section id="ai-feedback" className="py-16 sm:py-20 px-4 bg-[var(--background)] scroll-mt-16">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
-            AI 도우미가 이렇게 피드백합니다
-          </h2>
-          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
-            채점 완료 후 AI가 코드를 분석하여 개선 방향을 제시합니다
-          </p>
+      <section id="ai-feedback" className="section-base bg-[var(--background)] scroll-mt-16">
+        <div className="section-container !max-w-4xl">
+          <div className="section-header">
+            <h2 className="section-title">
+              AI 도우미가 이렇게 피드백합니다
+            </h2>
+            <p className="section-subtitle">
+              채점 완료 후 AI가 코드를 분석하여 개선 방향을 제시합니다
+            </p>
+          </div>
 
           <div className="bg-[var(--card-background)] border border-[var(--card-border)] rounded-xl p-6 sm:p-8 shadow-lg">
             {/* Summary */}
@@ -896,8 +900,8 @@ export default function Home() {
       </section>
 
       {/* Guest Mode Banner Section */}
-      <section className="py-12 px-4 bg-blue-50 dark:bg-blue-900/20">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="section-base bg-[var(--surface)]">
+        <div className="section-container !max-w-4xl text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -930,20 +934,22 @@ export default function Home() {
       </section>
 
       {/* Target Audience Section */}
-      <section className="py-16 sm:py-20 px-4 bg-[var(--background)]">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--foreground)]">
-            누구를 위한 플랫폼인가요?
-          </h2>
-          <p className="text-center text-[var(--muted)] mb-12 max-w-2xl mx-auto">
-            QA-Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
-          </p>
+      <section className="section-base bg-[var(--background)]">
+        <div className="section-container">
+          <div className="section-header">
+            <h2 className="section-title">
+              누구를 위한 플랫폼인가요?
+            </h2>
+            <p className="section-subtitle">
+              QA-Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {audiences.map((a) => (
               <div
                 key={a.title}
-                className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition hover:shadow-md"
+                className="card-base group relative overflow-hidden !p-0"
               >
                 {/* Image area */}
                 <div className="relative h-44">
@@ -983,9 +989,9 @@ export default function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-16 sm:py-20 px-4 bg-gradient-to-br from-sky-500 to-blue-600">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-white">
+      <section className="section-base bg-gradient-to-br from-sky-500 to-blue-600">
+        <div className="section-container !max-w-4xl text-center">
+          <h2 className="section-title !text-white !mb-4">
             QA 역량, 지금 바로 검증해보세요
           </h2>
           <p className="text-white/80 mb-8 max-w-xl mx-auto">

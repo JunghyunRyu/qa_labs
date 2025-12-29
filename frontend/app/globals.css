@@ -11,6 +11,12 @@ html, body {
   --card-border: #e5e7eb;
   --muted: #6b7280;
   --accent: #0ea5e9;  /* Electric Blue */
+
+  /* 3단 서페이스 계층 (랜딩 UI 통일) */
+  --surface: #f8fafc;              /* slate-50: 섹션 바닥 */
+  --surface-elevated: #ffffff;     /* white: 일반 카드 */
+  --surface-float: #ffffff;        /* white: 강조 카드 (shadow 추가) */
+  --border-subtle: #e2e8f0;        /* slate-200: 카드 보더 */
 }
 
 .dark {
@@ -20,6 +26,12 @@ html, body {
   --card-border: #374151;
   --muted: #9ca3af;
   --accent: #38bdf8;  /* Electric Blue (light variant) */
+
+  /* 3단 서페이스 계층 (다크모드) */
+  --surface: #0f172a;              /* slate-900: 섹션 바닥 */
+  --surface-elevated: #1e293b;     /* slate-800: 일반 카드 */
+  --surface-float: #1e293b;        /* slate-800: 강조 카드 (shadow 추가) */
+  --border-subtle: #334155;        /* slate-700: 카드 보더 */
 }
 
 @theme inline {
@@ -103,4 +115,108 @@ body {
 .dark .search-highlight-current {
   background-color: rgb(249 115 22); /* orange-500 */
   outline-color: rgb(251 146 60); /* orange-400 */
+}
+
+/* ========================================
+   Landing Page - 통일된 카드/섹션 스타일
+   ======================================== */
+
+/* 기본 카드 스타일 */
+.card-base {
+  border-radius: 1rem;           /* rounded-2xl */
+  border: 1px solid var(--border-subtle);
+  background-color: var(--surface-elevated);
+  padding: 1.5rem;               /* p-6 */
+  transition: all 0.2s ease;
+}
+
+/* 강조 카드 스타일 (shadow 추가) */
+.card-float {
+  border-radius: 1rem;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--surface-float);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dark .card-float {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* 카드 호버 효과 */
+.card-base:hover,
+.card-float:hover {
+  transform: translateY(-2px);
+  border-color: #3b82f6;         /* blue-500 */
+}
+
+/* 다크 테마 카드 (Showcase 섹션용) */
+.card-dark {
+  border-radius: 1rem;
+  border: 1px solid #334155;     /* slate-700 */
+  background-color: #1e293b;     /* slate-800 */
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.card-dark:hover {
+  transform: translateY(-2px);
+  border-color: #475569;         /* slate-600 */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+/* 섹션 공통 스타일 */
+.section-base {
+  padding-top: 4rem;             /* py-16 */
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 640px) {
+  .section-base {
+    padding-top: 5rem;           /* sm:py-20 */
+    padding-bottom: 5rem;
+  }
+}
+
+/* 섹션 컨테이너 */
+.section-container {
+  max-width: 72rem;              /* max-w-6xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;            /* px-4 */
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .section-container {
+    padding-left: 1.5rem;        /* sm:px-6 */
+    padding-right: 1.5rem;
+  }
+}
+
+/* 섹션 헤더 */
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;           /* mb-12 */
+}
+
+.section-title {
+  font-size: 1.875rem;           /* text-3xl */
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .section-title {
+    font-size: 2.25rem;          /* sm:text-4xl */
+  }
+}
+
+.section-subtitle {
+  color: var(--muted);
+  max-width: 42rem;              /* max-w-2xl */
+  margin-left: auto;
+  margin-right: auto;
 }

@@ -64,19 +64,19 @@ export default function HowItWorksSection({ steps }: Props) {
   return (
     <section
       id="how-it-works"
-      className="py-16 sm:py-20 bg-gray-100 dark:bg-gray-900"
+      className="section-base bg-[var(--surface)]"
       aria-labelledby="how-it-works-title"
     >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="section-container">
         {/* Header */}
-        <div className="mb-10 text-center">
+        <div className="section-header">
           <h2
             id="how-it-works-title"
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50"
+            className="section-title"
           >
             이렇게 진행됩니다
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="section-subtitle">
             숨은 버그를 얼마나 잡는지, 버그 탐지율과 테스트 품질을 함께 측정합니다.
           </p>
         </div>
