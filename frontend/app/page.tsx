@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
+import HeroResultPanel from "@/components/hero/HeroResultPanel";
 
 // Hero copy constants
 const heroCopy = {
@@ -302,8 +303,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative min-h-[70svh] flex items-center justify-center overflow-hidden py-8">
+      {/* Hero Section - 2컬럼 레이아웃 */}
+      <section className="relative min-h-[70svh] flex items-center justify-center overflow-hidden py-8 lg:py-12">
         {/* Background Image */}
         <Image
           src="/images/hero-background.png"
@@ -315,122 +316,136 @@ export default function Home() {
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
 
-        {/* Content - with panel background for better readability */}
-        <div className="relative z-10 flex flex-col items-center gap-5 px-4 text-center">
-          <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-10 sm:py-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg hero-headline">
-              AI가 코드를 더 빨리 쓰는 시대,<br className="desktop-break" />{' '}
-              실력은 <span className="highlight">&apos;숨은 버그를 찾아내는 설계&apos;</span>로 증명됩니다.
-            </h1>
-            <p className="mt-5 text-base sm:text-lg text-white/85 max-w-2xl mx-auto">
-              실무 시나리오에서{" "}
-              <span className="font-semibold text-white">숨은 버그를 얼마나 잡는지</span>
-              , 탐지율로 확인하세요.
-            </p>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 mt-3">
-            <Link
-              href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
-            >
-              {currentDomain.cta}
-            </Link>
-            <a
-              href="#how-it-works"
-              className="px-6 py-3 text-white/80 text-sm font-medium hover:text-white transition-colors"
-            >
-              진행 방식 보기 ↓
-            </a>
-          </div>
-
-          {/* Featured Problem Card - CTA 바로 아래 배치 */}
-          <div className="mt-6 mx-auto w-full max-w-xl">
-            <p className="mb-2 text-xs text-white/50 text-center">
-              처음이라면 이 문제로 시작 →
-            </p>
-            <Link
-              href="/problems/problem-e04"
-              className="group cursor-pointer
-                         flex items-center justify-between gap-4 rounded-2xl
-                         border-2 border-white/20 bg-white/10 px-5 py-4 backdrop-blur
-                         transition-colors transition-shadow transition-transform
-                         hover:bg-white/15 hover:border-blue-400/60
-                         hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]
-                         active:scale-[0.985]
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70
-                         focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
-            >
-              <div className="min-w-0 text-left">
-                <span className="block text-base font-semibold text-white truncate
-                                 group-hover:text-blue-100 group-focus-visible:text-blue-100 transition-colors">
-                  점수 등급 계산 함수 테스트
-                </span>
-                <span className="block mt-1 text-sm text-white/75
-                                 group-hover:text-white/90 group-focus-visible:text-white/90 transition-colors">
-                  Easy · 숨은 버그 5개 · 경계값 · 동등분할
-                </span>
+        {/* Content */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6">
+          {/* 2컬럼 그리드: Desktop (좌: 카피/CTA, 우: ResultPanel) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* 좌측: 카피 + CTA */}
+            <div className="text-center lg:text-left">
+              <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-8 sm:py-8 inline-block">
+                <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
+                  AI가 코드를 더 빨리 쓰는 시대,<br className="hidden sm:block" />{' '}
+                  실력은 <span className="highlight">&apos;숨은 버그를 찾아내는 설계&apos;</span>로 증명됩니다.
+                </h1>
+                <p className="mt-5 text-base sm:text-lg text-white/85 max-w-xl lg:max-w-none">
+                  실무 시나리오에서{" "}
+                  <span className="font-semibold text-white">숨은 버그를 얼마나 잡는지</span>
+                  , 탐지율로 확인하세요.
+                </p>
               </div>
-              <span className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold
-                               bg-blue-600 text-white shadow-lg transition-colors
-                               group-hover:bg-blue-500 group-focus-visible:bg-blue-500">
-                도전하기
-                <ChevronRight className="w-4 h-4 transition-transform
-                                         group-hover:translate-x-1 group-focus-visible:translate-x-1" />
-              </span>
-            </Link>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center lg:justify-start">
+                <Link
+                  href={`/problems${selectedDomain !== "common" ? `?domain=${selectedDomain}` : ""}`}
+                  className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                >
+                  {currentDomain.cta}
+                </Link>
+                <a
+                  href="#how-it-works"
+                  className="px-6 py-3 text-white/80 text-sm font-medium hover:text-white transition-colors"
+                >
+                  진행 방식 보기 ↓
+                </a>
+              </div>
+            </div>
+
+            {/* 우측: HeroResultPanel */}
+            <div className="flex justify-center lg:justify-end">
+              <HeroResultPanel />
+            </div>
           </div>
 
-          {/* Domain Badges */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-white/60 mb-2">{heroCopy.domainLabel}</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {domains.map((d) => (
-                <button
-                  key={d.key}
-                  title={d.title}
-                  onClick={() => {
-                    setSelectedDomain(d.key);
-                    // 커스텀 스무스 스크롤 (브라우저 smooth 무시 문제 해결)
-                    requestAnimationFrame(() => {
-                      const el = document.getElementById("scenario-showcase");
-                      if (!el) return;
-                      const headerOffset = 96;
-                      const targetY = el.getBoundingClientRect().top + window.scrollY - headerOffset;
-                      const startY = window.scrollY;
-                      const diff = targetY - startY;
-                      const duration = 600; // ms
-                      let startTime: number | null = null;
-
-                      const easeInOutCubic = (t: number) =>
-                        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-                      const animateScroll = (currentTime: number) => {
-                        if (!startTime) startTime = currentTime;
-                        const elapsed = currentTime - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        const easeProgress = easeInOutCubic(progress);
-                        window.scrollTo(0, startY + diff * easeProgress);
-                        if (progress < 1) requestAnimationFrame(animateScroll);
-                      };
-
-                      requestAnimationFrame(animateScroll);
-                    });
-                  }}
-                  className={`px-3.5 py-1.5 text-sm rounded-full border transition-all cursor-pointer ${
-                    selectedDomain === d.key
-                      ? "bg-white/30 text-white border-white/50 font-semibold"
-                      : "text-white/90 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 hover:border-white/40"
-                  }`}
-                >
-                  {d.label}
-                </button>
-              ))}
+          {/* 하단: Featured Problem + Domain Badges (전체 폭) */}
+          <div className="mt-10 lg:mt-12">
+            {/* Featured Problem Card */}
+            <div className="mx-auto w-full max-w-xl">
+              <p className="mb-2 text-xs text-white/50 text-center">
+                처음이라면 이 문제로 시작 →
+              </p>
+              <Link
+                href="/problems/problem-e04"
+                className="group cursor-pointer
+                           flex items-center justify-between gap-4 rounded-2xl
+                           border-2 border-white/20 bg-white/10 px-5 py-4 backdrop-blur
+                           transition-colors transition-shadow transition-transform
+                           hover:bg-white/15 hover:border-blue-400/60
+                           hover:shadow-[0_0_24px_rgba(59,130,246,0.22)]
+                           active:scale-[0.985]
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70
+                           focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+              >
+                <div className="min-w-0 text-left">
+                  <span className="block text-base font-semibold text-white truncate
+                                   group-hover:text-blue-100 group-focus-visible:text-blue-100 transition-colors">
+                    점수 등급 계산 함수 테스트
+                  </span>
+                  <span className="block mt-1 text-sm text-white/75
+                                   group-hover:text-white/90 group-focus-visible:text-white/90 transition-colors">
+                    Easy · 숨은 버그 5개 · 경계값 · 동등분할
+                  </span>
+                </div>
+                <span className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold
+                                 bg-blue-600 text-white shadow-lg transition-colors
+                                 group-hover:bg-blue-500 group-focus-visible:bg-blue-500">
+                  도전하기
+                  <ChevronRight className="w-4 h-4 transition-transform
+                                           group-hover:translate-x-1 group-focus-visible:translate-x-1" />
+                </span>
+              </Link>
             </div>
-            <p className="mt-2 text-xs text-white/50">
-              도메인을 고르면 추천 문제가 바뀝니다 · {currentDomain.hint}
-            </p>
+
+            {/* Domain Badges */}
+            <div className="mt-6 text-center">
+              <p className="text-xs text-white/60 mb-2">{heroCopy.domainLabel}</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {domains.map((d) => (
+                  <button
+                    key={d.key}
+                    title={d.title}
+                    onClick={() => {
+                      setSelectedDomain(d.key);
+                      // 커스텀 스무스 스크롤 (브라우저 smooth 무시 문제 해결)
+                      requestAnimationFrame(() => {
+                        const el = document.getElementById("scenario-showcase");
+                        if (!el) return;
+                        const headerOffset = 96;
+                        const targetY = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+                        const startY = window.scrollY;
+                        const diff = targetY - startY;
+                        const duration = 600; // ms
+                        let startTime: number | null = null;
+
+                        const easeInOutCubic = (t: number) =>
+                          t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+                        const animateScroll = (currentTime: number) => {
+                          if (!startTime) startTime = currentTime;
+                          const elapsed = currentTime - startTime;
+                          const progress = Math.min(elapsed / duration, 1);
+                          const easeProgress = easeInOutCubic(progress);
+                          window.scrollTo(0, startY + diff * easeProgress);
+                          if (progress < 1) requestAnimationFrame(animateScroll);
+                        };
+
+                        requestAnimationFrame(animateScroll);
+                      });
+                    }}
+                    className={`px-3.5 py-1.5 text-sm rounded-full border transition-all cursor-pointer ${
+                      selectedDomain === d.key
+                        ? "bg-white/30 text-white border-white/50 font-semibold"
+                        : "text-white/90 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 hover:border-white/40"
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-white/50">
+                도메인을 고르면 추천 문제가 바뀝니다 · {currentDomain.hint}
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -813,91 +828,6 @@ export default function Home() {
 
       {/* How It Works Section */}
       <HowItWorksSection />
-
-      {/* AI Feedback Sample Section */}
-      <section id="ai-feedback" className="section-base bg-[var(--background)] scroll-mt-16">
-        <div className="section-container !max-w-4xl">
-          <div className="section-header">
-            <h2 className="section-title">
-              AI 도우미가 이렇게 피드백합니다
-            </h2>
-            <p className="section-subtitle">
-              채점 완료 후 AI가 코드를 분석하여 개선 방향을 제시합니다
-            </p>
-          </div>
-
-          <div className="bg-[var(--card-background)] border border-[var(--card-border)] rounded-xl p-6 sm:p-8 shadow-lg">
-            {/* Summary */}
-            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
-              <p className="text-[var(--foreground)]">
-                기본적인 양수 입력 케이스는 잘 커버했지만, 음수와 빈 리스트에 대한 테스트가 부족합니다.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Strengths */}
-              <div>
-                <h4 className="font-bold text-green-600 dark:text-green-400 mb-3 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  잘한 점
-                </h4>
-                <ul className="space-y-2 text-sm text-[var(--muted)]">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">•</span>
-                    정상 흐름에 대한 테스트를 잘 작성했습니다
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">•</span>
-                    assert 문을 명확하게 사용했습니다
-                  </li>
-                </ul>
-              </div>
-
-              {/* Weaknesses */}
-              <div>
-                <h4 className="font-bold text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  개선할 점
-                </h4>
-                <ul className="space-y-2 text-sm text-[var(--muted)]">
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    경계값(빈 리스트, 0)에 대한 케이스가 없습니다
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    음수 값에 대한 테스트가 누락되었습니다
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Suggested Tests */}
-            <div className="mt-6 pt-6 border-t border-[var(--card-border)]">
-              <h4 className="font-bold text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-                추가 테스트 제안
-              </h4>
-              <ul className="space-y-2 text-sm text-[var(--muted)]">
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-500 mt-1">→</span>
-                  빈 리스트([]) 입력에 대한 테스트를 추가해 보세요
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-500 mt-1">→</span>
-                  음수가 포함된 리스트([-1, 1, 2])에 대한 테스트를 추가해 보세요
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Guest Mode Banner Section */}
       <section className="section-base bg-[var(--surface)]">

@@ -8,6 +8,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLayoutStore } from "@/stores/layoutStore";
@@ -20,7 +21,6 @@ import TokenBalance from "./TokenBalance";
 const homeNavItems = [
   { label: "문제 보기", href: "/problems", isAnchor: false },
   { label: "진행 방식", href: "/#how-it-works", anchor: "how-it-works", isAnchor: true },
-  { label: "AI 피드백", href: "/#ai-feedback", anchor: "ai-feedback", isAnchor: true },
   { label: "시나리오", href: "/#scenario-showcase", anchor: "scenario-showcase", isAnchor: true },
 ];
 
@@ -112,6 +112,13 @@ export default function Header() {
       <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-4">
         {/* Logo */}
         <Link href="/" className="mr-6 flex items-center space-x-2">
+          <Image
+            src="/icon.svg"
+            alt="QA-Arena Logo"
+            width={28}
+            height={28}
+            className="rounded-md"
+          />
           <span className="font-bold text-xl">QA-Arena</span>
         </Link>
 

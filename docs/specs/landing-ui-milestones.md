@@ -42,7 +42,7 @@
 | Phase | 상태 | 완료율 |
 |-------|------|--------|
 | Phase 0: 디자인 토큰 + 리듬 통일 | ✅ 완료 | 4/4 |
-| Phase 1: 시그니처 비주얼 (HeroResultPanel) | ⬜ 대기 | 0/5 |
+| Phase 1: 시그니처 비주얼 (HeroResultPanel) | ✅ 완료 | 5/5 |
 | Phase 1.5: HowItWorks 최소 인터랙션 | ⬜ 대기 | 0/4 |
 | Phase 2: HowItWorks 정교화 | ⬜ 대기 | 0/4 |
 
@@ -182,38 +182,38 @@
 
 ### 체크리스트
 
-- [ ] **P1-1**: Hero 섹션 레이아웃 변경
-  - [ ] 데스크톱: 2컬럼 (좌: 카피/CTA, 우: ResultPanel)
-  - [ ] 모바일: 1컬럼 (카피 → CTA → ResultPanel → Featured Problem)
-  - [ ] 기존 Featured Problem 카드 위치 조정
+- [x] **P1-1**: Hero 섹션 레이아웃 변경 ✅
+  - [x] 데스크톱: 2컬럼 (좌: 카피/CTA, 우: ResultPanel)
+  - [x] 모바일: 1컬럼 (카피 → CTA → ResultPanel → Featured Problem)
+  - [x] 기존 Featured Problem 카드 위치 조정
   - 파일: `frontend/app/page.tsx`
 
-- [ ] **P1-2**: HeroResultPanel 컴포넌트 구현
-  - [ ] 탐지율 카드: 원형 게이지 + "Killed 3/4" + "75%"
-  - [ ] 품질 등급 카드: 등급 뱃지 + 커버리지 칩 3개
-  - [ ] AI 요약 카드: 1-2줄 요약 + 개선 제안
-  - [ ] "실제 채점 결과 예시입니다" 라벨
-  - 파일: `frontend/components/landing/HeroResultPanel.tsx` (신규)
+- [x] **P1-2**: HeroResultPanel 컴포넌트 구현 ✅
+  - [x] 탐지율 카드: 원형 게이지 + "Killed 3/4" + "75%"
+  - [x] 품질 등급 카드: 등급 뱃지 + 커버리지 칩 3개
+  - [x] AI 요약 카드: 1-2줄 요약 + 개선 제안
+  - [x] "실제 채점 결과 예시입니다" 라벨
+  - 파일: `frontend/components/hero/HeroResultPanel.tsx` (신규)
 
-- [ ] **P1-3**: 반응형 스타일링
-  - [ ] 데스크톱: 가로 3칸 그리드
-  - [ ] 태블릿: 가로 3칸 또는 1+2 레이아웃
-  - [ ] 모바일: 세로 스택 또는 가로 스크롤
+- [x] **P1-3**: 반응형 스타일링 ✅
+  - [x] 데스크톱: 가로 3칸 그리드
+  - [x] 태블릿: 가로 3칸 또는 1+2 레이아웃
+  - [x] 모바일: 세로 스택
 
-- [ ] **P1-4**: AI Feedback Sample 섹션 제거
-  - [ ] 기존 섹션 (815-896줄) 삭제
-  - [ ] 필요시 스크린샷 수준 카드 1장만 유지
-  - 파일: `frontend/app/page.tsx`
+- [x] **P1-4**: AI Feedback Sample 섹션 제거 ✅
+  - [x] 기존 섹션 삭제
+  - [x] Header 네비게이션에서 "AI 피드백" 링크 제거
+  - 파일: `frontend/app/page.tsx`, `frontend/components/Header.tsx`
 
-- [ ] **P1-5**: 다크모드 대응
-  - [ ] 게이지 색상 다크모드 변형
-  - [ ] 카드 배경/보더 다크모드 변형
+- [x] **P1-5**: 다크모드 대응 ✅
+  - [x] 게이지 색상 다크모드 변형 (Hero는 이미 다크 배경)
+  - [x] 카드 배경/보더 다크모드 변형
 
 ### 완료 기준
-- [ ] Hero 첫 화면에서 "탐지율 + 품질 + AI 요약" 3가지가 즉시 보임
-- [ ] 스크롤 없이 제품 차별점 인지 가능
-- [ ] AI Feedback Sample 섹션 제거로 랜딩 길이 단축
-- [ ] 모바일에서도 자연스러운 레이아웃
+- [x] Hero 첫 화면에서 "탐지율 + 품질 + AI 요약" 3가지가 즉시 보임 ✅
+- [x] 스크롤 없이 제품 차별점 인지 가능 ✅
+- [x] AI Feedback Sample 섹션 제거로 랜딩 길이 단축 ✅
+- [x] 모바일에서도 자연스러운 레이아웃 ✅
 
 ---
 
@@ -378,6 +378,20 @@ PR 1 (P0)          PR 2 (P1)           PR 3-1 (P1.5)       PR 3-2 (P2)
   - 개발 서버 테스트 통과 (라이트/다크모드)
   - 빌드 테스트 통과
 
+### 2025-12-29 (세션 2)
+- [x] **Phase 1 (PR2) 완료** ✅
+  - HeroResultPanel 컴포넌트 구현 (`frontend/components/hero/HeroResultPanel.tsx`)
+    - 탐지율 카드 (원형 게이지 + Killed 3/4 + 75%)
+    - 품질 등급 카드 (B+ 뱃지 + 칩 3개)
+    - AI 요약 카드 (요약 + 개선 제안)
+  - Hero 섹션 2컬럼 레이아웃 적용
+    - 데스크톱: 좌(카피/CTA) + 우(ResultPanel)
+    - 모바일: 세로 스택
+  - AI Feedback Sample 섹션 제거
+  - Header 네비게이션 "AI 피드백" 링크 제거
+  - 반응형 테스트 통과 (데스크톱/모바일)
+  - 다크모드 테스트 통과
+
 ---
 
 ## 참고
@@ -394,13 +408,13 @@ frontend/
 │   ├── page.tsx                    # 메인 랜딩 페이지
 │   └── globals.css                 # 글로벌 스타일 (P0에서 수정)
 ├── components/
+│   ├── hero/
+│   │   └── HeroResultPanel.tsx     # 시그니처 비주얼 패널 (P1에서 생성)
 │   ├── how-it-works/
 │   │   ├── HowItWorksSection.tsx   # How It Works 섹션
 │   │   ├── StepCard.tsx            # 단계 카드 (P1.5에서 수정)
 │   │   ├── MutationDiagram.tsx     # 현재 다이어그램 (P1.5에서 교체)
 │   │   └── previews/               # (P2에서 생성)
-│   ├── landing/
-│   │   └── HeroResultPanel.tsx     # (P1에서 생성)
 │   └── test-quality/
 │       └── QualityGauge.tsx        # (재사용 가능)
 ```
