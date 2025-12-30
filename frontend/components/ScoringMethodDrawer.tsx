@@ -99,7 +99,7 @@ export default function ScoringMethodDrawer({
                 </span>
               </div>
               <div className="space-y-2 text-sm text-green-700 dark:text-green-400">
-                <p className="font-medium">기본 검증 통과</p>
+                <p className="font-medium">정답 코드 실행 통과</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li>정답 코드에 대해 테스트 실행</li>
                   <li>모든 테스트가 통과하면 30점 획득</li>
@@ -134,7 +134,7 @@ export default function ScoringMethodDrawer({
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
                   <span className="text-gray-600 dark:text-gray-400">
-                    기본 검증 통과
+                    정답 코드 실행 통과
                   </span>
                   <span className="font-mono text-gray-900 dark:text-gray-100">
                     30점
@@ -163,7 +163,7 @@ export default function ScoringMethodDrawer({
                 높은 점수를 받으려면?
               </p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>정상 동작을 검증하는 테스트 작성 (기본 검증 통과)</li>
+                <li>정상 동작을 검증하는 테스트 작성 (정답 코드 통과)</li>
                 <li>경계값, 예외 상황을 철저히 테스트</li>
                 <li>버그를 놓치지 않도록 다양한 케이스 커버</li>
               </ul>

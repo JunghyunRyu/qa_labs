@@ -26,7 +26,7 @@ const defaultSteps: HowItWorksStep[] = [
     id: 2,
     number: "02",
     title: "Validate on Golden",
-    titleKo: "기본 검증",
+    titleKo: "정답 코드 실행",
     description: "정답 코드에서 테스트가 통과하는지 확인합니다.",
     icon: "check",
   },

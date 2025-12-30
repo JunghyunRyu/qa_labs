@@ -18,7 +18,7 @@ export default function ErrorLogDisplay({ executionLog }: ErrorLogDisplayProps) 
         <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
           {errorType === "timeout" && "⏱️ Timeout"}
           {errorType === "syntax" && "📝 Syntax Error"}
-          {errorType === "golden_code_error" && "⚠️ 기본 검증 실패"}
+          {errorType === "golden_code_error" && "⚠️ 정답 코드 실행 실패"}
           {errorType === "system_error" && "🔧 System Error"}
           {errorType === "test_failure" && "❌ Test Failure"}
           {errorType === "unknown" && "⚠️ Error"}

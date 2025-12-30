@@ -93,7 +93,7 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium text-orange-800 mb-2">
-                기본 검증에 실패했습니다
+                테스트 실행에 실패했습니다
               </p>
               <p className="text-sm text-orange-700">
                 작성하신 테스트가 정답 코드를 통과시키지 못했습니다.
