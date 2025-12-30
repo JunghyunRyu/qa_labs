@@ -800,7 +800,7 @@ export default function Home() {
               이런 분들을 위한 플랫폼입니다
             </h2>
             <p className="section-subtitle">
-              QA-Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
+              QA Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
             </p>
           </div>
 

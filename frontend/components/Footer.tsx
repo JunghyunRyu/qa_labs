@@ -23,12 +23,14 @@ export default function Footer() {
             <div className="flex items-center gap-2 mb-2">
               <Image
                 src="/icon.svg"
-                alt="QA-Arena Logo"
+                alt="QA Arena Logo"
                 width={28}
                 height={28}
                 className="rounded-md"
               />
-              <h3 className="text-xl font-bold text-white">QA-Arena</h3>
+              <h3 className="text-xl font-bold text-white">
+                <span className="text-sky-500">QA</span> Arena
+              </h3>
             </div>
             <p className="text-sm">
               코드 속 버그를 찾아내는 테스트 작성 능력을 키우세요.
@@ -100,12 +102,12 @@ export default function Footer() {
         {/* Non-profit Disclaimer */}
         <div className="border-t border-gray-800 pt-8 text-sm text-center space-y-2">
           <p className="text-gray-500">
-            <span className="font-medium text-gray-400">QA-Arena</span> | 개인 개발자의 비영리 기술 연구 프로젝트
+            <span className="font-medium text-gray-400"><span className="text-sky-500">QA</span> Arena</span> | 개인 개발자의 비영리 기술 연구 프로젝트
           </p>
           <p className="text-xs text-gray-500">
             본 서비스는 수익을 창출하지 않으며, QA 엔지니어의 역량 강화를 위한 학습 목적으로 운영됩니다.
           </p>
-          <p className="mt-4">&copy; {new Date().getFullYear()} QA-Arena. All rights reserved.</p>
+          <p className="mt-4">&copy; {new Date().getFullYear()} QA Arena. All rights reserved.</p>
         </div>
       </div>
       </div>

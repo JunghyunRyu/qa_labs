@@ -52,14 +52,14 @@ function LoginContent() {
         <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mb-4">
           <Image
             src="/icon.svg"
-            alt="QA-Arena Logo"
+            alt="QA Arena Logo"
             width={64}
             height={64}
             className="w-full h-full rounded-xl"
           />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          QA-Arena에 오신 것을 환영합니다
+          QA Arena에 오신 것을 환영합니다
         </h1>
         <p className="text-gray-500 dark:text-gray-400">
           로그인하여 학습 진도를 추적하세요

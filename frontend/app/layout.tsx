@@ -18,21 +18,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QA-Arena",
-  description: "AI-Assisted QA Coding Test Platform",
+  title: "QA Arena",
+  description: "버그 탐지율 챌린지 - 테스트 코드로 숨은 버그를 찾아내세요 | by QaLabs",
   metadataBase: new URL("https://qa-arena.qalabs.kr"), // 중요!
 
   openGraph: {
-    title: "QA-Arena",
-    description: "AI-Assisted QA Coding Test Platform",
+    title: "QA Arena - 버그 탐지율 챌린지",
+    description: "테스트 코드로 숨은 버그를 찾아내세요. AI 피드백으로 QA 역량을 성장시키는 트레이닝 플랫폼 by QaLabs",
     url: "https://qa-arena.qalabs.kr",
-    siteName: "QA-Arena",
+    siteName: "QA Arena",
     images: [
       {
         url: "/og_image.jpg",
         width: 1200,
         height: 630,
-        alt: "QA-Arena OG Image",
+        alt: "QA Arena OG Image",
       },
     ],
     type: "website",

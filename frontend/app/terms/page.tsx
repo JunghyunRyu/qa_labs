@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "이용약관 | QA-Arena",
-  description: "QA-Arena 서비스 이용약관",
+  title: "이용약관 | QA Arena",
+  description: "QA Arena 서비스 이용약관",
 };
 
 export default function TermsPage() {
@@ -24,7 +24,7 @@ export default function TermsPage() {
                 제1조 (목적)
               </h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                본 약관은 QA-Arena(이하 &quot;서비스&quot;)를 제공하는 운영자(이하
+                본 약관은 QA Arena(이하 &quot;서비스&quot;)를 제공하는 운영자(이하
                 &quot;회사&quot;)와 이를 이용하는 사용자(이하 &quot;회원&quot;) 간의
                 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
               </p>
@@ -36,7 +36,7 @@ export default function TermsPage() {
                 제2조 (서비스의 정의)
               </h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                QA-Arena는 AI 기반 QA 코딩 테스트 플랫폼으로, 사용자가 pytest를
+                QA Arena는 AI 기반 QA 코딩 테스트 플랫폼으로, 사용자가 pytest를
                 활용하여 테스트 코드를 작성하고 버그 탐지 능력을 향상시킬 수 있는
                 학습 환경을 제공합니다.
               </p>
