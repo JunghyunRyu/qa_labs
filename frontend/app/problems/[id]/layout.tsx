@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${problem.title} | QA Arena`;
   const description =
     problem.short_description ||
-    `난이도: ${problem.difficulty} | ${problem.category || "일반"} 시나리오의 버그를 찾아보세요`;
+    `[${problem.difficulty}] ${problem.category || "일반"} 시나리오 기반 QA 챌린지입니다. 테스트 코드를 작성하여 숨겨진 버그를 찾아내고, AI 피드백으로 테스트 역량을 성장시키세요. QA Arena에서 도전하세요!`;
 
   return {
     title,
