@@ -42,6 +42,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://qa-arena.qalabs.kr",
   },
+
+  // Twitter Card
+  twitter: {
+    card: "summary_large_image",
+    title: "QA Arena - 버그 탐지율 챌린지",
+    description: "테스트 코드로 숨은 버그를 찾아내세요. AI 피드백으로 QA 역량을 성장시키는 트레이닝 플랫폼",
+    images: ["/og_image.jpg"],
+  },
 };
 
 export default function RootLayout({
