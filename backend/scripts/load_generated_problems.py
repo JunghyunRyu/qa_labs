@@ -57,6 +57,7 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_u
             # Update existing problem
             existing.description_md = data.get('description_md', existing.description_md or '')
             existing.summary = data.get('summary', existing.summary)
+            existing.short_description = data.get('short_description', existing.short_description)
             existing.title = data.get('title', existing.title)
             existing.skills = data.get('tags', existing.skills or [])
             existing.domain = data.get('domain', existing.domain or 'common')
@@ -85,6 +86,7 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_u
         domain=data.get('domain', 'common'),  # Load domain from JSON
         skills=data.get('tags', []),  # Use tags as skills
         summary=data.get('summary'),  # Load summary from JSON
+        short_description=data.get('short_description'),  # Load short_description from JSON
     )
     
     db.add(problem)
