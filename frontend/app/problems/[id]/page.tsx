@@ -31,6 +31,7 @@ import FloatingAIChat from "@/components/ai/FloatingAIChat";
 import AICoachPanel from "@/components/AICoachPanel";
 import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import Link from "next/link";
+import { trackCodeSubmit, trackProblemView, trackLocalTest } from "@/lib/analytics";
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -187,6 +188,12 @@ export default function ProblemDetailPage() {
     try {
       const result = await runTests(code.trim(), problem.golden_code);
       setLocalTestResult(result);
+
+      // GA 이벤트 트래킹 - 로컬 테스트
+      trackLocalTest({
+        problemId: problem.id,
+        passed: result.passed,
+      });
     } catch (err: unknown) {
       const errorMessage = err instanceof globalThis.Error ? err.message : "테스트 실행 실패";
       setLocalTestError(errorMessage);
@@ -249,6 +256,15 @@ export default function ProblemDetailPage() {
         setError(null);
         const result = await getProblem(problemIdOrSlug);
         setProblem(result);
+
+        // GA 이벤트 트래킹 - 문제 조회
+        trackProblemView({
+          problemId: result.id,
+          problemSlug: result.slug,
+          difficulty: result.difficulty,
+          domain: result.domain,
+        });
+
         // Note: Code initialization is handled by the initializeCode effect
         // which depends on `problem` state and `submissionIdFromUrl`
       } catch (err: unknown) {
@@ -424,6 +440,18 @@ export default function ProblemDetailPage() {
       });
 
       setSubmission(newSubmission);
+
+      // GA 이벤트 트래킹 (클라이언트 실행)
+      trackCodeSubmit({
+        problemId: problem.id,
+        problemSlug: problem.slug,
+        difficulty: problem.difficulty,
+        score: clientResult.score,
+        mutantsKilled: clientResult.mutants_killed,
+        totalMutants: clientResult.total_mutants,
+        isClientSide: true,
+      });
+
       return newSubmission;
     }
 
@@ -435,6 +463,15 @@ export default function ProblemDetailPage() {
     });
 
     setSubmission(newSubmission);
+
+    // GA 이벤트 트래킹 (서버 실행)
+    trackCodeSubmit({
+      problemId: problem.id,
+      problemSlug: problem.slug,
+      difficulty: problem.difficulty,
+      isClientSide: false,
+    });
+
     return newSubmission;
   }, [problem, code, isPyodideReady, runMutationTest, honeypot]);
 
