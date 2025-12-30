@@ -17,7 +17,7 @@ export default function Footer() {
 
       <div className="py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-8 mb-8">
           {/* Logo & Description */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-2">
@@ -75,6 +75,11 @@ export default function Footer() {
                   개인정보처리방침
                 </Link>
               </li>
+              <li>
+                <Link href="/oss" className="hover:text-white transition-colors">
+                  오픈소스 라이선스
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -97,17 +102,44 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+
+          {/* Contact / Inquiry */}
+          <div>
+            <h4 className="font-semibold text-white mb-3">문의하기</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href="https://forms.gle/mk5zYKMTMq4PGRQz7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors inline-flex items-center gap-1"
+                >
+                  버그 제보 / 건의
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:support@qa-arena.com"
+                  className="hover:text-white transition-colors"
+                >
+                  support@qa-arena.com
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/* Non-profit Disclaimer */}
+        {/* Footer Bottom */}
         <div className="border-t border-gray-800 pt-8 text-sm text-center space-y-2">
+          <p className="text-gray-400">
+            <span className="font-medium text-white"><span className="text-sky-500">QA</span> Arena</span> — 더 나은 테스트를 위한 오픈 학습 플랫폼
+          </p>
           <p className="text-gray-500">
-            <span className="font-medium text-gray-400"><span className="text-sky-500">QA</span> Arena</span> | 개인 개발자의 비영리 기술 연구 프로젝트
+            &copy; {new Date().getFullYear()} QA Arena. Made with ❤️ for QA Engineers.
           </p>
-          <p className="text-xs text-gray-500">
-            본 서비스는 수익을 창출하지 않으며, QA 엔지니어의 역량 강화를 위한 학습 목적으로 운영됩니다.
-          </p>
-          <p className="mt-4">&copy; {new Date().getFullYear()} QA Arena. All rights reserved.</p>
         </div>
       </div>
       </div>
