@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import type { ProblemListItem } from "@/types/problem";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Bug } from "lucide-react";
 import BookmarkButton from "./BookmarkButton";
 import { toTagViewModels, sliceTags } from "@/lib/tagDefinitions";
 
@@ -43,15 +43,26 @@ const difficultyConfig = {
   },
 };
 
+// 도메인 아이콘 및 레이블
+const DOMAIN_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
+  common: { icon: "📚", label: "공통", color: "text-gray-600 dark:text-gray-400" },
+  fintech: { icon: "💳", label: "핀테크", color: "text-emerald-600 dark:text-emerald-400" },
+  commerce: { icon: "🛒", label: "커머스", color: "text-orange-600 dark:text-orange-400" },
+  saas: { icon: "☁️", label: "SaaS", color: "text-sky-600 dark:text-sky-400" },
+  platform: { icon: "🔗", label: "플랫폼", color: "text-violet-600 dark:text-violet-400" },
+  content: { icon: "📝", label: "컨텐츠", color: "text-pink-600 dark:text-pink-400" },
+};
+
 export default function ProblemCard({ problem }: ProblemCardProps) {
   // 제목이 없을 때 fallback 처리
   const displayTitle = problem.title || `문제 #${problem.id}`;
 
   // short_description 사용 (카드용 짧은 설명)
-  // short_description이 없으면 빈 문자열 (DB 마이그레이션 후 모든 문제에 추가됨)
   const preview = problem.short_description || "";
 
   const difficulty = difficultyConfig[problem.difficulty];
+  const domain = DOMAIN_CONFIG[problem.domain || "common"] || DOMAIN_CONFIG.common;
+  const bugsCount = problem.bugs_count ?? 0;
 
   return (
     <Link
@@ -60,16 +71,17 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
       aria-label={`${displayTitle} 문제 보기`}
       tabIndex={0}
     >
-      <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 md:p-6 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass} min-h-[200px] sm:min-h-[220px] md:min-h-[240px]`}>
-        {/* 제목과 난이도 배지 */}
-        <div className="flex items-start justify-between mb-3 gap-2">
-          <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 dark:text-gray-100 flex-1 pr-2 line-clamp-2 leading-snug">
-            {displayTitle}
-          </h3>
+      <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass} min-h-[180px] sm:min-h-[200px]`}>
+        {/* 도메인 + 난이도 + 북마크 */}
+        <div className="flex items-center justify-between mb-2 gap-2">
+          <span className={`text-xs font-medium ${domain.color} flex items-center gap-1`}>
+            <span>{domain.icon}</span>
+            <span>{domain.label}</span>
+          </span>
           <div className="flex items-center gap-1.5 shrink-0">
             <BookmarkButton problemId={problem.id} size="sm" />
             <span
-              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold border-2 whitespace-nowrap flex items-center gap-1.5 ${difficulty.colors} shadow-sm`}
+              className={`px-2 py-1 rounded-md text-xs font-bold border whitespace-nowrap flex items-center gap-1 ${difficulty.colors} shadow-sm`}
               aria-label={`난이도: ${difficulty.label}`}
             >
               {difficulty.icon}
@@ -78,38 +90,54 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
           </div>
         </div>
 
-        {/* 문제 설명 미리보기 */}
+        {/* 제목 (2줄) */}
+        <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 line-clamp-2 leading-snug mb-2">
+          {displayTitle}
+        </h3>
+
+        {/* 문제 설명 미리보기 (1줄로 축소) */}
         {preview && (
-          <div className="mb-3 sm:mb-4 flex-1 min-h-[50px] sm:min-h-[60px]">
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed">
-              {preview}
-            </p>
-          </div>
+          <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1 mb-3 flex-1">
+            {preview}
+          </p>
         )}
 
-        {/* 태그 */}
-        {problem.skills && problem.skills.length > 0 && (() => {
-          const tagModels = toTagViewModels(problem.skills);
-          const { visible, hiddenCount } = sliceTags(tagModels, 4);
-          return (
-            <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-auto pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700" role="list" aria-label="문제 태그">
-              {visible.map((tag) => (
-                <span
-                  key={tag.slug}
-                  className="px-1.5 sm:px-2 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600 whitespace-nowrap"
-                  role="listitem"
-                >
-                  {tag.labelKo}
-                </span>
-              ))}
-              {hiddenCount > 0 && (
-                <span className="px-1.5 sm:px-2 py-0.5 text-gray-500 dark:text-gray-400 text-xs" aria-label={`추가 태그 ${hiddenCount}개`}>
-                  +{hiddenCount}
-                </span>
-              )}
+        {/* 태그 + 버그 수 */}
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
+          {/* 태그 */}
+          <div className="flex flex-wrap gap-1" role="list" aria-label="문제 태그">
+            {problem.skills && problem.skills.length > 0 && (() => {
+              const tagModels = toTagViewModels(problem.skills);
+              const { visible, hiddenCount } = sliceTags(tagModels, 3);
+              return (
+                <>
+                  {visible.map((tag) => (
+                    <span
+                      key={tag.slug}
+                      className="px-1.5 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded text-xs border border-gray-200 dark:border-gray-600 whitespace-nowrap"
+                      role="listitem"
+                    >
+                      {tag.labelKo}
+                    </span>
+                  ))}
+                  {hiddenCount > 0 && (
+                    <span className="px-1 py-0.5 text-gray-500 dark:text-gray-400 text-xs">
+                      +{hiddenCount}
+                    </span>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+
+          {/* 숨은 버그 수 */}
+          {bugsCount > 0 && (
+            <div className="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 shrink-0" title={`숨은 버그 ${bugsCount}개`}>
+              <Bug className="w-3.5 h-3.5" />
+              <span>{bugsCount}개</span>
             </div>
-          );
-        })()}
+          )}
+        </div>
       </div>
     </Link>
   );

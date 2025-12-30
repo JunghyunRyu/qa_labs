@@ -32,7 +32,7 @@ export default async function Image({ params }: { params: { id: string } }) {
   let problem = null;
 
   try {
-    const res = await fetch(`${API_URL}/problems/${params.id}`);
+    const res = await fetch(`${API_URL}/api/v1/problems/${params.id}`);
     if (res.ok) {
       problem = await res.json();
     }

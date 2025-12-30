@@ -85,7 +85,7 @@ class ProblemService:
 
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
 
-        # Repository now returns dicts with success_rate
+        # Repository now returns dicts with success_rate and bugs_count
         problem_list = [
             ProblemListResponse(
                 id=p["id"],
@@ -98,6 +98,7 @@ class ProblemService:
                 short_description=p.get("short_description"),
                 description_md=p["description_md"],
                 success_rate=p["success_rate"],
+                bugs_count=p.get("bugs_count", 0),
             )
             for p in problems
         ]

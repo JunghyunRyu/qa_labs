@@ -6,6 +6,7 @@ from sqlalchemy import func, cast, Text, case, literal
 
 from app.models.problem import Problem
 from app.models.submission import Submission
+from app.models.buggy_implementation import BuggyImplementation
 from app.schemas.problem import ProblemCreate
 
 class ProblemRepository:
@@ -51,6 +52,16 @@ class ProblemRepository:
             .subquery()
         )
 
+        # Subquery: 문제별 버그 수
+        bugs_subquery = (
+            self.db.query(
+                BuggyImplementation.problem_id,
+                func.count(BuggyImplementation.id).label("bugs_count"),
+            )
+            .group_by(BuggyImplementation.problem_id)
+            .subquery()
+        )
+
         # 정답률 계산 (제출 5건 이상일 때만)
         success_rate_expr = case(
             (stats_subquery.c.submission_count >= 5,
@@ -58,14 +69,16 @@ class ProblemRepository:
             else_=None
         ).label("success_rate")
 
-        # 메인 쿼리: Problem + 통계 LEFT JOIN
+        # 메인 쿼리: Problem + 통계 + 버그 수 LEFT JOIN
         query = (
             self.db.query(
                 Problem,
                 func.coalesce(stats_subquery.c.submission_count, 0).label("submission_count"),
                 success_rate_expr,
+                func.coalesce(bugs_subquery.c.bugs_count, 0).label("bugs_count"),
             )
             .outerjoin(stats_subquery, Problem.id == stats_subquery.c.problem_id)
+            .outerjoin(bugs_subquery, Problem.id == bugs_subquery.c.problem_id)
         )
 
         # Apply difficulty filter
@@ -132,7 +145,7 @@ class ProblemRepository:
 
         # Convert to list of dicts
         problems_with_stats = []
-        for problem, submission_count, success_rate in results:
+        for problem, submission_count, success_rate, bugs_count in results:
             problem_dict = {
                 "id": problem.id,
                 "slug": problem.slug,
@@ -144,6 +157,7 @@ class ProblemRepository:
                 "short_description": problem.short_description,
                 "description_md": problem.description_md,
                 "success_rate": float(success_rate) if success_rate is not None else None,
+                "bugs_count": bugs_count,
             }
             problems_with_stats.append(problem_dict)
 

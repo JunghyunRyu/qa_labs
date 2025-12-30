@@ -48,6 +48,7 @@ class ProblemListResponse(BaseModel):
     short_description: Optional[str] = None  # 카드용 짧은 설명
     description_md: Optional[str] = None  # For preview in list view
     success_rate: Optional[float] = None  # 0.0~1.0, None if < 5 submissions
+    bugs_count: int = 0  # 숨은 버그 수 (buggy_implementations 개수)
 
     model_config = {"from_attributes": True}
 

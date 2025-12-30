@@ -12,7 +12,7 @@ import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
-import { Search, Filter, X, Bookmark } from "lucide-react";
+import { Search, Filter, X, Bookmark, ChevronDown, Tag } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
@@ -29,6 +29,23 @@ const DOMAIN_LABELS: Record<DomainFilter, string> = {
   saas: "SaaS",
   platform: "플랫폼",
   content: "컨텐츠",
+};
+
+// 난이도 레이블 정의
+const DIFFICULTY_LABELS: Record<DifficultyFilter, string> = {
+  All: "전체",
+  "Very Easy": "아주쉬움",
+  Easy: "쉬움",
+  Medium: "보통",
+  Hard: "어려움",
+};
+
+// 정렬 옵션 레이블
+const SORT_LABELS: Record<SortOption, string> = {
+  "difficulty-asc": "난이도 낮은순",
+  "difficulty-desc": "난이도 높은순",
+  "success-rate-desc": "정답률 높은순",
+  "success-rate-asc": "정답률 낮은순",
 };
 
 // useSearchParams를 사용하는 내부 컴포넌트
@@ -186,144 +203,74 @@ function ProblemsContent() {
         </div>
       </div>
 
-      {/* 검색 및 필터 섹션 */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-6 transition-colors">
-        {/* 검색바 */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="문제 제목, 슬러그, 태그로 검색..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm md:text-base"
-            aria-label="문제 검색"
-          />
-        </div>
+      {/* 컨트롤 바 - 검색 + 빠른 필터 + 정렬 */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 transition-colors">
+        <div className="flex flex-col lg:flex-row gap-3">
+          {/* 검색창 */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="문제 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm"
+              aria-label="문제 검색"
+            />
+          </div>
 
-        {/* 필터 토글 버튼 */}
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm md:text-base"
-            aria-expanded={showFilters}
-            aria-label="필터 표시/숨기기"
-            aria-controls="filter-panel"
-          >
-            <Filter className="w-4 h-4" />
-            <span className="hidden sm:inline">필터</span>
-            {hasActiveFilters && (
-              <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">
-                {selectedTags.length + (difficultyFilter !== "All" ? 1 : 0) + (domainFilter !== "All" ? 1 : 0)}
-              </span>
-            )}
-          </button>
-
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-              aria-label="필터 초기화"
-            >
-              <X className="w-4 h-4" />
-              <span className="hidden sm:inline">필터 초기화</span>
-              <span className="sm:hidden">초기화</span>
-            </button>
-          )}
-        </div>
-
-        {/* 필터 패널 */}
-        {showFilters && (
-          <div id="filter-panel" className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-            {/* 도메인 필터 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                도메인
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {(["All", "common", "fintech", "commerce", "saas", "platform", "content"] as DomainFilter[]).map((domain) => (
-                  <button
-                    key={domain}
-                    onClick={() => setDomainFilter(domain)}
-                    className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
-                      domainFilter === domain
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    }`}
-                    aria-pressed={domainFilter === domain}
-                  >
-                    {DOMAIN_LABELS[domain]}
-                  </button>
-                ))}
-              </div>
+          {/* 빠른 필터 + 정렬 드롭다운 */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* 난이도 드롭다운 */}
+            <div className="relative">
+              <select
+                value={difficultyFilter}
+                onChange={(e) => setDifficultyFilter(e.target.value as DifficultyFilter)}
+                className={`appearance-none pl-3 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer ${
+                  difficultyFilter !== "All"
+                    ? "bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/40 dark:border-blue-700 dark:text-blue-300"
+                    : "bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                }`}
+                aria-label="난이도 필터"
+              >
+                <option value="All">난이도</option>
+                <option value="Very Easy">아주쉬움</option>
+                <option value="Easy">쉬움</option>
+                <option value="Medium">보통</option>
+                <option value="Hard">어려움</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
 
-            {/* 난이도 필터 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                난이도
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => {
-                  const difficultyLabels: Record<DifficultyFilter, string> = {
-                    All: "전체",
-                    "Very Easy": "아주쉬움",
-                    Easy: "쉬움",
-                    Medium: "보통",
-                    Hard: "어려움",
-                  };
-                  return (
-                    <button
-                      key={diff}
-                      onClick={() => setDifficultyFilter(diff)}
-                      className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
-                        difficultyFilter === diff
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      }`}
-                      aria-pressed={difficultyFilter === diff}
-                    >
-                      {difficultyLabels[diff]}
-                    </button>
-                  );
-                })}
-              </div>
+            {/* 도메인 드롭다운 */}
+            <div className="relative">
+              <select
+                value={domainFilter}
+                onChange={(e) => setDomainFilter(e.target.value as DomainFilter)}
+                className={`appearance-none pl-3 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer ${
+                  domainFilter !== "All"
+                    ? "bg-green-50 border-green-300 text-green-700 dark:bg-green-900/40 dark:border-green-700 dark:text-green-300"
+                    : "bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                }`}
+                aria-label="도메인 필터"
+              >
+                <option value="All">도메인</option>
+                <option value="common">공통</option>
+                <option value="fintech">핀테크</option>
+                <option value="commerce">커머스</option>
+                <option value="saas">SaaS</option>
+                <option value="platform">플랫폼</option>
+                <option value="content">컨텐츠</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
 
-            {/* 태그 필터 */}
-            {availableTags.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  태그
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {availableTags.map((tag) => (
-                    <button
-                      key={tag.slug}
-                      onClick={() => handleTagToggle(tag.slug)}
-                      className={`px-2 md:px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                        selectedTags.includes(tag.slug)
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      }`}
-                      aria-pressed={selectedTags.includes(tag.slug)}
-                    >
-                      {tag.labelKo}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 정렬 옵션 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                정렬
-              </label>
+            {/* 정렬 드롭다운 */}
+            <div className="relative">
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="w-full md:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm md:text-base"
+                className="appearance-none pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
                 aria-label="정렬 옵션"
               >
                 <option value="difficulty-asc">난이도 낮은순</option>
@@ -331,10 +278,119 @@ function ProblemsContent() {
                 <option value="success-rate-desc">정답률 높은순</option>
                 <option value="success-rate-asc">정답률 낮은순</option>
               </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* 태그 필터 버튼 */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                showFilters || selectedTags.length > 0
+                  ? "bg-purple-100 text-purple-700 border border-purple-300 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700"
+                  : "bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600"
+              }`}
+              aria-expanded={showFilters}
+              aria-label="태그 필터"
+            >
+              <Tag className="w-4 h-4" />
+              <span className="hidden sm:inline">태그</span>
+              {selectedTags.length > 0 && (
+                <span className="px-1.5 py-0.5 bg-purple-500 text-white text-xs rounded-full min-w-[18px] text-center">
+                  {selectedTags.length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* 태그 필터 패널 */}
+        {showFilters && availableTags.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-wrap gap-2">
+              {availableTags.map((tag) => (
+                <button
+                  key={tag.slug}
+                  onClick={() => handleTagToggle(tag.slug)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    selectedTags.includes(tag.slug)
+                      ? "bg-purple-500 text-white"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  }`}
+                  aria-pressed={selectedTags.includes(tag.slug)}
+                >
+                  {tag.labelKo}
+                </button>
+              ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* Active Filter Summary */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 px-1">
+          {difficultyFilter !== "All" && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+              {DIFFICULTY_LABELS[difficultyFilter]}
+              <button
+                onClick={() => setDifficultyFilter("All")}
+                className="ml-0.5 hover:text-blue-900 dark:hover:text-blue-100"
+                aria-label={`${DIFFICULTY_LABELS[difficultyFilter]} 필터 제거`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {domainFilter !== "All" && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+              {DOMAIN_LABELS[domainFilter]}
+              <button
+                onClick={() => setDomainFilter("All")}
+                className="ml-0.5 hover:text-green-900 dark:hover:text-green-100"
+                aria-label={`${DOMAIN_LABELS[domainFilter]} 필터 제거`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {selectedTags.map((tagSlug) => {
+            const tagModel = availableTags.find(t => t.slug === tagSlug);
+            return (
+              <span
+                key={tagSlug}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium"
+              >
+                {tagModel?.labelKo || tagSlug}
+                <button
+                  onClick={() => handleTagToggle(tagSlug)}
+                  className="ml-0.5 hover:text-purple-900 dark:hover:text-purple-100"
+                  aria-label={`${tagModel?.labelKo || tagSlug} 태그 제거`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            );
+          })}
+          {debouncedSearchQuery && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
+              &quot;{debouncedSearchQuery}&quot;
+              <button
+                onClick={() => setSearchQuery("")}
+                className="ml-0.5 hover:text-gray-900 dark:hover:text-gray-100"
+                aria-label="검색어 제거"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          <button
+            onClick={clearFilters}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline ml-2"
+          >
+            모두 지우기
+          </button>
+        </div>
+      )}
 
       {sortedProblems.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center transition-colors">
