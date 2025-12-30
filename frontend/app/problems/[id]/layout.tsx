@@ -6,7 +6,11 @@ interface Props {
   children: React.ReactNode;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// 서버 사이드: INTERNAL_API_URL (컨테이너 간 통신), 클라이언트: NEXT_PUBLIC_API_URL
+const API_URL =
+  process.env.INTERNAL_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000/api";
 
 async function getProblemData(id: string) {
   try {

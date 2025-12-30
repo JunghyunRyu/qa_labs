@@ -5,7 +5,11 @@ export const alt = "QA Arena Problem";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// 서버 사이드: INTERNAL_API_URL (컨테이너 간 통신), 클라이언트: NEXT_PUBLIC_API_URL
+const API_URL =
+  process.env.INTERNAL_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000/api";
 
 interface DifficultyStars {
   [key: string]: string;
