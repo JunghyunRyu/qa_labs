@@ -1,0 +1,178 @@
+"use client";
+
+/**
+ * HeroStarter Component
+ *
+ * Hero 하단의 통합 시작 모듈.
+ * 도메인 선택 칩 + 추천 문제 카드를 단일 박스로 제공.
+ * 도메인 선택 시 추천 문제가 동적으로 변경됨.
+ */
+
+import { useState } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+
+// ============================================================
+// Types
+// ============================================================
+
+interface Domain {
+  key: string;
+  label: string;
+  title: string;
+  hint: string;
+}
+
+interface RecommendedProblem {
+  title: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  mutants: number;
+  href: string;
+}
+
+interface HeroStarterProps {
+  /** 도메인 목록 */
+  domains: Domain[];
+  /** 도메인별 추천 문제 매핑 */
+  recommendedProblems: Record<string, RecommendedProblem>;
+  /** 초기 선택 도메인 */
+  initialDomain?: string;
+}
+
+// ============================================================
+// Sub-Components
+// ============================================================
+
+/** 도메인 선택 칩 */
+function DomainChip({
+  domain,
+  isSelected,
+  onClick,
+}: {
+  domain: Domain;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={domain.hint}
+      className={`px-3 py-1.5 text-sm rounded-full border transition-all
+        ${
+          isSelected
+            ? "bg-blue-500/30 border-blue-400/50 text-white"
+            : "text-white/90 bg-white/10 border-white/20 hover:bg-white/20 hover:border-white/40 hover:text-white"
+        }`}
+    >
+      {domain.label}
+    </button>
+  );
+}
+
+/** 추천 문제 카드 */
+function RecommendedProblemCard({
+  problem,
+}: {
+  problem: RecommendedProblem;
+}) {
+  const difficultyLabel =
+    problem.difficulty === "Easy"
+      ? "초급"
+      : problem.difficulty === "Medium"
+      ? "중급"
+      : "고급";
+
+  const difficultyColor =
+    problem.difficulty === "Easy"
+      ? "text-emerald-400"
+      : problem.difficulty === "Medium"
+      ? "text-amber-400"
+      : "text-red-400";
+
+  return (
+    <Link
+      href={problem.href}
+      className="group flex items-center justify-between gap-4 p-4 rounded-xl
+                 bg-white/[0.06] border border-white/10
+                 hover:bg-white/[0.1] hover:border-white/20 transition-all"
+    >
+      <div className="min-w-0 text-left">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs text-white/50">추천 시작 문제</span>
+        </div>
+        <span className="block text-base font-semibold text-white truncate
+                         group-hover:text-blue-200 transition-colors">
+          {problem.title}
+        </span>
+        <span className="block mt-1 text-sm text-white/70">
+          <span className={difficultyColor}>{difficultyLabel}</span>
+          <span className="mx-1.5 text-white/30">·</span>
+          숨은 버그 {problem.mutants}개
+        </span>
+      </div>
+      <span className="shrink-0 flex items-center gap-1 rounded-lg px-4 py-2.5 text-sm font-semibold
+                       bg-blue-600 text-white transition-all
+                       group-hover:bg-blue-500 group-hover:scale-105">
+        도전하기
+        <ChevronRight className="w-4 h-4 transition-transform
+                                 group-hover:translate-x-0.5" />
+      </span>
+    </Link>
+  );
+}
+
+// ============================================================
+// Main Component
+// ============================================================
+
+export default function HeroStarter({
+  domains,
+  recommendedProblems,
+  initialDomain = "common",
+}: HeroStarterProps) {
+  const [selectedDomain, setSelectedDomain] = useState(initialDomain);
+
+  // 현재 선택된 도메인 정보
+  const currentDomain = domains.find((d) => d.key === selectedDomain);
+  const currentProblem = recommendedProblems[selectedDomain];
+
+  return (
+    <div className="rounded-2xl border border-white/20 bg-white/[0.08] backdrop-blur p-6">
+      {/* 상단: 도메인 선택 헤더 */}
+      <div className="mb-4">
+        <p className="text-sm font-medium text-white/80">
+          관심 도메인으로 시작하기
+        </p>
+        <p className="text-xs text-white/50 mt-1">
+          도메인을 선택하면 맞춤 추천 문제가 표시됩니다
+        </p>
+      </div>
+
+      {/* 중단: 도메인 칩 */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {domains.map((d) => (
+          <DomainChip
+            key={d.key}
+            domain={d}
+            isSelected={d.key === selectedDomain}
+            onClick={() => setSelectedDomain(d.key)}
+          />
+        ))}
+      </div>
+
+      {/* 선택된 도메인 설명 */}
+      {currentDomain && (
+        <div className="mb-5 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10">
+          <p className="text-xs text-white/70">
+            <span className="font-medium text-white/90">{currentDomain.title}</span>
+            <span className="mx-2 text-white/30">|</span>
+            {currentDomain.hint}
+          </p>
+        </div>
+      )}
+
+      {/* 하단: 추천 문제 카드 */}
+      {currentProblem && <RecommendedProblemCard problem={currentProblem} />}
+    </div>
+  );
+}

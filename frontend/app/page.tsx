@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
 import HeroResultPanel from "@/components/hero/HeroResultPanel";
+import HeroStarter from "@/components/hero/HeroStarter";
 
 // Hero copy constants
 const heroCopy = {
@@ -326,15 +326,6 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* CTA Button */}
-              <div className="mt-6 flex justify-center lg:justify-start">
-                <Link
-                  href="/problems"
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
-                >
-                  내 실력 측정하기
-                </Link>
-              </div>
             </div>
 
             {/* 우측: HeroResultPanel */}
@@ -343,54 +334,62 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 하단: 2컬럼 (오늘의 문제 + 도메인별로 시작하기) */}
-          <div className="mt-10 lg:mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* 좌측: 오늘의 문제 */}
-            <div className="rounded-2xl border border-white/20 bg-white/[0.08] backdrop-blur p-5">
-              <p className="text-xs text-white/60 mb-3">{heroCopy.todayProblem}</p>
-              <Link
-                href="/problems/problem-e04"
-                className="group flex items-center justify-between gap-4 transition-colors"
-              >
-                <div className="min-w-0 text-left">
-                  <span className="block text-base font-semibold text-white truncate
-                                   group-hover:text-blue-200 transition-colors">
-                    점수 등급 계산 함수 테스트
-                  </span>
-                  <span className="block mt-1 text-sm text-white/70">
-                    Easy · 숨은 버그 5개
-                  </span>
-                </div>
-                <span className="shrink-0 flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium
-                                 bg-blue-600 text-white transition-colors
-                                 group-hover:bg-blue-500">
-                  도전
-                  <ChevronRight className="w-4 h-4 transition-transform
-                                           group-hover:translate-x-0.5" />
-                </span>
-              </Link>
-            </div>
+          {/* 하단: HeroStarter (도메인 선택 + 추천 문제 통합) */}
+          <div className="mt-10 lg:mt-12 max-w-2xl mx-auto">
+            <HeroStarter
+              domains={domains}
+              recommendedProblems={{
+                common: {
+                  title: "점수 등급 계산 함수 테스트",
+                  difficulty: "Easy",
+                  mutants: 5,
+                  href: "/problems/problem-e04",
+                },
+                fintech: {
+                  title: "출금 가능 여부 판단 테스트",
+                  difficulty: "Easy",
+                  mutants: 4,
+                  href: "/problems/problem-ft-e01",
+                },
+                commerce: {
+                  title: "입장료 계산 함수 테스트",
+                  difficulty: "Easy",
+                  mutants: 4,
+                  href: "/problems/problem-e05",
+                },
+                saas: {
+                  title: "API 필수 파라미터 검증 테스트",
+                  difficulty: "Easy",
+                  mutants: 4,
+                  href: "/problems/problem-sa-e01",
+                },
+                platform: {
+                  title: "JWT 토큰 형식 검증 테스트",
+                  difficulty: "Easy",
+                  mutants: 4,
+                  href: "/problems/problem-pl-e01",
+                },
+                content: {
+                  title: "장바구니 아이템 검증 테스트",
+                  difficulty: "Easy",
+                  mutants: 4,
+                  href: "/problems/problem-e03",
+                },
+              }}
+              initialDomain="common"
+            />
 
-            {/* 우측: 도메인별로 시작하기 */}
-            <div className="rounded-2xl border border-white/20 bg-white/[0.08] backdrop-blur p-5">
-              <p className="text-xs text-white/60 mb-3">{heroCopy.domainLabel}</p>
-              <div className="flex flex-wrap gap-2">
-                {domains.map((d) => (
-                  <Link
-                    key={d.key}
-                    href={`/problems?domain=${d.key}`}
-                    title={d.title}
-                    className="px-3 py-1.5 text-sm rounded-full border transition-all
-                               text-white/90 bg-white/10 border-white/20
-                               hover:bg-white/20 hover:border-white/40 hover:text-white"
-                  >
-                    {d.label}
-                  </Link>
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-white/50">
-                {heroCopy.domainHelper}
-              </p>
+            {/* 보조 링크: 전체 문제 보기 */}
+            <div className="mt-4 text-center">
+              <Link
+                href="/problems"
+                className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white/90 transition-colors"
+              >
+                전체 문제 둘러보기
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
           </div>
         </div>
@@ -450,7 +449,7 @@ export default function Home() {
               <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
                 단순 커버리지가 아닙니다. </p>
               <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
-                <span className="font-semibold text-blue-600 dark:text-blue-400">{''}결함 발견률</span>{' '}
+                <span className="font-semibold text-blue-600 dark:text-blue-400">{''}버그 탐지율</span>{' '}
               로 진짜 검증 강도를 측정합니다.</p>
             </div>
 
@@ -528,9 +527,9 @@ export default function Home() {
               <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
                 놓친 케이스와 취약 지점을 요약하고{" "}
                 <span className="card-desc font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                  보완할 테스트 우선순위를
+                  보완할 테스트 우선순위
                 </span>{" "}
-                제안합니다.
+                를 제안합니다.
               </p>
             </div>
           </div>
