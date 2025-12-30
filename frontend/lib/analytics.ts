@@ -67,10 +67,13 @@ export const trackProblemView = (params: {
  */
 export const trackLocalTest = (params: {
   problemId: number | string;
-  passed: boolean;
+  passed: number;
+  failed: number;
 }) => {
   sendGAEvent("local_test", {
     problem_id: String(params.problemId),
-    passed: params.passed,
+    tests_passed: params.passed,
+    tests_failed: params.failed,
+    all_passed: params.failed === 0 && params.passed > 0,
   });
 };

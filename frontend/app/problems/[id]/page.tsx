@@ -193,6 +193,7 @@ export default function ProblemDetailPage() {
       trackLocalTest({
         problemId: problem.id,
         passed: result.passed,
+        failed: result.failed,
       });
     } catch (err: unknown) {
       const errorMessage = err instanceof globalThis.Error ? err.message : "테스트 실행 실패";
