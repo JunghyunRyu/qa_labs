@@ -232,11 +232,13 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
         NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
     container_name: qa_arena_frontend_prod
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
       NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+      NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
     ports:
       - "127.0.0.1:3000:3000"  # localhost만 바인딩 (nginx가 프록시)
     networks:
