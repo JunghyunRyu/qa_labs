@@ -136,12 +136,46 @@ export function hasExceptionExamples(descriptionMd: string): boolean {
 }
 
 /**
+ * Extract bug type hints from buggy implementations
+ * Returns categories only (not specific bug details) to avoid spoilers
+ */
+export function extractBugTypeHints(
+  buggyImplementations: Array<{ bug_description?: string }> | undefined
+): string[] {
+  if (!buggyImplementations || buggyImplementations.length === 0) {
+    return [];
+  }
+
+  const typeKeywords: Record<string, string[]> = {
+    경계값: ["0", "경계", "boundary", "빈", "empty", "같을 때", "정확히"],
+    예외처리: ["예외", "exception", "error", "raise", "TypeError", "ValueError", "검증 누락"],
+    포맷검증: ["포맷", "format", "공백", "space", "형식", "구분자"],
+    타입검증: ["타입", "type", "bool", "int", "str", "isinstance"],
+    로직오류: ["잘못", "wrong", "abs", "누락", "missing", "대신"],
+    음수처리: ["음수", "negative", "< 0"],
+    비교연산: ["<=", ">=", "비교", "< 사용", "> 사용"],
+  };
+
+  const hints = new Set<string>();
+  for (const buggy of buggyImplementations) {
+    const desc = buggy.bug_description || "";
+    for (const [category, keywords] of Object.entries(typeKeywords)) {
+      if (keywords.some((kw) => desc.toLowerCase().includes(kw.toLowerCase()))) {
+        hints.add(category);
+      }
+    }
+  }
+  return Array.from(hints);
+}
+
+/**
  * Generate a user-friendly test template based on problem info
  */
 export function generateTestTemplate(problem: Problem): string {
   const { functionName, params } = parseSignature(problem.function_signature);
   const examples = parseExamples(problem.description_md);
   const hints = parseHints(problem.description_md);
+  const bugTypeHints = extractBugTypeHints(problem.buggy_implementations);
   const hasExceptions = hasExceptionExamples(problem.description_md);
   const mutantCount = problem.buggy_implementations?.length || 0;
 
@@ -157,33 +191,53 @@ export function generateTestTemplate(problem: Problem): string {
     firstExampleComment = `  # 예시: ${ex.raw}`;
   }
 
-  // Build template
+  // Build template with enhanced mission block
   const lines: string[] = [
     `# ============================================================`,
     `# ${problem.title}`,
     `# ============================================================`,
     `# `,
     `# 미션: 이 함수의 버그를 찾아내는 테스트 코드를 작성하세요!`,
-    `#   - 정상 구현(Golden Code) 통과 → 기본 점수`,
+    `#   - 정상 구현(Golden Code) 통과 -> 기본 점수`,
     `#   - 숨겨진 버그(Mutant)를 많이 잡을수록 높은 점수`,
     `#   - 이 문제에는 ${mutantCount}개의 버그가 숨어 있습니다`,
     `# `,
-    `# 채점: Mutation Score = (잡은 버그 수 / ${mutantCount}) × 100`,
-    `# ============================================================`,
-    ``,
-    `import pytest`,
-    `from target import ${functionName}`,
-    ``,
-    ``,
-    `# ------------------------------------------------------------`,
-    `# Step 1: 기본 동작 테스트 (정상 케이스)`,
-    `# ------------------------------------------------------------`,
-    `# 먼저 함수가 올바르게 동작하는지 확인하세요.`,
-    `# 이 테스트가 통과해야 점수를 받을 수 있습니다.`,
-    ``,
-    `def test_basic():`,
-    `    """기본 동작 테스트 - 정상 입력에 대한 예상 결과 확인"""`,
   ];
+
+  // Add test hints if available
+  if (hints.length > 0) {
+    lines.push(`# [테스트 힌트]`);
+    for (const hint of hints.slice(0, 3)) {
+      const cleanHint = hint.replace(/\*\*/g, "").replace(/`/g, "");
+      lines.push(`#   - ${cleanHint}`);
+    }
+    lines.push(`# `);
+  }
+
+  // Add bug type hints if available
+  if (bugTypeHints.length > 0) {
+    lines.push(`# [버그 유형 힌트]`);
+    for (const type of bugTypeHints.slice(0, 4)) {
+      lines.push(`#   - ${type}`);
+    }
+    lines.push(`# `);
+  }
+
+  lines.push(`# 채점: Mutation Score = (잡은 버그 수 / ${mutantCount}) x 100`);
+  lines.push(`# ============================================================`);
+  lines.push(``);
+  lines.push(`import pytest`);
+  lines.push(`from target import ${functionName}`);
+  lines.push(``);
+  lines.push(``);
+  lines.push(`# ------------------------------------------------------------`);
+  lines.push(`# Step 1: 기본 동작 테스트 (정상 케이스)`);
+  lines.push(`# ------------------------------------------------------------`);
+  lines.push(`# 먼저 함수가 올바르게 동작하는지 확인하세요.`);
+  lines.push(`# 이 테스트가 통과해야 점수를 받을 수 있습니다.`);
+  lines.push(``);
+  lines.push(`def test_basic():`);
+  lines.push(`    """기본 동작 테스트 - 정상 입력에 대한 예상 결과 확인"""`);
 
   if (firstExampleCode) {
     lines.push(firstExampleComment);
@@ -212,17 +266,6 @@ export function generateTestTemplate(problem: Problem): string {
   lines.push(``);
   lines.push(`def test_edge_cases():`);
   lines.push(`    """경계값 테스트 - 특수한 입력값에 대한 동작 확인"""`);
-
-  // Add hints as comments
-  if (hints.length > 0) {
-    lines.push(`    # 힌트:`);
-    for (const hint of hints.slice(0, 3)) {
-      // Clean up hint text (remove markdown formatting)
-      const cleanHint = hint.replace(/\*\*/g, "").replace(/`/g, "");
-      lines.push(`    #   - ${cleanHint}`);
-    }
-  }
-
   lines.push(`    # TODO: 경계값 테스트를 작성하세요`);
   lines.push(`    # 예: 0이 포함된 경우, 빈 리스트, 음수 등`);
   lines.push(`    pass`);

@@ -423,7 +423,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <CopyButton text={problem.function_signature} />
+              <CopyButton text={problem.function_signature} variant="light" />
               <button
                 onClick={() => setIsSignatureExpanded(!isSignatureExpanded)}
                 className="p-1 rounded hover:bg-purple-100 dark:hover:bg-purple-800/50 transition-colors"

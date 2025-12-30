@@ -12,6 +12,8 @@ interface CopyButtonProps {
   label?: string;
   className?: string;
   size?: "sm" | "md";
+  /** 색상 변형: default(어두운 배경용), light(밝은 배경용) */
+  variant?: "default" | "light";
   /** 복사 성공 콜백 */
   onCopy?: () => void;
 }
@@ -22,6 +24,7 @@ export default function CopyButton({
   label,
   className = "",
   size = "sm",
+  variant = "default",
   onCopy,
 }: CopyButtonProps) {
   // value가 우선, text는 하위 호환성
@@ -42,14 +45,20 @@ export default function CopyButton({
   const iconSize = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
   const padding = size === "sm" ? "p-1.5" : "p-2";
 
+  // variant에 따른 스타일 분기
+  const baseStyle =
+    variant === "light"
+      ? copied
+        ? "bg-green-500/20 text-green-600 dark:text-green-400"
+        : "bg-gray-200/80 text-gray-600 hover:bg-gray-300/80 hover:text-gray-800 dark:bg-gray-700/50 dark:text-gray-400 dark:hover:bg-gray-600/50 dark:hover:text-gray-300"
+      : copied
+        ? "bg-green-500/20 text-green-400"
+        : "bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-gray-300";
+
   return (
     <button
       onClick={handleCopy}
-      className={`${padding} rounded-md transition-all duration-200 ${
-        copied
-          ? "bg-green-500/20 text-green-400"
-          : "bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-gray-300"
-      } ${className}`}
+      className={`${padding} rounded-md transition-all duration-200 ${baseStyle} ${className}`}
       title={copied ? "복사됨!" : label || "코드 복사"}
       aria-label={copied ? "복사됨" : label || "코드 복사"}
     >
