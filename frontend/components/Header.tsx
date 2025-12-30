@@ -113,7 +113,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <Image
-            src="/icon.svg"
+            src="/favicon.svg"
             alt="QA-Arena Logo"
             width={28}
             height={28}
