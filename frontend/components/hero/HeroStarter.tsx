@@ -6,11 +6,19 @@
  * Hero 하단의 통합 시작 모듈.
  * 도메인 선택 칩 + 추천 문제 카드를 단일 박스로 제공.
  * 도메인 선택 시 추천 문제가 동적으로 변경됨.
+ * localStorage에 선택 도메인 저장 (재방문 시 유지)
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, AlertCircle } from "lucide-react";
+
+// ============================================================
+// Constants
+// ============================================================
+
+const STORAGE_KEY = "qa-arena-selected-domain";
+const FALLBACK_DOMAIN = "common";
 
 // ============================================================
 // Types
@@ -35,7 +43,7 @@ interface HeroStarterProps {
   domains: Domain[];
   /** 도메인별 추천 문제 매핑 */
   recommendedProblems: Record<string, RecommendedProblem>;
-  /** 초기 선택 도메인 */
+  /** 초기 선택 도메인 (localStorage가 없을 때 사용) */
   initialDomain?: string;
 }
 
@@ -121,6 +129,32 @@ function RecommendedProblemCard({
   );
 }
 
+/** Fallback 메시지 (추천 문제가 없을 때) */
+function FallbackMessage({
+  onFallback,
+}: {
+  onFallback: () => void;
+}) {
+  return (
+    <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm text-white/80">
+            해당 도메인의 추천 문제가 준비 중입니다.
+          </p>
+          <button
+            onClick={onFallback}
+            className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            공통 문제로 시작하기 →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // Main Component
 // ============================================================
@@ -128,13 +162,35 @@ function RecommendedProblemCard({
 export default function HeroStarter({
   domains,
   recommendedProblems,
-  initialDomain = "common",
+  initialDomain = FALLBACK_DOMAIN,
 }: HeroStarterProps) {
+  // localStorage에서 저장된 도메인 읽기 (SSR 대응)
   const [selectedDomain, setSelectedDomain] = useState(initialDomain);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // 클라이언트에서 localStorage 읽기
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && domains.some((d) => d.key === saved)) {
+      setSelectedDomain(saved);
+    }
+    setIsHydrated(true);
+  }, [domains]);
+
+  // 도메인 변경 시 localStorage에 저장
+  const handleDomainSelect = (domainKey: string) => {
+    setSelectedDomain(domainKey);
+    localStorage.setItem(STORAGE_KEY, domainKey);
+  };
 
   // 현재 선택된 도메인 정보
   const currentDomain = domains.find((d) => d.key === selectedDomain);
   const currentProblem = recommendedProblems[selectedDomain];
+
+  // Fallback 처리
+  const handleFallback = () => {
+    handleDomainSelect(FALLBACK_DOMAIN);
+  };
 
   return (
     <div className="rounded-2xl border border-white/20 bg-white/[0.08] backdrop-blur p-6">
@@ -155,7 +211,7 @@ export default function HeroStarter({
             key={d.key}
             domain={d}
             isSelected={d.key === selectedDomain}
-            onClick={() => setSelectedDomain(d.key)}
+            onClick={() => handleDomainSelect(d.key)}
           />
         ))}
       </div>
@@ -171,8 +227,12 @@ export default function HeroStarter({
         </div>
       )}
 
-      {/* 하단: 추천 문제 카드 */}
-      {currentProblem && <RecommendedProblemCard problem={currentProblem} />}
+      {/* 하단: 추천 문제 카드 또는 Fallback */}
+      {currentProblem ? (
+        <RecommendedProblemCard problem={currentProblem} />
+      ) : (
+        <FallbackMessage onFallback={handleFallback} />
+      )}
     </div>
   );
 }
