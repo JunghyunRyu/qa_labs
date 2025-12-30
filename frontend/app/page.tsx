@@ -6,11 +6,10 @@ import HeroStarter from "@/components/hero/HeroStarter";
 
 // Hero copy constants
 const heroCopy = {
-  headline: "숨은 버그, 얼마나 잡아내나요?",
+  headline: "숨은 버그, 얼마나 찾아내나요?",
   subLine1: "당신의 테스트 시나리오가 얼마나 강력한지, 지금 바로 확인해보세요.",
-  todayProblem: "오늘의 문제",
-  domainLabel: "도메인별로 시작하기",
-  domainHelper: "선택한 도메인의 문제로 바로 이동합니다",
+  domainLabel: "도메인 선택",
+  domainHelper: "선택하면 추천 문제가 바뀝니다",
 };
 
 const domains = [
@@ -319,7 +318,7 @@ export default function Home() {
               <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-8 sm:py-8 inline-block">
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
                   숨은 버그,<br className="hidden sm:block" />{' '}
-                  <span className="highlight">얼마나 잡아내나요?</span>
+                  <span className="highlight">얼마나 찾아내나요?</span>
                 </h1>
                 <p className="mt-5 text-base sm:text-lg text-white/85 max-w-xl lg:max-w-none">
                   당신의 테스트 시나리오가 얼마나 강력한지, 지금 바로 확인해보세요.
@@ -401,7 +400,7 @@ export default function Home() {
           {/* Section Header */}
           <div className="section-header">
             <h2 className="section-title break-keep">
-              왜 정답 통과만으로는 부족할까요?
+              테스트 통과 ≠ 버그 없음
             </h2>
             <p className="section-subtitle break-keep">
               테스트가 초록불(Pass)이라고 해서, 버그가 없는 것은 아닙니다.
@@ -556,7 +555,7 @@ export default function Home() {
         <div className="section-container relative z-10">
           <div className="section-header">
             <h2 className="section-title !text-white">
-              이런 버그, 찾아낼 수 있나요?
+              운영에서 터지는 케이스들
             </h2>
             <p className="section-subtitle !text-slate-300">
               평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.<br className="hidden sm:block" />
@@ -798,7 +797,7 @@ export default function Home() {
         <div className="section-container">
           <div className="section-header">
             <h2 className="section-title">
-              누구를 위한 플랫폼인가요?
+              이런 분들을 위한 플랫폼입니다
             </h2>
             <p className="section-subtitle">
               QA-Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
@@ -848,23 +847,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="section-base bg-gradient-to-br from-sky-500 to-blue-600">
-        <div className="section-container !max-w-4xl text-center">
-          <h2 className="section-title !text-white !mb-4">
-            QA 역량, 지금 바로 검증해보세요
-          </h2>
-          <p className="text-white/80 mb-8 max-w-xl mx-auto">
-            3분이면 첫 문제를 풀고 AI 피드백을 받을 수 있습니다. 무료로 시작하세요.
-          </p>
-          <Link
-            href="/problems"
-            className="inline-block px-10 py-4 bg-white text-blue-600 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl"
-          >
-            첫 문제 풀러 가기
-          </Link>
-        </div>
-      </section>
+{/* Final CTA Section */}
+<section className="section-base relative overflow-hidden bg-slate-50">
+  {/* subtle brand glow */}
+  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/15 via-transparent to-blue-600/10" />
+  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.18),transparent_55%)]" />
+
+  <div className="section-container relative !max-w-4xl text-center py-16 sm:py-20">
+    <h2 className="section-title mb-4 text-slate-900">
+      QA 역량, 운영에서 터지기 전에 잡아내세요
+    </h2>
+
+    <p className="mb-8 max-w-xl mx-auto text-slate-600">
+      3분 안에 첫 문제를 풀고, 테스트 품질 피드백을 바로 받아볼 수 있습니다.
+    </p>
+
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <Link
+        href="/problems"
+        className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
+                   bg-blue-600 text-white shadow-lg transition
+                   hover:bg-blue-700 hover:shadow-xl
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+      >
+        첫 문제 풀러 가기
+      </Link>
+
+      <Link
+        href="/scenarios"
+        className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
+                   bg-white text-slate-900 border border-slate-200 shadow-sm transition
+                   hover:bg-slate-50
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+      >
+        시나리오 둘러보기
+      </Link>
+    </div>
+
+    <p className="mt-6 text-sm text-slate-500">
+      회원가입 없이도 시작할 수 있어요.
+    </p>
+  </div>
+</section>
     </div>
   );
 }

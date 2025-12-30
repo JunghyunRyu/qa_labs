@@ -171,7 +171,7 @@ export default function ProblemPeekOverlay({
                 <ChevronUp className="w-4 h-4 text-purple-500" />
               )}
             </button>
-            <CopyButton text={problem.function_signature} />
+            <CopyButton text={problem.function_signature} variant="light" />
           </div>
           {!isSignatureCollapsed && (
             <pre className="mt-1.5 text-sm text-purple-900 dark:text-purple-100 font-mono

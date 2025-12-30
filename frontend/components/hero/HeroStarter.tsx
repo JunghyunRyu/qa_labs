@@ -197,10 +197,10 @@ export default function HeroStarter({
       {/* 상단: 도메인 선택 헤더 */}
       <div className="mb-4">
         <p className="text-sm font-medium text-white/80">
-          관심 도메인으로 시작하기
+          도메인 선택
         </p>
         <p className="text-xs text-white/50 mt-1">
-          도메인을 선택하면 맞춤 추천 문제가 표시됩니다
+          선택하면 추천 문제가 바뀝니다
         </p>
       </div>
 

@@ -31,7 +31,7 @@ function DetectionRateCard({
       {/* 라벨 */}
       <div className="flex items-center gap-1.5 mb-3">
         <Target className="w-4 h-4 text-emerald-400" />
-        <span className="text-xs font-medium text-white/60">잡은 버그</span>
+        <span className="text-xs font-medium text-white/60">발견한 버그</span>
       </div>
 
       {/* 원형 게이지 */}
