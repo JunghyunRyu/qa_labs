@@ -10,7 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function getProblemData(id: string) {
   try {
-    const res = await fetch(`${API_URL}/api/v1/problems/${id}`, {
+    const res = await fetch(`${API_URL}/v1/problems/${id}`, {
       next: { revalidate: 3600 }, // 1시간 캐시
     });
     if (!res.ok) return null;
