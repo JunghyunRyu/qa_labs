@@ -31,8 +31,8 @@ export default function ProblemPeekOverlay({
 }: ProblemPeekOverlayProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [isSignatureCollapsed, setIsSignatureCollapsed] = useState(false);
-  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
+  const [isSignatureCollapsed, setIsSignatureCollapsed] = useState(true);
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(true);
 
   // Close on ESC key
   const handleKeyDown = useCallback(
@@ -96,7 +96,7 @@ export default function ProblemPeekOverlay({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4
+      className="fixed inset-0 z-50 flex items-start justify-center pt-8 px-4
                  bg-black/40 backdrop-blur-sm animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
@@ -165,13 +165,20 @@ export default function ProblemPeekOverlay({
               <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
                 함수 시그니처
               </span>
-              {isSignatureCollapsed ? (
-                <ChevronDown className="w-4 h-4 text-purple-500" />
-              ) : (
-                <ChevronUp className="w-4 h-4 text-purple-500" />
-              )}
             </button>
-            <CopyButton text={problem.function_signature} variant="light" />
+            <div className="flex items-center gap-2">
+              <CopyButton text={problem.function_signature} variant="light" />
+              <button
+                onClick={() => setIsSignatureCollapsed(!isSignatureCollapsed)}
+                className="p-1 hover:bg-purple-100 dark:hover:bg-purple-800/30 rounded transition-colors"
+              >
+                {isSignatureCollapsed ? (
+                  <ChevronDown className="w-4 h-4 text-purple-500" />
+                ) : (
+                  <ChevronUp className="w-4 h-4 text-purple-500" />
+                )}
+              </button>
+            </div>
           </div>
           {!isSignatureCollapsed && (
             <pre className="mt-1.5 text-sm text-purple-900 dark:text-purple-100 font-mono
@@ -186,22 +193,27 @@ export default function ProblemPeekOverlay({
         {/* Summary - Key test points - Collapsible */}
         <div className="flex-shrink-0 px-5 py-3 bg-sky-50 dark:bg-sky-900/20
                         border-b border-sky-100 dark:border-sky-800/30">
-          <button
-            onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
-            className="w-full flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
               <Target className="w-4 h-4 text-sky-500" />
               <span className="text-xs font-medium text-sky-700 dark:text-sky-300">
                 핵심 테스트 포인트
               </span>
-            </div>
-            {isSummaryCollapsed ? (
-              <ChevronDown className="w-4 h-4 text-sky-500" />
-            ) : (
-              <ChevronUp className="w-4 h-4 text-sky-500" />
-            )}
-          </button>
+            </button>
+            <button
+              onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
+              className="p-1 hover:bg-sky-100 dark:hover:bg-sky-800/30 rounded transition-colors"
+            >
+              {isSummaryCollapsed ? (
+                <ChevronDown className="w-4 h-4 text-sky-500" />
+              ) : (
+                <ChevronUp className="w-4 h-4 text-sky-500" />
+              )}
+            </button>
+          </div>
           {!isSummaryCollapsed && (
             summary ? (
               <div className="mt-1.5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed prose prose-sm max-w-none max-h-[150px] overflow-auto">
