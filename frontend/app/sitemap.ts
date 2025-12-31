@@ -19,11 +19,8 @@ async function getProblemsForSitemap(): Promise<ProblemListItem[]> {
 
   try {
     const response = await fetch(`${apiUrl}/v1/problems?page=1&page_size=1000`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store', // 캐시 사용 안 함
+      method: 'GET',
+      cache: 'no-store',
     })
 
     if (!response.ok) {
