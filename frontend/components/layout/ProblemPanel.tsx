@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
+import { useTextSelection, clearWindowSelection } from "@/hooks/useTextSelection";
+import SelectionActionMenu from "@/components/ai/SelectionActionMenu";
+import { generateSelectionPrompt, type SelectionActionType } from "@/lib/selectionPrompts";
 import { useLayoutStore, type AccordionSectionType } from "@/stores/layoutStore";
 import {
   ArrowLeft,
@@ -233,10 +236,38 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
     closeProblemSearch,
     toggleProblemSearch,
     accordionDefaults,
+    openAIChatWithPrefill,
   } = useLayoutStore();
 
   // Content ref for search highlighting
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // M5-4: Ref for test points section (sticky area)
+  const testPointsRef = useRef<HTMLDivElement>(null);
+
+  // M5-4: Text selection for AI questions (both sticky and scrollable areas)
+  const accordionSelection = useTextSelection(contentRef, !isProblemCollapsed);
+  const testPointsSelection = useTextSelection(testPointsRef, !isProblemCollapsed);
+
+  // Use whichever selection is currently active
+  const selection = testPointsSelection.isValid ? testPointsSelection : accordionSelection;
+
+  // Handler for selection action menu (M5-4)
+  const handleSelectionAction = useCallback(
+    (actionType: SelectionActionType, selectedText: string) => {
+      const prompt = generateSelectionPrompt(actionType, selectedText, {
+        problemTitle: problem.title,
+      });
+      openAIChatWithPrefill(prompt);
+      clearWindowSelection();
+    },
+    [problem.title, openAIChatWithPrefill]
+  );
+
+  // Dismiss selection menu
+  const handleSelectionDismiss = useCallback(() => {
+    clearWindowSelection();
+  }, []);
 
   // Session-level accordion state overrides (explicit user interactions this session)
   const [sessionOverrides, setSessionOverrides] = useState<Map<string, boolean>>(new Map());
@@ -422,8 +453,8 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           <ContractCard contract={contract} defaultExpanded={false} />
         </div>
 
-        {/* Summary - Test point overview */}
-        <div className="px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border-b border-sky-100 dark:border-sky-800/30">
+        {/* Summary - Test point overview (M5-4: ref for text selection) */}
+        <div ref={testPointsRef} className="px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border-b border-sky-100 dark:border-sky-800/30">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5 text-sky-500" />
@@ -519,6 +550,13 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           <div className="h-full bg-gray-50 dark:bg-gray-800/50" />
         )}
       </div>
+
+      {/* M5-4: Selection Action Menu */}
+      <SelectionActionMenu
+        selection={selection}
+        onAction={handleSelectionAction}
+        onDismiss={handleSelectionDismiss}
+      />
     </div>
   );
 }
