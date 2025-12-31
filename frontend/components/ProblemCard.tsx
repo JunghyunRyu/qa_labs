@@ -71,7 +71,7 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
       aria-label={`${displayTitle} 문제 보기`}
       tabIndex={0}
     >
-      <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass} min-h-[180px] sm:min-h-[200px]`}>
+      <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass} min-h-[180px] sm:min-h-[200px]`}>
         {/* 도메인 + 난이도 + 북마크 */}
         <div className="flex items-center justify-between mb-2 gap-2">
           <span className={`text-xs font-medium ${domain.color} flex items-center gap-1`}>

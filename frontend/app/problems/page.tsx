@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
 import ProblemCard from "@/components/ProblemCard";
 import ProblemStatsRow from "@/components/ProblemStatsRow";
+import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import PyodidePreloader from "@/components/PyodidePreloader";
@@ -183,7 +184,24 @@ function ProblemsContent() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Loading />
+        {/* 헤더 Skeleton */}
+        <div className="mb-8">
+          <div className="h-9 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2" />
+          <div className="h-5 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        {/* Control Bar Skeleton */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 animate-pulse">
+          <div className="flex flex-col lg:flex-row gap-3">
+            <div className="h-10 flex-1 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div className="flex gap-2">
+              <div className="h-10 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              <div className="h-10 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              <div className="h-10 w-20 bg-gray-200 dark:bg-gray-700 rounded-full" />
+            </div>
+          </div>
+        </div>
+        {/* Card Grid Skeleton */}
+        <ProblemCardSkeletonGrid count={8} />
       </div>
     );
   }
