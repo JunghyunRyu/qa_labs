@@ -9,7 +9,8 @@ import type { BookmarkedProblemListResponse, BookmarkedProblemItem } from "@/typ
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import Link from "next/link";
-import { Bookmark, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
+import { Bookmark, TrendingUp, TrendingDown, Minus, ArrowLeft, Bug } from "lucide-react";
+import { toTagViewModels, sliceTags } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -44,8 +45,19 @@ const difficultyConfig = {
   },
 };
 
+const DOMAIN_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
+  common: { icon: "📚", label: "공통", color: "text-gray-600 dark:text-gray-400" },
+  fintech: { icon: "💳", label: "핀테크", color: "text-emerald-600 dark:text-emerald-400" },
+  commerce: { icon: "🛒", label: "커머스", color: "text-orange-600 dark:text-orange-400" },
+  saas: { icon: "☁️", label: "SaaS", color: "text-sky-600 dark:text-sky-400" },
+  platform: { icon: "🔗", label: "플랫폼", color: "text-violet-600 dark:text-violet-400" },
+  content: { icon: "📝", label: "컨텐츠", color: "text-pink-600 dark:text-pink-400" },
+};
+
 function BookmarkedProblemCard({ problem }: { problem: BookmarkedProblemItem }) {
   const difficulty = difficultyConfig[problem.difficulty];
+  const domain = DOMAIN_CONFIG[problem.domain || "common"] || DOMAIN_CONFIG.common;
+  const bugsCount = problem.bugs_count ?? 0;
   const displayTitle = problem.title || `문제 #${problem.id}`;
 
   const formatDate = (dateString: string) => {
@@ -57,6 +69,10 @@ function BookmarkedProblemCard({ problem }: { problem: BookmarkedProblemItem }) 
     });
   };
 
+  // 태그 한글 변환
+  const tagModels = problem.skills ? toTagViewModels(problem.skills) : [];
+  const { visible, hiddenCount } = sliceTags(tagModels, 3);
+
   return (
     <Link
       href={`/problems/${problem.id}`}
@@ -66,11 +82,12 @@ function BookmarkedProblemCard({ problem }: { problem: BookmarkedProblemItem }) 
       <div
         className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass}`}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3 gap-2">
-          <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 flex-1 pr-2 line-clamp-2 leading-snug">
-            {displayTitle}
-          </h3>
+        {/* Header: 도메인 + 난이도 */}
+        <div className="flex items-center justify-between mb-2 gap-2">
+          <span className={`text-xs font-medium ${domain.color} flex items-center gap-1`}>
+            <span>{domain.icon}</span>
+            <span>{domain.label}</span>
+          </span>
           <span
             className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border-2 shrink-0 whitespace-nowrap flex items-center gap-1.5 ${difficulty.colors} shadow-sm`}
           >
@@ -79,24 +96,37 @@ function BookmarkedProblemCard({ problem }: { problem: BookmarkedProblemItem }) 
           </span>
         </div>
 
-        {/* Tags */}
-        {problem.skills && problem.skills.length > 0 && (
-          <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3">
-            {problem.skills.slice(0, 3).map((skill) => (
-              <span
-                key={skill}
-                className="px-1.5 sm:px-2 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600"
-              >
-                {skill}
-              </span>
-            ))}
-            {problem.skills.length > 3 && (
-              <span className="px-1.5 py-0.5 text-gray-500 dark:text-gray-400 text-xs">
-                +{problem.skills.length - 3}
-              </span>
-            )}
-          </div>
-        )}
+        {/* 제목 */}
+        <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 flex-1 pr-2 line-clamp-2 leading-snug mb-3">
+          {displayTitle}
+        </h3>
+
+        {/* Tags + 버그 수 */}
+        <div className="flex items-center justify-between mb-3">
+          {visible.length > 0 && (
+            <div className="flex flex-wrap gap-1 sm:gap-1.5">
+              {visible.map((tag) => (
+                <span
+                  key={tag.slug}
+                  className="px-1.5 sm:px-2 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md text-xs border border-gray-200 dark:border-gray-600"
+                >
+                  {tag.labelKo}
+                </span>
+              ))}
+              {hiddenCount > 0 && (
+                <span className="px-1.5 py-0.5 text-gray-500 dark:text-gray-400 text-xs">
+                  +{hiddenCount}
+                </span>
+              )}
+            </div>
+          )}
+          {bugsCount > 0 && (
+            <div className="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 shrink-0" title={`숨은 버그 ${bugsCount}개`}>
+              <Bug className="w-3.5 h-3.5" />
+              <span>{bugsCount}개</span>
+            </div>
+          )}
+        </div>
 
         {/* Bookmarked date */}
         <div className="mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">

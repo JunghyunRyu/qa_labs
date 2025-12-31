@@ -117,7 +117,9 @@ async def get_bookmarked_problems(
             "slug": problem.slug,
             "title": problem.title,
             "difficulty": problem.difficulty,
+            "domain": problem.domain,
             "skills": problem.skills,
+            "bugs_count": len(problem.buggy_implementations),
             "bookmarked_at": bookmark.created_at.isoformat() if bookmark.created_at else None,
         })
 

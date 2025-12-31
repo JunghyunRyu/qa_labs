@@ -58,7 +58,9 @@ export interface BookmarkedProblemItem {
   slug: string;
   title: string;
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
+  domain: DomainType;
   skills?: string[];
+  bugs_count?: number;
   bookmarked_at: string;
 }
 
