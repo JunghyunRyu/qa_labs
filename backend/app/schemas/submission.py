@@ -1,6 +1,6 @@
 """Submission schemas."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from uuid import UUID
 from typing import Optional, Dict, Any
@@ -38,7 +38,7 @@ class SubmissionCreate(BaseModel):
     """
 
     problem_id: int
-    code: str
+    code: str = Field(..., min_length=10, max_length=50000)  # 10B ~ 50KB 제한
     client_result: Optional[ClientExecutionResult] = None
     website: Optional[str] = None  # Honeypot field - should always be empty
 
