@@ -11,11 +11,12 @@ interface ProblemListResponse {
 }
 
 async function getProblemsForSitemap(): Promise<ProblemListItem[]> {
+  // 프로덕션에서는 외부 URL 사용 (컨테이너 내부 통신 이슈 회피)
+  const apiUrl = process.env.NODE_ENV === 'production'
+    ? 'https://qa-arena.qalabs.kr/api'
+    : (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api')
+
   try {
-    // 서버 사이드에서 직접 백엔드 API 호출
-    // Docker 환경: INTERNAL_API_URL (컨테이너 간 통신)
-    // 로컬 환경: NEXT_PUBLIC_API_URL
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
     const response = await fetch(`${apiUrl}/v1/problems?page=1&page_size=1000`, {
       next: { revalidate: 3600 }, // 1시간마다 재검증
     })
