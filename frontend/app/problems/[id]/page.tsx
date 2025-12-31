@@ -236,12 +236,27 @@ export default function ProblemDetailPage() {
   const currentTemplate = problem ? getInitialTemplate(problem) : "";
 
   // Auto-save code to localStorage (debounced)
-  useCodeDraft(
+  const {
+    status: saveStatus,
+    lastSavedAt,
+    saveNow,
+    wasRecovered,
+    dismissRecovery,
+  } = useCodeDraft(
     problem?.slug ?? null,
     code,
     currentTemplate,
     !loading && !!problem // Only save when problem is loaded
   );
+
+  // Reset code to initial template
+  const handleResetCode = useCallback(() => {
+    if (!problem) return;
+    const template = getInitialTemplate(problem);
+    setCode(template);
+    // Clear saved draft when resetting
+    clearDraft(problem.slug);
+  }, [problem]);
 
   // Fetch problem data (code initialization is handled by initializeCode effect)
   useEffect(() => {
@@ -575,6 +590,12 @@ export default function ProblemDetailPage() {
                 problemId={problem?.id ?? 0}
                 onLoadSubmission={handleLoadSubmission}
                 sessionHistory={sessionHistory}
+                saveStatus={saveStatus}
+                onSaveNow={saveNow}
+                wasRecovered={wasRecovered}
+                onDismissRecovery={dismissRecovery}
+                onReset={handleResetCode}
+                lastSavedAt={lastSavedAt}
               />
             }
           />
@@ -663,6 +684,12 @@ export default function ProblemDetailPage() {
               problemId={problem?.id ?? 0}
               onLoadSubmission={handleLoadSubmission}
               sessionHistory={sessionHistory}
+              saveStatus={saveStatus}
+              onSaveNow={saveNow}
+              wasRecovered={wasRecovered}
+              onDismissRecovery={dismissRecovery}
+              onReset={handleResetCode}
+              lastSavedAt={lastSavedAt}
             />
           }
           aiPanel={

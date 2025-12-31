@@ -7,6 +7,11 @@ import {
   Keyboard,
   Loader2,
   FlaskConical,
+  Save,
+  RotateCcw,
+  X,
+  Cloud,
+  CloudOff,
 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import BottomTabs, { type TabId } from "@/components/layout/BottomTabs";
@@ -19,6 +24,7 @@ import {
 } from "@/stores/layoutStore";
 import type { Submission } from "@/types/problem";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
+import type { SaveStatus } from "@/hooks/useCodeDraft";
 
 // Height when collapsed (just tab bar)
 const BOTTOM_PANEL_COLLAPSED = 36;
@@ -48,6 +54,30 @@ interface CodeEditorPanelProps {
   onLoadSubmission?: (submission: Submission) => void;
   /** Session-based history for non-authenticated users */
   sessionHistory?: Submission[];
+  /** Save status */
+  saveStatus?: SaveStatus;
+  /** Manual save function (Ctrl+S) */
+  onSaveNow?: () => void;
+  /** Whether draft was recovered */
+  wasRecovered?: boolean;
+  /** Dismiss recovery notification */
+  onDismissRecovery?: () => void;
+  /** Reset to template */
+  onReset?: () => void;
+  /** Last saved timestamp */
+  lastSavedAt?: number | null;
+}
+
+/** Format time ago (e.g., "방금", "1분 전", etc.) */
+function formatTimeAgo(timestamp: number | null | undefined): string {
+  if (!timestamp) return "";
+  const now = Date.now();
+  const diff = now - timestamp;
+
+  if (diff < 5000) return "방금";
+  if (diff < 60000) return `${Math.floor(diff / 1000)}초 전`;
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}분 전`;
+  return `${Math.floor(diff / 3600000)}시간 전`;
 }
 
 export default function CodeEditorPanel({
@@ -57,7 +87,7 @@ export default function CodeEditorPanel({
   isSubmitting,
   submission,
   submissionError,
-  goldenCode,
+  goldenCode: _goldenCode, // Reserved for future use
   onLocalTest,
   isLocalTesting = false,
   localTestResult,
@@ -66,11 +96,16 @@ export default function CodeEditorPanel({
   problemId,
   onLoadSubmission,
   sessionHistory = [],
+  saveStatus = "saved",
+  onSaveNow,
+  wasRecovered = false,
+  onDismissRecovery,
+  onReset,
+  lastSavedAt,
 }: CodeEditorPanelProps) {
   // Get bottom panel height from global store (persisted)
   const { bottomPanelHeight, setBottomPanelHeight } = useLayoutStore();
 
-  const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [editorHeight, setEditorHeight] = useState(400);
   const [activeTab, setActiveTab] = useState<TabId>("local");
 
@@ -230,10 +265,43 @@ export default function CodeEditorPanel({
         onLocalTest();
       }
     }
+    // Ctrl+S for manual save
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      e.preventDefault();
+      onSaveNow?.();
+    }
   };
 
   // Current bottom panel height based on collapse state
   const currentBottomHeight = isBottomCollapsed ? BOTTOM_PANEL_COLLAPSED : bottomPanelHeight;
+
+  // Save status indicator render
+  const renderSaveStatus = () => {
+    switch (saveStatus) {
+      case "saving":
+        return (
+          <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            <span className="hidden sm:inline">저장 중...</span>
+          </span>
+        );
+      case "modified":
+        return (
+          <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+            <CloudOff className="w-3 h-3" />
+            <span className="hidden sm:inline">수정됨</span>
+          </span>
+        );
+      case "saved":
+      default:
+        return (
+          <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400" title={lastSavedAt ? `저장됨 ${formatTimeAgo(lastSavedAt)}` : "저장됨"}>
+            <Cloud className="w-3 h-3" />
+            <span className="hidden sm:inline">저장됨</span>
+          </span>
+        );
+    }
+  };
 
   return (
     <div
@@ -242,6 +310,23 @@ export default function CodeEditorPanel({
       className="h-full flex flex-col bg-white dark:bg-gray-900 overflow-hidden"
       onKeyDown={handleKeyDown}
     >
+      {/* Recovery notification */}
+      {wasRecovered && (
+        <div className="flex-shrink-0 px-4 py-2 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+            <Save className="w-4 h-4 shrink-0" />
+            <span>이전에 작성하던 코드가 복구되었습니다.</span>
+          </div>
+          <button
+            onClick={onDismissRecovery}
+            className="p-1 hover:bg-amber-200 dark:hover:bg-amber-800 rounded transition-colors"
+            title="닫기"
+          >
+            <X className="w-4 h-4 text-amber-700 dark:text-amber-300" />
+          </button>
+        </div>
+      )}
+
       {/* ===== 상단 영역: 에디터 ===== */}
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Header */}
@@ -255,10 +340,27 @@ export default function CodeEditorPanel({
             <span className="shrink-0 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
               Python
             </span>
+            {/* Save status indicator */}
+            <div className="hidden sm:flex items-center gap-1 ml-2">
+              {renderSaveStatus()}
+            </div>
           </div>
 
           {/* Right: Buttons - responsive, show icon only on narrow screens */}
           <div className="shrink-0 flex items-center gap-1.5 xl:gap-2">
+            {/* Reset Button */}
+            {onReset && (
+              <button
+                data-testid="btn-reset"
+                onClick={onReset}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200
+                           hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                title="새로 시작 (템플릿으로 초기화)"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Local Test Button */}
             {onLocalTest && (
               <button
@@ -314,8 +416,6 @@ export default function CodeEditorPanel({
           ref={editorContainerRef}
           data-testid="code-editor-area"
           className="flex-1 min-h-0 overflow-hidden"
-          onFocus={() => setIsEditorFocused(true)}
-          onBlur={() => setIsEditorFocused(false)}
         >
           <CodeEditor
             value={code}
@@ -344,21 +444,31 @@ export default function CodeEditorPanel({
                 </kbd>
                 {" 채점"}
               </span>
+              {onSaveNow && (
+                <span>
+                  <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
+                    Ctrl+S
+                  </kbd>
+                  {" 저장"}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3">
-              <span>
+              {/* Mobile save status */}
+              <span className="sm:hidden">{renderSaveStatus()}</span>
+              <span className="hidden sm:inline">
                 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
                   Alt+P
                 </kbd>
                 {" 문제 보기"}
               </span>
-              <span>
+              <span className="hidden sm:inline">
                 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
                   Alt+F
                 </kbd>
                 {" 집중 모드"}
               </span>
-              <span>
+              <span className="hidden sm:inline">
                 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
                   Ctrl+/
                 </kbd>
