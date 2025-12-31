@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
@@ -16,6 +16,7 @@ import { useLayoutStore } from "@/stores/layoutStore";
 import type { Problem, Submission, ClientExecutionResult } from "@/types/problem";
 import type { AIChatMode } from "@/types/ai";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
+import type { PromptContext } from "@/lib/quickPrompts";
 import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
@@ -520,6 +521,47 @@ export default function ProblemDetailPage() {
     }
   }, [setIsAIChatOpen]);
 
+  // M5-3: AI 빠른 질문용 컨텍스트 생성
+  const promptContext: PromptContext = useMemo(() => {
+    if (!problem) return {};
+
+    const ctx: PromptContext = {
+      problem: {
+        id: problem.id,
+        title: problem.title,
+        description: problem.description_md,
+        functionSignature: problem.function_signature,
+        summary: problem.summary,
+      },
+    };
+
+    // 제출 기록이 있는 경우
+    if (submission && submission.status !== "PENDING" && submission.status !== "RUNNING") {
+      ctx.submission = {
+        code: code,
+        score: submission.score ?? 0,
+        status: submission.status,
+      };
+    }
+
+    // AI 피드백이 있는 경우 - SavedFeedback의 필드들을 결합
+    if (savedFeedback) {
+      const feedbackParts: string[] = [];
+      if (savedFeedback.summary) feedbackParts.push(`요약: ${savedFeedback.summary}`);
+      if (savedFeedback.strengths?.length) feedbackParts.push(`강점: ${savedFeedback.strengths.join(', ')}`);
+      if (savedFeedback.weaknesses?.length) feedbackParts.push(`약점: ${savedFeedback.weaknesses.join(', ')}`);
+      if (savedFeedback.suggested_tests?.length) feedbackParts.push(`추천 테스트: ${savedFeedback.suggested_tests.join(', ')}`);
+
+      if (feedbackParts.length > 0) {
+        ctx.feedback = {
+          content: feedbackParts.join('\n'),
+        };
+      }
+    }
+
+    return ctx;
+  }, [problem, submission, code, savedFeedback]);
+
   // Loading state
   if (loading) {
     return (
@@ -610,6 +652,7 @@ export default function ProblemDetailPage() {
           savedFeedback={savedFeedback}
           savedFeedbackScore={savedFeedbackScore}
           onClearSavedFeedback={handleClearSavedFeedback}
+          promptContext={promptContext}
         />
 
         {/* Problem Peek Overlay (Alt+P) */}
@@ -700,6 +743,7 @@ export default function ProblemDetailPage() {
                 mode={aiMode}
                 onModeChange={handleAIModeChange}
                 className="h-full"
+                promptContext={promptContext}
               />
             </div>
           }

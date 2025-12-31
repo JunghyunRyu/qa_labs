@@ -7,6 +7,7 @@ import { useLayoutStore } from "@/stores/layoutStore";
 import AICoachPanel from "@/components/AICoachPanel";
 import SavedFeedbackDisplay, { type SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import type { AIChatMode } from "@/types/ai";
+import type { PromptContext } from "@/lib/quickPrompts";
 
 interface FloatingAIChatProps {
   problemId: number;
@@ -16,6 +17,7 @@ interface FloatingAIChatProps {
   savedFeedback?: SavedFeedback | null;
   savedFeedbackScore?: number;
   onClearSavedFeedback?: () => void;
+  promptContext?: PromptContext; // M5-3: 빠른 질문용 컨텍스트
 }
 
 export default function FloatingAIChat({
@@ -26,6 +28,7 @@ export default function FloatingAIChat({
   savedFeedback,
   savedFeedbackScore,
   onClearSavedFeedback,
+  promptContext,
 }: FloatingAIChatProps) {
   const { isAIChatOpen, toggleAIChat, setIsAIChatOpen } = useLayoutStore();
 
@@ -160,6 +163,7 @@ export default function FloatingAIChat({
                   mode={mode}
                   onModeChange={onModeChange}
                   className="h-full border-0 rounded-none"
+                  promptContext={promptContext}
                 />
               )}
             </div>

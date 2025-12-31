@@ -10,7 +10,9 @@ import AIConversationList from "./AIConversationList";
 import AIMessageInput from "./AIMessageInput";
 import AIConversationHistory from "./AIConversationHistory";
 import TokenExhaustedModal from "./TokenExhaustedModal";
+import QuickPromptBar from "./ai/QuickPromptBar";
 import type { AIMessage, AIChatMode } from "@/types/ai";
+import type { PromptContext } from "@/lib/quickPrompts";
 
 interface AICoachPanelProps {
   problemId: number;
@@ -19,6 +21,7 @@ interface AICoachPanelProps {
   onModeChange: (mode: AIChatMode) => void;
   onClose?: () => void;
   className?: string;
+  promptContext?: PromptContext; // M5-3: 빠른 질문용 컨텍스트
 }
 
 export default function AICoachPanel({
@@ -28,6 +31,7 @@ export default function AICoachPanel({
   onModeChange,
   onClose,
   className = "",
+  promptContext,
 }: AICoachPanelProps) {
   const { user, isAuthenticated, login } = useAuth();
   const { aiChatPrefillMessage, setAIChatPrefillMessage } = useLayoutStore();
@@ -294,6 +298,15 @@ export default function AICoachPanel({
               대화 기록이 자동 저장됩니다
             </p>
           </div>
+
+          {/* Quick Prompts (M5-3) */}
+          {promptContext && (
+            <QuickPromptBar
+              context={promptContext}
+              onSelectPrompt={handleSendMessage}
+              disabled={isLoading}
+            />
+          )}
 
           {/* Input */}
           <AIMessageInput
