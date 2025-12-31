@@ -11,17 +11,47 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:8000/api";
 
-interface DifficultyStars {
-  [key: string]: string;
+// Google Fonts에서 Noto Sans KR 폰트 로드 (한글 지원)
+async function loadGoogleFont(font: string, weight: number) {
+  const url = `https://fonts.googleapis.com/css2?family=${font}:wght@${weight}&display=swap`;
+  const css = await (await fetch(url)).text();
+  const resource = css.match(
+    /src: url\((.+)\) format\('(opentype|truetype)'\)/
+  );
+  if (resource) {
+    const fontData = await fetch(resource[1]);
+    return fontData.arrayBuffer();
+  }
+  return null;
 }
 
-const difficultyStars: DifficultyStars = {
-  "Very Easy": "★☆☆☆☆",
-  Easy: "★★☆☆☆",
-  Medium: "★★★☆☆",
-  Hard: "★★★★☆",
-  "Very Hard": "★★★★★",
+// 난이도별 채워진 원 개수 (5점 만점)
+const difficultyLevels: { [key: string]: number } = {
+  "Very Easy": 1,
+  Easy: 2,
+  Medium: 3,
+  Hard: 4,
+  "Very Hard": 5,
 };
+
+// CSS 기반 난이도 표시 컴포넌트
+function DifficultyDots({ level }: { level: number }) {
+  return (
+    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          style={{
+            width: "20px",
+            height: "20px",
+            borderRadius: "50%",
+            background: i <= level ? "#fbbf24" : "#475569",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 const categoryLabels: { [key: string]: string } = {
   common: "공통",
@@ -35,19 +65,20 @@ const categoryLabels: { [key: string]: string } = {
 export default async function Image({ params }: { params: { id: string } }) {
   let problem = null;
 
-  try {
-    const res = await fetch(`${API_URL}/v1/problems/${params.id}`);
-    if (res.ok) {
-      problem = await res.json();
-    }
-  } catch {
-    // 에러 시 기본값 사용
-  }
+  // 폰트와 문제 데이터를 병렬로 로드
+  const [notoSansKR, problemData] = await Promise.all([
+    loadGoogleFont("Noto+Sans+KR", 700),
+    fetch(`${API_URL}/v1/problems/${params.id}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null),
+  ]);
+
+  problem = problemData;
 
   const title = problem?.title || "QA Challenge";
   const difficulty = problem?.difficulty || "Medium";
   const category = problem?.category || "common";
-  const stars = difficultyStars[difficulty] || "★★★☆☆";
+  const difficultyLevel = difficultyLevels[difficulty] || 3;
   const categoryLabel = categoryLabels[category] || category;
 
   return new ImageResponse(
@@ -62,7 +93,7 @@ export default async function Image({ params }: { params: { id: string } }) {
           justifyContent: "center",
           background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
           color: "white",
-          fontFamily: "sans-serif",
+          fontFamily: '"Noto Sans KR", sans-serif',
           padding: "40px",
         }}
       >
@@ -112,7 +143,7 @@ export default async function Image({ params }: { params: { id: string } }) {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span>난이도:</span>
-            <span style={{ color: "#fbbf24" }}>{stars}</span>
+            <DifficultyDots level={difficultyLevel} />
           </div>
           <div
             style={{
@@ -163,6 +194,18 @@ export default async function Image({ params }: { params: { id: string } }) {
         </div>
       </div>
     ),
-    { ...size }
+    {
+      ...size,
+      fonts: notoSansKR
+        ? [
+            {
+              name: "Noto Sans KR",
+              data: notoSansKR,
+              weight: 700,
+              style: "normal" as const,
+            },
+          ]
+        : [],
+    }
   );
 }
