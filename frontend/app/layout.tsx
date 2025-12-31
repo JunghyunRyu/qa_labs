@@ -53,7 +53,9 @@ export const metadata: Metadata = {
 
   // 검색엔진 사이트 소유권 확인
   verification: {
-    naver: "44565d431b2bf6c57cd9433473b49fecb3a72139",
+    other: {
+      "naver-site-verification": ["44565d431b2bf6c57cd9433473b49fecb3a72139"],
+    },
   },
 };
 
