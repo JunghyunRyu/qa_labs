@@ -24,6 +24,7 @@ import CopyButton from "@/components/CopyButton";
 import Accordion from "@/components/ui/Accordion";
 import ProblemSearchBar from "@/components/layout/ProblemSearchBar";
 import ContractCard from "@/components/ContractCard";
+import TestPointsList from "@/components/TestPointsList";
 import { parseContract } from "@/lib/contractParser";
 import { useTextSearch } from "@/hooks/useTextSearch";
 import ReactMarkdown from "react-markdown";
@@ -443,9 +444,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             </button>
           </div>
           {summary ? (
-            <div className="text-sm">
-              <MarkdownContent content={summary} />
-            </div>
+            <TestPointsList content={summary} className="text-sm" />
           ) : (
             <p className="text-sm text-gray-500 dark:text-gray-400 italic">
               문제 설명을 확인하세요.

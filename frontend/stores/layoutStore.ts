@@ -15,6 +15,7 @@ interface LayoutState {
   panelWidth: number; // Left panel width percentage (22-55)
   isProblemCollapsed: boolean;
   isAIChatOpen: boolean;
+  aiChatPrefillMessage: string | null; // M5-2: AI로 보내기 기능용
 
   // Bottom panel state
   bottomPanelHeight: number; // Bottom panel height in pixels
@@ -41,6 +42,8 @@ interface LayoutState {
   setIsProblemCollapsed: (collapsed: boolean) => void;
   toggleAIChat: () => void;
   setIsAIChatOpen: (open: boolean) => void;
+  setAIChatPrefillMessage: (message: string | null) => void;
+  openAIChatWithPrefill: (message: string) => void; // M5-2: Open AI chat with prefilled message
   setBottomPanelHeight: (height: number) => void;
   setEditorFontSize: (size: number) => void;
   setActiveTab: (tab: "problem" | "code" | "ai") => void;
@@ -59,6 +62,7 @@ const DEFAULT_STATE = {
   panelWidth: 35, // 35% problem / 65% code
   isProblemCollapsed: false,
   isAIChatOpen: false,
+  aiChatPrefillMessage: null as string | null,
   bottomPanelHeight: BOTTOM_PANEL_DEFAULT,
   isFocusMode: false,
   isProblemPeekOpen: false,
@@ -99,6 +103,14 @@ export const useLayoutStore = create<LayoutState>()(
 
       setIsAIChatOpen: (open: boolean) => {
         set({ isAIChatOpen: open });
+      },
+
+      setAIChatPrefillMessage: (message: string | null) => {
+        set({ aiChatPrefillMessage: message });
+      },
+
+      openAIChatWithPrefill: (message: string) => {
+        set({ aiChatPrefillMessage: message, isAIChatOpen: true });
       },
 
       setBottomPanelHeight: (height: number) => {

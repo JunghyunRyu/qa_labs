@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, KeyboardEvent } from "react";
+import { useState, useRef, useCallback, useEffect, KeyboardEvent } from "react";
 import { Send, Loader2 } from "lucide-react";
 
 interface AIMessageInputProps {
@@ -8,6 +8,8 @@ interface AIMessageInputProps {
   disabled?: boolean;
   loading?: boolean;
   placeholder?: string;
+  prefillMessage?: string | null; // M5-2: AI로 보내기 기능
+  onPrefillConsumed?: () => void; // Called after prefill is applied
 }
 
 export default function AIMessageInput({
@@ -15,9 +17,30 @@ export default function AIMessageInput({
   disabled = false,
   loading = false,
   placeholder = "AI 도우미에게 질문하세요...",
+  prefillMessage,
+  onPrefillConsumed,
 }: AIMessageInputProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // M5-2: Apply prefill message when it changes
+  useEffect(() => {
+    if (prefillMessage) {
+      setMessage(prefillMessage);
+      onPrefillConsumed?.();
+      // Focus and adjust height after a small delay
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          textareaRef.current.style.height = "auto";
+          textareaRef.current.style.height = `${Math.min(
+            textareaRef.current.scrollHeight,
+            120
+          )}px`;
+        }
+      }, 100);
+    }
+  }, [prefillMessage, onPrefillConsumed]);
 
   const handleSend = useCallback(() => {
     const trimmedMessage = message.trim();

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Bot, X, LogIn, Lock } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { useLayoutStore } from "@/stores/layoutStore";
 import { sendAIMessage, getAIConversation } from "@/lib/api/ai";
 import { ApiError } from "@/lib/api";
 import AIConversationList from "./AIConversationList";
@@ -29,6 +30,7 @@ export default function AICoachPanel({
   className = "",
 }: AICoachPanelProps) {
   const { user, isAuthenticated, login } = useAuth();
+  const { aiChatPrefillMessage, setAIChatPrefillMessage } = useLayoutStore();
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -298,6 +300,8 @@ export default function AICoachPanel({
             onSend={handleSendMessage}
             loading={isLoading}
             disabled={isOff}
+            prefillMessage={aiChatPrefillMessage}
+            onPrefillConsumed={() => setAIChatPrefillMessage(null)}
           />
         </>
       )}
