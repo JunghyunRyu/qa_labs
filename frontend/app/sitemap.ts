@@ -18,7 +18,8 @@ async function getProblemsForSitemap(): Promise<ProblemListItem[]> {
   const apiUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
   try {
-    const response = await fetch(`${apiUrl}/v1/problems?page=1&page_size=1000`, {
+    // page_size 최대값은 100 (API 제한)
+    const response = await fetch(`${apiUrl}/v1/problems?page=1&page_size=100`, {
       method: 'GET',
       cache: 'no-store',
     })
