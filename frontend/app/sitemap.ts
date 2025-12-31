@@ -14,14 +14,16 @@ interface ProblemListResponse {
 }
 
 async function getProblemsForSitemap(): Promise<ProblemListItem[]> {
-  // 프로덕션에서는 외부 URL 사용 (컨테이너 내부 통신 이슈 회피)
-  const apiUrl = process.env.NODE_ENV === 'production'
-    ? 'https://qa-arena.qalabs.kr/api'
-    : (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api')
+  // Docker 환경에서는 내부 URL 사용
+  const apiUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
   try {
     const response = await fetch(`${apiUrl}/v1/problems?page=1&page_size=1000`, {
-      next: { revalidate: 3600 }, // 1시간마다 재검증
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store', // 캐시 사용 안 함
     })
 
     if (!response.ok) {
