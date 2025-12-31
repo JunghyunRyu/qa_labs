@@ -1,5 +1,8 @@
 import { MetadataRoute } from 'next'
 
+// 항상 동적으로 생성 (빌드 시점 캐싱 방지)
+export const dynamic = 'force-dynamic'
+
 interface ProblemListItem {
   slug: string;
   difficulty: string;
