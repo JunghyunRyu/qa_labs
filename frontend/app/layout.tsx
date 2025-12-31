@@ -53,6 +53,7 @@ export const metadata: Metadata = {
 
   // 검색엔진 사이트 소유권 확인
   verification: {
+    google: "GH7OCKpW9IbxdXjKMGxvnO406OQF6gft1N2wgyiSoEo",
     other: {
       "naver-site-verification": ["44565d431b2bf6c57cd9433473b49fecb3a72139"],
     },
