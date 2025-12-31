@@ -258,3 +258,33 @@ class ProblemRepository:
         problem.skills = skills
         self.db.commit()
         return True
+
+    def get_stats(self) -> Dict[str, Any]:
+        """
+        Get aggregate statistics for all problems.
+
+        Returns:
+            Dict with total count and counts by difficulty and domain
+        """
+        # 전체 개수
+        total = self.db.query(func.count(Problem.id)).scalar()
+
+        # 난이도별 집계
+        difficulty_stats = (
+            self.db.query(Problem.difficulty, func.count(Problem.id))
+            .group_by(Problem.difficulty)
+            .all()
+        )
+
+        # 도메인별 집계
+        domain_stats = (
+            self.db.query(Problem.domain, func.count(Problem.id))
+            .group_by(Problem.domain)
+            .all()
+        )
+
+        return {
+            "total": total or 0,
+            "by_difficulty": {diff: count for diff, count in difficulty_stats},
+            "by_domain": {domain: count for domain, count in domain_stats},
+        }

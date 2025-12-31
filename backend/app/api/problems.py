@@ -9,7 +9,7 @@ from app.models.db import get_db
 from app.models.user import User
 from app.models.bookmarked_problem import BookmarkedProblem
 from app.services.problem_service import ProblemService
-from app.schemas.problem import ProblemListResponse, ProblemDetailResponse
+from app.schemas.problem import ProblemListResponse, ProblemDetailResponse, ProblemStatsResponse
 from app.core.dependencies import get_current_user, get_current_user_optional
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,23 @@ async def get_problems(
         "page_size": page_size,
         "total_pages": total_pages,
     }
+
+
+@router.get("/stats", response_model=ProblemStatsResponse)
+async def get_problem_stats(
+    db: Session = Depends(get_db),
+):
+    """
+    Get aggregate statistics for all problems.
+
+    Returns:
+        Total count and counts by difficulty and domain
+    """
+    logger.info("Fetching problem statistics")
+    service = ProblemService(db)
+    stats = service.get_stats()
+    logger.info(f"Problem stats: total={stats.total}")
+    return stats
 
 
 @router.get("/bookmarked", response_model=dict)

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, List, Any, Literal
+from typing import Optional, List, Any, Literal, Dict
 
 
 class ProblemBase(BaseModel):
@@ -115,3 +115,11 @@ class ProblemCreateWithBuggy(BaseModel):
     summary: Optional[str] = None  # 핵심 테스트 포인트 요약
     short_description: Optional[str] = None  # 카드용 짧은 설명
     buggy_implementations: List[BuggyImplementationCreate] = []
+
+
+class ProblemStatsResponse(BaseModel):
+    """Schema for problem statistics response."""
+
+    total: int
+    by_difficulty: Dict[str, int]  # {"Very Easy": 10, "Easy": 24, ...}
+    by_domain: Dict[str, int]  # {"fintech": 18, "commerce": 14, ...}

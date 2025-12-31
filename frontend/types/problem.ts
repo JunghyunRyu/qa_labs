@@ -47,6 +47,12 @@ export interface ProblemListResponse {
   total_pages: number;
 }
 
+export interface ProblemStatsResponse {
+  total: number;
+  by_difficulty: Record<string, number>;
+  by_domain: Record<string, number>;
+}
+
 export interface BookmarkedProblemItem {
   id: number;
   slug: string;

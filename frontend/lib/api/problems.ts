@@ -1,7 +1,7 @@
 /** Problems API client */
 
 import { get, post, del } from "@/lib/api";
-import type { Problem, ProblemListResponse, BookmarkedProblemListResponse, BookmarkStatusResponse } from "@/types/problem";
+import type { Problem, ProblemListResponse, ProblemStatsResponse, BookmarkedProblemListResponse, BookmarkStatusResponse } from "@/types/problem";
 
 const PROBLEMS_ENDPOINT = "/v1/problems";
 
@@ -13,6 +13,13 @@ export interface GetProblemsParams {
   search?: string;
   tags?: string[];
   sort?: string;  // difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc
+}
+
+/**
+ * Get aggregate statistics for all problems
+ */
+export async function getProblemsStats(): Promise<ProblemStatsResponse> {
+  return get<ProblemStatsResponse>(`${PROBLEMS_ENDPOINT}/stats`);
 }
 
 /**

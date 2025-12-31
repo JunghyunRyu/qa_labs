@@ -11,6 +11,7 @@ from app.schemas.problem import (
     ProblemDetailResponse,
     ProblemCreate,
     BuggyImplementationResponse,
+    ProblemStatsResponse,
 )
 
 
@@ -197,3 +198,16 @@ class ProblemService:
             buggy_implementations=buggy_impl_responses,
         )
 
+    def get_stats(self) -> ProblemStatsResponse:
+        """
+        Get aggregate statistics for all problems.
+
+        Returns:
+            ProblemStatsResponse with total and counts by difficulty/domain
+        """
+        stats = self.repository.get_stats()
+        return ProblemStatsResponse(
+            total=stats["total"],
+            by_difficulty=stats["by_difficulty"],
+            by_domain=stats["by_domain"],
+        )
