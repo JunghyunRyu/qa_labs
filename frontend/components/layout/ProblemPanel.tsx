@@ -7,10 +7,7 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  ChevronUp,
   FileText,
-  Sparkles,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -26,6 +23,8 @@ import TagChips from "@/components/TagChips";
 import CopyButton from "@/components/CopyButton";
 import Accordion from "@/components/ui/Accordion";
 import ProblemSearchBar from "@/components/layout/ProblemSearchBar";
+import ContractCard from "@/components/ContractCard";
+import { parseContract } from "@/lib/contractParser";
 import { useTextSearch } from "@/hooks/useTextSearch";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -230,12 +229,10 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
     toggleProblemPanel,
     toggleProblemPeek,
     isProblemSearchOpen,
-    openProblemSearch,
     closeProblemSearch,
     toggleProblemSearch,
     accordionDefaults,
   } = useLayoutStore();
-  const [isSignatureExpanded, setIsSignatureExpanded] = useState(false);
 
   // Content ref for search highlighting
   const contentRef = useRef<HTMLDivElement>(null);
@@ -276,6 +273,12 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
 
   // Get summary for sticky area - prefer problem.summary field
   const summary = useMemo(() => getSummary(problem), [problem]);
+
+  // Parse contract (function signature + return interface)
+  const contract = useMemo(
+    () => parseContract(problem.function_signature, problem.description_md),
+    [problem.function_signature, problem.description_md]
+  );
 
   // Separate sticky sections (overview, io, constraints) from accordion sections
   const stickyTypes = new Set(['overview', 'io', 'constraints', 'task']);
@@ -413,41 +416,9 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           />
         )}
 
-        {/* Function Signature - Always visible */}
-        <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/30">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-              <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
-                함수 시그니처
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <CopyButton text={problem.function_signature} variant="light" />
-              <button
-                onClick={() => setIsSignatureExpanded(!isSignatureExpanded)}
-                className="p-1 rounded hover:bg-purple-100 dark:hover:bg-purple-800/50 transition-colors"
-                title={isSignatureExpanded ? "접기" : "전체 보기"}
-              >
-                {isSignatureExpanded ? (
-                  <ChevronUp className="w-3.5 h-3.5 text-purple-500" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5 text-purple-500" />
-                )}
-              </button>
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-900 rounded border border-purple-200 dark:border-purple-700">
-            {isSignatureExpanded ? (
-              <pre className="text-sm text-purple-900 dark:text-purple-100 font-mono p-2 whitespace-pre-wrap break-words">
-                {problem.function_signature}
-              </pre>
-            ) : (
-              <code className="block text-sm text-purple-900 dark:text-purple-100 font-mono p-2 truncate">
-                {problem.function_signature}
-              </code>
-            )}
-          </div>
+        {/* Function Contract - Always visible (M5-1) */}
+        <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+          <ContractCard contract={contract} defaultExpanded={false} />
         </div>
 
         {/* Summary - Test point overview */}
