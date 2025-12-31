@@ -41,6 +41,30 @@ const DIFFICULTY_LABELS: Record<DifficultyFilter, string> = {
   Hard: "어려움",
 };
 
+// 난이도 Pill 버튼 색상 (선택/비선택)
+const DIFFICULTY_PILL_COLORS: Record<DifficultyFilter, { active: string; inactive: string }> = {
+  All: {
+    active: "bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900",
+    inactive: "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600",
+  },
+  "Very Easy": {
+    active: "bg-blue-500 text-white dark:bg-blue-600",
+    inactive: "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50",
+  },
+  Easy: {
+    active: "bg-green-500 text-white dark:bg-green-600",
+    inactive: "bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50",
+  },
+  Medium: {
+    active: "bg-yellow-500 text-white dark:bg-yellow-600",
+    inactive: "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50",
+  },
+  Hard: {
+    active: "bg-red-500 text-white dark:bg-red-600",
+    inactive: "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50",
+  },
+};
+
 // 정렬 옵션 레이블
 const SORT_LABELS: Record<SortOption, string> = {
   "difficulty-asc": "난이도 낮은순",
@@ -218,28 +242,26 @@ function ProblemsContent() {
             />
           </div>
 
-          {/* 빠른 필터 + 정렬 드롭다운 */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* 난이도 드롭다운 */}
-            <div className="relative">
-              <select
-                value={difficultyFilter}
-                onChange={(e) => setDifficultyFilter(e.target.value as DifficultyFilter)}
-                className={`appearance-none pl-3 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer ${
-                  difficultyFilter !== "All"
-                    ? "bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/40 dark:border-blue-700 dark:text-blue-300"
-                    : "bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+          {/* 난이도 Pill 버튼 */}
+          <div className="flex items-center gap-1" role="group" aria-label="난이도 필터">
+            {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => (
+              <button
+                key={diff}
+                onClick={() => setDifficultyFilter(diff)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  difficultyFilter === diff
+                    ? DIFFICULTY_PILL_COLORS[diff].active
+                    : DIFFICULTY_PILL_COLORS[diff].inactive
                 }`}
-                aria-label="난이도 필터"
+                aria-pressed={difficultyFilter === diff}
               >
-                <option value="All">난이도</option>
-                <option value="Very Easy">아주쉬움</option>
-                <option value="Easy">쉬움</option>
-                <option value="Medium">보통</option>
-                <option value="Hard">어려움</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
+                {DIFFICULTY_LABELS[diff]}
+              </button>
+            ))}
+          </div>
+
+          {/* 도메인/정렬 드롭다운 + Reset */}
+          <div className="flex flex-wrap items-center gap-2">
 
             {/* 도메인 드롭다운 */}
             <div className="relative">
@@ -299,6 +321,18 @@ function ProblemsContent() {
                 </span>
               )}
             </button>
+
+            {/* Reset 버튼 - 활성 필터가 있을 때만 표시 */}
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/50 transition-colors"
+                aria-label="모든 필터 초기화"
+              >
+                <X className="w-4 h-4" />
+                초기화
+              </button>
+            )}
           </div>
         </div>
 
