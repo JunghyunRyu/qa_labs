@@ -13,7 +13,7 @@ import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
-import { Search, Filter, X, Bookmark, ChevronDown, Tag } from "lucide-react";
+import { Search, Filter, X, Bookmark, ChevronDown, Tag, Globe, ArrowUpDown } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
@@ -264,11 +264,12 @@ function ProblemsContent() {
           <div className="flex flex-wrap items-center gap-2">
 
             {/* 도메인 드롭다운 */}
-            <div className="relative">
+            <div className="relative flex items-center">
+              <Globe className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <select
                 value={domainFilter}
                 onChange={(e) => setDomainFilter(e.target.value as DomainFilter)}
-                className={`appearance-none pl-3 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer ${
+                className={`appearance-none pl-8 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer ${
                   domainFilter !== "All"
                     ? "bg-green-50 border-green-300 text-green-700 dark:bg-green-900/40 dark:border-green-700 dark:text-green-300"
                     : "bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
@@ -287,11 +288,12 @@ function ProblemsContent() {
             </div>
 
             {/* 정렬 드롭다운 */}
-            <div className="relative">
+            <div className="relative flex items-center">
+              <ArrowUpDown className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="appearance-none pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                className="appearance-none pl-8 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
                 aria-label="정렬 옵션"
               >
                 <option value="difficulty-asc">난이도 낮은순</option>
@@ -443,7 +445,7 @@ function ProblemsContent() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8">
             {sortedProblems.map((problem) => (
               <ProblemCard key={problem.id} problem={problem} />
             ))}
