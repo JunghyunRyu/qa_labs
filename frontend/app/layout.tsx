@@ -50,6 +50,11 @@ export const metadata: Metadata = {
     description: "테스트 코드로 숨은 버그를 찾아내세요. AI 피드백으로 QA 역량을 성장시키는 트레이닝 플랫폼",
     images: ["/og_image.jpg"],
   },
+
+  // 검색엔진 사이트 소유권 확인
+  verification: {
+    naver: "44565d431b2bf6c57cd9433473b49fecb3a72139",
+  },
 };
 
 export default function RootLayout({
