@@ -13,7 +13,9 @@ interface ProblemListResponse {
 async function getProblemsForSitemap(): Promise<ProblemListItem[]> {
   try {
     // 서버 사이드에서 직접 백엔드 API 호출
-    const apiUrl = process.env.NEXT_PUBLIC_INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+    // Docker 환경: INTERNAL_API_URL (컨테이너 간 통신)
+    // 로컬 환경: NEXT_PUBLIC_API_URL
+    const apiUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
     const response = await fetch(`${apiUrl}/v1/problems?page=1&page_size=1000`, {
       next: { revalidate: 3600 }, // 1시간마다 재검증
     })
