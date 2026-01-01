@@ -475,13 +475,15 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               전체 문제
             </button>
           </div>
-          {summary ? (
-            <TestPointsList content={summary} className="text-sm" />
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-              문제 설명을 확인하세요.
-            </p>
-          )}
+          <div className="max-h-48 overflow-y-auto">
+            {summary ? (
+              <TestPointsList content={summary} className="text-sm" />
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                문제 설명을 확인하세요.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Sticky Sections: Constraints, IO, Task */}
