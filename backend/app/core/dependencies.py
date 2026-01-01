@@ -12,6 +12,17 @@ from app.core.config import settings
 from app.models.user import User
 from app.services.token_service import TokenService
 
+# Re-export quota decorators for convenience
+from app.core.decorators import (
+    require_quota,
+    QuotaContext,
+    require_ai_coach_quota,
+    require_ai_hint_quota,
+    require_feedback_deep_quota,
+    require_feedback_regenerate_quota,
+    require_success_analysis_quota,
+)
+
 
 async def get_current_user_optional(
     request: Request,
@@ -52,7 +63,12 @@ async def get_current_user(
 
 
 class AIAccessResult:
-    """Result of AI access check with token deduction capability."""
+    """
+    Result of AI access check with token deduction capability.
+
+    Note: 이 클래스는 하위 호환성을 위해 유지됩니다.
+    새 코드에서는 require_quota() 데코레이터와 QuotaContext 사용을 권장합니다.
+    """
 
     def __init__(self, user: User, token_service: TokenService, can_use: bool, reason: str, action_type: str = "AI_CHAT"):
         self.user = user
@@ -62,12 +78,16 @@ class AIAccessResult:
         self.action_type = action_type
         self._deducted = False
 
-    def deduct(self, cost: int = 1) -> Tuple[bool, str]:
+    def deduct(self, cost: int = 1, submission_id: Optional[UUID] = None) -> Tuple[bool, str]:
         """
         Deduct token after successful AI operation.
 
         token-policy.md §6.2 중복 차감 방지:
         - 더블 클릭/네트워크 재시도 시 중복 차감 방지
+
+        Args:
+            cost: 차감할 토큰 수
+            submission_id: 관련 제출 ID (트랜잭션 기록용)
         """
         if self._deducted:
             return True, "already_deducted"
@@ -78,9 +98,30 @@ class AIAccessResult:
         if not is_allowed:
             return True, "idempotent_skip"  # 중복이므로 차감 없이 성공 반환
 
-        success, deduction_type = self.token_service.deduct_token(self.user, cost)
+        # 토큰 차감 (트랜잭션 기록 포함)
+        from app.models.token_transaction import ActionType as TxActionType
+        tx_action = self._map_action_type()
+
+        success, deduction_type = self.token_service.deduct_token(
+            self.user,
+            cost,
+            action_type=tx_action,
+            submission_id=submission_id,
+        )
         self._deducted = success
         return success, deduction_type
+
+    def _map_action_type(self):
+        """action_type 문자열을 TokenTransaction ActionType으로 변환"""
+        from app.models.token_transaction import ActionType as TxActionType
+        mapping = {
+            "AI_CHAT": TxActionType.AI_COACH,
+            "AI_COACH": TxActionType.AI_COACH,
+            "AI_HINT": TxActionType.AI_HINT,
+            "FEEDBACK": TxActionType.FEEDBACK_BASE,
+            "FEEDBACK_DEEP": TxActionType.FEEDBACK_DEEP,
+        }
+        return mapping.get(self.action_type, TxActionType.FEEDBACK_BASE)
 
     def get_status(self) -> dict:
         """Get current token status."""

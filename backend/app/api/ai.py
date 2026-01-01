@@ -6,7 +6,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, require_ai_access, AIAccessResult
+from app.core.dependencies import (
+    get_current_user,
+    require_ai_access,
+    AIAccessResult,
+    # PR3: New quota-based dependencies
+    require_quota,
+    QuotaContext,
+    require_ai_coach_quota,
+)
+from app.core.plan_config import ActionType
 from app.core.rate_limiter import check_ai_rate_limit, AIRateLimitExceeded
 from app.models.db import get_db
 from app.models.user import User
@@ -35,7 +44,23 @@ async def chat(
     db: Session = Depends(get_db),
     ai_access: AIAccessResult = Depends(require_ai_access),
 ):
-    """Send a message to AI Coach. Requires auth + AI tokens."""
+    """
+    Send a message to AI Coach. Requires auth + AI tokens.
+
+    Note: 이 엔드포인트는 require_ai_access를 사용합니다.
+    새 엔드포인트에서는 require_quota(ActionType.AI_COACH)를 사용하세요:
+
+    ```python
+    @router.post("/chat/v2")
+    async def chat_v2(
+        chat_request: AIChatRequest,
+        quota_ctx: QuotaContext = Depends(require_quota(ActionType.AI_COACH)),
+    ):
+        # ... AI 처리 ...
+        quota_ctx.consume()  # 성공 시 토큰 차감
+        return result
+    ```
+    """
     if chat_request.mode == AIChatMode.OFF:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="AI mode is OFF")
 

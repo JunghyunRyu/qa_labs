@@ -33,7 +33,12 @@ class User(Base):
     token_reset_at = Column(DateTime(timezone=True), nullable=True)  # Next monthly reset
     daily_bonus_used = Column(Integer, default=0, nullable=False)  # Bonus uses today (max 3)
     daily_bonus_reset_at = Column(DateTime(timezone=True), nullable=True)  # Next daily reset
-    tier = Column(String(20), default="free", nullable=False)  # free / premium
+    tier = Column(String(20), default="free", nullable=False)  # free / premium (하위 호환)
+
+    # Plan system (PR1: Entitlement 레이어)
+    plan_key = Column(String(20), default="free", nullable=False)  # free / lite / pro
+    plan_started_at = Column(DateTime(timezone=True), nullable=True)  # 플랜 시작일
+    plan_expires_at = Column(DateTime(timezone=True), nullable=True)  # 플랜 만료일 (NULL = 영구)
 
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"
