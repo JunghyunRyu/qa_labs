@@ -1,6 +1,7 @@
 /**
  * TestPointItem - 테스트 포인트 항목 (M5-2)
  * 각 테스트 포인트 옆에 "AI로 보내기" 버튼 표시
+ * 인라인 마크다운(코드, 볼드 등) 지원
  */
 
 "use client";
@@ -9,6 +10,7 @@ import { useState, useCallback } from "react";
 import { Sparkles, Check } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { applyTemplate } from "@/lib/promptTemplates";
+import ReactMarkdown from "react-markdown";
 
 interface TestPointItemProps {
   content: string;
@@ -33,10 +35,33 @@ export default function TestPointItem({ content, className = "" }: TestPointItem
 
   return (
     <div className={`group flex items-start gap-2 ${className}`}>
-      {/* 테스트 포인트 내용 */}
-      <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-        {content}
-      </span>
+      {/* 테스트 포인트 내용 - 인라인 마크다운 렌더링 */}
+      <div className="flex-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed [&>p]:inline [&>p]:m-0">
+        <ReactMarkdown
+          components={{
+            // 인라인 코드
+            code: ({ children }) => (
+              <code className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded text-xs font-mono">
+                {children}
+              </code>
+            ),
+            // 볼드
+            strong: ({ children }) => (
+              <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                {children}
+              </strong>
+            ),
+            // 이탤릭
+            em: ({ children }) => (
+              <em className="italic">{children}</em>
+            ),
+            // 문단을 인라인으로
+            p: ({ children }) => <span>{children}</span>,
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
 
       {/* AI로 보내기 버튼 - hover 시 표시 */}
       <button

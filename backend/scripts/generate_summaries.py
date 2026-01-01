@@ -109,15 +109,8 @@ def simplify_bug_description(description: str, technique: str) -> str:
     # 불필요한 접두사 제거
     description = re.sub(r'^(buggy:|버그:)\s*', '', description, flags=re.IGNORECASE)
 
-    # 너무 긴 설명 줄이기
-    if len(description) > 60:
-        # 첫 번째 문장만 사용
-        first_sentence = description.split('.')[0].split(',')[0]
-        if len(first_sentence) > 50:
-            first_sentence = first_sentence[:47] + "..."
-        return first_sentence
-
-    return description
+    # 전체 텍스트 반환 (truncate 제거 - 프론트엔드에서 전체 내용 표시)
+    return description.strip()
 
 
 def generate_summary_from_bugs(buggy_implementations: List[Dict]) -> str:
