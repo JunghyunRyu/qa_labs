@@ -523,7 +523,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           <HintPanel problemId={problem.id} />
         </div>
 
-        {accordionSections.length > 0 ? (
+        {accordionSections.length > 0 && (
           <div className="p-3 space-y-2">
             {accordionSections.map((section, index) => {
               const config = getSectionConfig(section.type);
@@ -553,9 +553,6 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               );
             })}
           </div>
-        ) : (
-          // Empty spacer - fills remaining space with background color
-          <div className="h-full bg-gray-50 dark:bg-gray-800/50" />
         )}
       </div>
 
