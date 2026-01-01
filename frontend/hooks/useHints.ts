@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useHintStore, type HintData, type HintLevel } from "@/stores/hintStore";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api";
+const HINTS_ENDPOINT = "/v1/problems";
 
 interface UseHintsOptions {
   /** 문제 ID */
@@ -64,7 +65,7 @@ export function useHints({ problemId, autoFetch = true }: UseHintsOptions): UseH
     setError(problemId, null);
 
     try {
-      const response = await fetch(`${API_BASE}/problems/${problemId}/hints`, {
+      const response = await fetch(`${API_BASE}${HINTS_ENDPOINT}/${problemId}/hints`, {
         credentials: "include",
       });
 
@@ -121,7 +122,7 @@ export function useHints({ problemId, autoFetch = true }: UseHintsOptions): UseH
       setError(problemId, null);
 
       try {
-        const response = await fetch(`${API_BASE}/problems/${problemId}/hints/view`, {
+        const response = await fetch(`${API_BASE}${HINTS_ENDPOINT}/${problemId}/hints/view`, {
           method: "POST",
           credentials: "include",
           headers: {
