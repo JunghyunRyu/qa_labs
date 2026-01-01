@@ -28,6 +28,7 @@ import Accordion from "@/components/ui/Accordion";
 import ProblemSearchBar from "@/components/layout/ProblemSearchBar";
 import ContractCard from "@/components/ContractCard";
 import TestPointsList from "@/components/TestPointsList";
+import HintPanel from "@/components/HintPanel";
 import { parseContract } from "@/lib/contractParser";
 import { useTextSearch } from "@/hooks/useTextSearch";
 import ReactMarkdown from "react-markdown";
@@ -515,6 +516,11 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
 
       {/* ===== SCROLLABLE ACCORDION AREA ===== */}
       <div ref={contentRef} className="flex-1 min-h-0 overflow-y-auto">
+        {/* M5-5: AI Hint Panel */}
+        <div className="p-3 pb-0">
+          <HintPanel problemId={problem.id} />
+        </div>
+
         {accordionSections.length > 0 ? (
           <div className="p-3 space-y-2">
             {accordionSections.map((section, index) => {

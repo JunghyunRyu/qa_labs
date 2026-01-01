@@ -8,6 +8,7 @@ from app.models.submission import Submission
 from app.models.bookmarked_problem import BookmarkedProblem
 from app.models.ai_conversation import AIConversation, AIMessage
 from app.models.test_quality import AnalysisRun
+from app.models.hint_view import HintView
 
 __all__ = [
     "Base",
@@ -20,4 +21,5 @@ __all__ = [
     "AIConversation",
     "AIMessage",
     "AnalysisRun",
+    "HintView",
 ]

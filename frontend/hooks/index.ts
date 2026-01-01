@@ -16,3 +16,6 @@ export { useSubmit } from './useSubmit';
 export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useMediaQuery } from './useMediaQuery';
 export { useCodeDraft, loadDraft, clearDraft, hasDraft } from './useCodeDraft';
+
+// Hint System Hooks (M5-5)
+export { useHints, HINT_LEVELS } from './useHints';

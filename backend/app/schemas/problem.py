@@ -123,3 +123,38 @@ class ProblemStatsResponse(BaseModel):
     total: int
     by_difficulty: Dict[str, int]  # {"Very Easy": 10, "Easy": 24, ...}
     by_domain: Dict[str, int]  # {"fintech": 18, "commerce": 14, ...}
+
+
+# ============================================
+# Hint System Schemas (M5-5)
+# ============================================
+
+class HintData(BaseModel):
+    """Structure for hint content at each level."""
+
+    level1: Optional[str] = None  # 방향성 힌트 (~100자)
+    level2: Optional[str] = None  # 구체적 접근법 (~200자)
+    level3: Optional[str] = None  # 코드 예시 (~300자)
+
+
+class HintLevelResponse(BaseModel):
+    """Response for a single hint level."""
+
+    level: int  # 1, 2, or 3
+    content: str
+    penalty: int  # 0, -10, or -20
+
+
+class HintResponse(BaseModel):
+    """Response for GET /problems/{id}/hints."""
+
+    problem_id: int
+    available_levels: List[int]  # 현재 사용 가능한 레벨들
+    viewed_levels: List[int]  # 이미 본 레벨들
+    hints: Dict[int, HintLevelResponse]  # 본 힌트들의 내용
+
+
+class HintViewRequest(BaseModel):
+    """Request for POST /problems/{id}/hints/view."""
+
+    level: int = Field(..., ge=1, le=3, description="Hint level to view (1-3)")

@@ -40,6 +40,9 @@ class Problem(Base):
     rubric_score = Column(Float, nullable=True)  # 0.0 ~ 100.0
     rubric_analysis = Column(JSONB, nullable=True)  # RubricAnalysis JSON
 
+    # Hint System (M5-5)
+    hints = Column(JSONB, nullable=True)  # {"level1": "...", "level2": "...", "level3": "..."}
+
     # Relationships
     buggy_implementations = relationship(
         "BuggyImplementation", back_populates="problem", cascade="all, delete-orphan"
