@@ -16,6 +16,7 @@ const EXCLUDED_PATHS = [
   "/pricing",
   "/auth",
   "/problems/", // 문제 상세 페이지 (집중 모드)
+  "/dashboard", // 대시보드 (자체 HouseAd 보유)
 ];
 
 export default function FloatingHouseAd() {
