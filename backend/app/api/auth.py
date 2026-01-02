@@ -75,10 +75,14 @@ async def github_callback(
 
     try:
         # Exchange code for token
+        logger.info(f"[OAUTH] Exchanging code for token...")
         github_token = await github_oauth_service.exchange_code_for_token(code)
+        logger.info(f"[OAUTH] Token exchange successful")
 
         # Get user info from GitHub
+        logger.info(f"[OAUTH] Getting user info from GitHub...")
         github_user = await github_oauth_service.get_user_info(github_token)
+        logger.info(f"[OAUTH] User info retrieved: {github_user.login}, email={github_user.email}")
 
         if not github_user.email:
             raise HTTPException(
@@ -87,6 +91,7 @@ async def github_callback(
             )
 
         # Find or create user
+        logger.info(f"[OAUTH] Finding or creating user for github_id={github_user.id}")
         user = db.query(User).filter(User.github_id == github_user.id).first()
 
         if not user:
@@ -152,10 +157,12 @@ async def github_callback(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"GitHub OAuth error: {e}")
+        import traceback
+        logger.error(f"[OAUTH_ERROR] GitHub OAuth error: {type(e).__name__}: {e}")
+        logger.error(f"[OAUTH_ERROR] Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Authentication failed"
+            detail=f"Authentication failed: {type(e).__name__}"
         )
 
 
