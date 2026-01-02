@@ -9,7 +9,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/lib/auth/AuthContext";
 import HouseAd from "./HouseAd";
 
 // HouseAd를 표시하지 않을 페이지 경로
@@ -21,17 +20,13 @@ const EXCLUDED_PATHS = [
 
 export default function FloatingHouseAd() {
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAuth();
 
   // 제외 경로 체크
   const isExcluded = EXCLUDED_PATHS.some((path) => pathname.startsWith(path));
   if (isExcluded) return null;
 
-  // 이미 유료 플랜 사용자는 표시하지 않음
-  // (user.tier가 premium이면 유료 사용자로 간주)
-  if (isAuthenticated && user?.tier === "premium") {
-    return null;
-  }
+  // HouseAd 자체에서 localStorage 기반 빈도 제어를 수행함
+  // 유료 플랜 체크는 추후 Plan API 연동 시 추가 가능
 
   return (
     <HouseAd
