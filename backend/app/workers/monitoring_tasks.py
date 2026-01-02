@@ -9,7 +9,6 @@ import redis
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.services.worker_monitor import WorkerMonitor, WorkerStatus
-from app.services.slack_notifier import SlackNotifier
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +49,7 @@ class AlertStateManager:
 )
 def check_worker_health(self):
     """
-    Worker 헬스 체크 및 알림 전송.
+    Worker 헬스 체크.
 
     Celery Beat에 의해 주기적으로 실행됨.
     """
@@ -61,7 +60,6 @@ def check_worker_health(self):
     logger.info("[HEALTH_CHECK_START] Starting worker health check...")
 
     monitor = WorkerMonitor()
-    notifier = SlackNotifier()
     alert_state = AlertStateManager()
 
     try:
@@ -88,39 +86,9 @@ def check_worker_health(self):
                 alert_state.mark_recovered(worker_name)
                 logger.info(f"[WORKER_RECOVERED] worker={worker_name}")
 
-        # Down 알림 전송
-        for state in down_workers:
-            try:
-                notifier.send_worker_down_alert_sync(
-                    worker_name=state.name,
-                    last_seen=state.last_seen,
-                    consecutive_failures=state.consecutive_failures,
-                )
-            except Exception as e:
-                logger.error(f"[ALERT_SEND_ERROR] Failed to send down alert: {e}")
-
-        # 모든 Worker Down 알림
+        # 모든 Worker Down 경고 로그
         if states and all(monitor.is_worker_down(s) for s in states.values()):
-            try:
-                notifier.send_all_workers_down_alert_sync()
-            except Exception as e:
-                logger.error(f"[ALERT_SEND_ERROR] Failed to send all-down alert: {e}")
-
-        # 복구 알림 전송
-        for state in recovered_workers:
-            try:
-                # Downtime 계산
-                downtime_minutes = None
-                if state.last_seen:
-                    downtime = datetime.utcnow() - state.last_seen
-                    downtime_minutes = int(downtime.total_seconds() / 60)
-
-                notifier.send_worker_recovery_alert_sync(
-                    worker_name=state.name,
-                    downtime_minutes=downtime_minutes,
-                )
-            except Exception as e:
-                logger.error(f"[ALERT_SEND_ERROR] Failed to send recovery alert: {e}")
+            logger.critical("[ALL_WORKERS_DOWN] All workers are unresponsive!")
 
         # 상태 요약 로그
         online = sum(1 for s in states.values() if s.status == WorkerStatus.ONLINE)

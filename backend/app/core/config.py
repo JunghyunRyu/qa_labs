@@ -85,11 +85,6 @@ class Settings(BaseSettings):
     WORKER_DOWN_THRESHOLD: int = 3  # 연속 N회 미응답시 Down 판정
     WORKER_HEARTBEAT_TIMEOUT: int = 10  # Inspect 타임아웃 (초)
 
-    # Slack Alert
-    SLACK_WEBHOOK_URL: Optional[str] = None
-    SLACK_ALERT_ENABLED: bool = False
-    SLACK_ALERT_ON_RECOVERY: bool = True  # 복구 시 알림 여부
-
     # Environment
     ENVIRONMENT: str = "development"  # development, staging, production
 

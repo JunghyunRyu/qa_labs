@@ -20,7 +20,6 @@ sys.path.insert(0, "/app")
 
 from app.core.config import settings
 from app.services.worker_monitor import WorkerMonitor, WorkerStatus
-from app.services.slack_notifier import SlackNotifier
 
 # Configure logging
 logging.basicConfig(
@@ -63,7 +62,6 @@ def check_worker_health():
 
     try:
         monitor = WorkerMonitor()
-        notifier = SlackNotifier()
         alert_state = AlertStateManager()
 
         states = monitor.check_health()
@@ -87,38 +85,9 @@ def check_worker_health():
                 alert_state.mark_recovered(worker_name)
                 logger.info(f"[WORKER_RECOVERED] worker={worker_name}")
 
-        # Down 알림 전송
-        for state in down_workers:
-            try:
-                notifier.send_worker_down_alert_sync(
-                    worker_name=state.name,
-                    last_seen=state.last_seen,
-                    consecutive_failures=state.consecutive_failures,
-                )
-            except Exception as e:
-                logger.error(f"[ALERT_SEND_ERROR] Failed to send down alert: {e}")
-
-        # 모든 Worker Down 알림 (새로 Down된 Worker가 있을 때만)
+        # 모든 Worker Down 경고 로그
         if down_workers and states and all(monitor.is_worker_down(s) for s in states.values()):
-            try:
-                notifier.send_all_workers_down_alert_sync()
-            except Exception as e:
-                logger.error(f"[ALERT_SEND_ERROR] Failed to send all-down alert: {e}")
-
-        # 복구 알림 전송
-        for state in recovered_workers:
-            try:
-                downtime_minutes = None
-                if state.last_seen:
-                    downtime = datetime.utcnow() - state.last_seen
-                    downtime_minutes = int(downtime.total_seconds() / 60)
-
-                notifier.send_worker_recovery_alert_sync(
-                    worker_name=state.name,
-                    downtime_minutes=downtime_minutes,
-                )
-            except Exception as e:
-                logger.error(f"[ALERT_SEND_ERROR] Failed to send recovery alert: {e}")
+            logger.critical("[ALL_WORKERS_DOWN] All workers are unresponsive!")
 
         # 상태 요약 로그
         online = sum(1 for s in states.values() if s.status == WorkerStatus.ONLINE)
@@ -138,7 +107,6 @@ def main():
     logger.info("Worker Monitor Scheduler Starting...")
     logger.info(f"Check interval: {settings.WORKER_MONITOR_INTERVAL_SECONDS} seconds")
     logger.info(f"Down threshold: {settings.WORKER_DOWN_THRESHOLD} consecutive failures")
-    logger.info(f"Slack alerts: {'enabled' if settings.SLACK_ALERT_ENABLED else 'disabled'}")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info("=" * 60)
 
