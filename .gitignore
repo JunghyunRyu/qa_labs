@@ -100,4 +100,4 @@ sync_problems.py
 sync_problems.sql
 sync_problems_clean.sql
 backend/problem_scan_results.csv
-docs\specs\milestones
+docs/specs/milestones/
