@@ -157,3 +157,78 @@ async def system_health() -> Dict[str, Any]:
             result["status"] = "degraded"
 
     return result
+
+
+@router.get("/judge")
+async def judge_health() -> Dict[str, Any]:
+    """
+    Judge 컨테이너 상태 확인.
+    
+    실행 중인 Judge 컨테이너와 최근 종료된 컨테이너 정보를 반환합니다.
+    """
+    result = {
+        "status": "healthy",
+        "running_containers": [],
+        "recent_containers": [],
+        "stats": {
+            "total_checked": 0,
+            "running": 0,
+            "exited_success": 0,
+            "exited_failed": 0,
+        }
+    }
+    
+    try:
+        import docker
+        import platform
+        import os
+        
+        # Docker 클라이언트 초기화
+        is_in_container = os.path.exists("/.dockerenv") or os.environ.get("DOCKER_CONTAINER") == "true"
+        
+        if platform.system() == "Windows" and not is_in_container:
+            client = docker.DockerClient(base_url="npipe:////./pipe/docker_engine")
+        elif is_in_container:
+            client = docker.DockerClient(base_url="unix:///var/run/docker.sock")
+        else:
+            client = docker.from_env()
+        
+        # Judge 컨테이너 조회 (qa_arena_judge_ 접두사로 필터링)
+        all_containers = client.containers.list(all=True)
+        judge_containers = [c for c in all_containers if "qa_arena_judge" in c.name or "qa-arena-judge" in c.image.tags[0] if c.image.tags]
+        
+        for container in judge_containers[:20]:  # 최대 20개만
+            container_info = {
+                "id": container.id[:12],
+                "name": container.name,
+                "status": container.status,
+                "created": container.attrs.get("Created", ""),
+            }
+            
+            result["stats"]["total_checked"] += 1
+            
+            if container.status == "running":
+                result["running_containers"].append(container_info)
+                result["stats"]["running"] += 1
+            else:
+                # 종료된 컨테이너
+                exit_code = container.attrs.get("State", {}).get("ExitCode", -1)
+                container_info["exit_code"] = exit_code
+                result["recent_containers"].append(container_info)
+                
+                if exit_code == 0:
+                    result["stats"]["exited_success"] += 1
+                else:
+                    result["stats"]["exited_failed"] += 1
+        
+        # 상태 판단
+        if result["stats"]["running"] > 5:  # 동시에 5개 이상 실행 중이면 경고
+            result["status"] = "warning"
+            result["message"] = f"Many judge containers running: {result['stats']['running']}"
+            
+    except Exception as e:
+        logger.error(f"[HEALTH_JUDGE_ERROR] error={e}")
+        result["status"] = "error"
+        result["error"] = str(e)
+    
+    return result

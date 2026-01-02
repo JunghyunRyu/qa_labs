@@ -18,6 +18,7 @@ from app.core.sentry import init_sentry, capture_exception_with_context
 from app.core.security_utils import sanitize_log_message, sanitize_url_path
 from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress, plans, tokens, feedback
 from app.middleware.anonymous import AnonymousIDMiddleware
+from app.middleware.request_context import RequestContextMiddleware, get_request_id
 
 # 로깅 설정
 setup_logging()
@@ -128,6 +129,8 @@ async def general_exception_handler(request: Request, exc: Exception):
     """일반 예외 핸들러."""
     # 에러 ID 생성
     error_id = str(uuid.uuid4())[:8]
+    # Request ID 가져오기
+    request_id = get_request_id() or getattr(request.state, "request_id", "-")
 
     # Sentry에 에러 보고 (URL은 마스킹하지 않음 - Sentry 자체 필터 사용)
     sentry_event_id = capture_exception_with_context(
@@ -138,11 +141,13 @@ async def general_exception_handler(request: Request, exc: Exception):
                 "url": str(request.url),
                 "path": request.url.path,
                 "error_id": error_id,
+                "request_id": request_id,
             }
         },
         tags={
             "error_type": "unhandled_exception",
             "endpoint": request.url.path,
+            "request_id": request_id,
         }
     )
 
@@ -152,13 +157,13 @@ async def general_exception_handler(request: Request, exc: Exception):
 
     if not settings.DEBUG:
         logger.error(
-            f"Unhandled exception [ID: {error_id}] [Sentry: {sentry_event_id}]: "
+            f"[{request_id}] Unhandled exception [ID: {error_id}] [Sentry: {sentry_event_id}]: "
             f"{type(exc).__name__}: {sanitized_error} - Path: {sanitized_path}",
             exc_info=True,
         )
     else:
         logger.error(
-            f"Unhandled exception: {type(exc).__name__}: {sanitized_error} - "
+            f"[{request_id}] Unhandled exception: {type(exc).__name__}: {sanitized_error} - "
             f"Path: {sanitized_path}",
             exc_info=True,
         )
@@ -187,14 +192,17 @@ async def log_requests(request: Request, call_next):
     import time
 
     start_time = time.time()
+    # Request ID 가져오기 (RequestContextMiddleware에서 설정됨)
+    request_id = get_request_id() or getattr(request.state, "request_id", "-")
+
     # URL 경로만 로깅 (쿼리 파라미터 제외하여 민감정보 노출 방지)
-    logger.info(f"Request: {request.method} {request.url.path}")
+    logger.info(f"[{request_id}] Request: {request.method} {request.url.path}")
 
     try:
         response = await call_next(request)
         process_time = time.time() - start_time
         logger.info(
-            f"Response: {request.method} {request.url.path} - "
+            f"[{request_id}] Response: {request.method} {request.url.path} - "
             f"Status: {response.status_code} - Time: {process_time:.3f}s"
         )
         return response
@@ -202,7 +210,7 @@ async def log_requests(request: Request, call_next):
         process_time = time.time() - start_time
         # 에러 메시지 마스킹
         logger.error(
-            f"Request failed: {request.method} {request.url.path} - "
+            f"[{request_id}] Request failed: {request.method} {request.url.path} - "
             f"Error: {sanitize_log_message(str(e))} - Time: {process_time:.3f}s",
             exc_info=True,
         )
@@ -219,6 +227,9 @@ app.add_middleware(
 
 # Anonymous ID middleware for guest users
 app.add_middleware(AnonymousIDMiddleware)
+
+# Request context middleware for request tracing
+app.add_middleware(RequestContextMiddleware)
 
 # Include routers
 app.include_router(

@@ -7,7 +7,15 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 import logging
 
+from app.middleware.request_context import get_correlation_id
+
 logger = logging.getLogger(__name__)
+
+
+def _get_log_prefix() -> str:
+    """현재 Correlation ID를 포함한 로그 접두사 반환."""
+    correlation_id = get_correlation_id()
+    return f"[{correlation_id}]" if correlation_id else ""
 
 # Judge Docker 이미지 이름
 JUDGE_IMAGE = "qa-arena-judge:latest"
@@ -142,17 +150,21 @@ class DockerService:
                 detach=True,
             )
 
-            logger.info(f"컨테이너 생성 완료: {container.id}")
+            prefix = _get_log_prefix()
+            logger.info(
+                f"{prefix} [JUDGE_CREATED] container_id={container.id[:12]} "
+                f"image={JUDGE_IMAGE} temp_dir={temp_path}"
+            )
             return container, temp_path
 
         except Exception as e:
             # 에러 발생 시 임시 디렉토리 정리
             self._cleanup_temp_dir(temp_path)
-            error_msg = (
-                f"Judge 컨테이너 생성 실패: {type(e).__name__}: {str(e)}. "
-                f"이미지: {JUDGE_IMAGE}, 타임아웃: {timeout}초"
+            prefix = _get_log_prefix()
+            logger.error(
+                f"{prefix} [JUDGE_CREATE_ERROR] image={JUDGE_IMAGE} "
+                f"error_type={type(e).__name__} error={str(e)}"
             )
-            logger.error(error_msg)
             raise RuntimeError(
                 f"Judge 컨테이너를 생성할 수 없습니다. "
                 f"이미지 '{JUDGE_IMAGE}'가 존재하는지 확인하세요: {str(e)}"
@@ -184,9 +196,12 @@ class DockerService:
         import time
 
         start_time = time.time()
+        prefix = _get_log_prefix()
+        container_id = container.id[:12]
 
         try:
             # 컨테이너 시작
+            logger.info(f"{prefix} [JUDGE_START] container_id={container_id} timeout={timeout}s")
             container.start()
 
             # 타임아웃까지 대기
@@ -195,16 +210,18 @@ class DockerService:
                 exit_code = result.get("StatusCode", -1)
             except Exception as e:
                 # 타임아웃 발생
-                timeout_msg = (
-                    f"Judge 컨테이너 실행 타임아웃: 컨테이너 ID={container.id[:12]}, "
-                    f"타임아웃={timeout}초, 에러={type(e).__name__}: {str(e)}"
+                logger.warning(
+                    f"{prefix} [JUDGE_TIMEOUT] container_id={container_id} "
+                    f"timeout={timeout}s error_type={type(e).__name__}"
                 )
-                logger.warning(timeout_msg)
                 try:
                     container.kill()
-                    logger.info(f"타임아웃으로 인해 컨테이너 강제 종료: {container.id[:12]}")
+                    logger.info(f"{prefix} [JUDGE_KILLED] container_id={container_id} reason=timeout")
                 except Exception as kill_error:
-                    logger.error(f"컨테이너 강제 종료 실패: {container.id[:12]}, 에러: {kill_error}")
+                    logger.error(
+                        f"{prefix} [JUDGE_KILL_ERROR] container_id={container_id} "
+                        f"error={kill_error}"
+                    )
                 exit_code = -1
 
             execution_time = time.time() - start_time
@@ -229,20 +246,19 @@ class DockerService:
             }
 
             logger.info(
-                f"컨테이너 실행 완료: {container.id}, "
-                f"성공: {success}, 시간: {execution_time:.2f}초"
+                f"{prefix} [JUDGE_COMPLETE] container_id={container_id} "
+                f"success={success} exit_code={exit_code} time={execution_time:.2f}s"
             )
 
             return result
 
         except Exception as e:
             execution_time = time.time() - start_time
-            error_msg = (
-                f"Judge 컨테이너 실행 중 예외 발생: 컨테이너 ID={container.id[:12]}, "
-                f"에러 타입={type(e).__name__}, 에러 메시지={str(e)}, "
-                f"실행 시간={execution_time:.2f}초"
+            logger.error(
+                f"{prefix} [JUDGE_ERROR] container_id={container_id} "
+                f"error_type={type(e).__name__} error={str(e)} time={execution_time:.2f}s",
+                exc_info=True
             )
-            logger.error(error_msg, exc_info=True)
             return {
                 "success": False,
                 "exit_code": -1,

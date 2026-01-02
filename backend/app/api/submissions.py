@@ -18,6 +18,7 @@ from app.repositories.test_quality_repository import TestQualityRepository
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
 from app.services.test_quality_analyzer import TestQualityAnalyzer
 from app.workers.tasks import process_submission_task, generate_feedback_task
+from app.middleware.request_context import get_request_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -231,10 +232,11 @@ async def create_submission(
         f"{identifier} problem_id={submission_data.problem_id} status=PENDING"
     )
 
-    # Celery Task 발행
+    # Celery Task 발행 (correlation_id로 request_id 전달)
+    correlation_id = get_request_id()
     try:
-        process_submission_task.delay(str(submission.id))
-        logger.info(f"[SUBMISSION_QUEUED] submission_id={submission.id}")
+        process_submission_task.delay(str(submission.id), correlation_id=correlation_id)
+        logger.info(f"[SUBMISSION_QUEUED] submission_id={submission.id} correlation_id={correlation_id}")
     except Exception as e:
         # Task 발행 실패 시 에러 상태로 업데이트
         logger.error(

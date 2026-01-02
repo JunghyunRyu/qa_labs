@@ -330,3 +330,185 @@ class SlackNotifier:
             message="All Celery workers are unresponsive. Immediate action required!",
             severity=AlertSeverity.CRITICAL,
         )
+
+    # ===== P0-4: 모니터링 알림 확장 =====
+
+    async def send_judge_stuck_alert(
+        self,
+        container_id: str,
+        duration_minutes: int,
+        submission_id: Optional[str] = None,
+    ) -> bool:
+        """Judge 컨테이너 타임아웃/멈춤 알림."""
+        logger.warning(
+            f"[JUDGE_STUCK_ALERT] container_id={container_id} "
+            f"duration={duration_minutes}min submission_id={submission_id or 'unknown'}"
+        )
+
+        fields = [
+            {"title": "Container ID", "value": container_id[:12]},
+            {"title": "Duration", "value": f"{duration_minutes} minutes"},
+        ]
+        if submission_id:
+            fields.append({"title": "Submission ID", "value": submission_id})
+
+        return await self.send_alert(
+            title="Judge Container Stuck",
+            message=f"Judge 컨테이너가 {duration_minutes}분 이상 실행 중입니다. 확인이 필요합니다.",
+            severity=AlertSeverity.WARNING if duration_minutes < 10 else AlertSeverity.ERROR,
+            fields=fields,
+        )
+
+    def send_judge_stuck_alert_sync(
+        self,
+        container_id: str,
+        duration_minutes: int,
+        submission_id: Optional[str] = None,
+    ) -> bool:
+        """Judge 컨테이너 타임아웃/멈춤 알림 (동기)."""
+        logger.warning(
+            f"[JUDGE_STUCK_ALERT] container_id={container_id} "
+            f"duration={duration_minutes}min submission_id={submission_id or 'unknown'}"
+        )
+
+        fields = [
+            {"title": "Container ID", "value": container_id[:12]},
+            {"title": "Duration", "value": f"{duration_minutes} minutes"},
+        ]
+        if submission_id:
+            fields.append({"title": "Submission ID", "value": submission_id})
+
+        return self.send_sync(
+            title="Judge Container Stuck",
+            message=f"Judge 컨테이너가 {duration_minutes}분 이상 실행 중입니다. 확인이 필요합니다.",
+            severity=AlertSeverity.WARNING if duration_minutes < 10 else AlertSeverity.ERROR,
+            fields=fields,
+        )
+
+    async def send_queue_depth_alert(
+        self,
+        queue_name: str,
+        current_depth: int,
+        threshold: int,
+    ) -> bool:
+        """큐 깊이 임계값 초과 알림."""
+        logger.warning(
+            f"[QUEUE_DEPTH_ALERT] queue={queue_name} depth={current_depth} threshold={threshold}"
+        )
+
+        # 초과 비율에 따라 심각도 결정
+        ratio = current_depth / threshold if threshold > 0 else 1
+        if ratio >= 3:
+            severity = AlertSeverity.CRITICAL
+        elif ratio >= 2:
+            severity = AlertSeverity.ERROR
+        else:
+            severity = AlertSeverity.WARNING
+
+        return await self.send_alert(
+            title="Queue Depth Threshold Exceeded",
+            message=f"큐 `{queue_name}`의 대기 작업이 임계값을 초과했습니다.",
+            severity=severity,
+            fields=[
+                {"title": "Queue Name", "value": queue_name},
+                {"title": "Current Depth", "value": str(current_depth)},
+                {"title": "Threshold", "value": str(threshold)},
+                {"title": "Ratio", "value": f"{ratio:.1f}x"},
+            ],
+        )
+
+    def send_queue_depth_alert_sync(
+        self,
+        queue_name: str,
+        current_depth: int,
+        threshold: int,
+    ) -> bool:
+        """큐 깊이 임계값 초과 알림 (동기)."""
+        logger.warning(
+            f"[QUEUE_DEPTH_ALERT] queue={queue_name} depth={current_depth} threshold={threshold}"
+        )
+
+        ratio = current_depth / threshold if threshold > 0 else 1
+        if ratio >= 3:
+            severity = AlertSeverity.CRITICAL
+        elif ratio >= 2:
+            severity = AlertSeverity.ERROR
+        else:
+            severity = AlertSeverity.WARNING
+
+        return self.send_sync(
+            title="Queue Depth Threshold Exceeded",
+            message=f"큐 `{queue_name}`의 대기 작업이 임계값을 초과했습니다.",
+            severity=severity,
+            fields=[
+                {"title": "Queue Name", "value": queue_name},
+                {"title": "Current Depth", "value": str(current_depth)},
+                {"title": "Threshold", "value": str(threshold)},
+                {"title": "Ratio", "value": f"{ratio:.1f}x"},
+            ],
+        )
+
+    async def send_high_error_rate_alert(
+        self,
+        error_rate: float,
+        window_minutes: int,
+        error_count: int,
+        total_count: int,
+    ) -> bool:
+        """에러율 급증 알림."""
+        logger.warning(
+            f"[HIGH_ERROR_RATE_ALERT] rate={error_rate:.1%} window={window_minutes}min "
+            f"errors={error_count}/{total_count}"
+        )
+
+        # 에러율에 따라 심각도 결정
+        if error_rate >= 0.5:  # 50% 이상
+            severity = AlertSeverity.CRITICAL
+        elif error_rate >= 0.25:  # 25% 이상
+            severity = AlertSeverity.ERROR
+        else:
+            severity = AlertSeverity.WARNING
+
+        return await self.send_alert(
+            title="High Error Rate Detected",
+            message=f"최근 {window_minutes}분간 에러율이 {error_rate:.1%}로 급증했습니다.",
+            severity=severity,
+            fields=[
+                {"title": "Error Rate", "value": f"{error_rate:.1%}"},
+                {"title": "Time Window", "value": f"{window_minutes} minutes"},
+                {"title": "Error Count", "value": str(error_count)},
+                {"title": "Total Requests", "value": str(total_count)},
+            ],
+        )
+
+    def send_high_error_rate_alert_sync(
+        self,
+        error_rate: float,
+        window_minutes: int,
+        error_count: int,
+        total_count: int,
+    ) -> bool:
+        """에러율 급증 알림 (동기)."""
+        logger.warning(
+            f"[HIGH_ERROR_RATE_ALERT] rate={error_rate:.1%} window={window_minutes}min "
+            f"errors={error_count}/{total_count}"
+        )
+
+        if error_rate >= 0.5:
+            severity = AlertSeverity.CRITICAL
+        elif error_rate >= 0.25:
+            severity = AlertSeverity.ERROR
+        else:
+            severity = AlertSeverity.WARNING
+
+        return self.send_sync(
+            title="High Error Rate Detected",
+            message=f"최근 {window_minutes}분간 에러율이 {error_rate:.1%}로 급증했습니다.",
+            severity=severity,
+            fields=[
+                {"title": "Error Rate", "value": f"{error_rate:.1%}"},
+                {"title": "Time Window", "value": f"{window_minutes} minutes"},
+                {"title": "Error Count", "value": str(error_count)},
+                {"title": "Total Requests", "value": str(total_count)},
+            ],
+        )

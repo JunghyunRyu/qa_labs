@@ -2,6 +2,7 @@
 
 from uuid import UUID
 import logging
+from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,7 @@ from app.services.submission_service import SubmissionService
 from app.services.ai_feedback_engine import generate_feedback
 from app.repositories.submission_repository import SubmissionRepository
 from app.repositories.problem_repository import ProblemRepository
+from app.middleware.request_context import set_correlation_id
 
 logger = logging.getLogger(__name__)
 
@@ -27,22 +29,27 @@ init_sentry()
     retry_backoff_max=600,  # 최대 재시도 간격 (10분)
     retry_jitter=True,  # 재시도 시간 랜덤화 (thundering herd 문제 방지)
 )
-def process_submission_task(self, submission_id: str) -> None:
+def process_submission_task(self, submission_id: str, correlation_id: Optional[str] = None) -> None:
     """
     Celery task to process a submission.
 
     Args:
         submission_id: Submission ID as string (UUID)
+        correlation_id: Request ID from the original API call (for tracing)
     """
     submission_uuid = UUID(submission_id)
-    logger.info(f"Starting Celery task for submission: {submission_uuid}")
+    # Correlation ID 설정 (하위 로깅에서 사용)
+    if correlation_id:
+        set_correlation_id(correlation_id)
+    log_prefix = f"[{correlation_id or '-'}]" if correlation_id else ""
+    logger.info(f"{log_prefix} [TASK_START] submission={submission_uuid} task_id={self.request.id}")
 
     # 데이터베이스 세션 생성
     db: Session = SessionLocal()
     try:
         service = SubmissionService(db)
         service.process_submission(submission_uuid)
-        logger.info(f"Successfully processed submission: {submission_uuid}")
+        logger.info(f"{log_prefix} [TASK_COMPLETE] submission={submission_uuid} status=success")
     except Exception as e:
         # Sentry에 에러 보고 (컨텍스트 포함)
         capture_exception_with_context(
@@ -52,6 +59,7 @@ def process_submission_task(self, submission_id: str) -> None:
                     "task_id": self.request.id,
                     "task_name": self.name,
                     "submission_id": str(submission_uuid),
+                    "correlation_id": correlation_id,
                     "retries": self.request.retries,
                     "max_retries": self.max_retries,
                 }
@@ -59,12 +67,13 @@ def process_submission_task(self, submission_id: str) -> None:
             tags={
                 "task_name": "process_submission_task",
                 "submission_id": str(submission_uuid),
+                "correlation_id": correlation_id or "-",
                 "retry_count": str(self.request.retries),
             }
         )
 
         logger.error(
-            f"Error in Celery task for submission {submission_uuid}: {e}",
+            f"{log_prefix} [TASK_ERROR] submission={submission_uuid} error={e}",
             exc_info=True,
         )
         # 재시도 로직
@@ -72,14 +81,14 @@ def process_submission_task(self, submission_id: str) -> None:
         # retry_jitter=True로 인해 재시도 시간에 랜덤 요소 추가
         if self.request.retries < self.max_retries:
             logger.info(
-                f"Retrying task for submission {submission_uuid} "
-                f"(attempt {self.request.retries + 1}/{self.max_retries})"
+                f"{log_prefix} [TASK_RETRY] submission={submission_uuid} "
+                f"attempt={self.request.retries + 1}/{self.max_retries}"
             )
             raise self.retry(exc=e)
         else:
             logger.error(
-                f"Max retries reached for submission {submission_uuid}. "
-                f"Marking as ERROR."
+                f"{log_prefix} [TASK_MAX_RETRIES] submission={submission_uuid} "
+                f"max_retries={self.max_retries}"
             )
             # 최종 실패 시 에러 상태로 업데이트
             try:
@@ -89,12 +98,13 @@ def process_submission_task(self, submission_id: str) -> None:
                 if submission:
                     submission.status = "ERROR"
                     submission.execution_log = {
-                        "error": f"Task failed after {self.max_retries} retries: {str(e)}"
+                        "error": f"Task failed after {self.max_retries} retries: {str(e)}",
+                        "correlation_id": correlation_id,
                     }
                     submission_repo.update(submission)
             except Exception as update_error:
                 logger.error(
-                    f"Failed to update submission status: {update_error}",
+                    f"{log_prefix} [TASK_STATUS_UPDATE_ERROR] submission={submission_uuid} error={update_error}",
                     exc_info=True,
                 )
     finally:
