@@ -10,6 +10,7 @@ from app.models.ai_conversation import AIConversation, AIMessage
 from app.models.test_quality import AnalysisRun
 from app.models.hint_view import HintView
 from app.models.token_transaction import TokenTransaction, ActionType, SourceType
+from app.models.feedback import Feedback, FeedbackType, FeedbackStatus
 
 __all__ = [
     "Base",
@@ -26,4 +27,7 @@ __all__ = [
     "TokenTransaction",
     "ActionType",
     "SourceType",
+    "Feedback",
+    "FeedbackType",
+    "FeedbackStatus",
 ]

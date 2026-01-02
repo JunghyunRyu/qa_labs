@@ -16,7 +16,7 @@ from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.sentry import init_sentry, capture_exception_with_context
 from app.core.security_utils import sanitize_log_message, sanitize_url_path
-from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress, plans, tokens
+from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress, plans, tokens, feedback
 from app.middleware.anonymous import AnonymousIDMiddleware
 
 # 로깅 설정
@@ -285,6 +285,12 @@ app.include_router(
     tokens.router,
     prefix="/api/v1",
     tags=["tokens"],
+)
+
+app.include_router(
+    feedback.router,
+    prefix="/api/v1/feedback",
+    tags=["feedback"],
 )
 
 
