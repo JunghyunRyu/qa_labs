@@ -14,7 +14,6 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
-from app.core.sentry import init_sentry, capture_exception_with_context
 from app.core.security_utils import sanitize_log_message, sanitize_url_path
 from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress, plans, tokens, feedback
 from app.middleware.anonymous import AnonymousIDMiddleware
@@ -23,9 +22,6 @@ from app.middleware.request_context import RequestContextMiddleware, get_request
 # 로깅 설정
 setup_logging()
 logger = logging.getLogger(__name__)
-
-# Sentry 초기화 (로깅 설정 후)
-init_sentry()
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -132,41 +128,15 @@ async def general_exception_handler(request: Request, exc: Exception):
     # Request ID 가져오기
     request_id = get_request_id() or getattr(request.state, "request_id", "-")
 
-    # Sentry에 에러 보고 (URL은 마스킹하지 않음 - Sentry 자체 필터 사용)
-    sentry_event_id = capture_exception_with_context(
-        exc,
-        context={
-            "request": {
-                "method": request.method,
-                "url": str(request.url),
-                "path": request.url.path,
-                "error_id": error_id,
-                "request_id": request_id,
-            }
-        },
-        tags={
-            "error_type": "unhandled_exception",
-            "endpoint": request.url.path,
-            "request_id": request_id,
-        }
-    )
-
     # 로깅 (민감정보 마스킹 적용)
     sanitized_path = sanitize_url_path(str(request.url))
     sanitized_error = sanitize_log_message(str(exc))
 
-    if not settings.DEBUG:
-        logger.error(
-            f"[{request_id}] Unhandled exception [ID: {error_id}] [Sentry: {sentry_event_id}]: "
-            f"{type(exc).__name__}: {sanitized_error} - Path: {sanitized_path}",
-            exc_info=True,
-        )
-    else:
-        logger.error(
-            f"[{request_id}] Unhandled exception: {type(exc).__name__}: {sanitized_error} - "
-            f"Path: {sanitized_path}",
-            exc_info=True,
-        )
+    logger.error(
+        f"[{request_id}] Unhandled exception [ID: {error_id}]: "
+        f"{type(exc).__name__}: {sanitized_error} - Path: {sanitized_path}",
+        exc_info=True,
+    )
 
     # 프로덕션에서는 일반적인 메시지만 반환
     detail_message = "Internal server error. Please try again later."

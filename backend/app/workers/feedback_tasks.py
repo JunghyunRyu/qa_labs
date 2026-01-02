@@ -9,29 +9,12 @@ from uuid import UUID
 
 from celery import current_app as celery_app
 from sqlalchemy.orm import Session
-from sentry_sdk import capture_exception
 
 from app.models.db import SessionLocal
 from app.services.deep_feedback_service import DeepFeedbackService
 from app.services.success_analysis_service import SuccessAnalysisService
 
 logger = logging.getLogger(__name__)
-
-
-def capture_exception_with_context(e, context=None, tags=None):
-    """Sentry에 예외 보고 (선택적)"""
-    try:
-        if context:
-            from sentry_sdk import set_context
-            for key, value in context.items():
-                set_context(key, value)
-        if tags:
-            from sentry_sdk import set_tag
-            for key, value in tags.items():
-                set_tag(key, value)
-        capture_exception(e)
-    except Exception:
-        pass  # Sentry 오류는 무시
 
 
 @celery_app.task(
@@ -60,24 +43,6 @@ def generate_deep_feedback_task(self, feedback_id: str) -> None:
         logger.info(f"[DEEP_FEEDBACK_TASK_SUCCESS] feedback_id={feedback_uuid}")
 
     except Exception as e:
-        capture_exception_with_context(
-            e,
-            context={
-                "celery_task": {
-                    "task_id": self.request.id,
-                    "task_name": self.name,
-                    "feedback_id": str(feedback_uuid),
-                    "retries": self.request.retries,
-                    "max_retries": self.max_retries,
-                }
-            },
-            tags={
-                "task_name": "generate_deep_feedback_task",
-                "feedback_id": str(feedback_uuid),
-                "retry_count": str(self.request.retries),
-            }
-        )
-
         logger.error(
             f"[DEEP_FEEDBACK_TASK_ERROR] feedback_id={feedback_uuid} "
             f"error_type={type(e).__name__} error_message={str(e)}",
@@ -127,24 +92,6 @@ def generate_success_analysis_task(self, feedback_id: str) -> None:
         logger.info(f"[SUCCESS_ANALYSIS_TASK_SUCCESS] feedback_id={feedback_uuid}")
 
     except Exception as e:
-        capture_exception_with_context(
-            e,
-            context={
-                "celery_task": {
-                    "task_id": self.request.id,
-                    "task_name": self.name,
-                    "feedback_id": str(feedback_uuid),
-                    "retries": self.request.retries,
-                    "max_retries": self.max_retries,
-                }
-            },
-            tags={
-                "task_name": "generate_success_analysis_task",
-                "feedback_id": str(feedback_uuid),
-                "retry_count": str(self.request.retries),
-            }
-        )
-
         logger.error(
             f"[SUCCESS_ANALYSIS_TASK_ERROR] feedback_id={feedback_uuid} "
             f"error_type={type(e).__name__} error_message={str(e)}",

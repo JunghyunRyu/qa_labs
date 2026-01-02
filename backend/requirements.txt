@@ -37,10 +37,6 @@ openai
 # Scheduler (for worker monitoring)
 apscheduler>=3.10.0
 
-
-# Error Tracking
-sentry-sdk[fastapi,celery]==1.39.1
-
 # Rate Limiting
 slowapi==0.1.9
 limits>=3.0.0  # slowapi dependency, explicit for custom rate limit logic

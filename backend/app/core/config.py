@@ -88,12 +88,6 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"  # development, staging, production
 
-    # Sentry Error Tracking
-    SENTRY_DSN: Optional[str] = None
-    SENTRY_ENABLED: bool = False
-    SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 성능 추적 샘플링 비율 (10%)
-    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 프로파일 샘플링 비율 (10%)
-
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_REDIS_DB: int = 2  # Celery uses DB 0-1, rate limiting uses DB 2

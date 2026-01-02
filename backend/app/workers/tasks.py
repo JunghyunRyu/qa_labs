@@ -7,7 +7,6 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.core.celery_app import celery_app
-from app.core.sentry import init_sentry, capture_exception_with_context
 from app.models.db import SessionLocal
 from app.services.submission_service import SubmissionService
 from app.services.ai_feedback_engine import generate_feedback
@@ -16,9 +15,6 @@ from app.repositories.problem_repository import ProblemRepository
 from app.middleware.request_context import set_correlation_id
 
 logger = logging.getLogger(__name__)
-
-# Celery Worker에서도 Sentry 초기화
-init_sentry()
 
 
 @celery_app.task(
@@ -51,27 +47,6 @@ def process_submission_task(self, submission_id: str, correlation_id: Optional[s
         service.process_submission(submission_uuid)
         logger.info(f"{log_prefix} [TASK_COMPLETE] submission={submission_uuid} status=success")
     except Exception as e:
-        # Sentry에 에러 보고 (컨텍스트 포함)
-        capture_exception_with_context(
-            e,
-            context={
-                "celery_task": {
-                    "task_id": self.request.id,
-                    "task_name": self.name,
-                    "submission_id": str(submission_uuid),
-                    "correlation_id": correlation_id,
-                    "retries": self.request.retries,
-                    "max_retries": self.max_retries,
-                }
-            },
-            tags={
-                "task_name": "process_submission_task",
-                "submission_id": str(submission_uuid),
-                "correlation_id": correlation_id or "-",
-                "retry_count": str(self.request.retries),
-            }
-        )
-
         logger.error(
             f"{log_prefix} [TASK_ERROR] submission={submission_uuid} error={e}",
             exc_info=True,
@@ -185,25 +160,6 @@ def generate_feedback_task(self, submission_id: str) -> None:
         logger.info(f"[AI_FEEDBACK_TASK_SUCCESS] submission_id={submission_uuid}")
 
     except Exception as e:
-        # Sentry에 에러 보고
-        capture_exception_with_context(
-            e,
-            context={
-                "celery_task": {
-                    "task_id": self.request.id,
-                    "task_name": self.name,
-                    "submission_id": str(submission_uuid),
-                    "retries": self.request.retries,
-                    "max_retries": self.max_retries,
-                }
-            },
-            tags={
-                "task_name": "generate_feedback_task",
-                "submission_id": str(submission_uuid),
-                "retry_count": str(self.request.retries),
-            }
-        )
-
         logger.error(
             f"[AI_FEEDBACK_TASK_ERROR] submission_id={submission_uuid} "
             f"error_type={type(e).__name__} error_message={str(e)}",
