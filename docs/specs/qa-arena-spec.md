@@ -1,8 +1,8 @@
 
-# QA-Arena – AI-Assisted QA Coding Test Platform Spec
+# QA Arena – AI-Assisted QA Coding Test Platform Spec
 
-> Version: 0.5 (Updated 2025-12-28)
-> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합 + **클라이언트 사이드 실행(Pyodide)** + **토큰 시스템** + **테스트 품질 분석** + **AI 코치**
+> Version: 0.7 (Updated 2025-12-31)
+> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합 + **클라이언트 사이드 실행(Pyodide)** + **토큰 시스템** + **테스트 품질 분석** + **AI 코치** + **Google Analytics 4** + **랜딩 페이지 리뉴얼** + **코드 자동 저장** + **함수 Contract 노출** + **테스트 포인트 AI 연동** + **보안 강화**
 
 ---
 
@@ -32,6 +32,7 @@
   - REST API 호출로 문제 조회, 제출, 결과 조회
   - **Pyodide (WebAssembly Python)** + Web Worker 기반 클라이언트 사이드 채점
   - Sentry 클라이언트 에러 모니터링
+  - **Google Analytics 4 (GA4)** 통합 - 페이지뷰 및 이벤트 트래킹
 
 - **Backend API**
   - FastAPI (Python 3.11+)
@@ -869,6 +870,8 @@ export interface ClientExecutionResult {
 | 2025-12 | 0.3 | 초기 버전 (Celery 기반) | - |
 | 2025-12-18 | 0.4 | 클라이언트 사이드 실행(Pyodide) 하이브리드 아키텍처 반영 | AI Copilot |
 | 2025-12-28 | 0.5 | 실제 구현과 스펙 동기화: 토큰 시스템, 테스트 품질 시스템, AI 코치, 비회원 제출, 도메인 분류 등 추가 | AI Copilot |
+| 2025-12-30 | 0.6 | 브랜딩 리뉴얼(QA-Arena→QA Arena), GA4 통합, 랜딩 페이지 UI 대폭 개선, SEO 최적화, E2E 테스트 추가 | AI Copilot |
+| 2025-12-31 | 0.7 | M4-2 코드 자동 저장, M5-1 함수 Contract 노출, M5-2 테스트 포인트 AI 연동, 보안 강화 (conftest.py, submission.py) | AI Copilot |
 
 ---
 
@@ -941,3 +944,123 @@ export interface ClientExecutionResult {
 | [operations.md](./operations.md) | 운영/인시던트 가이드 |
 | [deployment.md](./deployment.md) | 배포 가이드 |
 | [AI_SAFETY_PROTOCOLS.md](./AI_SAFETY_PROTOCOLS.md) | AI 작업 안전 수칙 |
+
+### 10.2.1. HeroStarter 컴포넌트
+
+**도메인별 시작하기 기능**:
+- 도메인 칩 (6개): common, fintech, commerce, saas, platform, content
+- 도메인 변경 시 fade + translateY 애니메이션 (150ms)
+- localStorage 지속성: 마지막 선택 도메인 기억
+- Fallback 처리: 데이터 로드 실패 시 기본 CTA 표시
+- `prefers-reduced-motion` 대응 (`motion-safe` Tailwind 클래스)
+
+**data-testid 속성** (DOM 안정화):
+- `hero-starter`, `domain-chip-*`, `domain-chips`
+- `domain-description`, `starter-card`, `starter-card-title`, `starter-card-cta`
+- `starter-fallback`
+
+### 10.5. E2E 테스트 (Playwright)
+
+**스모크 테스트 14개** (`frontend/e2e/hero-starter-smoke.spec.ts`):
+- TC-HERO-001~004: 도메인 변경 기능
+- TC-HERO-005~006: CTA 네비게이션
+- TC-HERO-007~009: 모바일 뷰포트
+- TC-HERO-010~011: 접근성 및 애니메이션
+- TC-HERO-VR-001~003: 시각 회귀 테스트
+
+### 10.6. Google Analytics 4 통합
+
+**GA4 구현**:
+- `GoogleAnalytics` 컴포넌트: gtag.js 로드 + 페이지뷰 추적
+- App Router 페이지 전환 시 자동 `pageview` 이벤트
+- 프로덕션 전용 (`NEXT_PUBLIC_GA_ID` 환경변수 필요)
+- 이벤트 트래킹: 제출, 문제 시작, 도메인 변경 등
+
+**환경변수**:
+- `NEXT_PUBLIC_GA_ID`: GA4 측정 ID (예: `G-XXXXXXXXXX`)
+- Docker 빌드 시 `--build-arg`로 전달
+
+### 10.7. 브랜딩
+
+**QA-Arena → QA Arena** 통합 브랜딩 (2025-12-30):
+- Header: "QA Arena" 스타일링 (QA sky-500) + "by QaLabs" 서브텍스트
+- Footer: 브랜드명 및 저작권 텍스트 업데이트
+- 메타데이터/OG 태그: layout.tsx에서 전역 설정
+- 법적 페이지: 이용약관, 개인정보처리방침 텍스트 변경
+- 로그인 페이지: 환영 메시지 업데이트
+
+> 내부 식별자(URL, localStorage 키)는 변경 없음
+
+---
+
+## 11. 에디터 UX 개선 (M4-M5)
+
+### 11.1. 코드 자동 저장 (M4-2)
+
+**useCodeDraft 훅 확장**:
+- 저장 상태 3단계: `saved` / `saving` / `modified`
+- `localStorage` 기반 자동 저장 (debounce 1초)
+- 키: `qa-arena-draft-{problemId}`
+
+**UI 요소**:
+- 저장 상태 표시기: Cloud/CloudOff 아이콘 + 툴팁
+- `Ctrl+S` 수동 저장 단축키
+- "새로 시작(Reset)" 버튼 - 템플릿으로 초기화
+- 복구 알림 배너 - 이전 작성 코드 복구 시 표시
+
+### 11.2. 함수 Contract 고정 노출 (M5-1)
+
+**contractParser.ts**:
+- `parseSignature()`: Python 함수 시그니처 파싱 (함수명, 파라미터, 반환 타입)
+- `parseInterfaceFromMarkdown()`: 마크다운에서 클래스/인터페이스 정의 추출
+- 복잡한 타입 힌트 지원: `list[]`, `Optional[]`, `dict[]` 등
+
+**ContractCard 컴포넌트**:
+- Python 구문 강조 (keyword, builtin, class, identifier)
+- 접기/펼치기 토글 (접힘시 요약 표시)
+- 복사 버튼
+- 파라미터 목록 표시
+
+### 11.3. 테스트 포인트 AI 연동 (M5-2)
+
+**TestPointsList 컴포넌트**:
+- 문제 summary 마크다운에서 인라인 불릿(•) 파싱
+- 각 테스트 포인트에 hover 시 AI 버튼 표시
+
+**TestPointItem 컴포넌트**:
+- "설명 요청" 버튼: AI에게 해당 포인트 설명 요청
+- "구현 도움" 버튼: AI에게 구현 힌트 요청
+
+**promptTemplates.ts**:
+- `testPointExplain`: 테스트 포인트 설명 프롬프트
+- `testPointImplement`: 구현 도움 프롬프트
+
+**layoutStore 확장**:
+- `aiChatPrefillMessage`: AI 채팅창에 미리 채울 메시지
+- `openAIChatWithPrefill()`: AI 채팅 열기 + 메시지 프리필
+
+---
+
+## 12. 보안 강화
+
+### 12.1. 서버 사이드 보안 (conftest.py)
+
+**테스트 타임아웃**:
+- 4초 타임아웃 (`SIGALRM`)
+- 무한 루프 방지
+
+**재귀 깊이 제한**:
+- 최대 200 (스택 오버플로우 방지)
+- `sys.setrecursionlimit(200)`
+
+**차단 모듈 확장** (9→18개):
+| 기존 | 추가 |
+|------|------|
+| os, sys, subprocess, socket, shutil, builtins, importlib, ctypes, multiprocessing | pty, fcntl, pipes, posix, pwd, grp, resource, syslog, signal, code, codeop, pkgutil |
+
+### 12.2. 입력 검증 (submission.py)
+
+**코드 길이 제한**:
+- 최소: 10 bytes (의미 있는 코드)
+- 최대: 50KB (대용량 코드 방지)
+- HTTP 413 에러 반환

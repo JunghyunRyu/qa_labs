@@ -1,10 +1,11 @@
-# QA-Arena Infrastructure Overview
+# QA Arena Infrastructure Overview
 
 ## 📌 Purpose
-This document provides a high-level overview of the QA-Arena production architecture, including service composition, routing, and operational components.
+This document provides a high-level overview of the QA Arena production architecture, including service composition, routing, and operational components.
 
-> 📅 Last Updated: 2025-12-18
+> 📅 Last Updated: 2025-12-31
 > 하이브리드 아키텍처 (클라이언트 + 서버 사이드 실행) 반영
+> M5 마일스톤 (함수 Contract 노출, 테스트 포인트 AI 연동) 완료
 
 ---
 
@@ -20,7 +21,7 @@ This document provides a high-level overview of the QA-Arena production architec
 
 ## 🧱 Architecture Structure (Docker Compose)
 
-The QA-Arena production stack consists of:
+The QA Arena production stack consists of:
 
 ```
 postgres           # PostgreSQL 15
@@ -80,3 +81,5 @@ qa_labs/
 |------|----------|
 | 2025-12 | 초기 문서 생성 |
 | 2025-12-18 | 클라이언트 사이드 실행(Pyodide) 하이브리드 아키텍처 반영 |
+| 2025-12-30 | 브랜딩 리뉴얼(QA Arena), GA4 통합, Playwright E2E 테스트 추가 |
+| 2025-12-31 | M4-2 코드 자동 저장, M5-1 함수 Contract 노출, M5-2 테스트 포인트 AI 연동, 보안 강화 |

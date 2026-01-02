@@ -1,9 +1,9 @@
-# QA-Arena Deployment Guide
+# QA Arena Deployment Guide
 
 ## 📌 Purpose
-Defines the official and quick deployment flows for the QA-Arena production environment.
+Defines the official and quick deployment flows for the QA Arena production environment.
 
-> 📅 Last Updated: 2025-12-28
+> 📅 Last Updated: 2025-12-31
 
 ---
 
@@ -96,3 +96,48 @@ docker compose -f docker-compose.prod.yml ps
     - docker compose down -v
     - docker volume rm, docker volume prune
 - AI/코드 어시스턴트로 배포 스크립트를 수정할 때는 @docs/specs/AI_SAFETY_PROTOCOLS.md 의 절대 금지 사항을 먼저 확인한다.
+---
+
+# 5. 환경 변수 (2025-12-31 추가)
+
+## 5.1. Google Analytics 4 설정
+
+Frontend에서 GA4를 활성화하려면 `.env` 파일에 다음 환경변수를 추가합니다:
+
+```bash
+# Google Analytics 4 측정 ID
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+```
+
+Docker 빌드 시 빌드 인자로 전달:
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+```
+
+> `docker-compose.prod.yml`의 frontend 서비스에서 `NEXT_PUBLIC_GA_ID`를 빌드 인자로 받도록 설정되어 있습니다.
+
+## 5.2. 필수 환경 변수 체크리스트
+
+| 변수 | 용도 | 필수 |
+|------|------|------|
+| `DATABASE_URL` | PostgreSQL 연결 | ✅ |
+| `REDIS_URL` | Redis 연결 | ✅ |
+| `GITHUB_CLIENT_ID` | GitHub OAuth | ✅ |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth | ✅ |
+| `JWT_SECRET_KEY` | JWT 서명 | ✅ |
+| `OPENAI_API_KEY` | AI 기능 | ✅ |
+| `SENTRY_DSN` | 에러 모니터링 | 권장 |
+| `NEXT_PUBLIC_GA_ID` | Google Analytics | 권장 |
+| `SLACK_WEBHOOK_URL` | Slack 알림 | 선택 |
+| `ADMIN_SECRET_KEY` | Admin API 인증 | 권장 |
+
+---
+
+# 6. 변경 이력
+
+| 날짜 | 변경 내용 | 작성자 |
+|------|----------|--------|
+| 2025-12 | 초기 문서 생성 | AI Copilot |
+| 2025-12-28 | SSM 접속, 슬래시 명령어 추가 | AI Copilot |
+| 2025-12-30 | GA4 환경변수 섹션 추가 | AI Copilot |
+| 2025-12-31 | M5 마일스톤(Contract 노출, AI 연동) 및 보안 강화 배포 | AI Copilot |

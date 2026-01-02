@@ -1,4 +1,4 @@
-# QA-Arena Operations & Incident Response Guide
+# QA Arena Operations & Incident Response Guide
 
 ## 📌 Purpose
 프로덕션 환경에서 문제를 진단하고, 복구하고, 정기 점검을 수행하기 위한 운영 가이드.
@@ -6,8 +6,9 @@
 > ⚠ AI / 코드 어시스턴트로 트러블슈팅을 진행할 때는
 > 반드시 `docs/specs/AI_SAFETY_PROTOCOLS.md`의 **절대 금지 사항**을 먼저 확인한다.
 
-> 📅 Last Updated: 2025-12-28
+> 📅 Last Updated: 2025-12-31
 > 하이브리드 아키텍처 (클라이언트 + 서버 사이드 실행) 반영
+> M5 마일스톤 완료, 보안 강화 적용
 
 ## 0. Claude Code 슬래시 명령어
 
@@ -205,6 +206,12 @@ htop   # 설치되어 있다면
 - 자동 복구 시에도 복구 알림 발송
 - 환경 변수: `SLACK_WEBHOOK_URL`, `SLACK_ALERT_ENABLED`
 
+### 6.4 Google Analytics 4
+- 프론트엔드 사용자 행동 분석
+- 페이지뷰, 제출, 문제 시작 등 이벤트 트래킹
+- 환경 변수: `NEXT_PUBLIC_GA_ID` (프로덕션 전용)
+- GA4 대시보드에서 실시간 사용자 및 이벤트 확인 가능
+
 ---
 
 ## 7. 금지/주의 명령 요약
@@ -325,3 +332,5 @@ docker logs qa_arena_backend_prod --tail 100
 | 2025-12 | 초기 문서 생성 | AI Copilot |
 | 2025-12-18 | 하이브리드 아키텍처(Pyodide + Celery) 장애 영향 범위 추가 | AI Copilot |
 | 2025-12-28 | 슬래시 명령어/SSM 추가, 백업 정책을 수동(배포 전)으로 단순화 | AI Copilot |
+| 2025-12-30 | 브랜딩 리뉴얼(QA Arena), GA4 환경변수 문서화 | AI Copilot |
+| 2025-12-31 | M4-2 코드 자동 저장, M5-1/M5-2 AI 연동, 보안 강화 반영 | AI Copilot |
