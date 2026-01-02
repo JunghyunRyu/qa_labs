@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import FloatingHouseAd from "@/components/pricing/FloatingHouseAd";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -81,6 +82,7 @@ export default function RootLayout({
             <Header />
             <main>{children}</main>
             <Footer />
+            <FloatingHouseAd />
           </AuthProvider>
         </ThemeProvider>
       </body>
