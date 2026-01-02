@@ -20,6 +20,18 @@ export const AI_PROMPT_TEMPLATES = {
 
 @pytest.mark.parametrize를 사용하여 여러 케이스를 포함해주세요.`,
   },
+
+  gradingResultAnalysis: {
+    id: 'grading-result-analysis',
+    template: `채점 결과를 분석해주세요:
+
+📊 점수: {score}점 (버그 탐지율 {killRatio}%)
+🔍 놓친 버그: {missedBugs}
+
+위 결과를 바탕으로:
+1. 놓친 버그를 잡기 위해 어떤 테스트를 추가해야 할까요?
+2. 구체적인 pytest 코드 예시를 보여주세요.`,
+  },
 } as const;
 
 export type PromptTemplateId = keyof typeof AI_PROMPT_TEMPLATES;

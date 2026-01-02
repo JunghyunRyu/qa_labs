@@ -10,7 +10,9 @@ from app.core.dependencies import (
     get_current_user,
     require_ai_access,
     AIAccessResult,
-    # PR3: New quota-based dependencies
+)
+# PR3: New quota-based dependencies (from decorators to avoid circular import)
+from app.core.decorators import (
     require_quota,
     QuotaContext,
     require_ai_coach_quota,

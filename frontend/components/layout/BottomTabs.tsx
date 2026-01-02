@@ -23,13 +23,16 @@ import {
   Clock,
   Code,
   Terminal,
+  Search,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { getMySubmissions } from "@/lib/api/users";
+import { applyTemplate } from "@/lib/promptTemplates";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
-import type { Submission, SubmissionProgress } from "@/types/problem";
+import type { Submission, SubmissionProgress, Problem } from "@/types/problem";
 import type { SubmissionListItem } from "@/types/submission";
 
 // Core loop tabs: 로컬 테스트 → 채점 결과 → 로그, with 히스토리 as 4th
@@ -73,6 +76,8 @@ interface BottomTabsProps {
   submissionError?: string | null;
   isSubmitting?: boolean;
   onSubmitRetry?: () => void;
+  /** Problem data for displaying missed bug details */
+  problem?: Problem;
   /** History props */
   problemId?: number;
   onLoadSubmission?: (submission: Submission) => void;
@@ -97,6 +102,7 @@ export default function BottomTabs({
   submissionError,
   isSubmitting = false,
   onSubmitRetry,
+  problem,
   problemId,
   onLoadSubmission,
   sessionHistory = [],
@@ -259,6 +265,8 @@ export default function BottomTabs({
                 isSubmitting={isSubmitting}
                 submissionError={submissionError}
                 onRetry={onSubmitRetry}
+                problem={problem}
+                onTabChange={handleTabChange}
               />
             ) : (
               <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
@@ -312,11 +320,15 @@ function ResultTabContent({
   isSubmitting,
   submissionError,
   onRetry,
+  problem,
+  onTabChange,
 }: {
   submission?: Submission | null;
   isSubmitting?: boolean;
   submissionError?: string | null;
   onRetry?: () => void;
+  problem?: Problem;
+  onTabChange?: (tab: TabId) => void;
 }) {
   // Submitting / Pending / Running state
   if (isSubmitting || (submission && (submission.status === "PENDING" || submission.status === "RUNNING"))) {
@@ -461,149 +473,316 @@ function ResultTabContent({
 
     const survivedCount = (submission.total_mutants || 0) - (submission.killed_mutants || 0);
 
-    // Cause and recommendation based on kill ratio
-    const getCauseAndRecommendation = () => {
-      if (killRatio >= 90) {
-        return {
-          type: "excellent" as const,
-          cause: "거의 모든 버그를 탐지했습니다!",
-          recommendations: ["완벽에 가까운 테스트입니다. 유지보수 시 테스트도 함께 업데이트하세요."],
-        };
-      } else if (killRatio >= 70) {
-        return {
-          type: "good" as const,
-          cause: `${survivedCount}개의 버그가 테스트를 통과했습니다.`,
-          recommendations: [
-            "경계값 테스트 추가 (0, 빈 값, 최대값)",
-            "예외 상황 테스트 강화",
-          ],
-        };
-      } else if (killRatio >= 50) {
-        return {
-          type: "moderate" as const,
-          cause: `절반 정도의 버그만 탐지했습니다. (${survivedCount}개 미탐지)`,
-          recommendations: [
-            "다양한 입력값 테스트 추가",
-            "경계값/예외 케이스 보강",
-            "엣지 케이스 (빈 배열, None 등) 확인",
-          ],
-        };
-      } else {
-        return {
-          type: "needs_improvement" as const,
-          cause: `대부분의 버그가 살아남았습니다. (${survivedCount}개 미탐지)`,
-          recommendations: [
-            "기본적인 입력값 테스트부터 추가",
-            "경계값 테스트 (0, 1, 최대값)",
-            "예외 상황 테스트 (빈 입력, 잘못된 타입)",
-          ],
-        };
+    // Extract missed bugs from execution_log
+    const getMissedBugs = (): Array<{ id: number; description: string; testOutput?: string }> => {
+      const executionLog = submission.execution_log as {
+        mutant_details?: Array<{
+          mutant_id: number | string;  // Can be string from Pyodide client-side execution
+          killed: boolean;
+          test_output?: string;
+        }>;
+      } | undefined;
+
+      if (!executionLog?.mutant_details || !problem?.buggy_implementations) {
+        return [];
       }
+
+      return executionLog.mutant_details
+        .filter(m => !m.killed)
+        .map(m => {
+          // Compare as strings to handle both number and string mutant_ids
+          const mutantIdStr = String(m.mutant_id);
+          const buggyImpl = problem.buggy_implementations.find(b => String(b.id) === mutantIdStr);
+          return {
+            id: typeof m.mutant_id === 'number' ? m.mutant_id : parseInt(mutantIdStr, 10),
+            description: buggyImpl?.bug_description || `버그 #${m.mutant_id}`,
+            testOutput: m.test_output,
+          };
+        });
     };
 
-    const { type, cause, recommendations } = getCauseAndRecommendation();
+    const missedBugs = getMissedBugs();
+
+    // Determine result type based on kill ratio
+    const getResultType = () => {
+      if (killRatio >= 90) return "excellent" as const;
+      if (killRatio >= 70) return "good" as const;
+      if (killRatio >= 50) return "moderate" as const;
+      return "needs_improvement" as const;
+    };
+
+    const type = getResultType();
 
     return (
-      <div className="p-4 space-y-4">
-        {/* Summary Row */}
-        <div className="flex items-center gap-4">
-          {/* Score */}
-          <div className="flex items-center gap-2">
-            <Trophy className={`w-6 h-6 ${
-              submission.score >= 90 ? "text-green-500" :
-              submission.score >= 70 ? "text-blue-500" :
-              submission.score >= 50 ? "text-yellow-500" : "text-red-500"
-            }`} />
-            <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                {submission.score}
-              </div>
-              <div className="text-xs text-gray-500">점</div>
-            </div>
-          </div>
-
-          {/* Kill ratio */}
-          {submission.total_mutants && submission.total_mutants > 0 && (
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Target className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600 dark:text-gray-400" title="테스트가 버그를 발견한 비율">
-                  버그 탐지율
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                  <div
-                    className={`h-2.5 rounded-full ${
-                      killRatio >= 80 ? "bg-green-500" :
-                      killRatio >= 50 ? "bg-yellow-500" : "bg-red-500"
-                    }`}
-                    style={{ width: `${killRatio}%` }}
-                  />
-                </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[3rem] text-right">
-                  {killRatio.toFixed(0)}%
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {submission.killed_mutants}/{submission.total_mutants}개 버그 발견
-              </p>
-            </div>
-          )}
-
-          {/* Success badge */}
-          <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded text-green-700 dark:text-green-300">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">완료</span>
-          </div>
-        </div>
-
-        {/* Cause Summary */}
-        <div className={`p-3 rounded-lg text-sm ${
-          type === "excellent" ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300" :
-          type === "good" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" :
-          type === "moderate" ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300" :
-          "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300"
-        }`}>
-          <div className="flex items-start gap-2">
-            <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium">{cause}</p>
-              {type !== "excellent" && recommendations.length > 0 && (
-                <ul className="mt-2 space-y-1">
-                  {recommendations.map((rec, idx) => (
-                    <li key={idx} className="flex items-center gap-1.5">
-                      <ArrowRight className="w-3 h-3" />
-                      <span>{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Next Action CTA */}
-        {type !== "excellent" && (
-          <ResultCTAButtons />
-        )}
-      </div>
+      <SuccessResultContent
+        submission={submission}
+        killRatio={killRatio}
+        survivedCount={survivedCount}
+        missedBugs={missedBugs}
+        type={type}
+        onTabChange={onTabChange}
+      />
     );
   }
 
   return null;
 }
 
+// Success Result Content Component with missed bugs details
+function SuccessResultContent({
+  submission,
+  killRatio,
+  survivedCount,
+  missedBugs,
+  type,
+  onTabChange,
+}: {
+  submission: Submission;
+  killRatio: number;
+  survivedCount: number;
+  missedBugs: Array<{ id: number; description: string; testOutput?: string }>;
+  type: "excellent" | "good" | "moderate" | "needs_improvement";
+  onTabChange?: (tab: TabId) => void;
+}) {
+  const [expandedBugId, setExpandedBugId] = useState<number | null>(null);
+
+  const toggleBugExpand = (bugId: number) => {
+    setExpandedBugId(expandedBugId === bugId ? null : bugId);
+  };
+
+  // Summary message based on type
+  const getSummaryMessage = () => {
+    if (type === "excellent") return "거의 모든 버그를 탐지했습니다!";
+    if (type === "good") return `${survivedCount}개의 버그가 테스트를 통과했습니다.`;
+    if (type === "moderate") return `절반 정도의 버그만 탐지했습니다.`;
+    return `대부분의 버그가 살아남았습니다.`;
+  };
+
+  // Recommendations based on type
+  const getRecommendations = (): string[] => {
+    if (type === "excellent") {
+      return ["완벽에 가까운 테스트입니다. 유지보수 시 테스트도 함께 업데이트하세요."];
+    }
+    if (type === "good") {
+      return [
+        "경계값 테스트 추가 (0, 빈 값, 최대값)",
+        "예외 상황 테스트 강화",
+      ];
+    }
+    if (type === "moderate") {
+      return [
+        "다양한 입력값 테스트 추가",
+        "경계값/예외 케이스 보강",
+        "엣지 케이스 (빈 배열, None 등) 확인",
+      ];
+    }
+    return [
+      "기본적인 입력값 테스트부터 추가",
+      "경계값 테스트 (0, 1, 최대값)",
+      "예외 상황 테스트 (빈 입력, 잘못된 타입)",
+    ];
+  };
+
+  const recommendations = getRecommendations();
+
+  return (
+    <div className="p-4 space-y-4 overflow-y-auto">
+      {/* Summary Row */}
+      <div className="flex items-center gap-4">
+        {/* Score */}
+        <div className="flex items-center gap-2">
+          <Trophy className={`w-6 h-6 ${
+            submission.score >= 90 ? "text-green-500" :
+            submission.score >= 70 ? "text-blue-500" :
+            submission.score >= 50 ? "text-yellow-500" : "text-red-500"
+          }`} />
+          <div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+              {submission.score}
+            </div>
+            <div className="text-xs text-gray-500">점</div>
+          </div>
+        </div>
+
+        {/* Kill ratio */}
+        {submission.total_mutants && submission.total_mutants > 0 && (
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <Target className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400" title="테스트가 버그를 발견한 비율">
+                버그 탐지율
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                <div
+                  className={`h-2.5 rounded-full ${
+                    killRatio >= 80 ? "bg-green-500" :
+                    killRatio >= 50 ? "bg-yellow-500" : "bg-red-500"
+                  }`}
+                  style={{ width: `${killRatio}%` }}
+                />
+              </div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[3rem] text-right">
+                {killRatio.toFixed(0)}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {submission.killed_mutants}/{submission.total_mutants}개 버그 발견
+            </p>
+          </div>
+        )}
+
+        {/* Success badge */}
+        <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded text-green-700 dark:text-green-300">
+          <CheckCircle className="w-4 h-4" />
+          <span className="text-sm font-medium">완료</span>
+        </div>
+      </div>
+
+      {/* Missed Bugs Section */}
+      {missedBugs.length > 0 ? (
+        <div className="rounded-lg border border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-900/20">
+          {/* Header */}
+          <div className="px-3 py-2 border-b border-orange-200 dark:border-orange-800/50">
+            <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
+              <Search className="w-4 h-4" />
+              <span className="font-medium text-sm">놓친 버그 ({missedBugs.length}개)</span>
+            </div>
+          </div>
+
+          {/* Bug List */}
+          <div className="divide-y divide-orange-200 dark:divide-orange-800/50">
+            {missedBugs.map((bug) => (
+              <div key={bug.id} className="px-3 py-2">
+                <button
+                  onClick={() => toggleBugExpand(bug.id)}
+                  className="w-full flex items-start gap-2 text-left hover:bg-orange-100 dark:hover:bg-orange-900/30 -mx-1 px-1 py-0.5 rounded transition-colors"
+                >
+                  <ChevronDown
+                    className={`w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5 transition-transform ${
+                      expandedBugId === bug.id ? "rotate-0" : "-rotate-90"
+                    }`}
+                  />
+                  <span className="text-sm text-orange-800 dark:text-orange-200 flex-1">
+                    {bug.description}
+                  </span>
+                </button>
+
+                {/* Expanded content */}
+                {expandedBugId === bug.id && bug.testOutput && (
+                  <div className="mt-2 ml-6 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono text-gray-600 dark:text-gray-400 max-h-32 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap">{bug.testOutput}</pre>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : type === "excellent" ? (
+        <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300">
+          <div className="flex items-start gap-2">
+            <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <p className="text-sm font-medium">{getSummaryMessage()}</p>
+          </div>
+        </div>
+      ) : (
+        <div className={`p-3 rounded-lg text-sm ${
+          type === "good" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" :
+          type === "moderate" ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300" :
+          "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300"
+        }`}>
+          <div className="flex items-start gap-2">
+            <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <p className="font-medium">{getSummaryMessage()}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Hints/Recommendations Section */}
+      {recommendations.length > 0 && type !== "excellent" && (
+        <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50">
+          <div className="flex items-start gap-2 text-blue-700 dark:text-blue-300">
+            <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-medium text-sm">개선 힌트</span>
+              <ul className="mt-1 space-y-1 text-sm">
+                {recommendations.map((rec, idx) => (
+                  <li key={idx} className="flex items-start gap-1">
+                    <span className="text-blue-400">→</span>
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CTA Buttons */}
+      {type !== "excellent" && (
+        <ResultCTAButtons
+          submission={submission}
+          missedBugs={missedBugs}
+          onTabChange={onTabChange}
+        />
+      )}
+    </div>
+  );
+}
+
 // CTA Buttons for Result Tab
-function ResultCTAButtons() {
-  const { setIsAIChatOpen } = useLayoutStore();
+function ResultCTAButtons({
+  submission,
+  missedBugs,
+  onTabChange,
+}: {
+  submission?: Submission;
+  missedBugs?: Array<{ id: number; description: string }>;
+  onTabChange?: (tab: TabId) => void;
+}) {
+  const { openAIChatWithPrefill } = useLayoutStore();
 
   const handleAskAI = () => {
-    setIsAIChatOpen(true);
+    if (!submission) {
+      openAIChatWithPrefill("채점 결과에 대해 분석해주세요.");
+      return;
+    }
+
+    // Build context for AI prompt
+    const killRatio = submission.total_mutants && submission.total_mutants > 0
+      ? Math.round((submission.killed_mutants || 0) / submission.total_mutants * 100)
+      : 0;
+
+    const missedBugsText = missedBugs && missedBugs.length > 0
+      ? missedBugs.map(b => `- ${b.description}`).join("\n")
+      : "없음";
+
+    const prompt = applyTemplate("gradingResultAnalysis", {
+      score: submission.score.toString(),
+      killRatio: killRatio.toString(),
+      missedBugs: missedBugsText,
+    });
+
+    openAIChatWithPrefill(prompt);
+  };
+
+  const handleViewLogs = () => {
+    onTabChange?.("logs");
   };
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
+      <button
+        onClick={handleViewLogs}
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium
+                   bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
+                   hover:bg-gray-200 dark:hover:bg-gray-700
+                   rounded-lg transition-colors"
+      >
+        <Terminal className="w-4 h-4" />
+        실행 로그 보기
+      </button>
       <button
         onClick={handleAskAI}
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium

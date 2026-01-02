@@ -623,6 +623,7 @@ export default function ProblemDetailPage() {
                 isSubmitting={submitting}
                 submission={submission}
                 submissionError={submissionError}
+                problem={problem}
                 goldenCode={problem.golden_code}
                 onLocalTest={isPyodideReady ? handleLocalTest : undefined}
                 isLocalTesting={isLocalTesting}
@@ -718,6 +719,7 @@ export default function ProblemDetailPage() {
               isSubmitting={submitting}
               submission={submission}
               submissionError={submissionError}
+              problem={problem}
               goldenCode={problem.golden_code}
               onLocalTest={isPyodideReady ? handleLocalTest : undefined}
               isLocalTesting={isLocalTesting}

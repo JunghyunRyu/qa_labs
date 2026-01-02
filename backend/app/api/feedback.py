@@ -11,8 +11,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import (
-    get_current_user,
+from app.core.dependencies import get_current_user
+from app.core.decorators import (
     require_quota,
     QuotaContext,
     require_feedback_deep_quota,

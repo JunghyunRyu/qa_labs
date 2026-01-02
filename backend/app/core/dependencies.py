@@ -12,16 +12,8 @@ from app.core.config import settings
 from app.models.user import User
 from app.services.token_service import TokenService
 
-# Re-export quota decorators for convenience
-from app.core.decorators import (
-    require_quota,
-    QuotaContext,
-    require_ai_coach_quota,
-    require_ai_hint_quota,
-    require_feedback_deep_quota,
-    require_feedback_regenerate_quota,
-    require_success_analysis_quota,
-)
+# Note: Quota decorators moved to app.core.decorators to avoid circular imports
+# Import directly: from app.core.decorators import require_quota, QuotaContext, etc.
 
 
 async def get_current_user_optional(

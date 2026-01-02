@@ -22,7 +22,7 @@ import {
   BOTTOM_PANEL_DEFAULT,
   BOTTOM_PANEL_EXPANDED,
 } from "@/stores/layoutStore";
-import type { Submission } from "@/types/problem";
+import type { Submission, Problem } from "@/types/problem";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 import type { SaveStatus } from "@/hooks/useCodeDraft";
 
@@ -36,6 +36,8 @@ interface CodeEditorPanelProps {
   isSubmitting: boolean;
   submission: Submission | null;
   submissionError: string | null;
+  /** Problem data for displaying missed bug details */
+  problem?: Problem;
   /** Golden code for local testing */
   goldenCode?: string;
   /** Local test callback */
@@ -87,6 +89,7 @@ export default function CodeEditorPanel({
   isSubmitting,
   submission,
   submissionError,
+  problem,
   goldenCode: _goldenCode, // Reserved for future use
   onLocalTest,
   isLocalTesting = false,
@@ -526,6 +529,7 @@ export default function CodeEditorPanel({
           submissionError={submissionError}
           isSubmitting={isSubmitting}
           onSubmitRetry={onSubmit}
+          problem={problem}
           problemId={problemId}
           onLoadSubmission={onLoadSubmission}
           sessionHistory={sessionHistory}
