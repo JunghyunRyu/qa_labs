@@ -1,7 +1,19 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // 문제 상세 페이지에서는 Footer를 숨김 (전체 화면 레이아웃 사용)
+  // /problems/[id] 패턴 매칭: /problems/ 다음에 숫자나 슬러그가 오는 경우
+  const isProblemDetailPage = pathname?.match(/^\/problems\/[^/]+$/);
+  if (isProblemDetailPage) {
+    return null;
+  }
+
   return (
     <footer className="bg-gray-900 text-gray-400">
       {/* Divider Pattern */}
