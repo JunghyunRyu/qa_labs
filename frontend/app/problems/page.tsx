@@ -4,10 +4,11 @@
 
 import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { getProblems, GetProblemsParams } from "@/lib/api/problems";
+import { getProblems, GetProblemsParams, getNextScheduledProblem, NextScheduledProblem } from "@/lib/api/problems";
 import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
 import ProblemCard from "@/components/ProblemCard";
+import ComingSoonCard from "@/components/ComingSoonCard";
 import ProblemStatsRow from "@/components/ProblemStatsRow";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import Loading from "@/components/Loading";
@@ -92,6 +93,7 @@ function ProblemsContent() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>("difficulty-asc");
   const [showFilters, setShowFilters] = useState(false);
+  const [nextScheduled, setNextScheduled] = useState<NextScheduledProblem | null>(null);
 
   // URL 쿼리 파라미터에서 도메인 필터 읽기 (메인 페이지에서 도메인 클릭 시)
   useEffect(() => {
@@ -101,6 +103,20 @@ function ProblemsContent() {
       setShowFilters(true);  // 필터 패널 자동 열기
     }
   }, [searchParams]);
+
+  // Fetch next scheduled problem for Coming Soon card
+  useEffect(() => {
+    async function fetchNextScheduled() {
+      try {
+        const result = await getNextScheduledProblem();
+        setNextScheduled(result);
+      } catch {
+        // Silently fail - Coming Soon card is optional
+        setNextScheduled(null);
+      }
+    }
+    fetchNextScheduled();
+  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -467,6 +483,10 @@ function ProblemsContent() {
             {sortedProblems.map((problem) => (
               <ProblemCard key={problem.id} problem={problem} />
             ))}
+            {/* Coming Soon card - only on last page without filters */}
+            {nextScheduled && page === data.total_pages && !hasActiveFilters && (
+              <ComingSoonCard nextProblem={nextScheduled} />
+            )}
           </div>
 
           {/* Pagination */}

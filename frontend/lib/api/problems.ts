@@ -95,3 +95,17 @@ export async function getBookmarkStatus(problemId: number): Promise<BookmarkStat
   return get<BookmarkStatusResponse>(`${PROBLEMS_ENDPOINT}/${problemId}/bookmark/status`);
 }
 
+export interface NextScheduledProblem {
+  title: string;
+  difficulty: string;
+  domain: string;
+  published_at: string;
+}
+
+/**
+ * Get next scheduled problem for Coming Soon card
+ */
+export async function getNextScheduledProblem(): Promise<NextScheduledProblem | null> {
+  return get<NextScheduledProblem | null>(`${PROBLEMS_ENDPOINT}/next-scheduled`);
+}
+
