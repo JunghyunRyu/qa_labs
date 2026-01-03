@@ -61,17 +61,17 @@
 ## 문서 기반 개발
 
 ### 필수 참조 문서
-- **세션 시작**: `docs/specs/qa-arena-spec.md` - 전체 흐름 파악
-- **개발 시작 전**: `docs/todo_actions/qa-arena-technical-todos.md`
-- **작업 순서**: `technical-todos-v*.md`에서 `[x]` 미체크 항목부터
-- **에러 처리**: `docs/specs/ERROR_HANDLING.md` - 일관된 에러 처리
+- **세션 시작**: `docs/specs/overview.md` 또는 `docs/specs/qa-arena-spec.md`
+- **에러 처리**: `docs/specs/ERROR_HANDLING.md`
 - **배포 작업**: `docs/specs/deployment.md`
 - **운영/인시던트**: `docs/specs/operations.md`
 - **Git 규칙**: `docs/specs/git-workflow.md`
+- **AI 안전**: `docs/specs/AI_SAFETY_PROTOCOLS.md`
 
-### EC2 없이 작업 가능한 항목
-- `docs/todo_actions/WORK_WITHOUT_EC2.md` 참조
-- EC2 환경 미준비 시에도 진행 가능한 작업 우선 처리
+### 이슈 및 계획
+- **기능 요청/이슈**: `docs/issues/`
+- **개발 계획**: `docs/plans/`
+- **마일스톤 스펙**: `docs/specs/milestones/`
 
 ## Git 워크플로우
 
@@ -102,10 +102,9 @@ git stash pop       # 변경사항 복원 (필요 시)
 - **테스트 커버리지 80% 이상 유지**
 - `pytest-asyncio` 사용 (비동기 테스트)
 
-### Frontend (Jest)
-- 컴포넌트 테스트 작성
-- React Testing Library 사용
-- E2E 테스트 (추후 추가 예정)
+### Frontend (Jest + Playwright)
+- 컴포넌트 테스트: Jest + React Testing Library
+- E2E 테스트: Playwright (`frontend/e2e/`)
 
 ## 코드 리뷰
 
@@ -120,8 +119,6 @@ git stash pop       # 변경사항 복원 (필요 시)
 3. **검증**: 모든 테스트 통과 확인
 4. **머지**: 브랜치 머지
 
-상세 내용은 `docs/qa-arena-milestones.md` 참고
-
 ## 보안 고려사항
 
 ### Judge 컨테이너
@@ -133,6 +130,10 @@ git stash pop       # 변경사항 복원 (필요 시)
 - `.env` 파일은 **절대 Git에 커밋 금지**
 - `.env.example`만 Git 관리
 - 민감 정보 (API 키, DB 비밀번호) 보호
+
+### Rate Limiting
+- slowapi를 통한 API Rate Limiting 적용
+- 토큰 기반 사용량 제한
 
 ## 성능 최적화
 
@@ -156,4 +157,4 @@ git stash pop       # 변경사항 복원 (필요 시)
 ### 에러 핸들링
 - `docs/specs/ERROR_HANDLING.md` 참조
 - 일관된 에러 응답 형식
-- 로깅 및 모니터링
+- Sentry를 통한 에러 트래킹

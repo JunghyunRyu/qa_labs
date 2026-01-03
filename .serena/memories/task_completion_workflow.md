@@ -21,6 +21,9 @@ pytest tests/test_api.py -v
 ```bash
 cd frontend
 npm run test
+
+# E2E 테스트
+npm run test:e2e
 ```
 
 ### 2. 변경사항 커밋
@@ -48,15 +51,16 @@ git push origin <브랜치명>
 ## 개발 시작 전 체크리스트
 
 ### 1. 문서 확인
-- **세션 시작 시**: `docs/specs/qa-arena-spec.md` 확인
-- **개발 시작 전**: `docs/todo_actions/qa-arena-technical-todos.md` 확인
-- **작업 순서**: `technical-todos-v*.md`에서 `[x]` 체크되지 않은 항목부터
+- **세션 시작 시**: `docs/specs/overview.md` 또는 `docs/specs/qa-arena-spec.md`
+- **마일스톤 스펙**: `docs/specs/milestones/`
+- **이슈/계획**: `docs/issues/`, `docs/plans/`
 
 ### 2. 특정 상황별 문서
 - **에러 처리**: `docs/specs/ERROR_HANDLING.md`
 - **배포**: `docs/specs/deployment.md`
 - **운영/인시던트**: `docs/specs/operations.md`
 - **Git 워크플로우**: `docs/specs/git-workflow.md`
+- **AI 안전**: `docs/specs/AI_SAFETY_PROTOCOLS.md`
 
 ## 대규모 변경사항 처리
 
@@ -107,7 +111,7 @@ npx tsc --noEmit
 - **Backend**: 80% 이상 유지
 - **Frontend**: 추후 정의
 
-## 브랜치 전략 (CONTRIBUTING.md 참고)
+## 브랜치 전략
 - `main`: 프로덕션 배포용
 - `develop`: 개발 통합
 - `feature/*`: 기능 개발
