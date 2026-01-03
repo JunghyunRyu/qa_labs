@@ -58,7 +58,8 @@ GRADE_THRESHOLDS = {
 SATURATION_MAP = {0: 0, 1: 40, 2: 70, 3: 85, 4: 95, 5: 100}
 
 # 카테고리 인정을 위한 최소 고유 테스트 수
-MIN_UNIQUE_TESTS_FOR_CATEGORY = 2
+# NOTE: parametrized 테스트의 경우 테스트 함수는 1개지만 케이스가 여러 개이므로 1로 설정
+MIN_UNIQUE_TESTS_FOR_CATEGORY = 1
 
 # 품질 등급별 보너스 점수
 QUALITY_BONUS = {
