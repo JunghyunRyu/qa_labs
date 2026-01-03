@@ -2,7 +2,8 @@
  * LocalTestResultPanel - Pyodide를 통한 로컬 테스트 결과 표시
  */
 
-import { CheckCircle, XCircle, AlertCircle, Loader2, Timer, Bug } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle, XCircle, AlertCircle, Loader2, Timer, Bug, Copy, Check } from "lucide-react";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 
 interface LocalTestResultPanelProps {
@@ -193,15 +194,47 @@ export default function LocalTestResultPanel({
 
       {/* Output toggle (collapsible) */}
       {result.output && (
-        <details className="mt-3">
-          <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-            상세 출력 보기
-          </summary>
-          <pre className="mt-2 p-3 bg-gray-900 text-gray-100 text-xs font-mono rounded overflow-x-auto max-h-48 overflow-y-auto">
-            {result.output}
-          </pre>
-        </details>
+        <OutputSection output={result.output} />
       )}
     </div>
+  );
+}
+
+/** 상세 출력 섹션 (복사 버튼 포함) */
+function OutputSection({ output }: { output: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(output);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  return (
+    <details className="mt-3">
+      <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center justify-between">
+        <span>상세 출력 보기</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded transition-colors"
+          title="출력 복사"
+        >
+          {copied ? (
+            <><Check className="w-3 h-3 text-green-500" /> 복사됨</>
+          ) : (
+            <><Copy className="w-3 h-3" /> 복사</>
+          )}
+        </button>
+      </summary>
+      <pre className="mt-2 p-3 bg-gray-900 text-gray-100 text-xs font-mono rounded overflow-x-auto max-h-48 overflow-y-auto">
+        {output}
+      </pre>
+    </details>
   );
 }
