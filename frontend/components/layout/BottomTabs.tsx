@@ -25,6 +25,9 @@ import {
   Terminal,
   Search,
   ExternalLink,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
@@ -528,6 +531,62 @@ function ResultTabContent({
   return null;
 }
 
+// Verification Badge Component for P0 Security
+function VerificationBadge({ submission }: { submission: Submission }) {
+  const executionMode = submission.execution_mode || "client";
+  const verified = submission.verified || false;
+  const verificationStatus = submission.verification_status;
+
+  // 서버 실행은 기본적으로 신뢰
+  if (executionMode === "server") {
+    return (
+      <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">
+        <ShieldCheck className="w-3 h-3" />
+        서버 실행
+      </span>
+    );
+  }
+
+  // 클라이언트 실행 검증 상태
+  if (verificationStatus === "verified" || verified) {
+    return (
+      <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">
+        <ShieldCheck className="w-3 h-3" />
+        검증됨
+      </span>
+    );
+  }
+
+  if (verificationStatus === "pending") {
+    return (
+      <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        검증 중
+      </span>
+    );
+  }
+
+  if (verificationStatus === "mismatch") {
+    return (
+      <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+        <ShieldAlert className="w-3 h-3" />
+        확정 보류
+      </span>
+    );
+  }
+
+  // 기본: 클라이언트 실행, 미검증
+  return (
+    <span
+      className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded"
+      title="브라우저에서 실행된 결과입니다"
+    >
+      <Shield className="w-3 h-3" />
+      로컬 실행
+    </span>
+  );
+}
+
 // Success Result Content Component with missed bugs details
 function SuccessResultContent({
   submission,
@@ -587,6 +646,13 @@ function SuccessResultContent({
 
   return (
     <div className="p-4 space-y-4 overflow-y-auto">
+      {/* Beta Label */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-medium">
+          학습용 지표 (베타)
+        </span>
+      </div>
+
       {/* Summary Row */}
       <div className="flex items-center gap-4">
         {/* Score */}
@@ -633,10 +699,13 @@ function SuccessResultContent({
           </div>
         )}
 
-        {/* Success badge */}
-        <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded text-green-700 dark:text-green-300">
-          <CheckCircle className="w-4 h-4" />
-          <span className="text-sm font-medium">완료</span>
+        {/* Verification badge + Success badge */}
+        <div className="flex items-center gap-2">
+          <VerificationBadge submission={submission} />
+          <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded text-green-700 dark:text-green-300">
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">완료</span>
+          </div>
         </div>
       </div>
 
