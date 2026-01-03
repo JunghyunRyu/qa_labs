@@ -64,7 +64,7 @@ const DOMAIN_CONFIG: Record<string, { icon: string; label: string; color: string
 
 export default function ProblemCard({ problem }: ProblemCardProps) {
   // 제목이 없을 때 fallback 처리
-  const displayTitle = problem.title || \`문제 #\${problem.id}\`;
+  const displayTitle = problem.title || `문제 #${problem.id}`;
 
   // short_description 사용 (카드용 짧은 설명)
   const preview = problem.short_description || "";
@@ -76,12 +76,12 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
 
   return (
     <Link
-      href={\`/problems/\${problem.id}\`}
+      href={`/problems/${problem.id}`}
       className="block h-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
-      aria-label={\`\${displayTitle} 문제 보기\`}
+      aria-label={`${displayTitle} 문제 보기`}
       tabIndex={0}
     >
-      <div className={\`bg-gradient-to-br \${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col border-2 \${difficulty.borderClass} min-h-[180px] sm:min-h-[200px] relative\`}>
+      <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass} min-h-[180px] sm:min-h-[200px] relative`}>
         {/* NEW 배지 */}
         {isNew && (
           <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 animate-pulse">
@@ -92,15 +92,15 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
 
         {/* 도메인 + 난이도 + 북마크 */}
         <div className="flex items-center justify-between mb-2 gap-2">
-          <span className={\`text-xs font-medium \${domain.color} flex items-center gap-1\`}>
+          <span className={`text-xs font-medium ${domain.color} flex items-center gap-1`}>
             <span>{domain.icon}</span>
             <span>{domain.label}</span>
           </span>
           <div className="flex items-center gap-1.5 shrink-0">
             <BookmarkButton problemId={problem.id} size="sm" />
             <span
-              className={\`px-2 py-1 rounded-md text-xs font-bold border whitespace-nowrap flex items-center gap-1 \${difficulty.colors} shadow-sm\`}
-              aria-label={\`난이도: \${difficulty.label}\`}
+              className={`px-2 py-1 rounded-md text-xs font-bold border whitespace-nowrap flex items-center gap-1 ${difficulty.colors} shadow-sm`}
+              aria-label={`난이도: ${difficulty.label}`}
             >
               {difficulty.icon}
               <span>{difficulty.label}</span>
@@ -150,7 +150,7 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
 
           {/* 숨은 버그 수 */}
           {bugsCount > 0 && (
-            <div className="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 shrink-0" title={\`숨은 버그 \${bugsCount}개\`}>
+            <div className="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 shrink-0" title={`숨은 버그 ${bugsCount}개`}>
               <Bug className="w-3.5 h-3.5" />
               <span>{bugsCount}개</span>
             </div>
@@ -160,3 +160,4 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
     </Link>
   );
 }
+
