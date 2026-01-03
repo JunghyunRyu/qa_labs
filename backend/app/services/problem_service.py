@@ -100,6 +100,7 @@ class ProblemService:
                 description_md=p["description_md"],
                 success_rate=p["success_rate"],
                 bugs_count=p.get("bugs_count", 0),
+                published_at=p.get("published_at"),
             )
             for p in problems
         ]
