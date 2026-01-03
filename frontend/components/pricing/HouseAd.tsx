@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Sparkles, X, Zap, Trophy, TrendingUp } from "lucide-react";
 import type { PlanKey } from "@/types/plan";
-import { PLAN_CONFIGS, formatPrice } from "@/types/plan";
+import { PLAN_CONFIGS } from "@/types/plan";
 
 const STORAGE_KEY = "house_ad_dismissed";
 const SHOW_INTERVAL_HOURS = 24;
@@ -82,7 +82,7 @@ const AD_MESSAGES = [
   {
     icon: Trophy,
     title: "100점 달성의 비결을 알고 싶다면?",
-    description: "Pro 플랜의 성공 분석 기능으로 완벽한 테스트 코드 작성법을 배우세요",
+    description: "심화 분석 기능으로 완벽한 테스트 코드 작성법을 배우세요",
   },
   {
     icon: TrendingUp,
@@ -139,11 +139,11 @@ export default function HouseAd({
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Link
-                href={`/pricing?plan=${targetPlan}&ref=${placement || "house_ad"}`}
+                href={`/problems?ref=${placement || "house_ad"}`}
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold bg-white text-indigo-600 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <Sparkles className="w-4 h-4" />
-                {customCTA || "업그레이드"}
+                {customCTA || "시작하기"}
               </Link>
               <button
                 onClick={handleDismiss}
@@ -178,7 +178,7 @@ export default function HouseAd({
             <IconComponent className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
           <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-            {plan.name} 플랜
+            {plan.name} 트랙
           </span>
         </div>
 
@@ -191,13 +191,13 @@ export default function HouseAd({
 
         <div className="flex items-center justify-between">
           <span className="text-sm text-[var(--text-secondary)]">
-            월 {formatPrice(plan.price_monthly)}부터
+            무료로 시작하기
           </span>
           <Link
-            href={`/pricing?plan=${targetPlan}&ref=${placement || "house_ad_sidebar"}`}
+            href={`/problems?ref=${placement || "house_ad_sidebar"}`}
             className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            {customCTA || "자세히 보기"}
+            {customCTA || "시작하기"}
           </Link>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function HouseAd({
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-white">
             <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-semibold">{plan.name} 플랜 추천</span>
+            <span className="text-sm font-semibold">{plan.name} 트랙 추천</span>
           </div>
           <button
             onClick={handleDismiss}
@@ -240,10 +240,10 @@ export default function HouseAd({
           </div>
 
           <Link
-            href={`/pricing?plan=${targetPlan}&ref=${placement || "house_ad_floating"}`}
+            href={`/problems?ref=${placement || "house_ad_floating"}`}
             className="block w-full text-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors"
           >
-            {customCTA || `${plan.name} 플랜 시작하기`}
+            {customCTA || "트랙 시작하기"}
           </Link>
         </div>
       </div>
@@ -265,29 +265,18 @@ export default function HouseAd({
       </p>
 
       <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="text-2xl font-bold text-[var(--text-primary)]">
-            {formatPrice(plan.price_monthly)}
-          </span>
-          <span className="text-sm text-[var(--text-secondary)]">/월</span>
-        </div>
-        <ul className="text-sm text-[var(--text-secondary)] space-y-1">
-          {plan.limits.slice(0, 2).map((limit) => (
-            <li key={limit.key}>
-              {limit.name}: {limit.value.toLocaleString()}
-              {limit.unit}
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-[var(--text-secondary)]">
+          무료로 시작할 수 있어요
+        </p>
       </div>
 
       <div className="flex flex-col gap-2">
         <Link
-          href={`/pricing?plan=${targetPlan}&ref=${placement || "house_ad_modal"}`}
+          href={`/problems?ref=${placement || "house_ad_modal"}`}
           className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-colors"
         >
           <Sparkles className="w-4 h-4" />
-          {customCTA || `${plan.name} 플랜 시작하기`}
+          {customCTA || "트랙 시작하기"}
         </Link>
         <button
           onClick={handleDismiss}
