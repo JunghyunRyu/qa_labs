@@ -134,10 +134,10 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:support@qa-arena.com"
+                  href="mailto:support@qalabs.kr"
                   className="hover:text-white transition-colors"
                 >
-                  support@qa-arena.com
+                  support@qalabs.kr
                 </a>
               </li>
             </ul>
