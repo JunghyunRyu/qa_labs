@@ -1,6 +1,6 @@
 """Problem model."""
 
-from sqlalchemy import Column, Integer, Float, String, Text, DateTime, CheckConstraint
+from sqlalchemy import Column, Integer, Float, String, Text, DateTime, Boolean, CheckConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -35,6 +35,10 @@ class Problem(Base):
     summary = Column(Text, nullable=True)  # 핵심 테스트 포인트 요약 (마크다운)
     short_description = Column(String(200), nullable=True)  # 카드용 짧은 설명 (1-2문장)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Visibility Control (Seed & Drip)
+    published_at = Column(DateTime(timezone=True), nullable=True)  # 사용자에게 노출되는 공개 시점
+    is_visible = Column(Boolean, default=False, server_default='false')  # 즉시 비공개 처리용 플래그
 
     # Rubric Evaluation (Phase 1)
     rubric_score = Column(Float, nullable=True)  # 0.0 ~ 100.0

@@ -81,6 +81,9 @@ class ProblemRepository:
             .outerjoin(bugs_subquery, Problem.id == bugs_subquery.c.problem_id)
         )
 
+        # Visibility filter: 공개된 문제만 목록에 표시 (Seed & Drip)
+        query = query.filter(Problem.is_visible == True)
+
         # Apply difficulty filter
         if difficulty:
             query = query.filter(Problem.difficulty == difficulty)
