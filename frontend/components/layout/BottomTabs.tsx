@@ -37,6 +37,14 @@ import { applyTemplate } from "@/lib/promptTemplates";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 import type { Submission, SubmissionProgress, Problem } from "@/types/problem";
 import type { SubmissionListItem } from "@/types/submission";
+import {
+  formatValueTypes,
+  formatInputDiversities,
+  formatTestPurposes,
+  getPointsToNextGrade,
+  getImprovementSuggestions,
+  QUALITY_GRADE_INFO,
+} from "@/lib/quality-labels";
 
 // Core loop tabs: 로컬 테스트 → 채점 결과 → 로그, with 히스토리 as 4th
 export type TabId = "local" | "result" | "logs" | "history";
@@ -603,6 +611,59 @@ function SuccessResultContent({
   type: "excellent" | "good" | "moderate" | "needs_improvement";
   onTabChange?: (tab: TabId) => void;
 }) {
+  // 접이식 상태 관리
+  const [showKilledBugs, setShowKilledBugs] = useState(false);
+  const [showQualityDetails, setShowQualityDetails] = useState(false);
+
+  // 찾은 버그 목록 (killed: true인 항목)
+  const killedBugs = (() => {
+    const mutantDetails = submission.execution_log?.mutant_details as Array<{
+      mutant_id: string | number;
+      killed: boolean;
+      test_output?: string;
+    }> | undefined;
+
+    if (!mutantDetails) return [];
+
+    return mutantDetails
+      .filter((m) => m.killed)
+      .map((m) => ({
+        id: String(m.mutant_id),
+        // Note: bug_description은 현재 백엔드에서 제공하지 않으므로 기본 메시지 사용
+        description: `버그 #${m.mutant_id} 탐지됨`,
+      }));
+  })();
+
+  // 품질 분석 데이터
+  const qualityAnalysis = submission.test_quality_analysis as {
+    value_types?: string[];
+    input_diversities?: string[];
+    test_purposes?: string[];
+    scoring_breakdown?: {
+      value_type_score: number;
+      input_diversity_score: number;
+      test_purpose_score: number;
+      antipattern_penalty: number;
+      final_score: number;
+    };
+  } | undefined;
+
+  // 품질 보너스가 있는지 확인
+  const qualityBonus = submission.execution_log?.score_breakdown?.quality_bonus ?? 0;
+  const qualityGrade = submission.test_quality_grade || "F";
+  const qualityScore = submission.test_quality_score ?? 0;
+
+  // 품질 기반 개선 제안 생성
+  const getQualityBasedRecommendations = (): string[] => {
+    if (!qualityAnalysis?.scoring_breakdown) return [];
+
+    const { value_type_score, input_diversity_score, test_purpose_score } = qualityAnalysis.scoring_breakdown;
+    return getImprovementSuggestions(value_type_score, input_diversity_score, test_purpose_score);
+  };
+
+  // 다음 등급 정보
+  const nextGradeInfo = getPointsToNextGrade(qualityScore, qualityGrade);
+
   // Summary message based on type
   const getSummaryMessage = () => {
     if (type === "excellent") return "거의 모든 버그를 탐지했습니다!";
@@ -675,13 +736,51 @@ function SuccessResultContent({
               </span>
             )}
           </div>
-          {/* 점수 분석 (품질 보너스가 있는 경우) */}
+          {/* 점수 분석 (품질 보너스가 있는 경우) - 접이식 */}
           {submission.execution_log?.score_breakdown && submission.execution_log.score_breakdown.quality_bonus > 0 && (
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500 dark:text-gray-400">
-              <span>버그탐지 {submission.execution_log.score_breakdown.mutation_score}점</span>
-              <span className="text-green-600 dark:text-green-400 font-medium">
-                +{submission.execution_log.score_breakdown.quality_bonus}점 품질보너스
-              </span>
+            <div className="mt-1">
+              <button
+                onClick={() => setShowQualityDetails(!showQualityDetails)}
+                className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              >
+                <span>버그탐지 {submission.execution_log.score_breakdown.mutation_score}점</span>
+                <span className="text-green-600 dark:text-green-400 font-medium">
+                  +{submission.execution_log.score_breakdown.quality_bonus}점 품질보너스
+                </span>
+                {showQualityDetails ? (
+                  <ChevronDown className="w-3 h-3" />
+                ) : (
+                  <ChevronRight className="w-3 h-3" />
+                )}
+              </button>
+              {/* 품질 보너스 상세 (펼침 시) */}
+              {showQualityDetails && qualityAnalysis && (
+                <div className="mt-2 p-2 rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-xs">
+                  <div className="font-medium text-green-700 dark:text-green-300 mb-1.5">
+                    인정된 테스트 기법:
+                  </div>
+                  <div className="space-y-1 text-green-600 dark:text-green-400">
+                    {qualityAnalysis.value_types && qualityAnalysis.value_types.length > 0 && (
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-500">•</span>
+                        <span>값 유형: {formatValueTypes(qualityAnalysis.value_types).join(", ")}</span>
+                      </div>
+                    )}
+                    {qualityAnalysis.input_diversities && qualityAnalysis.input_diversities.length > 0 && (
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-500">•</span>
+                        <span>입력 다양성: {formatInputDiversities(qualityAnalysis.input_diversities).join(", ")}</span>
+                      </div>
+                    )}
+                    {qualityAnalysis.test_purposes && qualityAnalysis.test_purposes.length > 0 && (
+                      <div className="flex items-start gap-1">
+                        <span className="text-green-500">•</span>
+                        <span>테스트 목적: {formatTestPurposes(qualityAnalysis.test_purposes).join(", ")}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -724,6 +823,40 @@ function SuccessResultContent({
           </div>
         </div>
       </div>
+
+      {/* Killed Bugs Section (접이식) */}
+      {killedBugs.length > 0 && (
+        <div className="rounded-lg border border-green-200 dark:border-green-800/50 bg-green-50 dark:bg-green-900/20">
+          <button
+            onClick={() => setShowKilledBugs(!showKilledBugs)}
+            className="w-full px-3 py-2 flex items-center justify-between text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors rounded-lg"
+          >
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              <span className="font-medium text-sm">찾은 버그 ({killedBugs.length}개)</span>
+            </div>
+            {showKilledBugs ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </button>
+          {showKilledBugs && (
+            <div className="divide-y divide-green-200 dark:divide-green-800/50 border-t border-green-200 dark:border-green-800/50">
+              {killedBugs.map((bug) => (
+                <div key={bug.id} className="px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-green-800 dark:text-green-200 flex-1">
+                      {bug.description}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Missed Bugs Section */}
       {missedBugs.length > 0 ? (
@@ -771,6 +904,7 @@ function SuccessResultContent({
       )}
 
       {/* Hints/Recommendations Section */}
+      {/* 버그 탐지율이 낮을 때 기본 힌트 표시 */}
       {recommendations.length > 0 && type !== "excellent" && (
         <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50">
           <div className="flex items-start gap-2 text-blue-700 dark:text-blue-300">
@@ -790,14 +924,40 @@ function SuccessResultContent({
         </div>
       )}
 
-      {/* CTA Buttons */}
-      {type !== "excellent" && (
-        <ResultCTAButtons
-          submission={submission}
-          missedBugs={missedBugs}
-          onTabChange={onTabChange}
-        />
+      {/* 100점이어도 품질 등급이 A가 아니면 품질 개선 제안 표시 */}
+      {type === "excellent" && qualityGrade !== "A" && qualityAnalysis?.scoring_breakdown && (
+        <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/50">
+          <div className="flex items-start gap-2 text-purple-700 dark:text-purple-300">
+            <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <span className="font-medium text-sm">더 나은 테스트를 위한 제안</span>
+              <p className="text-xs mt-1 text-purple-600 dark:text-purple-400">
+                현재 테스트 품질: {qualityGrade}등급 ({qualityScore.toFixed(0)}점)
+                {nextGradeInfo && (
+                  <span className="ml-1">
+                    → {nextGradeInfo.nextGrade}등급까지 {nextGradeInfo.pointsNeeded}점 필요
+                  </span>
+                )}
+              </p>
+              <ul className="mt-2 space-y-1 text-sm">
+                {getQualityBasedRecommendations().map((rec, idx) => (
+                  <li key={idx} className="flex items-start gap-1">
+                    <span className="text-purple-400">→</span>
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* CTA Buttons - 항상 표시 */}
+      <ResultCTAButtons
+        submission={submission}
+        missedBugs={missedBugs}
+        onTabChange={onTabChange}
+      />
     </div>
   );
 }
