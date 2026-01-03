@@ -49,6 +49,7 @@ class ProblemListResponse(BaseModel):
     description_md: Optional[str] = None  # For preview in list view
     success_rate: Optional[float] = None  # 0.0~1.0, None if < 5 submissions
     bugs_count: int = 0  # 숨은 버그 수 (buggy_implementations 개수)
+    published_at: Optional[datetime] = None  # 공개 시점 (NEW 배지용)
 
     model_config = {"from_attributes": True}
 

@@ -162,6 +162,7 @@ class ProblemRepository:
                 "description_md": problem.description_md,
                 "success_rate": float(success_rate) if success_rate is not None else None,
                 "bugs_count": bugs_count,
+                "published_at": problem.published_at,
             }
             problems_with_stats.append(problem_dict)
 
@@ -296,4 +297,31 @@ class ProblemRepository:
             "total": total or 0,
             "by_difficulty": {diff: count for diff, count in difficulty_stats},
             "by_domain": {domain: count for domain, count in domain_stats},
+        }
+
+    def get_next_scheduled(self) -> Optional[Dict[str, Any]]:
+        """
+        Get the next scheduled problem (for Coming Soon card).
+
+        Returns:
+            Dict with next problem's title, difficulty, domain, published_at if exists
+        """
+        next_problem = (
+            self.db.query(Problem)
+            .filter(
+                Problem.is_visible == True,
+                Problem.published_at > datetime.now()
+            )
+            .order_by(Problem.published_at.asc())
+            .first()
+        )
+
+        if not next_problem:
+            return None
+
+        return {
+            "title": next_problem.title,
+            "difficulty": next_problem.difficulty,
+            "domain": getattr(next_problem, 'domain', 'common'),
+            "published_at": next_problem.published_at,
         }

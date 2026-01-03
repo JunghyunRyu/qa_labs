@@ -84,6 +84,21 @@ async def get_problem_stats(
     return stats
 
 
+@router.get("/next-scheduled")
+async def get_next_scheduled_problem(
+    db: Session = Depends(get_db),
+):
+    """
+    Get the next scheduled problem for Coming Soon card.
+
+    Returns:
+        Next problem info (title, difficulty, domain, published_at) or null
+    """
+    service = ProblemService(db)
+    next_problem = service.get_next_scheduled()
+    return {"next_problem": next_problem}
+
+
 @router.get("/bookmarked", response_model=dict)
 async def get_bookmarked_problems(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),

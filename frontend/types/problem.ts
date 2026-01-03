@@ -37,6 +37,7 @@ export interface ProblemListItem {
   description_md?: string;  // For preview in list view
   success_rate?: number | null;  // 0.0~1.0, null if < 5 submissions
   bugs_count?: number;  // 숨은 버그 수 (buggy_implementations 개수)
+  published_at?: string;  // 공개 시점 (NEW 배지용)
 }
 
 export interface ProblemListResponse {
@@ -102,6 +103,11 @@ export interface Submission {
   test_quality_score?: number;
   test_quality_grade?: "A" | "B" | "C" | "D" | "F";
   test_quality_analysis?: Record<string, unknown>;
+  // Client Result Verification (P0 Security)
+  execution_mode?: "client" | "server";
+  verified?: boolean;
+  verification_status?: "pending" | "verified" | "mismatch";
+  verified_at?: string;
 }
 
 /** Client-side execution result (from Pyodide) */

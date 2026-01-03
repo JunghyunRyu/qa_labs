@@ -211,3 +211,12 @@ class ProblemService:
             by_difficulty=stats["by_difficulty"],
             by_domain=stats["by_domain"],
         )
+
+    def get_next_scheduled(self):
+        """
+        Get the next scheduled problem for Coming Soon card.
+
+        Returns:
+            Dict with next problem info or None
+        """
+        return self.repository.get_next_scheduled()
