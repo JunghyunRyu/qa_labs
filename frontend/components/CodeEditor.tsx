@@ -4,7 +4,6 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
-import { useTheme } from "next-themes";
 import { GripHorizontal } from "lucide-react";
 import { registerPythonCompletions } from "@/lib/monacoConfig";
 
@@ -34,7 +33,6 @@ export default function CodeEditor({
 }: CodeEditorProps) {
   const editorRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { resolvedTheme } = useTheme();
 
   // Parse initial height from string (e.g., "300px" -> 300)
   const parseHeight = (h: string): number => {
@@ -111,8 +109,8 @@ export default function CodeEditor({
     };
   }, [isResizing, handleResizeMove, handleResizeEnd]);
 
-  // Determine Monaco theme based on resolved theme
-  const monacoTheme = resolvedTheme === "dark" ? "vs-dark" : "vs-light";
+  // Always use dark theme for Monaco (developers prefer dark mode)
+  const monacoTheme = "vs-dark";
 
   const actualHeight = resizable ? `${editorHeight}px` : height;
 
