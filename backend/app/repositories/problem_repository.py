@@ -1,5 +1,6 @@
 """Problem repository."""
 
+from datetime import datetime
 from typing import Optional, List, Tuple, Union, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import func, cast, Text, case, literal
@@ -81,8 +82,8 @@ class ProblemRepository:
             .outerjoin(bugs_subquery, Problem.id == bugs_subquery.c.problem_id)
         )
 
-        # Visibility filter: 공개된 문제만 목록에 표시 (Seed & Drip)
-        query = query.filter(Problem.is_visible == True)
+        # Visibility filter: 공개된 문제만 목록에 표시 (is_visible=True AND published_at <= now())
+        query = query.filter(Problem.is_visible == True, Problem.published_at <= datetime.now())
 
         # Apply difficulty filter
         if difficulty:
