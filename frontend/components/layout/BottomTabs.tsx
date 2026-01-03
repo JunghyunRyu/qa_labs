@@ -662,11 +662,11 @@ function SuccessResultContent({
             submission.score >= 70 ? "text-blue-500" :
             submission.score >= 50 ? "text-yellow-500" : "text-red-500"
           }`} />
-          <div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-3xl font-bold text-gray-900 dark:text-white">
               {submission.score}
-            </div>
-            <div className="text-xs text-gray-500">점</div>
+            </span>
+            <span className="text-sm text-gray-500">점</span>
           </div>
         </div>
 
