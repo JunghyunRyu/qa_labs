@@ -265,24 +265,29 @@ class ProblemRepository:
 
     def get_stats(self) -> Dict[str, Any]:
         """
-        Get aggregate statistics for all problems.
+        Get aggregate statistics for visible problems only.
 
         Returns:
             Dict with total count and counts by difficulty and domain
         """
-        # 전체 개수
-        total = self.db.query(func.count(Problem.id)).scalar()
+        # Visibility filter: 공개된 문제만 집계
+        visibility_filter = (Problem.is_visible == True) & (Problem.published_at <= datetime.now())
 
-        # 난이도별 집계
+        # 전체 개수 (공개된 문제만)
+        total = self.db.query(func.count(Problem.id)).filter(visibility_filter).scalar()
+
+        # 난이도별 집계 (공개된 문제만)
         difficulty_stats = (
             self.db.query(Problem.difficulty, func.count(Problem.id))
+            .filter(visibility_filter)
             .group_by(Problem.difficulty)
             .all()
         )
 
-        # 도메인별 집계
+        # 도메인별 집계 (공개된 문제만)
         domain_stats = (
             self.db.query(Problem.domain, func.count(Problem.id))
+            .filter(visibility_filter)
             .group_by(Problem.domain)
             .all()
         )
