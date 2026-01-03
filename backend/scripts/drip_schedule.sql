@@ -7,9 +7,11 @@
 --   docker exec -i qa_arena_postgres_prod psql -U qa_arena_user -d qa_arena < backend/scripts/drip_schedule.sql
 --
 -- 스케줄 전략:
---   - 주 2회: 월요일, 목요일 09:00 KST
+--   - 주 2회: 목요일, 월요일 순서로 공개
+--   - 시작일: 다음 주 목요일 (09:00 KST = 00:00 UTC)
 --   - 난이도 순서: Very Easy → Easy → Medium → Hard
 --   - 각 회차당 1개 문제
+--   - 한 번 실행하면 published_at이 설정되고, 해당 날짜가 되면 자동 공개
 --
 -- ============================================================
 
@@ -81,18 +83,20 @@ schedule AS (
         difficulty,
         domain,
         seq,
-        -- 시작일: 다음 월요일 09:00 KST (UTC+9이므로 00:00 UTC)
-        -- seq 1,2: Week 1 (월, 목)
-        -- seq 3,4: Week 2 (월, 목) ...
-        -- 홀수 seq: 월요일 (week_num * 7일)
-        -- 짝수 seq: 목요일 (week_num * 7 + 3일)
+        -- 시작일: 다음 주 목요일 09:00 KST (= 00:00 UTC)
+        -- seq 1: Week 1 목요일
+        -- seq 2: Week 2 월요일
+        -- seq 3: Week 2 목요일
+        -- seq 4: Week 3 월요일 ...
+        -- 홀수 seq: 목요일 (week_num * 7일)
+        -- 짝수 seq: 월요일 (week_num * 7 + 4일, 목요일 다음 월요일)
         CASE
-            WHEN seq % 2 = 1 THEN  -- 월요일
-                DATE_TRUNC('week', NOW() + INTERVAL '1 week')  -- 다음 월요일
+            WHEN seq % 2 = 1 THEN  -- 목요일 (1번째, 3번째, 5번째...)
+                DATE_TRUNC('week', NOW() + INTERVAL '1 week') + INTERVAL '3 days'  -- 다음 주 목요일
                 + (((seq - 1) / 2) * 7 || ' days')::interval
-            ELSE  -- 목요일
-                DATE_TRUNC('week', NOW() + INTERVAL '1 week')  -- 다음 월요일
-                + (((seq - 2) / 2) * 7 + 3 || ' days')::interval
+            ELSE  -- 월요일 (2번째, 4번째, 6번째...)
+                DATE_TRUNC('week', NOW() + INTERVAL '1 week') + INTERVAL '7 days'  -- 다다음 주 월요일
+                + (((seq - 2) / 2) * 7 || ' days')::interval
         END as scheduled_date
     FROM hidden_problems
 )
@@ -103,8 +107,8 @@ SELECT
     domain,
     TO_CHAR(scheduled_date, 'YYYY-MM-DD (Dy)') as "공개일(UTC)",
     CASE
-        WHEN seq % 2 = 1 THEN 'Mon'
-        ELSE 'Thu'
+        WHEN seq % 2 = 1 THEN 'Thu'
+        ELSE 'Mon'
     END as "요일",
     ((seq + 1) / 2) as "주차"
 FROM schedule
@@ -139,12 +143,12 @@ schedule AS (
     SELECT
         id,
         CASE
-            WHEN seq % 2 = 1 THEN
-                DATE_TRUNC('week', NOW() + INTERVAL '1 week')
+            WHEN seq % 2 = 1 THEN  -- 목요일
+                DATE_TRUNC('week', NOW() + INTERVAL '1 week') + INTERVAL '3 days'
                 + (((seq - 1) / 2) * 7 || ' days')::interval
-            ELSE
-                DATE_TRUNC('week', NOW() + INTERVAL '1 week')
-                + (((seq - 2) / 2) * 7 + 3 || ' days')::interval
+            ELSE  -- 월요일
+                DATE_TRUNC('week', NOW() + INTERVAL '1 week') + INTERVAL '7 days'
+                + (((seq - 2) / 2) * 7 || ' days')::interval
         END as scheduled_date
     FROM hidden_problems
 )
