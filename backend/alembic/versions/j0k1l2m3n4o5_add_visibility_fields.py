@@ -1,7 +1,7 @@
 """Add visibility fields for Seed & Drip strategy
 
 Revision ID: j0k1l2m3n4o5
-Revises: i9j0k1l2m3n4
+Revises: h8i9j0k1l2m3
 Create Date: 2025-01-03
 
 Changes:
@@ -17,7 +17,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "j0k1l2m3n4o5"
-down_revision: Union[str, None] = "i9j0k1l2m3n4"
+down_revision: Union[str, None] = "h8i9j0k1l2m3"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
