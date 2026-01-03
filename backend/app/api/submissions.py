@@ -13,6 +13,7 @@ from app.core.dependencies import get_current_user_optional
 from app.models.db import get_db
 from app.models.submission import Submission
 from app.models.user import User
+from app.models.hint_view import HintView
 from app.repositories.submission_repository import SubmissionRepository
 from app.repositories.problem_repository import ProblemRepository
 from app.repositories.test_quality_repository import TestQualityRepository
@@ -142,13 +143,31 @@ async def create_submission(
         # 코드 해시 계산 (중복 감지용)
         code_hash = hashlib.sha256(submission_data.code.strip().encode("utf-8")).hexdigest()
 
+        # 힌트 페널티 계산 (로그인 사용자만)
+        hint_penalty = 0
+        if user_id:
+            hint_views = db.query(HintView.hint_level).filter(
+                HintView.user_id == user_id,
+                HintView.problem_id == submission_data.problem_id,
+            ).all()
+            if hint_views:
+                viewed_levels = [hv.hint_level for hv in hint_views]
+                hint_penalty = HintView.get_max_penalty(viewed_levels)
+                logger.info(
+                    f"[HINT_PENALTY] user_id={user_id} problem_id={submission_data.problem_id} "
+                    f"viewed_levels={viewed_levels} penalty={hint_penalty}"
+                )
+
+        # 최종 점수 = 원점수 - 힌트 페널티 (최소 0점)
+        final_score = max(0, client_result.score - hint_penalty)
+
         submission = Submission(
             user_id=user_id,
             anonymous_id=anonymous_id,
             problem_id=submission_data.problem_id,
             code=submission_data.code,
             status=submission_status,
-            score=client_result.score,
+            score=final_score,
             killed_mutants=client_result.mutants_killed,
             total_mutants=client_result.total_mutants,
             execution_log=execution_log,
@@ -162,10 +181,11 @@ async def create_submission(
         submission = submission_repo.create(submission)
 
         identifier = f"user_id={user_id}" if user_id else f"anonymous_id={anonymous_id}"
+        penalty_info = f" hint_penalty={hint_penalty}" if hint_penalty > 0 else ""
         logger.info(
             f"[SUBMISSION_CLIENT_EXECUTED] submission_id={submission.id} "
             f"{identifier} problem_id={submission_data.problem_id} "
-            f"status={submission_status} score={client_result.score} "
+            f"status={submission_status} raw_score={client_result.score} final_score={final_score}{penalty_info} "
             f"killed={client_result.mutants_killed}/{client_result.total_mutants}"
         )
 
