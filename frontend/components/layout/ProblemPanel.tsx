@@ -48,7 +48,7 @@ interface ProblemPanelProps {
 }
 
 interface ParsedSection {
-  type: 'overview' | 'function' | 'examples' | 'exceptions' | 'hints' | 'task' | 'constraints' | 'io' | 'other';
+  type: 'overview' | 'function' | 'examples' | 'exceptions' | 'hints' | 'task' | 'constraints' | 'io' | 'strategy' | 'other';
   title: string;
   content: string;
 }
@@ -85,6 +85,8 @@ function parseDescription(md: string): ParsedSection[] {
         type = 'examples';
       } else if (titleLower.includes('예외') || titleLower.includes('에러') || titleLower.includes('오류') || titleLower.includes('error')) {
         type = 'exceptions';
+      } else if (titleLower.includes('테스트 전략') || titleLower.includes('test strategy')) {
+        type = 'strategy';
       } else if (titleLower.includes('힌트') || titleLower.includes('고려') || titleLower.includes('아이디어') || titleLower.includes('hint')) {
         type = 'hints';
       } else if (titleLower.includes('과제') || titleLower.includes('해야') || titleLower.includes('수험자') || titleLower.includes('task')) {
@@ -145,6 +147,8 @@ function getSectionConfig(type: ParsedSection['type']) {
       return { icon: XCircle, iconColor: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-50 dark:bg-red-900/20' };
     case 'hints':
       return { icon: Lightbulb, iconColor: 'text-yellow-600 dark:text-yellow-400', bgColor: 'bg-yellow-50 dark:bg-yellow-900/20' };
+    case 'strategy':
+      return { icon: Target, iconColor: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-50 dark:bg-emerald-900/20' };
     case 'task':
       return { icon: Target, iconColor: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-50 dark:bg-indigo-900/20' };
     case 'constraints':
@@ -316,7 +320,9 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   // Separate sticky sections (overview, io, constraints) from accordion sections
   const stickyTypes = new Set(['overview', 'io', 'constraints', 'task']);
   const stickySections = sections.filter(s => stickyTypes.has(s.type));
-  const accordionSections = sections.filter(s => !stickyTypes.has(s.type));
+  // Filter accordion to only show "테스트 전략" sections in sidebar
+  const sidebarDisplayTypes = new Set(['strategy']);
+  const accordionSections = sections.filter(s => !stickyTypes.has(s.type) && sidebarDisplayTypes.has(s.type));
 
   // Accordion toggle handler - toggle section and record in session overrides
   const handleAccordionToggle = useCallback((sectionId: string, sectionType: AccordionSectionType) => {
@@ -454,66 +460,21 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           <ContractCard contract={contract} defaultExpanded={false} />
         </div>
 
-        {/* Summary - Test point overview (M5-4: ref for text selection) */}
-        <div ref={testPointsRef} className="px-3 py-2 bg-sky-50 dark:bg-sky-900/20 border-b border-sky-100 dark:border-sky-800/30">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1.5">
-              <Target className="w-3.5 h-3.5 text-sky-500" />
-              <span className="text-xs font-medium text-sky-700 dark:text-sky-300">
-                핵심 테스트 포인트
-              </span>
-            </div>
-            <button
-              onClick={toggleProblemPeek}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors
-                         bg-white dark:bg-gray-800 text-sky-600 dark:text-sky-400
-                         hover:bg-sky-100 dark:hover:bg-gray-700
-                         border border-sky-200 dark:border-sky-700"
-              title="전체 문제 보기 (Alt+P)"
-            >
-              <BookOpen className="w-3 h-3" />
-              전체 문제
-            </button>
-          </div>
-          <div className="max-h-48 overflow-y-auto">
-            {summary ? (
-              <TestPointsList content={summary} className="text-sm" />
-            ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                문제 설명을 확인하세요.
-              </p>
-            )}
-          </div>
+        {/* "전체 문제" 버튼 - 핵심 테스트 포인트 영역 대체 (M5-4: ref for text selection) */}
+        <div ref={testPointsRef} className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={toggleProblemPeek}
+            className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                       bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400
+                       hover:bg-sky-100 dark:hover:bg-sky-900/30
+                       border border-sky-200 dark:border-sky-700"
+            title="전체 문제 보기 (Alt+P)"
+          >
+            <BookOpen className="w-4 h-4" />
+            전체 문제 보기
+          </button>
         </div>
 
-        {/* Sticky Sections: Constraints, IO, Task */}
-        {stickySections.filter(s => s.type !== 'overview').length > 0 && (
-          <div className="px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border-b border-orange-100 dark:border-orange-800/30">
-            <div className="flex items-center gap-1.5 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
-              <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
-                주의사항 / 제약조건
-              </span>
-            </div>
-            <div className="space-y-1">
-              {stickySections
-                .filter(s => s.type !== 'overview')
-                .map((section, idx) => (
-                  <div key={idx} className="text-sm text-gray-700 dark:text-gray-300">
-                    <MarkdownContent content={section.content} />
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* Standard Library Notice */}
-        <div className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-            <Info className="w-3 h-3 flex-shrink-0" />
-            <span>이 환경에서는 Python 표준 라이브러리만 사용할 수 있습니다.</span>
-          </p>
-        </div>
       </div>
 
       {/* ===== SCROLLABLE ACCORDION AREA ===== */}
@@ -521,6 +482,14 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
         {/* M5-5: AI Hint Panel */}
         <div className="p-3 pb-0">
           <HintPanel problemId={problem.id} />
+        </div>
+
+        {/* Standard Library Notice - 힌트 하단 */}
+        <div className="mx-3 mt-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700">
+          <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+            <Info className="w-3 h-3 flex-shrink-0" />
+            <span>이 환경에서는 Python 표준 라이브러리만 사용할 수 있습니다.</span>
+          </p>
         </div>
 
         {accordionSections.length > 0 && (
@@ -532,7 +501,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
 
               // Map section type to accordion section type for store lookup
               const accordionType = (
-                ['examples', 'hints', 'exceptions', 'function'].includes(section.type)
+                ['examples', 'hints', 'exceptions', 'function', 'strategy'].includes(section.type)
                   ? section.type
                   : 'other'
               ) as AccordionSectionType;
