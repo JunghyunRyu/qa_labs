@@ -650,18 +650,40 @@ function SuccessResultContent({
       {/* Summary Row */}
       <div className="flex items-center gap-4">
         {/* Score */}
-        <div className="flex items-center gap-2">
-          <Trophy className={`w-6 h-6 ${
-            submission.score >= 90 ? "text-green-500" :
-            submission.score >= 70 ? "text-blue-500" :
-            submission.score >= 50 ? "text-yellow-500" : "text-red-500"
-          }`} />
-          <div className="flex items-baseline gap-0.5">
-            <span className="text-3xl font-bold text-gray-900 dark:text-white">
-              {submission.score}
-            </span>
-            <span className="text-sm text-gray-500">점</span>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <Trophy className={`w-6 h-6 ${
+              submission.score >= 90 ? "text-green-500" :
+              submission.score >= 70 ? "text-blue-500" :
+              submission.score >= 50 ? "text-yellow-500" : "text-red-500"
+            }`} />
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                {submission.score}
+              </span>
+              <span className="text-sm text-gray-500">점</span>
+            </div>
+            {/* 품질 등급 배지 */}
+            {submission.test_quality_grade && (
+              <span className={`ml-1 text-xs px-1.5 py-0.5 rounded font-medium ${
+                submission.test_quality_grade === "A" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
+                submission.test_quality_grade === "B" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                submission.test_quality_grade === "C" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+              }`}>
+                {submission.test_quality_grade}
+              </span>
+            )}
           </div>
+          {/* 점수 분석 (품질 보너스가 있는 경우) */}
+          {submission.execution_log?.score_breakdown && submission.execution_log.score_breakdown.quality_bonus > 0 && (
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <span>버그탐지 {submission.execution_log.score_breakdown.mutation_score}점</span>
+              <span className="text-green-600 dark:text-green-400 font-medium">
+                +{submission.execution_log.score_breakdown.quality_bonus}점 품질보너스
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Kill ratio */}

@@ -60,6 +60,28 @@ SATURATION_MAP = {0: 0, 1: 40, 2: 70, 3: 85, 4: 95, 5: 100}
 # 카테고리 인정을 위한 최소 고유 테스트 수
 MIN_UNIQUE_TESTS_FOR_CATEGORY = 2
 
+# 품질 등급별 보너스 점수
+QUALITY_BONUS = {
+    "A": 15,
+    "B": 10,
+    "C": 5,
+    "D": 2,
+    "F": 0,
+}
+
+
+def calculate_quality_bonus(quality_grade: str) -> int:
+    """
+    품질 등급에 따른 보너스 점수를 반환합니다.
+
+    Args:
+        quality_grade: 품질 등급 (A/B/C/D/F)
+
+    Returns:
+        int: 보너스 점수 (0-15)
+    """
+    return QUALITY_BONUS.get(quality_grade.upper(), 0)
+
 
 # =============================================================================
 # Data Classes

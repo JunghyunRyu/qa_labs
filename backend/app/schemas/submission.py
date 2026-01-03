@@ -59,6 +59,11 @@ class SubmissionResponse(BaseModel):
     feedback_json: Optional[Dict[str, Any]] = None
     created_at: datetime
 
+    # Test Quality (품질 보너스 점수 포함)
+    test_quality_score: Optional[float] = None  # 0.0 ~ 100.0
+    test_quality_grade: Optional[str] = None  # A/B/C/D/F
+    test_quality_analysis: Optional[Dict[str, Any]] = None
+
     # Client Result Verification (P0 Security)
     execution_mode: str = "client"  # "client" | "server"
     verified: bool = False

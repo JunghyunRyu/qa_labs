@@ -85,6 +85,16 @@ export interface SubmissionProgress {
   total?: number;
 }
 
+/** 점수 분석 (품질 보너스 포함) */
+export interface ScoreBreakdown {
+  raw_score: number;
+  hint_penalty: number;
+  mutation_score: number;
+  quality_bonus: number;
+  quality_grade: string;
+  final_score: number;
+}
+
 export interface Submission {
   id: string;
   user_id: string | null;
@@ -95,7 +105,10 @@ export interface Submission {
   score: number;
   killed_mutants?: number;
   total_mutants?: number;
-  execution_log?: Record<string, unknown>;
+  execution_log?: {
+    score_breakdown?: ScoreBreakdown;
+    [key: string]: unknown;
+  };
   feedback_json?: Record<string, unknown>;
   progress?: SubmissionProgress;
   created_at: string;

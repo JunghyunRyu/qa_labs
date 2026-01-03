@@ -16,9 +16,8 @@ from app.models.user import User
 from app.models.hint_view import HintView
 from app.repositories.submission_repository import SubmissionRepository
 from app.repositories.problem_repository import ProblemRepository
-from app.repositories.test_quality_repository import TestQualityRepository
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
-from app.services.test_quality_analyzer import TestQualityAnalyzer
+from app.services.test_quality_analyzer import TestQualityAnalyzer, calculate_quality_bonus
 from app.services.verification_service import VerificationService
 from app.workers.tasks import process_submission_task, generate_feedback_task, verify_submission_task
 from app.middleware.request_context import get_request_id
@@ -158,8 +157,44 @@ async def create_submission(
                     f"viewed_levels={viewed_levels} penalty={hint_penalty}"
                 )
 
-        # 최종 점수 = 원점수 - 힌트 페널티 (최소 0점)
-        final_score = max(0, client_result.score - hint_penalty)
+        # 테스트 품질 분석 및 보너스 계산
+        quality_bonus = 0
+        quality_grade = "F"
+        quality_score = 0.0
+        quality_analysis = None
+
+        if submission_status == "SUCCESS":
+            try:
+                analyzer = TestQualityAnalyzer()
+                quality_result = analyzer.analyze(submission_data.code)
+                quality_grade = quality_result.grade.value
+                quality_score = quality_result.score
+                quality_analysis = quality_result.analysis.model_dump()
+                quality_bonus = calculate_quality_bonus(quality_grade)
+                logger.info(
+                    f"[QUALITY_BONUS] problem_id={submission_data.problem_id} "
+                    f"grade={quality_grade} bonus={quality_bonus}"
+                )
+            except Exception as qe:
+                logger.error(
+                    f"[QUALITY_ANALYSIS_ERROR] problem_id={submission_data.problem_id} "
+                    f"error={type(qe).__name__}: {str(qe)}",
+                    exc_info=True,
+                )
+
+        # 최종 점수 = 원점수 - 힌트 페널티 + 품질 보너스 (최소 0점, 최대 100점)
+        mutation_score = max(0, client_result.score - hint_penalty)
+        final_score = min(100, mutation_score + quality_bonus)
+
+        # execution_log에 점수 분석 추가
+        execution_log["score_breakdown"] = {
+            "raw_score": client_result.score,
+            "hint_penalty": hint_penalty,
+            "mutation_score": mutation_score,
+            "quality_bonus": quality_bonus,
+            "quality_grade": quality_grade,
+            "final_score": final_score,
+        }
 
         submission = Submission(
             user_id=user_id,
@@ -171,6 +206,10 @@ async def create_submission(
             killed_mutants=client_result.mutants_killed,
             total_mutants=client_result.total_mutants,
             execution_log=execution_log,
+            # Quality fields
+            test_quality_score=quality_score,
+            test_quality_grade=quality_grade,
+            test_quality_analysis=quality_analysis,
             # Verification fields
             execution_mode="client",
             verified=False,
@@ -182,10 +221,11 @@ async def create_submission(
 
         identifier = f"user_id={user_id}" if user_id else f"anonymous_id={anonymous_id}"
         penalty_info = f" hint_penalty={hint_penalty}" if hint_penalty > 0 else ""
+        bonus_info = f" quality_bonus=+{quality_bonus}({quality_grade})" if quality_bonus > 0 else ""
         logger.info(
             f"[SUBMISSION_CLIENT_EXECUTED] submission_id={submission.id} "
             f"{identifier} problem_id={submission_data.problem_id} "
-            f"status={submission_status} raw_score={client_result.score} final_score={final_score}{penalty_info} "
+            f"status={submission_status} mutation_score={mutation_score}{penalty_info}{bonus_info} final_score={final_score} "
             f"killed={client_result.mutants_killed}/{client_result.total_mutants}"
         )
 
@@ -214,32 +254,6 @@ async def create_submission(
                 logger.error(
                     f"[VERIFICATION_ERROR] submission_id={submission.id} "
                     f"error={type(ve).__name__}: {str(ve)}",
-                    exc_info=True,
-                )
-
-        # 테스트 품질 분석 (Phase 2)
-        if submission_status == "SUCCESS":
-            try:
-                quality_repo = TestQualityRepository(db)
-                analyzer = TestQualityAnalyzer()
-                quality_result = analyzer.analyze(submission_data.code)
-
-                quality_repo.update_submission_quality(
-                    submission_id=submission.id,
-                    score=quality_result.score,
-                    grade=quality_result.grade.value,
-                    analysis=quality_result.analysis.model_dump(),
-                )
-
-                logger.info(
-                    f"[QUALITY_ANALYSIS_SUCCESS] submission_id={submission.id} "
-                    f"quality_score={quality_result.score} grade={quality_result.grade.value}"
-                )
-            except Exception as qe:
-                # 품질 분석 실패해도 채점 결과는 반환
-                logger.error(
-                    f"[QUALITY_ANALYSIS_ERROR] submission_id={submission.id} "
-                    f"error={type(qe).__name__}: {str(qe)}",
                     exc_info=True,
                 )
 
