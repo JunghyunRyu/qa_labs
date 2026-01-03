@@ -28,9 +28,12 @@ import {
   Shield,
   ShieldCheck,
   ShieldAlert,
+  LogIn,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
+import FeedbackDisplay from "@/components/FeedbackDisplay";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { getMySubmissions } from "@/lib/api/users";
 import { applyTemplate } from "@/lib/promptTemplates";
@@ -951,6 +954,109 @@ function SuccessResultContent({
           </div>
         </div>
       )}
+
+      {/* AI 피드백 섹션 */}
+      {(() => {
+        // AI 피드백 데이터 타입
+        type AIFeedback = {
+          summary: string;
+          strengths: string[];
+          weaknesses: string[];
+          suggested_tests: string[];
+          score_adjustment?: number;
+        };
+
+        const feedbackJson = submission.feedback_json as AIFeedback | undefined;
+        const isLoggedIn = !!submission.user_id;
+
+        // 회원이고 AI 피드백이 있는 경우
+        if (isLoggedIn && feedbackJson) {
+          return (
+            <div className="rounded-lg border border-purple-200 dark:border-purple-800/50 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+              <div className="px-3 py-2 border-b border-purple-200 dark:border-purple-800/50">
+                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                  <Sparkles className="w-4 h-4" />
+                  <span className="font-medium text-sm">AI 피드백</span>
+                </div>
+              </div>
+              <div className="p-3">
+                <FeedbackDisplay feedback={feedbackJson} />
+              </div>
+            </div>
+          );
+        }
+
+        // 회원이지만 AI 피드백이 아직 없는 경우 (생성 중)
+        if (isLoggedIn && !feedbackJson) {
+          return (
+            <div className="rounded-lg border border-purple-200 dark:border-purple-800/50 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+              <div className="px-3 py-2 border-b border-purple-200 dark:border-purple-800/50">
+                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                  <Sparkles className="w-4 h-4" />
+                  <span className="font-medium text-sm">AI 피드백</span>
+                </div>
+              </div>
+              <div className="p-4 text-center">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-500 mb-2" />
+                <p className="text-sm text-purple-600 dark:text-purple-400">
+                  AI가 피드백을 생성하고 있습니다...
+                </p>
+                <p className="text-xs text-purple-500 dark:text-purple-500 mt-1">
+                  잠시 후 새로고침해 주세요
+                </p>
+              </div>
+            </div>
+          );
+        }
+
+        // 비회원인 경우 - 로그인 유도
+        return (
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <Sparkles className="w-4 h-4" />
+                <span className="font-medium text-sm">AI 피드백</span>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    로그인하면 AI가 작성한 상세 피드백을 받을 수 있어요!
+                  </p>
+                  <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1 mb-3">
+                    <li className="flex items-center gap-1">
+                      <Check className="w-3 h-3 text-green-500" />
+                      <span>잘한 점 분석</span>
+                    </li>
+                    <li className="flex items-center gap-1">
+                      <Check className="w-3 h-3 text-green-500" />
+                      <span>개선할 점 제안</span>
+                    </li>
+                    <li className="flex items-center gap-1">
+                      <Check className="w-3 h-3 text-green-500" />
+                      <span>추가 테스트 아이디어</span>
+                    </li>
+                  </ul>
+                  <Link
+                    href="/auth/login"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                               bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
+                               hover:bg-purple-200 dark:hover:bg-purple-900/50
+                               rounded-lg transition-colors"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    로그인하기
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* CTA Buttons - 항상 표시 */}
       <ResultCTAButtons
