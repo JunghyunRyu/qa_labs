@@ -43,7 +43,7 @@ export default function SubmissionsPage() {
       setStatistics(data);
     } catch (err: unknown) {
       if (err instanceof ApiError && err.status === 401) {
-        router.push("/problems");
+        router.push("/auth/login?redirect=/submissions");
         return;
       }
       throw err;
@@ -62,7 +62,7 @@ export default function SubmissionsPage() {
       setSubmissions(data);
     } catch (err: unknown) {
       if (err instanceof ApiError && err.status === 401) {
-        router.push("/problems");
+        router.push("/auth/login?redirect=/submissions");
         return;
       }
       throw err;
@@ -92,7 +92,7 @@ export default function SubmissionsPage() {
   // Load data on auth change
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push("/problems");
+      router.push("/auth/login?redirect=/submissions");
       return;
     }
 
