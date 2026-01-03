@@ -1,5 +1,6 @@
 """Submissions API endpoints."""
 
+import hashlib
 import logging
 from typing import Optional
 from uuid import UUID
@@ -17,7 +18,8 @@ from app.repositories.problem_repository import ProblemRepository
 from app.repositories.test_quality_repository import TestQualityRepository
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
 from app.services.test_quality_analyzer import TestQualityAnalyzer
-from app.workers.tasks import process_submission_task, generate_feedback_task
+from app.services.verification_service import VerificationService
+from app.workers.tasks import process_submission_task, generate_feedback_task, verify_submission_task
 from app.middleware.request_context import get_request_id
 
 logger = logging.getLogger(__name__)
@@ -137,6 +139,9 @@ async def create_submission(
                 for d in client_result.details
             ]
 
+        # 코드 해시 계산 (중복 감지용)
+        code_hash = hashlib.sha256(submission_data.code.strip().encode("utf-8")).hexdigest()
+
         submission = Submission(
             user_id=user_id,
             anonymous_id=anonymous_id,
@@ -147,6 +152,10 @@ async def create_submission(
             killed_mutants=client_result.mutants_killed,
             total_mutants=client_result.total_mutants,
             execution_log=execution_log,
+            # Verification fields
+            execution_mode="client",
+            verified=False,
+            code_hash=code_hash,
         )
 
         submission_repo = SubmissionRepository(db)
@@ -159,6 +168,34 @@ async def create_submission(
             f"status={submission_status} score={client_result.score} "
             f"killed={client_result.mutants_killed}/{client_result.total_mutants}"
         )
+
+        # 클라이언트 결과 재검증 로직 (P0 Security)
+        if submission_status == "SUCCESS":
+            try:
+                verification_service = VerificationService(db)
+                client_ip = get_client_ip(request)
+                should_verify, trigger_reason = verification_service.should_verify(
+                    submission=submission,
+                    score=client_result.score,
+                    execution_time_ms=client_result.total_execution_time or 0,
+                    client_ip=client_ip,
+                )
+
+                if should_verify:
+                    verification_service.mark_for_verification(submission, trigger_reason)
+                    # 비동기 재검증 태스크 발행
+                    verify_submission_task.delay(str(submission.id))
+                    logger.info(
+                        f"[VERIFICATION_QUEUED] submission_id={submission.id} "
+                        f"trigger={trigger_reason}"
+                    )
+            except Exception as ve:
+                # 검증 로직 실패해도 채점 결과는 반환
+                logger.error(
+                    f"[VERIFICATION_ERROR] submission_id={submission.id} "
+                    f"error={type(ve).__name__}: {str(ve)}",
+                    exc_info=True,
+                )
 
         # 테스트 품질 분석 (Phase 2)
         if submission_status == "SUCCESS":
@@ -213,6 +250,7 @@ async def create_submission(
             detail="Server-side execution is disabled. Please use client-side execution.",
         )
 
+    # 서버 사이드 실행은 기본적으로 verified=True
     submission = Submission(
         user_id=user_id,
         anonymous_id=anonymous_id,
@@ -220,6 +258,8 @@ async def create_submission(
         code=submission_data.code,
         status="PENDING",
         score=0,
+        execution_mode="server",
+        verified=True,  # 서버 실행은 기본적으로 신뢰
     )
 
     submission_repo = SubmissionRepository(db)

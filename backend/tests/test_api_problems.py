@@ -53,6 +53,8 @@ def client(db_session):
 @pytest.fixture(scope="function")
 def sample_problems(db_session: Session):
     """Create sample problems for testing."""
+    from datetime import datetime
+
     problems = []
     for i in range(5):
         problem = Problem(
@@ -63,6 +65,8 @@ def sample_problems(db_session: Session):
             golden_code=f"def test_function_{i+1}(x: int) -> int:\n    return x * {i+1}\n",
             difficulty=["Easy", "Medium", "Hard"][i % 3],
             skills=["boundary", "exception"] if i % 2 == 0 else None,
+            is_visible=True,  # Make problems visible
+            published_at=datetime.now(),  # Set published date
         )
         db_session.add(problem)
         problems.append(problem)

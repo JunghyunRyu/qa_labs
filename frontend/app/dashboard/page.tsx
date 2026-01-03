@@ -11,6 +11,7 @@ import {
   Target,
   CheckCircle,
   ArrowLeft,
+  AlertTriangle,
 } from "lucide-react";
 import HouseAd from "@/components/pricing/HouseAd";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -194,6 +195,21 @@ export default function DashboardPage() {
         {/* Dashboard Content */}
         {!isEmpty && (
           <>
+            {/* 베타 안내 배너 */}
+            <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                    학습용 지표 (베타)
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                    점수와 통계는 학습 목적으로 제공됩니다. 일부 클라이언트 실행 결과는 서버 검증을 거칩니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {isLoadingSummary ? (

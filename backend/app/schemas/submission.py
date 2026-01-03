@@ -59,6 +59,12 @@ class SubmissionResponse(BaseModel):
     feedback_json: Optional[Dict[str, Any]] = None
     created_at: datetime
 
+    # Client Result Verification (P0 Security)
+    execution_mode: str = "client"  # "client" | "server"
+    verified: bool = False
+    verification_status: Optional[str] = None  # "pending" | "verified" | "mismatch"
+    verified_at: Optional[datetime] = None
+
     model_config = {"from_attributes": True}
 
 

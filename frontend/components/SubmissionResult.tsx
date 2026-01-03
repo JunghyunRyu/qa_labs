@@ -67,6 +67,9 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
             score={submission.score}
             killedMutants={submission.killed_mutants}
             totalMutants={submission.total_mutants}
+            executionMode={submission.execution_mode}
+            verified={submission.verified}
+            verificationStatus={submission.verification_status}
           />
         </div>
       )}

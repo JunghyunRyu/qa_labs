@@ -105,8 +105,11 @@ export default function LocalTestResultPanel({
           >
             로컬 테스트 {allPassed ? "통과" : "실패"}
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400" title="정답 코드에 대한 테스트 실행 결과">
-            실행 완료
+          <span
+            className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+            title="클라이언트(브라우저)에서 실행된 결과입니다"
+          >
+            로컬 실행 결과
           </span>
         </div>
         <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">

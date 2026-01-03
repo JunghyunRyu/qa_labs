@@ -351,3 +351,85 @@ class SubmissionService:
             logger.info(f"[STATUS_CHANGE] submission_id={submission_id} status=RUNNING->ERROR")
             logger.info(f"[GRADING_COMPLETE] submission_id={submission_id} status=ERROR")
 
+    def grade_submission_for_verification(
+        self,
+        submission: "Submission",
+        problem: "Problem",
+    ) -> dict:
+        """
+        검증용 채점: 상태 업데이트 없이 점수만 계산하여 반환.
+
+        클라이언트 실행 결과의 서버 재검증을 위해 사용됩니다.
+        process_submission과 달리 DB 상태를 변경하지 않습니다.
+
+        Args:
+            submission: Submission 객체
+            problem: Problem 객체
+
+        Returns:
+            dict: {"score": int, "killed": int, "total": int, "golden_passed": bool}
+        """
+        from app.models.submission import Submission
+        from app.models.problem import Problem
+
+        logger.info(f"[VERIFICATION_GRADING_START] submission_id={submission.id}")
+
+        try:
+            # 1. BuggyImplementations 조회
+            mutants = self.buggy_repo.get_by_problem_id(problem.id)
+
+            # 2. Golden Code로 pytest 실행
+            golden_result = self.judge_service.test_golden_code(
+                golden_code=problem.golden_code,
+                user_test_code=submission.code,
+            )
+
+            # 3. Golden Code 실패 시
+            if not golden_result.get("all_tests_passed", False):
+                logger.warning(
+                    f"[VERIFICATION_GOLDEN_FAILED] submission_id={submission.id}"
+                )
+                return {
+                    "score": 0,
+                    "killed": 0,
+                    "total": len(mutants),
+                    "golden_passed": False,
+                }
+
+            # 4. 각 Mutant에 대해 pytest 실행
+            killed = 0
+            for mutant in mutants:
+                mutant_result = self.judge_service.test_buggy_code(
+                    buggy_code=mutant.buggy_code,
+                    user_test_code=submission.code,
+                )
+                if mutant_result.get("any_test_failed", False):
+                    killed += mutant.weight
+
+            # 5. Kill ratio 계산
+            total_weight = sum(m.weight for m in mutants) if mutants else 1
+            kill_ratio = killed / total_weight if total_weight > 0 else 0.0
+
+            # 6. 점수 계산
+            base_score = 30
+            score = base_score + int(kill_ratio * 70)
+
+            logger.info(
+                f"[VERIFICATION_GRADING_COMPLETE] submission_id={submission.id} "
+                f"score={score} killed={killed}/{total_weight}"
+            )
+
+            return {
+                "score": score,
+                "killed": killed,
+                "total": total_weight,
+                "golden_passed": True,
+            }
+
+        except Exception as e:
+            logger.error(
+                f"[VERIFICATION_GRADING_ERROR] submission_id={submission.id} "
+                f"error={type(e).__name__}: {str(e)}",
+                exc_info=True,
+            )
+            raise

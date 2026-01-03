@@ -194,3 +194,100 @@ def generate_feedback_task(self, submission_id: str) -> None:
                 )
     finally:
         db.close()
+
+
+@celery_app.task(
+    bind=True,
+    max_retries=2,
+    default_retry_delay=60,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
+def verify_submission_task(self, submission_id: str) -> None:
+    """
+    클라이언트 실행 결과를 서버에서 재검증하는 Celery task.
+
+    클라이언트 사이드 실행(Pyodide) 결과가 의심스러운 경우 호출됩니다:
+    - 고득점 (90점 이상)
+    - 빠른 실행 (1초 미만)
+    - 반복 고득점 패턴
+    - 동일 코드 해시 반복
+    - 랜덤 샘플링 (5%)
+
+    Args:
+        submission_id: Submission ID as string (UUID)
+    """
+    submission_uuid = UUID(submission_id)
+    logger.info(f"[VERIFY_TASK_START] submission_id={submission_uuid}")
+
+    db: Session = SessionLocal()
+    try:
+        submission_repo = SubmissionRepository(db)
+        problem_repo = ProblemRepository(db)
+
+        # 1. Submission 조회
+        submission = submission_repo.get_by_id(submission_uuid)
+        if not submission:
+            logger.error(f"[VERIFY_TASK_ERROR] submission_id={submission_uuid} reason=not_found")
+            return
+
+        # 2. 이미 검증 완료되었으면 스킵
+        if submission.verification_status != "pending":
+            logger.info(
+                f"[VERIFY_TASK_SKIP] submission_id={submission_uuid} "
+                f"status={submission.verification_status}"
+            )
+            return
+
+        # 3. Problem 조회
+        problem = problem_repo.get_by_id(submission.problem_id)
+        if not problem:
+            logger.error(f"[VERIFY_TASK_ERROR] submission_id={submission_uuid} reason=problem_not_found")
+            return
+
+        # 4. 서버 사이드 재채점
+        logger.info(f"[VERIFY_TASK_GRADING] submission_id={submission_uuid}")
+        service = SubmissionService(db)
+        server_result = service.grade_submission_for_verification(
+            submission=submission,
+            problem=problem,
+        )
+
+        # 5. 검증 결과 처리
+        from app.services.verification_service import VerificationService
+        verification_service = VerificationService(db)
+        status = verification_service.verify_submission(
+            submission=submission,
+            server_score=server_result["score"],
+        )
+
+        logger.info(
+            f"[VERIFY_TASK_COMPLETE] submission_id={submission_uuid} "
+            f"client_score={submission.score} server_score={server_result['score']} "
+            f"status={status}"
+        )
+
+    except Exception as e:
+        logger.error(
+            f"[VERIFY_TASK_ERROR] submission_id={submission_uuid} "
+            f"error_type={type(e).__name__} error_message={str(e)}",
+            exc_info=True,
+        )
+
+        # 재시도
+        if self.request.retries < self.max_retries:
+            logger.info(
+                f"[VERIFY_TASK_RETRY] submission_id={submission_uuid} "
+                f"attempt={self.request.retries + 1}/{self.max_retries}"
+            )
+            raise self.retry(exc=e)
+        else:
+            # 최종 실패 - verification_status를 그대로 pending 유지
+            # 관리자가 수동으로 확인할 수 있도록
+            logger.error(
+                f"[VERIFY_TASK_FAILED] submission_id={submission_uuid} "
+                f"reason=max_retries_reached"
+            )
+    finally:
+        db.close()

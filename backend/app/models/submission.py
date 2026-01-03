@@ -1,6 +1,6 @@
 """Submission model."""
 
-from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Text, CheckConstraint
+from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Text, CheckConstraint, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -47,6 +47,15 @@ class Submission(Base):
     test_quality_score = Column(Float, nullable=True)  # 0.0 ~ 100.0
     test_quality_grade = Column(String(1), nullable=True)  # A/B/C/D/F
     test_quality_analysis = Column(JSONB, nullable=True)  # TestQualityAnalysis JSON
+
+    # Client Result Verification (P0 Security)
+    execution_mode = Column(String(10), default="client", nullable=False, index=True)  # "client" | "server"
+    verified = Column(Boolean, default=False, nullable=False, index=True)  # Server verification completed
+    verification_status = Column(String(20), nullable=True, index=True)  # "pending" | "verified" | "mismatch"
+    server_score = Column(Integer, nullable=True)  # Score from server re-verification
+    verification_triggered_by = Column(String(50), nullable=True)  # Trigger reason
+    verified_at = Column(DateTime(timezone=True), nullable=True)  # Verification completion time
+    code_hash = Column(String(64), nullable=True, index=True)  # SHA256 for duplicate detection
 
     # Relationships
     user = relationship("User")

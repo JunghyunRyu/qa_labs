@@ -1,17 +1,24 @@
 /** Score display component */
 
-import { Trophy, Target, TrendingUp } from "lucide-react";
+import { Trophy, Target, TrendingUp, Shield, ShieldCheck, ShieldAlert, Loader2 } from "lucide-react";
 
 interface ScoreDisplayProps {
   score: number;
   killedMutants?: number;
   totalMutants?: number;
+  // Client Result Verification (P0 Security)
+  executionMode?: "client" | "server";
+  verified?: boolean;
+  verificationStatus?: "pending" | "verified" | "mismatch";
 }
 
 export default function ScoreDisplay({
   score,
   killedMutants,
   totalMutants,
+  executionMode = "client",
+  verified = false,
+  verificationStatus,
 }: ScoreDisplayProps) {
   const killRatio =
     killedMutants !== undefined && totalMutants !== undefined && totalMutants > 0
@@ -44,8 +51,68 @@ export default function ScoreDisplay({
   const scoreGrade = getScoreGrade(score);
   const scoreBgColor = getScoreBgColor(score);
 
+  // 검증 상태 배지 렌더링
+  const renderVerificationBadge = () => {
+    // 서버 실행은 기본적으로 신뢰
+    if (executionMode === "server") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+          <ShieldCheck className="w-3 h-3" />
+          서버 실행 결과
+        </span>
+      );
+    }
+
+    // 클라이언트 실행 검증 상태
+    if (verificationStatus === "verified" || verified) {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+          <ShieldCheck className="w-3 h-3" />
+          서버 검증 완료
+        </span>
+      );
+    }
+
+    if (verificationStatus === "pending") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+          <Loader2 className="w-3 h-3 animate-spin" />
+          검증 중...
+        </span>
+      );
+    }
+
+    if (verificationStatus === "mismatch") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+          <ShieldAlert className="w-3 h-3" />
+          점수 확정 보류
+        </span>
+      );
+    }
+
+    // 기본: 클라이언트 실행, 미검증
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+        title="브라우저에서 실행된 결과입니다"
+      >
+        <Shield className="w-3 h-3" />
+        로컬 실행 결과
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-6">
+      {/* 베타 라벨 및 검증 상태 */}
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-medium">
+          학습용 지표 (베타)
+        </span>
+        {renderVerificationBadge()}
+      </div>
+
       {/* 메인 점수 표시 */}
       <div className={`rounded-lg border-2 p-6 ${scoreBgColor}`}>
         <div className="flex items-center justify-between mb-4">
