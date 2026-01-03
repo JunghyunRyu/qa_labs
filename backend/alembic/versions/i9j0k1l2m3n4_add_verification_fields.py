@@ -1,7 +1,7 @@
 """Add client result verification fields
 
 Revision ID: i9j0k1l2m3n4
-Revises: h8i9j0k1l2m3
+Revises: j0k1l2m3n4o5
 Create Date: 2025-01-03
 
 Changes:
@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "i9j0k1l2m3n4"
-down_revision = "h8i9j0k1l2m3"
+down_revision = "j0k1l2m3n4o5"
 branch_labels = None
 depends_on = None
 
