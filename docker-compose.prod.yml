@@ -176,6 +176,7 @@ services:
         condition: service_started
     networks:
       - qa_arena_internal
+      - qa_arena_frontend  # OpenAI API 접근을 위한 외부 네트워크
       - docker_internal
     restart: unless-stopped
     volumes:
