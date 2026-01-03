@@ -26,12 +26,12 @@ const homeNavItems = [
 
 // 앱 variant 메뉴 항목
 const appNavItems = [
-  { label: "Problems", href: "/problems" },
+  { label: "문제 보기", href: "/problems" },
 ];
 
 // 로그인 사용자 전용 메뉴 항목
 const authNavItems = [
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "학습 현황", href: "/dashboard" },
 ];
 
 export default function Header() {
