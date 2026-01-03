@@ -102,10 +102,15 @@ export interface NextScheduledProblem {
   published_at: string;
 }
 
+interface NextScheduledResponse {
+  next_problem: NextScheduledProblem | null;
+}
+
 /**
  * Get next scheduled problem for Coming Soon card
  */
 export async function getNextScheduledProblem(): Promise<NextScheduledProblem | null> {
-  return get<NextScheduledProblem | null>(`${PROBLEMS_ENDPOINT}/next-scheduled`);
+  const response = await get<NextScheduledResponse>(`${PROBLEMS_ENDPOINT}/next-scheduled`);
+  return response.next_problem;
 }
 
