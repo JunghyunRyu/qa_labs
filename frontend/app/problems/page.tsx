@@ -8,14 +8,14 @@ import { getProblems, GetProblemsParams, getNextScheduledProblem, NextScheduledP
 import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
 import ProblemCard from "@/components/ProblemCard";
-import ComingSoonCard from "@/components/ComingSoonCard";
+import ComingSoonBanner from "@/components/ComingSoonBanner";
 import ProblemStatsRow from "@/components/ProblemStatsRow";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
-import { Search, Filter, X, Bookmark, ChevronDown, Tag, Globe, ArrowUpDown } from "lucide-react";
+import { Search, Filter, X, Bookmark, ChevronDown, Tag, Globe, ArrowUpDown, Sparkles } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
@@ -93,6 +93,7 @@ function ProblemsContent() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>("difficulty-asc");
   const [showFilters, setShowFilters] = useState(false);
+  const [showNewOnly, setShowNewOnly] = useState(false);
   const [nextScheduled, setNextScheduled] = useState<NextScheduledProblem | null>(null);
 
   // URL 쿼리 파라미터에서 도메인 필터 읽기 (메인 페이지에서 도메인 클릭 시)
@@ -164,11 +165,23 @@ function ProblemsContent() {
     setPage(1);
   }, [difficultyFilter, domainFilter, selectedTags, debouncedSearchQuery, sortOption]);
 
-  // 서버에서 정렬된 문제 목록 (정렬은 서버에서 처리)
+  // NEW 문제 판별 함수 (7일 이내 공개)
+  const isNewProblem = useCallback((publishedAt: string | null | undefined): boolean => {
+    if (!publishedAt) return false;
+    const publishDate = new Date(publishedAt);
+    const now = new Date();
+    const diffDays = (now.getTime() - publishDate.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays >= 0 && diffDays <= 7;
+  }, []);
+
+  // 서버에서 정렬된 문제 목록 (정렬은 서버에서 처리, NEW 필터는 클라이언트에서)
   const sortedProblems = useMemo(() => {
     if (!data) return [];
+    if (showNewOnly) {
+      return data.problems.filter((p) => isNewProblem(p.published_at));
+    }
     return data.problems;
-  }, [data]);
+  }, [data, showNewOnly, isNewProblem]);
 
   // 사용 가능한 모든 태그 추출 (난이도 태그 제외, 한글화 적용)
   const availableTags = useMemo((): TagViewModel[] => {
@@ -193,9 +206,10 @@ function ProblemsContent() {
     setDomainFilter("All");
     setSelectedTags([]);
     setSortOption("difficulty-asc");
+    setShowNewOnly(false);
   };
 
-  const hasActiveFilters = debouncedSearchQuery || difficultyFilter !== "All" || domainFilter !== "All" || selectedTags.length > 0;
+  const hasActiveFilters = debouncedSearchQuery || difficultyFilter !== "All" || domainFilter !== "All" || selectedTags.length > 0 || showNewOnly;
 
   if (loading) {
     return (
@@ -276,8 +290,23 @@ function ProblemsContent() {
             />
           </div>
 
-          {/* 난이도 Pill 버튼 */}
-          <div className="flex items-center gap-1" role="group" aria-label="난이도 필터">
+          {/* NEW 필터 + 난이도 Pill 버튼 */}
+          <div className="flex items-center gap-1" role="group" aria-label="필터">
+            {/* NEW 필터 버튼 */}
+            <button
+              onClick={() => setShowNewOnly(!showNewOnly)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
+                showNewOnly
+                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                  : "bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+              }`}
+              aria-pressed={showNewOnly}
+            >
+              <Sparkles className="w-3 h-3" />
+              NEW
+            </button>
+            <span className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+            {/* 난이도 필터 버튼 */}
             {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => (
               <button
                 key={diff}
@@ -398,6 +427,19 @@ function ProblemsContent() {
       {/* Active Filter Summary */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 mb-4 px-1">
+          {showNewOnly && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+              <Sparkles className="w-3 h-3" />
+              NEW
+              <button
+                onClick={() => setShowNewOnly(false)}
+                className="ml-0.5 hover:text-purple-900 dark:hover:text-purple-100"
+                aria-label="NEW 필터 제거"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
           {difficultyFilter !== "All" && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
               {DIFFICULTY_LABELS[difficultyFilter]}
@@ -461,6 +503,11 @@ function ProblemsContent() {
         </div>
       )}
 
+      {/* Coming Soon Banner - 항상 표시 */}
+      {nextScheduled && (
+        <ComingSoonBanner nextProblem={nextScheduled} />
+      )}
+
       {sortedProblems.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center transition-colors">
           <p className="text-gray-600 dark:text-gray-400">
@@ -483,10 +530,6 @@ function ProblemsContent() {
             {sortedProblems.map((problem) => (
               <ProblemCard key={problem.id} problem={problem} />
             ))}
-            {/* Coming Soon card - only on last page without filters */}
-            {nextScheduled && page === data.total_pages && !hasActiveFilters && (
-              <ComingSoonCard nextProblem={nextScheduled} />
-            )}
           </div>
 
           {/* Pagination */}
