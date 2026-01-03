@@ -603,12 +603,6 @@ function SuccessResultContent({
   type: "excellent" | "good" | "moderate" | "needs_improvement";
   onTabChange?: (tab: TabId) => void;
 }) {
-  const [expandedBugId, setExpandedBugId] = useState<number | null>(null);
-
-  const toggleBugExpand = (bugId: number) => {
-    setExpandedBugId(expandedBugId === bugId ? null : bugId);
-  };
-
   // Summary message based on type
   const getSummaryMessage = () => {
     if (type === "excellent") return "거의 모든 버그를 탐지했습니다!";
@@ -724,26 +718,12 @@ function SuccessResultContent({
           <div className="divide-y divide-orange-200 dark:divide-orange-800/50">
             {missedBugs.map((bug) => (
               <div key={bug.id} className="px-3 py-2">
-                <button
-                  onClick={() => toggleBugExpand(bug.id)}
-                  className="w-full flex items-start gap-2 text-left hover:bg-orange-100 dark:hover:bg-orange-900/30 -mx-1 px-1 py-0.5 rounded transition-colors"
-                >
-                  <ChevronDown
-                    className={`w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5 transition-transform ${
-                      expandedBugId === bug.id ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
+                <div className="flex items-start gap-2">
+                  <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-orange-800 dark:text-orange-200 flex-1">
                     {bug.description}
                   </span>
-                </button>
-
-                {/* Expanded content */}
-                {expandedBugId === bug.id && bug.testOutput && (
-                  <div className="mt-2 ml-6 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono text-gray-600 dark:text-gray-400 max-h-32 overflow-y-auto">
-                    <pre className="whitespace-pre-wrap">{bug.testOutput}</pre>
-                  </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
