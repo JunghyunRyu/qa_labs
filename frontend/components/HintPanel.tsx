@@ -15,17 +15,77 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useHints, HINT_LEVELS } from "@/hooks/useHints";
 
 /**
+ * 코드 블록인지 감지 (Python 코드 패턴)
+ */
+function isCodeBlock(text: string): boolean {
+  const trimmed = text.trim();
+  // Python 코드 시작 패턴
+  const codePatterns = [
+    /^(def |class |import |from |@pytest|@)/m,  // 함수, 클래스, import, 데코레이터
+    /^(if |for |while |try:|except:|with )/m,   // 제어문
+    /^(assert |return |yield |raise )/m,        // 키워드
+    /^\s*(def |class )/m,                        // 들여쓰기된 정의
+  ];
+  return codePatterns.some(pattern => pattern.test(trimmed));
+}
+
+/**
+ * 코드 블록 렌더링 (syntax highlighting 스타일)
+ */
+function renderCodeBlock(code: string): React.ReactNode {
+  return (
+    <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm font-mono leading-relaxed">
+      <code>{code.trim()}</code>
+    </pre>
+  );
+}
+
+/**
  * 힌트 내용을 포맷팅하여 가독성 향상
+ * - 코드 블록 감지 및 코드 스타일 렌더링
  * - (1), (2)... 패턴을 리스트로 분리
- * - 코드 스니펫 하이라이팅
+ * - 인라인 코드 하이라이팅
  */
 function formatHintContent(content: string): React.ReactNode {
+  // 1. 트리플 백틱으로 감싸진 코드 블록 처리
+  if (content.includes("```")) {
+    const parts = content.split(/(```[\s\S]*?```)/g);
+    return (
+      <div className="space-y-3">
+        {parts.map((part, idx) => {
+          if (part.startsWith("```") && part.endsWith("```")) {
+            // 코드 블록 - 언어 태그 제거
+            const codeContent = part.slice(3, -3).replace(/^python\n?/i, "").trim();
+            return <div key={idx}>{renderCodeBlock(codeContent)}</div>;
+          }
+          // 일반 텍스트
+          const trimmed = part.trim();
+          if (!trimmed) return null;
+          return <div key={idx}>{formatTextContent(trimmed)}</div>;
+        })}
+      </div>
+    );
+  }
+
+  // 2. 전체가 코드처럼 보이면 코드 블록으로 렌더링
+  if (isCodeBlock(content)) {
+    return renderCodeBlock(content);
+  }
+
+  // 3. 일반 텍스트 포맷팅
+  return formatTextContent(content);
+}
+
+/**
+ * 텍스트 내용 포맷팅 (번호 리스트 + 인라인 코드)
+ */
+function formatTextContent(content: string): React.ReactNode {
   // 번호 패턴으로 분리: (1), (2), (3) 등
   const parts = content.split(/(\(\d+\))/g).filter(Boolean);
 
   if (parts.length <= 1) {
-    // 번호 패턴이 없으면 코드 하이라이팅만 적용
-    return <span>{highlightCode(content)}</span>;
+    // 번호 패턴이 없으면 인라인 코드 하이라이팅만 적용
+    return <span>{highlightInlineCode(content)}</span>;
   }
 
   const items: { number: string; content: string }[] = [];
@@ -33,16 +93,13 @@ function formatHintContent(content: string): React.ReactNode {
 
   for (const part of parts) {
     if (/^\(\d+\)$/.test(part)) {
-      // 새 번호 시작
       if (currentItem) {
         items.push(currentItem);
       }
       currentItem = { number: part, content: "" };
     } else if (currentItem) {
-      // 기존 항목에 내용 추가
       currentItem.content += part;
     } else {
-      // 번호 전 텍스트 (헤더)
       items.push({ number: "", content: part });
     }
   }
@@ -60,7 +117,7 @@ function formatHintContent(content: string): React.ReactNode {
             </span>
           )}
           <span className={item.number ? "flex-1" : "block mb-2 font-medium text-amber-800 dark:text-amber-300"}>
-            {highlightCode(item.content.trim())}
+            {highlightInlineCode(item.content.trim())}
           </span>
         </div>
       ))}
@@ -69,39 +126,9 @@ function formatHintContent(content: string): React.ReactNode {
 }
 
 /**
- * 코드 스니펫 하이라이팅 (backtick 또는 코드 패턴 감지)
+ * 인라인 코드 하이라이팅 (backtick 감지)
  */
-function highlightCode(text: string): React.ReactNode {
-  // 코드 패턴: 변수명=값, 함수명(), 특수문자 포함 패턴
-  const codePattern = /(`[^`]+`|[a-zA-Z_][a-zA-Z0-9_]*(?:=[^,\s]+|(?:\([^)]*\)))|<[^>]+>|>=?|<=?|!=|==|\d+(?:\.\d+)?)/g;
-
-  const parts = text.split(codePattern);
-  const matches = text.match(codePattern) || [];
-
-  const result: React.ReactNode[] = [];
-
-  for (let i = 0; i < parts.length; i++) {
-    if (parts[i]) {
-      result.push(<span key={`text-${i}`}>{parts[i]}</span>);
-    }
-    if (matches[i - 1 + (parts[0] ? 0 : 1)] !== undefined) {
-      const match = matches[i - 1 + (parts[0] ? 0 : 1)];
-      // backtick으로 감싸진 경우 backtick 제거
-      const codeText = match.startsWith("`") && match.endsWith("`")
-        ? match.slice(1, -1)
-        : match;
-      result.push(
-        <code
-          key={`code-${i}`}
-          className="px-1 py-0.5 mx-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 rounded text-xs font-mono"
-        >
-          {codeText}
-        </code>
-      );
-    }
-  }
-
-  // 간단한 방식으로 재구현
+function highlightInlineCode(text: string): React.ReactNode {
   return text.split(/(`[^`]+`)/).map((part, i) => {
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
