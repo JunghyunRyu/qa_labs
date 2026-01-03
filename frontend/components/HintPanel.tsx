@@ -9,10 +9,113 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Lightbulb, Lock, Unlock, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHints, HINT_LEVELS } from "@/hooks/useHints";
+
+/**
+ * 힌트 내용을 포맷팅하여 가독성 향상
+ * - (1), (2)... 패턴을 리스트로 분리
+ * - 코드 스니펫 하이라이팅
+ */
+function formatHintContent(content: string): React.ReactNode {
+  // 번호 패턴으로 분리: (1), (2), (3) 등
+  const parts = content.split(/(\(\d+\))/g).filter(Boolean);
+
+  if (parts.length <= 1) {
+    // 번호 패턴이 없으면 코드 하이라이팅만 적용
+    return <span>{highlightCode(content)}</span>;
+  }
+
+  const items: { number: string; content: string }[] = [];
+  let currentItem: { number: string; content: string } | null = null;
+
+  for (const part of parts) {
+    if (/^\(\d+\)$/.test(part)) {
+      // 새 번호 시작
+      if (currentItem) {
+        items.push(currentItem);
+      }
+      currentItem = { number: part, content: "" };
+    } else if (currentItem) {
+      // 기존 항목에 내용 추가
+      currentItem.content += part;
+    } else {
+      // 번호 전 텍스트 (헤더)
+      items.push({ number: "", content: part });
+    }
+  }
+  if (currentItem) {
+    items.push(currentItem);
+  }
+
+  return (
+    <div className="space-y-2">
+      {items.map((item, idx) => (
+        <div key={idx} className={item.number ? "flex gap-2" : ""}>
+          {item.number && (
+            <span className="font-semibold text-amber-700 dark:text-amber-400 shrink-0">
+              {item.number}
+            </span>
+          )}
+          <span className={item.number ? "flex-1" : "block mb-2 font-medium text-amber-800 dark:text-amber-300"}>
+            {highlightCode(item.content.trim())}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 코드 스니펫 하이라이팅 (backtick 또는 코드 패턴 감지)
+ */
+function highlightCode(text: string): React.ReactNode {
+  // 코드 패턴: 변수명=값, 함수명(), 특수문자 포함 패턴
+  const codePattern = /(`[^`]+`|[a-zA-Z_][a-zA-Z0-9_]*(?:=[^,\s]+|(?:\([^)]*\)))|<[^>]+>|>=?|<=?|!=|==|\d+(?:\.\d+)?)/g;
+
+  const parts = text.split(codePattern);
+  const matches = text.match(codePattern) || [];
+
+  const result: React.ReactNode[] = [];
+
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i]) {
+      result.push(<span key={`text-${i}`}>{parts[i]}</span>);
+    }
+    if (matches[i - 1 + (parts[0] ? 0 : 1)] !== undefined) {
+      const match = matches[i - 1 + (parts[0] ? 0 : 1)];
+      // backtick으로 감싸진 경우 backtick 제거
+      const codeText = match.startsWith("`") && match.endsWith("`")
+        ? match.slice(1, -1)
+        : match;
+      result.push(
+        <code
+          key={`code-${i}`}
+          className="px-1 py-0.5 mx-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 rounded text-xs font-mono"
+        >
+          {codeText}
+        </code>
+      );
+    }
+  }
+
+  // 간단한 방식으로 재구현
+  return text.split(/(`[^`]+`)/).map((part, i) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code
+          key={i}
+          className="px-1 py-0.5 mx-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 rounded text-xs font-mono"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
 
 interface HintPanelProps {
   problemId: number;
@@ -162,8 +265,8 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="ml-9 p-3 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap border border-amber-100 dark:border-amber-900">
-                      {hintContent}
+                    <div className="ml-9 p-4 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 border border-amber-100 dark:border-amber-900 leading-relaxed">
+                      {formatHintContent(hintContent)}
                     </div>
                   </motion.div>
                 )}
