@@ -71,8 +71,8 @@ export default function FloatingAIChat({
             whileTap={{ scale: 0.95 }}
             onClick={handleOpen}
             className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full
-                       bg-gradient-to-r from-purple-500 to-purple-600
-                       hover:from-purple-600 hover:to-purple-700
+                       bg-purple-600 dark:bg-purple-700
+                       hover:bg-purple-700 dark:hover:bg-purple-800
                        text-white shadow-lg flex items-center justify-center
                        transition-colors"
             aria-label="AI 도우미 열기 (Ctrl+/)"
@@ -110,10 +110,10 @@ export default function FloatingAIChat({
               stiffness: 300,
             }}
             className="fixed top-0 right-0 h-full w-96 max-w-[90vw] z-50
-                       bg-white dark:bg-gray-900 shadow-2xl flex flex-col"
+                       bg-white dark:bg-neutral-900 shadow-2xl flex flex-col"
           >
             {/* Drawer Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-500 to-purple-600">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-purple-600 dark:bg-purple-700">
               <div className="flex items-center gap-2 text-white">
                 {savedFeedback ? (
                   <>

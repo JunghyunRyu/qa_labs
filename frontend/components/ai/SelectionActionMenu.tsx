@@ -112,11 +112,11 @@ export default function SelectionActionMenu({
           exit={{ opacity: 0, scale: 0.95, y: -4 }}
           transition={{ duration: 0.15 }}
           style={menuStyle}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[150px]"
+          className="bg-white dark:bg-neutral-900 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 min-w-[150px]"
         >
           {/* 헤더 */}
-          <div className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
-            <Bot className="w-3.5 h-3.5 text-purple-500" />
+          <div className="px-3 py-1.5 text-xs text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-neutral-700 flex items-center gap-1.5">
+            <Bot className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
             <span>AI에게 질문</span>
           </div>
 
@@ -125,8 +125,8 @@ export default function SelectionActionMenu({
             <button
               key={action.id}
               onClick={() => handleAction(action.id)}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-purple-50 dark:hover:bg-purple-900/30
-                         flex items-center gap-2 text-gray-700 dark:text-gray-300
+              className="w-full px-3 py-2 text-left text-sm hover:bg-purple-50/80 dark:hover:bg-purple-950/30
+                         flex items-center gap-2 text-neutral-700 dark:text-neutral-300
                          transition-colors"
             >
               <span>{action.icon}</span>

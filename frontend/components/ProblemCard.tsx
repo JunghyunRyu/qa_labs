@@ -133,14 +133,14 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
                   {visible.map((tag) => (
                     <span
                       key={tag.slug}
-                      className="px-1.5 py-0.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded text-xs border border-gray-200 dark:border-gray-600 whitespace-nowrap"
+                      className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded text-xs border border-neutral-200 dark:border-neutral-700 whitespace-nowrap"
                       role="listitem"
                     >
                       {tag.labelKo}
                     </span>
                   ))}
                   {hiddenCount > 0 && (
-                    <span className="px-1 py-0.5 text-gray-500 dark:text-gray-400 text-xs">
+                    <span className="px-1 py-0.5 text-neutral-500 dark:text-neutral-400 text-xs">
                       +{hiddenCount}
                     </span>
                   )}

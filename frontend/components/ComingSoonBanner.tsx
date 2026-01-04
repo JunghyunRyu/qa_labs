@@ -58,17 +58,17 @@ export default function ComingSoonBanner({ nextProblem }: ComingSoonBannerProps)
   const daysUntil = getDaysUntil(nextProblem.published_at);
 
   return (
-    <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/40 dark:via-purple-950/40 dark:to-pink-950/40 border border-indigo-200 dark:border-indigo-800 rounded-lg px-4 py-3 mb-4">
+    <div className="bg-neutral-50/80 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-3 mb-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {/* Left: Coming Soon badge + Title */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <span className="flex-shrink-0 px-2.5 py-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-sm">
+          <span className="flex-shrink-0 px-2.5 py-1 bg-purple-600 dark:bg-purple-700 text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-sm">
             <Clock className="w-3.5 h-3.5" />
             COMING SOON
           </span>
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm">{domainIcon}</span>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">
               {nextProblem.title}
             </span>
           </div>
@@ -76,21 +76,21 @@ export default function ComingSoonBanner({ nextProblem }: ComingSoonBannerProps)
 
         {/* Right: Difficulty + Date + D-Day */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium rounded">
+          <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs font-medium rounded">
             {difficultyLabel}
           </span>
-          <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+          <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
             <Calendar className="w-4 h-4" />
             <span className="text-sm font-medium">
               {formatDate(nextProblem.published_at)}
             </span>
           </div>
           {daysUntil > 0 && (
-            <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs font-bold rounded-full">
+            <span className="px-2 py-0.5 bg-purple-50/80 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-bold rounded-full">
               D-{daysUntil}
             </span>
           )}
-          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <ChevronRight className="w-4 h-4 text-neutral-400" />
         </div>
       </div>
     </div>

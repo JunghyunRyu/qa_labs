@@ -194,13 +194,13 @@ export default function AICoachPanel({
 
   return (
     <div
-      className={`flex flex-col bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden ${className}`}
+      className={`flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-sky-500" />
-          <span className="font-medium text-gray-900 dark:text-gray-100">
+          <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          <span className="font-medium text-neutral-900 dark:text-neutral-100">
             AI 도우미
           </span>
         </div>
@@ -210,8 +210,8 @@ export default function AICoachPanel({
             onClick={() => onModeChange(isOff ? "COACH" : "OFF")}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
               isOff
-                ? "bg-gray-300 dark:bg-gray-600"
-                : "bg-sky-500"
+                ? "bg-neutral-300 dark:bg-neutral-600"
+                : "bg-purple-600 dark:bg-purple-700"
             }`}
           >
             <span
@@ -220,15 +220,15 @@ export default function AICoachPanel({
               }`}
             />
           </button>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
             {isOff ? "OFF" : "ON"}
           </span>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+              className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-neutral-500" />
             </button>
           )}
         </div>
@@ -237,15 +237,15 @@ export default function AICoachPanel({
       {/* Content Area */}
       {isOff ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-            <Bot className="w-6 h-6 text-gray-400" />
+          <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
+            <Bot className="w-6 h-6 text-neutral-400" />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             AI 도우미가 꺼져 있습니다
           </p>
           <button
             onClick={() => onModeChange("COACH")}
-            className="mt-3 text-sm text-sky-500 hover:text-sky-600"
+            className="mt-3 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
           >
             켜기
           </button>
@@ -253,18 +253,18 @@ export default function AICoachPanel({
       ) : !isAuthenticated ? (
         /* Members-only login prompt */
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-            <Lock className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+            <Lock className="w-8 h-8 text-neutral-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
             회원 전용 기능
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
             AI 도우미는 로그인 후 이용할 수 있습니다
           </p>
           <button
             onClick={login}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
           >
             <LogIn className="w-4 h-4" />
             GitHub로 로그인
@@ -273,7 +273,7 @@ export default function AICoachPanel({
       ) : (
         <>
           {/* Conversation History Selector */}
-          <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="px-3 py-2 border-b border-neutral-200 dark:border-neutral-700">
             <AIConversationHistory
               problemId={problemId}
               currentConversationId={conversationId}
@@ -287,14 +287,14 @@ export default function AICoachPanel({
 
           {/* Error Message */}
           {error && (
-            <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
+            <div className="px-4 py-2 bg-red-50/80 dark:bg-red-950/20 border-t border-red-200/60 dark:border-red-800/50">
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
           {/* Save Policy Notice */}
-          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+          <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
               대화 기록이 자동 저장됩니다
             </p>
           </div>

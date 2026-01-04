@@ -45,8 +45,8 @@ export default function QuickPromptBar({
   };
 
   return (
-    <div className={`flex items-center gap-1.5 px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 ${className}`}>
-      <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 mr-1">
+    <div className={`flex items-center gap-1.5 px-3 py-2 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 ${className}`}>
+      <span className="text-xs text-neutral-500 dark:text-neutral-400 flex-shrink-0 mr-1">
         빠른 질문:
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -59,8 +59,8 @@ export default function QuickPromptBar({
               inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-full
               border transition-all duration-200
               ${available && !disabled
-                ? "border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-400 dark:hover:border-purple-500 cursor-pointer"
-                : "border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                ? "border-purple-200/60 dark:border-purple-800/50 text-purple-700 dark:text-purple-300 hover:bg-purple-50/80 dark:hover:bg-purple-950/30 hover:border-purple-300 dark:hover:border-purple-700 cursor-pointer"
+                : "border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed"
               }
             `}
             title={available ? prompt.description : reason}
@@ -109,8 +109,8 @@ export function QuickPromptBarCompact({
           className={`
             p-1.5 rounded-lg transition-colors
             ${available && !disabled
-              ? "text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-              : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+              ? "text-purple-700 dark:text-purple-400 hover:bg-purple-50/80 dark:hover:bg-purple-950/30"
+              : "text-neutral-300 dark:text-neutral-600 cursor-not-allowed"
             }
           `}
           title={available ? `${prompt.label}: ${prompt.description}` : `${prompt.label}: ${reason}`}
