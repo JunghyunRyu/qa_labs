@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { History, Bookmark } from "lucide-react";
+import { History, Bookmark, BarChart2 } from "lucide-react";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
@@ -56,6 +56,16 @@ export default function UserMenu() {
             <p className="text-sm font-medium">{user.username}</p>
             <p className="text-xs text-[var(--muted)]">{user.email}</p>
           </div>
+          <Link
+            href="/dashboard"
+            onClick={() => setIsOpen(false)}
+            className="block px-4 py-2 text-sm hover:bg-[var(--background)] transition-colors"
+          >
+            <span className="flex items-center space-x-2">
+              <BarChart2 className="w-4 h-4" />
+              <span>학습 현황</span>
+            </span>
+          </Link>
           <Link
             href="/submissions"
             onClick={() => setIsOpen(false)}
