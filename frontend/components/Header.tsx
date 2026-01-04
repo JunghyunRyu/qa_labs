@@ -82,7 +82,7 @@ export default function Header() {
         <div className="container mx-auto flex h-8 max-w-screen-2xl items-center justify-between px-4">
           {/* Minimal logo */}
           <Link href="/" className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
-            <span className="text-sky-500">QA</span> Arena
+            <span className="text-[#58a6ff]">QA</span> Arena
           </Link>
 
           {/* Focus mode indicator & exit button */}
@@ -94,8 +94,8 @@ export default function Header() {
               data-testid="btn-exit-focus-mode"
               onClick={toggleFocusMode}
               className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs
-                         bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300
-                         hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
+                         bg-[#58a6ff]/10 text-[#58a6ff]
+                         hover:bg-[#58a6ff]/20 transition-colors"
               title="Focus Mode 종료 (Alt+F)"
             >
               <Minimize2 className="w-3.5 h-3.5" />
@@ -120,7 +120,7 @@ export default function Header() {
             className="rounded-md"
           />
           <span className="font-bold text-xl">
-            <span className="text-sky-500">QA</span> Arena
+            <span className="text-[#58a6ff]">QA</span> Arena
           </span>
           <span className="text-xs text-[var(--muted)]">by QaLabs</span>
         </Link>

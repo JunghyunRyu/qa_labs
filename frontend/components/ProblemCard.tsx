@@ -12,35 +12,35 @@ interface ProblemCardProps {
   problem: ProblemListItem;
 }
 
-// Linear 스타일: 톤다운된 색상, 미니멀한 그라데이션
+// GitHub Dark 스타일: Primer 색상 팔레트
 const difficultyConfig = {
   "Very Easy": {
-    colors: "bg-blue-50/80 text-blue-700 border-blue-200/60 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800/50",
+    colors: "bg-[#ddf4ff] text-[#0969da] border-[#b6e3ff] dark:bg-[#388bfd26] dark:text-[#58a6ff] dark:border-[#388bfd40]",
     icon: <TrendingDown className="w-3 h-3" />,
     label: "아주쉬움",
-    gradient: "from-neutral-50 to-blue-50/50 dark:from-neutral-900 dark:to-blue-950/30",
-    borderClass: "border-neutral-200 dark:border-neutral-800",
+    gradient: "from-white to-[#ddf4ff]/50 dark:from-[#161b22] dark:to-[#388bfd15]",
+    borderClass: "border-[#d0d7de] dark:border-[#30363d]",
   },
   Easy: {
-    colors: "bg-emerald-50/80 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800/50",
+    colors: "bg-[#dafbe1] text-[#1a7f37] border-[#aceebb] dark:bg-[#238636]/20 dark:text-[#3fb950] dark:border-[#238636]/40",
     icon: <TrendingDown className="w-3 h-3" />,
     label: "쉬움",
-    gradient: "from-neutral-50 to-emerald-50/50 dark:from-neutral-900 dark:to-emerald-950/30",
-    borderClass: "border-neutral-200 dark:border-neutral-800",
+    gradient: "from-white to-[#dafbe1]/50 dark:from-[#161b22] dark:to-[#238636]/10",
+    borderClass: "border-[#d0d7de] dark:border-[#30363d]",
   },
   Medium: {
-    colors: "bg-amber-50/80 text-amber-700 border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/50",
+    colors: "bg-[#fff8c5] text-[#9a6700] border-[#fae17d] dark:bg-[#9e6a03]/20 dark:text-[#d29922] dark:border-[#9e6a03]/40",
     icon: <Minus className="w-3 h-3" />,
     label: "보통",
-    gradient: "from-neutral-50 to-amber-50/50 dark:from-neutral-900 dark:to-amber-950/30",
-    borderClass: "border-neutral-200 dark:border-neutral-800",
+    gradient: "from-white to-[#fff8c5]/50 dark:from-[#161b22] dark:to-[#9e6a03]/10",
+    borderClass: "border-[#d0d7de] dark:border-[#30363d]",
   },
   Hard: {
-    colors: "bg-red-50/80 text-red-700 border-red-200/60 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800/50",
+    colors: "bg-[#ffebe9] text-[#cf222e] border-[#ffc1ba] dark:bg-[#f85149]/20 dark:text-[#f85149] dark:border-[#f85149]/40",
     icon: <TrendingUp className="w-3 h-3" />,
     label: "어려움",
-    gradient: "from-neutral-50 to-red-50/50 dark:from-neutral-900 dark:to-red-950/30",
-    borderClass: "border-neutral-200 dark:border-neutral-800",
+    gradient: "from-white to-[#ffebe9]/50 dark:from-[#161b22] dark:to-[#f85149]/10",
+    borderClass: "border-[#d0d7de] dark:border-[#30363d]",
   },
 };
 
@@ -53,14 +53,14 @@ function isNewProblem(publishedAt?: string): boolean {
   return diffDays <= 7 && diffDays >= 0;
 }
 
-// 도메인 아이콘 및 레이블 - Linear 스타일: 톤다운된 색상
+// 도메인 아이콘 및 레이블 - GitHub Dark 스타일
 const DOMAIN_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
-  common: { icon: "📚", label: "공통", color: "text-neutral-600 dark:text-neutral-400" },
-  fintech: { icon: "💳", label: "핀테크", color: "text-emerald-600 dark:text-emerald-400" },
-  commerce: { icon: "🛒", label: "커머스", color: "text-amber-600 dark:text-amber-400" },
-  saas: { icon: "☁️", label: "SaaS", color: "text-blue-600 dark:text-blue-400" },
-  platform: { icon: "🔗", label: "플랫폼", color: "text-purple-600 dark:text-purple-400" },
-  content: { icon: "📝", label: "컨텐츠", color: "text-rose-600 dark:text-rose-400" },
+  common: { icon: "📚", label: "공통", color: "text-[#57606a] dark:text-[#8b949e]" },
+  fintech: { icon: "💳", label: "핀테크", color: "text-[#1a7f37] dark:text-[#3fb950]" },
+  commerce: { icon: "🛒", label: "커머스", color: "text-[#9a6700] dark:text-[#d29922]" },
+  saas: { icon: "☁️", label: "SaaS", color: "text-[#0969da] dark:text-[#58a6ff]" },
+  platform: { icon: "🔗", label: "플랫폼", color: "text-[#8250df] dark:text-[#a371f7]" },
+  content: { icon: "📝", label: "컨텐츠", color: "text-[#cf222e] dark:text-[#f85149]" },
 };
 
 export default function ProblemCard({ problem }: ProblemCardProps) {
@@ -78,14 +78,14 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
   return (
     <Link
       href={`/problems/${problem.id}`}
-      className="block h-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
+      className="block h-full focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:ring-offset-2 rounded-lg"
       aria-label={`${displayTitle} 문제 보기`}
       tabIndex={0}
     >
       <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass} min-h-[180px] sm:min-h-[200px] relative`}>
-        {/* NEW 배지 - Linear 스타일: 톤다운된 purple */}
+        {/* NEW 배지 - GitHub Dark 스타일: 하늘색 */}
         {isNew && (
-          <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-purple-600 dark:bg-purple-700 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
+          <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-[#58a6ff] text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
             NEW
           </span>
@@ -110,19 +110,19 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
         </div>
 
         {/* 제목 (2줄) */}
-        <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-snug mb-2">
+        <h3 className="text-sm sm:text-base font-bold text-[#24292f] dark:text-[#c9d1d9] line-clamp-2 leading-snug mb-2">
           {displayTitle}
         </h3>
 
         {/* 문제 설명 미리보기 (1줄로 축소) */}
         {preview && (
-          <p className="text-xs text-neutral-600 dark:text-neutral-300 line-clamp-1 mb-3 flex-1">
+          <p className="text-xs text-[#57606a] dark:text-[#8b949e] line-clamp-1 mb-3 flex-1">
             {preview}
           </p>
         )}
 
         {/* 태그 + 버그 수 */}
-        <div className="flex items-center justify-between mt-auto pt-2 border-t border-neutral-200 dark:border-neutral-700">
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-[#d0d7de] dark:border-[#30363d]">
           {/* 태그 */}
           <div className="flex flex-wrap gap-1" role="list" aria-label="문제 태그">
             {problem.skills && problem.skills.length > 0 && (() => {
@@ -133,14 +133,14 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
                   {visible.map((tag) => (
                     <span
                       key={tag.slug}
-                      className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded text-xs border border-neutral-200 dark:border-neutral-700 whitespace-nowrap"
+                      className="px-1.5 py-0.5 bg-[#f6f8fa] dark:bg-[#21262d] text-[#57606a] dark:text-[#8b949e] rounded text-xs border border-[#d0d7de] dark:border-[#30363d] whitespace-nowrap"
                       role="listitem"
                     >
                       {tag.labelKo}
                     </span>
                   ))}
                   {hiddenCount > 0 && (
-                    <span className="px-1 py-0.5 text-neutral-500 dark:text-neutral-400 text-xs">
+                    <span className="px-1 py-0.5 text-[#6e7781] dark:text-[#8b949e] text-xs">
                       +{hiddenCount}
                     </span>
                   )}
@@ -151,7 +151,7 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
 
           {/* 숨은 버그 수 */}
           {bugsCount > 0 && (
-            <div className="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 shrink-0" title={`숨은 버그 ${bugsCount}개`}>
+            <div className="flex items-center gap-1 text-xs text-[#cf222e] dark:text-[#f85149] shrink-0" title={`숨은 버그 ${bugsCount}개`}>
               <Bug className="w-3.5 h-3.5" />
               <span>{bugsCount}개</span>
             </div>

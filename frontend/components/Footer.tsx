@@ -15,7 +15,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-gray-900 text-gray-400">
+    <footer className="bg-[#010409] text-[#8b949e]">
       {/* Divider Pattern */}
       <div className="w-full h-16 relative overflow-hidden">
         <Image
@@ -40,8 +40,8 @@ export default function Footer() {
                 height={28}
                 className="rounded-md"
               />
-              <h3 className="text-xl font-bold text-white">
-                <span className="text-sky-500">QA</span> Arena
+              <h3 className="text-xl font-bold text-[#c9d1d9]">
+                <span className="text-[#58a6ff]">QA</span> Arena
               </h3>
             </div>
             <p className="text-sm">
@@ -53,20 +53,20 @@ export default function Footer() {
 
           {/* Platform Links */}
           <div>
-            <h4 className="font-semibold text-white mb-3">플랫폼</h4>
+            <h4 className="font-semibold text-[#c9d1d9] mb-3">플랫폼</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/problems" className="hover:text-white transition-colors">
+                <Link href="/problems" className="hover:text-[#c9d1d9] transition-colors">
                   문제 목록
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:text-white transition-colors">
+                <Link href="/dashboard" className="hover:text-[#c9d1d9] transition-colors">
                   학습 현황
                 </Link>
               </li>
               <li>
-                <Link href="/submissions" className="hover:text-white transition-colors">
+                <Link href="/submissions" className="hover:text-[#c9d1d9] transition-colors">
                   내 제출 기록
                 </Link>
               </li>
@@ -75,20 +75,20 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold text-white mb-3">법적 고지</h4>
+            <h4 className="font-semibold text-[#c9d1d9] mb-3">법적 고지</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/terms" className="hover:text-white transition-colors">
+                <Link href="/terms" className="hover:text-[#c9d1d9] transition-colors">
                   이용약관
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="hover:text-white transition-colors">
+                <Link href="/privacy" className="hover:text-[#c9d1d9] transition-colors">
                   개인정보처리방침
                 </Link>
               </li>
               <li>
-                <Link href="/oss" className="hover:text-white transition-colors">
+                <Link href="/oss" className="hover:text-[#c9d1d9] transition-colors">
                   오픈소스 라이선스
                 </Link>
               </li>
@@ -97,14 +97,14 @@ export default function Footer() {
 
           {/* Resources */}
           <div>
-            <h4 className="font-semibold text-white mb-3">리소스</h4>
+            <h4 className="font-semibold text-[#c9d1d9] mb-3">리소스</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
                   href="https://github.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors inline-flex items-center gap-1"
+                  className="hover:text-[#c9d1d9] transition-colors inline-flex items-center gap-1"
                 >
                   GitHub
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,14 +117,14 @@ export default function Footer() {
 
           {/* Contact / Inquiry */}
           <div>
-            <h4 className="font-semibold text-white mb-3">문의하기</h4>
+            <h4 className="font-semibold text-[#c9d1d9] mb-3">문의하기</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
                   href="https://forms.gle/mk5zYKMTMq4PGRQz7"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors inline-flex items-center gap-1"
+                  className="hover:text-[#c9d1d9] transition-colors inline-flex items-center gap-1"
                 >
                   버그 제보 / 건의
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,7 +135,7 @@ export default function Footer() {
               <li>
                 <a
                   href="mailto:support@qalabs.kr"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-[#c9d1d9] transition-colors"
                 >
                   support@qalabs.kr
                 </a>
@@ -145,11 +145,11 @@ export default function Footer() {
         </div>
 
         {/* Footer Bottom */}
-        <div className="border-t border-gray-800 pt-8 text-sm text-center space-y-2">
-          <p className="text-gray-400">
-            <span className="font-medium text-white"><span className="text-sky-500">QA</span> Arena</span> — 더 나은 테스트를 위한 오픈 학습 플랫폼
+        <div className="border-t border-[#30363d] pt-8 text-sm text-center space-y-2">
+          <p className="text-[#8b949e]">
+            <span className="font-medium text-[#c9d1d9]"><span className="text-[#58a6ff]">QA</span> Arena</span> — 더 나은 테스트를 위한 오픈 학습 플랫폼
           </p>
-          <p className="text-gray-500">
+          <p className="text-[#6e7681]">
             &copy; {new Date().getFullYear()} QA Arena. Made with ❤️ for QA Engineers.
           </p>
         </div>

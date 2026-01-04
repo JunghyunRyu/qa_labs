@@ -43,27 +43,27 @@ const DIFFICULTY_LABELS: Record<DifficultyFilter, string> = {
   Hard: "어려움",
 };
 
-// 난이도 Pill 버튼 색상 (선택/비선택) - Linear 스타일: 톤다운
+// 난이도 Pill 버튼 색상 (선택/비선택) - GitHub Dark 스타일
 const DIFFICULTY_PILL_COLORS: Record<DifficultyFilter, { active: string; inactive: string }> = {
   All: {
-    active: "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900",
-    inactive: "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700",
+    active: "bg-[#c9d1d9] text-[#0d1117] dark:bg-[#c9d1d9] dark:text-[#0d1117]",
+    inactive: "bg-[#f6f8fa] text-[#57606a] hover:bg-[#d0d7de] dark:bg-[#21262d] dark:text-[#8b949e] dark:hover:bg-[#30363d]",
   },
   "Very Easy": {
-    active: "bg-blue-600 text-white dark:bg-blue-500",
-    inactive: "bg-blue-50/80 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-900/50",
+    active: "bg-[#58a6ff] text-white dark:bg-[#58a6ff] dark:text-white",
+    inactive: "bg-[#ddf4ff] text-[#0969da] hover:bg-[#b6e3ff] dark:bg-[#388bfd26] dark:text-[#58a6ff] dark:hover:bg-[#388bfd40]",
   },
   Easy: {
-    active: "bg-emerald-600 text-white dark:bg-emerald-500",
-    inactive: "bg-emerald-50/80 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50",
+    active: "bg-[#3fb950] text-white dark:bg-[#3fb950] dark:text-white",
+    inactive: "bg-[#dafbe1] text-[#1a7f37] hover:bg-[#aceebb] dark:bg-[#238636]/20 dark:text-[#3fb950] dark:hover:bg-[#238636]/40",
   },
   Medium: {
-    active: "bg-amber-600 text-white dark:bg-amber-500",
-    inactive: "bg-amber-50/80 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-900/50",
+    active: "bg-[#d29922] text-white dark:bg-[#d29922] dark:text-white",
+    inactive: "bg-[#fff8c5] text-[#9a6700] hover:bg-[#fae17d] dark:bg-[#9e6a03]/20 dark:text-[#d29922] dark:hover:bg-[#9e6a03]/40",
   },
   Hard: {
-    active: "bg-red-600 text-white dark:bg-red-500",
-    inactive: "bg-red-50/80 text-red-700 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-900/50",
+    active: "bg-[#f85149] text-white dark:bg-[#f85149] dark:text-white",
+    inactive: "bg-[#ffebe9] text-[#cf222e] hover:bg-[#ffc1ba] dark:bg-[#f85149]/20 dark:text-[#f85149] dark:hover:bg-[#f85149]/40",
   },
 };
 
@@ -216,17 +216,17 @@ function ProblemsContent() {
       <div className="container mx-auto px-4 py-8">
         {/* 헤더 Skeleton */}
         <div className="mb-8">
-          <div className="h-9 w-32 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-2" />
-          <div className="h-5 w-64 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
+          <div className="h-9 w-32 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse mb-2" />
+          <div className="h-5 w-64 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse" />
         </div>
         {/* Control Bar Skeleton */}
-        <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-md p-4 mb-4 animate-pulse">
+        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md p-4 mb-4 animate-pulse border border-[#d0d7de] dark:border-[#30363d]">
           <div className="flex flex-col lg:flex-row gap-3">
-            <div className="h-10 flex-1 bg-neutral-200 dark:bg-neutral-800 rounded-lg" />
+            <div className="h-10 flex-1 bg-[#d0d7de] dark:bg-[#30363d] rounded-lg" />
             <div className="flex gap-2">
-              <div className="h-10 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
-              <div className="h-10 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
-              <div className="h-10 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
+              <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
+              <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
+              <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
             </div>
           </div>
         </div>
@@ -253,9 +253,9 @@ function ProblemsContent() {
       <div className="mb-8">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">문제 목록</h1>
+            <h1 className="text-3xl font-bold text-[#24292f] dark:text-[#c9d1d9] mb-2">문제 목록</h1>
             {hasActiveFilters ? (
-              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+              <p className="text-[#57606a] dark:text-[#8b949e] text-sm">
                 필터링 결과: {data.total}개
               </p>
             ) : (
@@ -265,7 +265,7 @@ function ProblemsContent() {
           {isAuthenticated && (
             <Link
               href="/problems/bookmarked"
-              className="flex items-center gap-2 px-4 py-2 bg-amber-50/80 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-[#fff8c5] dark:bg-[#9e6a03]/20 text-[#9a6700] dark:text-[#d29922] rounded-lg hover:bg-[#fae17d] dark:hover:bg-[#9e6a03]/40 transition-colors text-sm font-medium"
             >
               <Bookmark className="w-4 h-4" />
               북마크한 문제
@@ -275,37 +275,37 @@ function ProblemsContent() {
       </div>
 
       {/* 컨트롤 바 - 검색 + 빠른 필터 + 정렬 */}
-      <div className="sticky top-14 z-30 bg-white dark:bg-neutral-900 rounded-lg shadow-md p-4 mb-4 transition-colors">
+      <div className="sticky top-14 z-30 bg-white dark:bg-[#161b22] rounded-lg shadow-md p-4 mb-4 transition-colors border border-[#d0d7de] dark:border-[#30363d]">
         <div className="flex flex-col lg:flex-row gap-3">
           {/* 검색창 */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 dark:text-neutral-500 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#57606a] dark:text-[#8b949e] w-5 h-5" />
             <input
               type="text"
               placeholder="문제 검색..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-neutral-400 focus:border-transparent bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-[#d0d7de] dark:border-[#30363d] rounded-lg focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent bg-white dark:bg-[#0d1117] text-[#24292f] dark:text-[#c9d1d9] placeholder-[#6e7781] dark:placeholder-[#6e7681] text-sm"
               aria-label="문제 검색"
             />
           </div>
 
           {/* NEW 필터 + 난이도 Pill 버튼 */}
           <div className="flex items-center gap-1" role="group" aria-label="필터">
-            {/* NEW 필터 버튼 - Linear 스타일: 톤다운된 purple */}
+            {/* NEW 필터 버튼 - GitHub Dark 스타일: 하늘색 */}
             <button
               onClick={() => setShowNewOnly(!showNewOnly)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
                 showNewOnly
-                  ? "bg-purple-600 dark:bg-purple-700 text-white"
-                  : "bg-purple-50/80 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-950/50"
+                  ? "bg-[#58a6ff] text-white"
+                  : "bg-[#ddf4ff] text-[#0969da] hover:bg-[#b6e3ff] dark:bg-[#388bfd26] dark:text-[#58a6ff] dark:hover:bg-[#388bfd40]"
               }`}
               aria-pressed={showNewOnly}
             >
               <Sparkles className="w-3 h-3" />
               NEW
             </button>
-            <span className="w-px h-5 bg-neutral-300 dark:bg-neutral-700 mx-1" />
+            <span className="w-px h-5 bg-[#d0d7de] dark:bg-[#30363d] mx-1" />
             {/* 난이도 필터 버튼 */}
             {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => (
               <button
@@ -328,14 +328,14 @@ function ProblemsContent() {
 
             {/* 도메인 드롭다운 */}
             <div className="relative flex items-center">
-              <Globe className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+              <Globe className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
               <select
                 value={domainFilter}
                 onChange={(e) => setDomainFilter(e.target.value as DomainFilter)}
-                className={`appearance-none pl-8 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-neutral-500 focus:border-transparent cursor-pointer ${
+                className={`appearance-none pl-8 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent cursor-pointer ${
                   domainFilter !== "All"
-                    ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-800/50 dark:text-emerald-300"
-                    : "bg-white border-neutral-300 text-neutral-700 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300"
+                    ? "bg-[#dafbe1] border-[#aceebb] text-[#1a7f37] dark:bg-[#238636]/20 dark:border-[#238636]/40 dark:text-[#3fb950]"
+                    : "bg-white border-[#d0d7de] text-[#24292f] dark:bg-[#0d1117] dark:border-[#30363d] dark:text-[#c9d1d9]"
                 }`}
                 aria-label="도메인 필터"
               >
@@ -347,16 +347,16 @@ function ProblemsContent() {
                 <option value="platform">플랫폼</option>
                 <option value="content">컨텐츠</option>
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
             </div>
 
             {/* 정렬 드롭다운 */}
             <div className="relative flex items-center">
-              <ArrowUpDown className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+              <ArrowUpDown className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="appearance-none pl-8 pr-8 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 focus:ring-2 focus:ring-neutral-500 focus:border-transparent cursor-pointer"
+                className="appearance-none pl-8 pr-8 py-2 border border-[#d0d7de] dark:border-[#30363d] rounded-lg text-sm bg-white dark:bg-[#0d1117] text-[#24292f] dark:text-[#c9d1d9] focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent cursor-pointer"
                 aria-label="정렬 옵션"
               >
                 <option value="difficulty-asc">난이도 낮은순</option>
@@ -364,7 +364,7 @@ function ProblemsContent() {
                 <option value="success-rate-desc">정답률 높은순</option>
                 <option value="success-rate-asc">정답률 낮은순</option>
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
             </div>
 
             {/* 태그 필터 버튼 */}
@@ -372,8 +372,8 @@ function ProblemsContent() {
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                 showFilters || selectedTags.length > 0
-                  ? "bg-purple-50/80 text-purple-700 border border-purple-200/60 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-800/50"
-                  : "bg-neutral-100 text-neutral-700 border border-neutral-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  ? "bg-[#ddf4ff] text-[#0969da] border border-[#b6e3ff] dark:bg-[#388bfd26] dark:text-[#58a6ff] dark:border-[#388bfd40]"
+                  : "bg-[#f6f8fa] text-[#24292f] border border-[#d0d7de] dark:bg-[#21262d] dark:text-[#c9d1d9] dark:border-[#30363d] hover:bg-[#eaeef2] dark:hover:bg-[#30363d]"
               }`}
               aria-expanded={showFilters}
               aria-label="태그 필터"
@@ -381,7 +381,7 @@ function ProblemsContent() {
               <Tag className="w-4 h-4" />
               <span className="hidden sm:inline">태그</span>
               {selectedTags.length > 0 && (
-                <span className="px-1.5 py-0.5 bg-purple-600 dark:bg-purple-700 text-white text-xs rounded-full min-w-[18px] text-center">
+                <span className="px-1.5 py-0.5 bg-[#58a6ff] text-white text-xs rounded-full min-w-[18px] text-center">
                   {selectedTags.length}
                 </span>
               )}
@@ -391,7 +391,7 @@ function ProblemsContent() {
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-[#ffebe9] text-[#cf222e] border border-[#ffc1ba] hover:bg-[#ffc1ba] dark:bg-[#f85149]/20 dark:text-[#f85149] dark:border-[#f85149]/40 dark:hover:bg-[#f85149]/30 transition-colors"
                 aria-label="모든 필터 초기화"
               >
                 <X className="w-4 h-4" />
@@ -403,7 +403,7 @@ function ProblemsContent() {
 
         {/* 태그 필터 패널 */}
         {showFilters && availableTags.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="mt-4 pt-4 border-t border-[#d0d7de] dark:border-[#30363d]">
             <div className="flex flex-wrap gap-2">
               {availableTags.map((tag) => (
                 <button
@@ -411,8 +411,8 @@ function ProblemsContent() {
                   onClick={() => handleTagToggle(tag.slug)}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     selectedTags.includes(tag.slug)
-                      ? "bg-purple-600 dark:bg-purple-700 text-white"
-                      : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                      ? "bg-[#58a6ff] text-white"
+                      : "bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] hover:bg-[#eaeef2] dark:hover:bg-[#30363d]"
                   }`}
                   aria-pressed={selectedTags.includes(tag.slug)}
                 >
@@ -428,12 +428,12 @@ function ProblemsContent() {
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 mb-4 px-1">
           {showNewOnly && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50/80 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#ddf4ff] dark:bg-[#388bfd26] text-[#0969da] dark:text-[#58a6ff] rounded-full text-xs font-medium">
               <Sparkles className="w-3 h-3" />
               NEW
               <button
                 onClick={() => setShowNewOnly(false)}
-                className="ml-0.5 hover:text-purple-900 dark:hover:text-purple-100"
+                className="ml-0.5 hover:text-[#0550ae] dark:hover:text-[#79c0ff]"
                 aria-label="NEW 필터 제거"
               >
                 <X className="w-3 h-3" />
@@ -441,11 +441,11 @@ function ProblemsContent() {
             </span>
           )}
           {difficultyFilter !== "All" && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-medium">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded-full text-xs font-medium">
               {DIFFICULTY_LABELS[difficultyFilter]}
               <button
                 onClick={() => setDifficultyFilter("All")}
-                className="ml-0.5 hover:text-neutral-900 dark:hover:text-neutral-100"
+                className="ml-0.5 hover:text-[#0d1117] dark:hover:text-white"
                 aria-label={`${DIFFICULTY_LABELS[difficultyFilter]} 필터 제거`}
               >
                 <X className="w-3 h-3" />
@@ -453,11 +453,11 @@ function ProblemsContent() {
             </span>
           )}
           {domainFilter !== "All" && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-medium">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#dafbe1] dark:bg-[#238636]/20 text-[#1a7f37] dark:text-[#3fb950] rounded-full text-xs font-medium">
               {DOMAIN_LABELS[domainFilter]}
               <button
                 onClick={() => setDomainFilter("All")}
-                className="ml-0.5 hover:text-emerald-900 dark:hover:text-emerald-100"
+                className="ml-0.5 hover:text-[#116329] dark:hover:text-[#56d364]"
                 aria-label={`${DOMAIN_LABELS[domainFilter]} 필터 제거`}
               >
                 <X className="w-3 h-3" />
@@ -469,12 +469,12 @@ function ProblemsContent() {
             return (
               <span
                 key={tagSlug}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50/80 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium"
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#ddf4ff] dark:bg-[#388bfd26] text-[#0969da] dark:text-[#58a6ff] rounded-full text-xs font-medium"
               >
                 {tagModel?.labelKo || tagSlug}
                 <button
                   onClick={() => handleTagToggle(tagSlug)}
-                  className="ml-0.5 hover:text-purple-900 dark:hover:text-purple-100"
+                  className="ml-0.5 hover:text-[#0550ae] dark:hover:text-[#79c0ff]"
                   aria-label={`${tagModel?.labelKo || tagSlug} 태그 제거`}
                 >
                   <X className="w-3 h-3" />
@@ -483,11 +483,11 @@ function ProblemsContent() {
             );
           })}
           {debouncedSearchQuery && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-full text-xs font-medium">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded-full text-xs font-medium">
               &quot;{debouncedSearchQuery}&quot;
               <button
                 onClick={() => setSearchQuery("")}
-                className="ml-0.5 hover:text-neutral-900 dark:hover:text-neutral-100"
+                className="ml-0.5 hover:text-[#0d1117] dark:hover:text-white"
                 aria-label="검색어 제거"
               >
                 <X className="w-3 h-3" />
@@ -496,7 +496,7 @@ function ProblemsContent() {
           )}
           <button
             onClick={clearFilters}
-            className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 underline ml-2"
+            className="text-xs text-[#6e7781] dark:text-[#8b949e] hover:text-[#24292f] dark:hover:text-[#c9d1d9] underline ml-2"
           >
             모두 지우기
           </button>
@@ -509,8 +509,8 @@ function ProblemsContent() {
       )}
 
       {sortedProblems.length === 0 ? (
-        <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-800 p-8 text-center transition-colors">
-          <p className="text-neutral-600 dark:text-neutral-400">
+        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md border border-[#d0d7de] dark:border-[#30363d] p-8 text-center transition-colors">
+          <p className="text-[#57606a] dark:text-[#8b949e]">
             {hasActiveFilters
               ? "필터 조건에 맞는 문제가 없습니다."
               : "등록된 문제가 없습니다."}
@@ -518,7 +518,7 @@ function ProblemsContent() {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="mt-4 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+              className="mt-4 px-4 py-2 bg-[#24292f] dark:bg-[#f0f6fc] text-white dark:text-[#24292f] rounded-lg hover:bg-[#32383f] dark:hover:bg-[#d0d7de] transition-colors"
             >
               필터 초기화
             </button>
@@ -538,18 +538,18 @@ function ProblemsContent() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 md:px-4 py-2 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2"
+                className="px-3 md:px-4 py-2 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded hover:bg-[#eaeef2] dark:hover:bg-[#30363d] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:ring-offset-2"
                 aria-label="이전 페이지"
               >
                 이전
               </button>
-              <span className="px-3 md:px-4 py-2 text-neutral-700 dark:text-neutral-300 text-sm md:text-base" aria-current="page">
+              <span className="px-3 md:px-4 py-2 text-[#24292f] dark:text-[#c9d1d9] text-sm md:text-base" aria-current="page">
                 {page} / {data.total_pages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))}
                 disabled={page === data.total_pages}
-                className="px-3 md:px-4 py-2 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2"
+                className="px-3 md:px-4 py-2 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded hover:bg-[#eaeef2] dark:hover:bg-[#30363d] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:ring-offset-2"
                 aria-label="다음 페이지"
               >
                 다음
@@ -562,7 +562,7 @@ function ProblemsContent() {
       <div className="mt-8">
         <Link
           href="/"
-          className="text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
+          className="text-[#57606a] hover:text-[#24292f] dark:text-[#8b949e] dark:hover:text-[#c9d1d9] transition-colors"
         >
           ← 홈으로 돌아가기
         </Link>

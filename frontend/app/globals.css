@@ -5,49 +5,59 @@ html, body {
 }
 
 :root {
-  /* === Linear/Vercel 스타일 - 라이트 모드 === */
+  /* === GitHub Dark 스타일 - 라이트 모드 (토글 시 사용) === */
   --background: #ffffff;
-  --foreground: #0a0a0a;
+  --foreground: #24292f;
   --card-background: #ffffff;
-  --card-border: #e5e5e5;
-  --muted: #737373;
-  --accent: #0a0a0a;  /* Linear 스타일: 검정이 기본 액센트 */
+  --card-border: #d0d7de;
+  --muted: #57606a;
+  --accent: #0969da;  /* GitHub Blue */
 
-  /* 3단 서페이스 계층 (Linear 스타일) */
-  --surface: #fafafa;              /* neutral-50: 섹션 바닥 */
-  --surface-elevated: #ffffff;     /* white: 일반 카드 */
-  --surface-float: #ffffff;        /* white: 강조 카드 (shadow 추가) */
-  --border-subtle: #e5e5e5;        /* neutral-200: 카드 보더 */
-  --border-default: #d4d4d4;       /* neutral-300: 호버 보더 */
-  --border-strong: #a3a3a3;        /* neutral-400: 활성 보더 */
+  /* 서페이스 계층 */
+  --surface: #f6f8fa;
+  --surface-elevated: #ffffff;
+  --surface-float: #ffffff;
+  --border-subtle: #d0d7de;
+  --border-default: #d0d7de;
+  --border-strong: #8c959f;
 
   /* 텍스트 계층 */
-  --text-primary: #0a0a0a;
-  --text-secondary: #525252;
-  --text-muted: #737373;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-muted: #6e7781;
+
+  /* 상태 색상 */
+  --success: #1a7f37;
+  --warning: #9a6700;
+  --error: #cf222e;
 }
 
 .dark {
-  /* === Linear/Vercel 스타일 - 다크 모드 === */
-  --background: #000000;           /* 순수 검정 (Linear 스타일) */
-  --foreground: #fafafa;
-  --card-background: #171717;
-  --card-border: #262626;
-  --muted: #737373;
-  --accent: #fafafa;  /* Linear 스타일: 흰색이 다크모드 액센트 */
+  /* === GitHub Dark 스타일 === */
+  --background: #0d1117;           /* 진한 청회색 */
+  --foreground: #c9d1d9;           /* 오프화이트 */
+  --card-background: #161b22;      /* 카드 배경 */
+  --card-border: #30363d;          /* 테두리 */
+  --muted: #8b949e;
+  --accent: #58a6ff;               /* 하늘색 강조 */
 
-  /* 3단 서페이스 계층 (Linear 스타일) */
-  --surface: #0a0a0a;              /* 섹션 바닥 */
-  --surface-elevated: #171717;     /* 일반 카드 */
-  --surface-float: #1a1a1a;        /* 강조 카드 (shadow 추가) */
-  --border-subtle: #262626;        /* neutral-800: 카드 보더 */
-  --border-default: #404040;       /* neutral-700: 호버 보더 */
-  --border-strong: #525252;        /* neutral-600: 활성 보더 */
+  /* 서페이스 계층 (GitHub Dark) */
+  --surface: #010409;              /* 깊은 배경 */
+  --surface-elevated: #161b22;     /* 일반 카드 */
+  --surface-float: #1f2428;        /* 호버/강조 카드 */
+  --border-subtle: #30363d;        /* 기본 보더 */
+  --border-default: #30363d;
+  --border-strong: #484f58;        /* 강조 보더 */
 
   /* 텍스트 계층 */
-  --text-primary: #fafafa;
-  --text-secondary: #a3a3a3;
-  --text-muted: #737373;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+
+  /* 상태 색상 (다크 모드용) */
+  --success: #3fb950;
+  --warning: #d29922;
+  --error: #f85149;
 }
 
 @theme inline {
@@ -73,7 +83,7 @@ body {
 
 /* Hero Section - Highlight Effect */
 .highlight {
-  background: linear-gradient(transparent 60%, rgba(37, 99, 235, 0.35) 60%);
+  background: linear-gradient(transparent 60%, rgba(88, 166, 255, 0.35) 60%);
   padding: 0 0.15em;
   border-radius: 0.2em;
 }

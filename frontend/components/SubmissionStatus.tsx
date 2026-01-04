@@ -12,7 +12,7 @@ interface SubmissionStatusProps {
 
 export default function SubmissionStatus({ status, createdAt, progress }: SubmissionStatusProps) {
   const [elapsedTime, setElapsedTime] = useState<string>("");
-  // Linear 스타일: 톤다운된 상태 색상
+  // GitHub Dark 스타일: 상태 색상
   const statusConfig: Record<string, {
     label: string;
     color: string;
@@ -22,32 +22,32 @@ export default function SubmissionStatus({ status, createdAt, progress }: Submis
   }> = {
     PENDING: {
       label: "대기 중",
-      color: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
+      color: "bg-[#f6f8fa] text-[#57606a] dark:bg-[#21262d] dark:text-[#8b949e]",
       Icon: Clock,
       message: "채점을 진행하고 있습니다...",
     },
     RUNNING: {
       label: "채점 중",
-      color: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
+      color: "bg-[#f6f8fa] text-[#24292f] dark:bg-[#21262d] dark:text-[#c9d1d9]",
       Icon: Loader2,
       animate: true,
       message: "테스트 코드를 실행하고 있습니다...",
     },
     SUCCESS: {
       label: "완료",
-      color: "bg-emerald-50/80 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400",
+      color: "bg-[#dafbe1] text-[#1a7f37] dark:bg-[#238636]/20 dark:text-[#3fb950]",
       Icon: CheckCircle,
       message: "채점이 완료되었습니다.",
     },
     FAILURE: {
       label: "실패",
-      color: "bg-red-50/80 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+      color: "bg-[#ffebe9] text-[#cf222e] dark:bg-[#f85149]/20 dark:text-[#f85149]",
       Icon: XCircle,
       message: "테스트가 실패했습니다.",
     },
     ERROR: {
       label: "오류",
-      color: "bg-amber-50/80 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
+      color: "bg-[#fff8c5] text-[#9a6700] dark:bg-[#9e6a03]/20 dark:text-[#d29922]",
       Icon: AlertTriangle,
       message: "채점 중 오류가 발생했습니다.",
     },
@@ -102,23 +102,23 @@ export default function SubmissionStatus({ status, createdAt, progress }: Submis
       </div>
       {(status === "PENDING" || status === "RUNNING") && (
         <div className="ml-7 space-y-3">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">{config.message}</p>
+          <p className="text-sm text-[#57606a] dark:text-[#8b949e]">{config.message}</p>
 
-          {/* Progress bar - Linear 스타일 */}
+          {/* Progress bar - GitHub Dark 스타일 */}
           {status === "RUNNING" && progress && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-600 dark:text-neutral-400">{progress.message}</span>
-                <span className="text-neutral-500 dark:text-neutral-500">{progress.percent}%</span>
+                <span className="text-[#57606a] dark:text-[#8b949e]">{progress.message}</span>
+                <span className="text-[#6e7781] dark:text-[#6e7681]">{progress.percent}%</span>
               </div>
-              <div className="w-full bg-neutral-200 dark:bg-neutral-800 rounded-full h-2.5">
+              <div className="w-full bg-[#eaeef2] dark:bg-[#21262d] rounded-full h-2.5">
                 <div
-                  className="bg-neutral-600 dark:bg-neutral-400 h-2.5 rounded-full transition-all duration-300"
+                  className="bg-[#58a6ff] dark:bg-[#58a6ff] h-2.5 rounded-full transition-all duration-300"
                   style={{ width: `${progress.percent}%` }}
                 ></div>
               </div>
               {progress.current !== undefined && progress.total !== undefined && (
-                <p className="text-xs text-neutral-500 dark:text-neutral-500">
+                <p className="text-xs text-[#6e7781] dark:text-[#6e7681]">
                   {progress.current} / {progress.total} 완료
                 </p>
               )}
@@ -126,7 +126,7 @@ export default function SubmissionStatus({ status, createdAt, progress }: Submis
           )}
 
           {elapsedTime && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-500">
+            <p className="text-xs text-[#6e7781] dark:text-[#6e7681]">
               경과 시간: {elapsedTime}
             </p>
           )}
