@@ -24,6 +24,13 @@ const DIFFICULTY_COLORS: Record<string, string> = {
   Hard: "#ef4444", // red-500
 };
 
+const DIFFICULTY_LABELS: Record<string, string> = {
+  "Very Easy": "입문",
+  Easy: "초급",
+  Medium: "중급",
+  Hard: "고급",
+};
+
 const DIFFICULTY_ORDER = ["Very Easy", "Easy", "Medium", "Hard"];
 
 export default function DifficultyBreakdownChart({
@@ -81,6 +88,7 @@ export default function DifficultyBreakdownChart({
               dataKey="difficulty"
               tick={{ fontSize: 12 }}
               width={60}
+              tickFormatter={(value) => DIFFICULTY_LABELS[value] || value}
             />
             <Tooltip
               contentStyle={{
@@ -93,7 +101,7 @@ export default function DifficultyBreakdownChart({
                 if (name === "avg_score") return [`${v.toFixed(1)}점`, "평균 점수"];
                 return [v, name];
               }}
-              labelFormatter={(label) => `${label} 난이도`}
+              labelFormatter={(label) => `${DIFFICULTY_LABELS[label] || label} 난이도`}
             />
             <Bar dataKey="avg_score" radius={[0, 4, 4, 0]}>
               {sortedData.map((entry, index) => (
@@ -120,7 +128,7 @@ export default function DifficultyBreakdownChart({
                 style={{ backgroundColor: DIFFICULTY_COLORS[stat.difficulty] }}
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                {stat.difficulty}
+                {DIFFICULTY_LABELS[stat.difficulty] || stat.difficulty}
               </span>
             </div>
             <div className="text-right">
