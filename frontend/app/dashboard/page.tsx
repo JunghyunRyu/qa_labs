@@ -39,6 +39,11 @@ const SkillBreakdownChart = dynamic(
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
+const RecentSubmissions = dynamic(
+  () => import("@/components/dashboard/RecentSubmissions"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+
 function ChartSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
@@ -275,6 +280,11 @@ export default function DashboardPage() {
                 data={summary?.skill_stats || []}
                 isLoading={isLoadingSummary}
               />
+            </div>
+
+            {/* Recent Submissions */}
+            <div className="mt-6">
+              <RecentSubmissions limit={5} />
             </div>
 
           </>
