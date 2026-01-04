@@ -277,14 +277,14 @@ export default function Home() {
           {/* 2컬럼 그리드: Desktop (좌: 카피/CTA, 우: ResultPanel) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* 좌측: 카피 + CTA */}
-            <div className="text-center lg:text-left">
+            <div className="text-center">
               <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-8 sm:py-8 inline-block">
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
                   당신의 테스트는<br className="hidden sm:block" />{' '}
                   <span className="highlight">버그를 잡을 수 있습니까?</span>
                 </h1>
                 <p className="mt-5 text-base sm:text-lg text-white/85 max-w-xl lg:max-w-none">
-                  테스트 커버리지 100%의 함정을 확인해보세요.
+                  단순 기능 통과(Pass)를 넘어, 테스트 케이스의 견고함(Robustness)을 검증합니다.
                 </p>
               </div>
 
@@ -362,15 +362,14 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">숨은 버그 탐지율 채점</h3>
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">가짜 커버리지 판별</h3>
               <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
-                단순 커버리지가 아닙니다. </p>
-              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
-                <span className="font-semibold text-[var(--accent)]">{''}버그 탐지율</span>{' '}
-              로 진짜 검증 강도를 측정합니다.</p>
+                단순 커버리지가 아닙니다.{' '}
+                <span className="font-semibold text-[var(--accent)]">버그 탐지율</span>로 진짜 검증 강도를 측정합니다.
+              </p>
             </div>
 
-            {/* Card 2: 브라우저 즉시 실행 */}
+            {/* Card 2: 로컬 설정 Zero */}
             <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
                 {/* 브라우저 + 플레이 아이콘 */}
@@ -396,14 +395,15 @@ export default function Home() {
                   <path fill="currentColor" d="M10 11v6l5-3-5-3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">브라우저에서 즉시 실행</h3>
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">로컬 설정 Zero</h3>
               <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
-                <span className="font-semibold text-[var(--accent)]">로컬 세팅 없이</span>{' '}
-                바로 코드를 작성하고, 실행 결과와 로그를 즉시 확인합니다.
+                복잡한 로컬 환경 탓하지 마세요.{' '}
+                <span className="font-semibold text-[var(--accent)]">0초 만에</span>{' '}
+                격리된 환경에서 순수 로직을 검증합니다.
               </p>
             </div>
 
-            {/* Card 3: AI 분석 리포트 */}
+            {/* Card 3: 테스트 사각지대 분석 */}
             <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
                 {/* 문서 + 돋보기 + AI 노드 아이콘 */}
@@ -440,13 +440,13 @@ export default function Home() {
                   <path strokeWidth={1.5} d="M9 16h2" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">AI 분석 리포트</h3>
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">테스트 사각지대 분석</h3>
               <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
-                놓친 케이스와 취약 지점을 요약하고{" "}
+                AI가 당신이 놓친{' '}
                 <span className="card-desc font-semibold text-[var(--accent)] whitespace-nowrap">
-                  보완할 테스트 우선순위
-                </span>{" "}
-                를 제안합니다.
+                  사각지대(Blind Spots)
+                </span>
+                를 찾아내고, 보완할 엣지 케이스를 제안합니다.
               </p>
             </div>
           </div>
