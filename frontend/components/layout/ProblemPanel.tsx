@@ -447,22 +447,6 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           />
         )}
 
-        {/* 핵심 테스트 포인트 - summary 표시 */}
-        {summary && (
-          <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-            <div className="bg-sky-50 dark:bg-sky-900/20 rounded-lg p-3 border border-sky-200 dark:border-sky-700">
-              <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300
-                              prose-strong:text-gray-900 dark:prose-strong:text-gray-100
-                              prose-ul:my-1 prose-ul:space-y-0.5 prose-li:my-0
-                              prose-p:my-1 prose-p:leading-relaxed">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {summary}
-                </ReactMarkdown>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* "전체 문제" 버튼 - 핵심 테스트 포인트 영역 대체 (M5-4: ref for text selection) */}
         <div ref={testPointsRef} className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
           <button
@@ -482,6 +466,21 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
 
       {/* ===== SCROLLABLE ACCORDION AREA ===== */}
       <div ref={contentRef} className="flex-1 min-h-0 overflow-y-auto">
+        {/* 핵심 테스트 포인트 - summary 표시 */}
+        {summary && (
+          <div className="p-3 pb-0">
+            <div className="bg-sky-50 dark:bg-sky-900/20 rounded-lg p-2.5 border border-sky-200 dark:border-sky-700">
+              <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed
+                              [&_strong]:text-gray-800 [&_strong]:dark:text-gray-200 [&_strong]:font-semibold
+                              [&_p]:mb-1.5 [&_p]:last:mb-0">
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                  {summary}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* M5-5: AI Hint Panel */}
         <div className="p-3 pb-0">
           <HintPanel problemId={problem.id} />
