@@ -10,7 +10,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Lightbulb, Lock, Unlock, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { Lightbulb, Lock, Unlock, ChevronDown, ChevronUp, AlertTriangle, LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHints, HINT_LEVELS } from "@/hooks/useHints";
 
@@ -306,9 +306,25 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
       {/* 에러 메시지 */}
       {error && (
         <div className="px-4 pb-3">
-          <div className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-            {error}
-          </div>
+          {error === "AUTH_REQUIRED" ? (
+            <div className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 p-3 rounded-lg">
+              <LogIn className="w-4 h-4 shrink-0" />
+              <span>
+                힌트를 보려면{" "}
+                <a
+                  href="/api/auth/login"
+                  className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100"
+                >
+                  로그인
+                </a>
+                이 필요합니다.
+              </span>
+            </div>
+          ) : (
+            <div className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+              {error}
+            </div>
+          )}
         </div>
       )}
 

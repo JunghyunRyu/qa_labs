@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 // Accordion section types for problem panel
-export type AccordionSectionType = 'examples' | 'hints' | 'exceptions' | 'function' | 'other';
+export type AccordionSectionType = 'examples' | 'hints' | 'exceptions' | 'function' | 'strategy' | 'other';
 
 // Panel sizing constants
 export const BOTTOM_PANEL_MIN = 120;
@@ -74,6 +74,7 @@ const DEFAULT_STATE = {
     hints: false,        // 힌트: 기본 닫힘 (스포일러 방지)
     exceptions: true,    // 예외: 기본 열림
     function: true,      // 함수: 기본 열림
+    strategy: true,      // 테스트 전략: 기본 열림
     other: true,         // 기타: 기본 열림
   } as Record<AccordionSectionType, boolean>,
 };

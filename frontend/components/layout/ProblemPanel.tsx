@@ -26,10 +26,8 @@ import TagChips from "@/components/TagChips";
 import CopyButton from "@/components/CopyButton";
 import Accordion from "@/components/ui/Accordion";
 import ProblemSearchBar from "@/components/layout/ProblemSearchBar";
-import ContractCard from "@/components/ContractCard";
 import TestPointsList from "@/components/TestPointsList";
 import HintPanel from "@/components/HintPanel";
-import { parseContract } from "@/lib/contractParser";
 import { useTextSearch } from "@/hooks/useTextSearch";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -311,12 +309,6 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   // Get summary for sticky area - prefer problem.summary field
   const summary = useMemo(() => getSummary(problem), [problem]);
 
-  // Parse contract (function signature + return interface)
-  const contract = useMemo(
-    () => parseContract(problem.function_signature, problem.description_md),
-    [problem.function_signature, problem.description_md]
-  );
-
   // Separate sticky sections (overview, io, constraints) from accordion sections
   const stickyTypes = new Set(['overview', 'io', 'constraints', 'task']);
   const stickySections = sections.filter(s => stickyTypes.has(s.type));
@@ -455,10 +447,21 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           />
         )}
 
-        {/* Function Contract - Always visible (M5-1) */}
-        <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-          <ContractCard contract={contract} defaultExpanded={false} />
-        </div>
+        {/* 핵심 테스트 포인트 - summary 표시 */}
+        {summary && (
+          <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="bg-sky-50 dark:bg-sky-900/20 rounded-lg p-3 border border-sky-200 dark:border-sky-700">
+              <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300
+                              prose-strong:text-gray-900 dark:prose-strong:text-gray-100
+                              prose-ul:my-1 prose-ul:space-y-0.5 prose-li:my-0
+                              prose-p:my-1 prose-p:leading-relaxed">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {summary}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* "전체 문제" 버튼 - 핵심 테스트 포인트 영역 대체 (M5-4: ref for text selection) */}
         <div ref={testPointsRef} className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">

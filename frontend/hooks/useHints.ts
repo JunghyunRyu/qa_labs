@@ -132,6 +132,10 @@ export function useHints({ problemId, autoFetch = true }: UseHintsOptions): UseH
         });
 
         if (!response.ok) {
+          // 401 인증 에러는 특별히 처리
+          if (response.status === 401) {
+            throw new Error("AUTH_REQUIRED");
+          }
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.detail || `Failed to view hint: ${response.status}`);
         }
