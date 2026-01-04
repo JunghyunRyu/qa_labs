@@ -5,33 +5,49 @@ html, body {
 }
 
 :root {
+  /* === Linear/Vercel 스타일 - 라이트 모드 === */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0a0a0a;
   --card-background: #ffffff;
-  --card-border: #e5e7eb;
-  --muted: #6b7280;
-  --accent: #0ea5e9;  /* Electric Blue */
+  --card-border: #e5e5e5;
+  --muted: #737373;
+  --accent: #0a0a0a;  /* Linear 스타일: 검정이 기본 액센트 */
 
-  /* 3단 서페이스 계층 (랜딩 UI 통일) */
-  --surface: #f8fafc;              /* slate-50: 섹션 바닥 */
+  /* 3단 서페이스 계층 (Linear 스타일) */
+  --surface: #fafafa;              /* neutral-50: 섹션 바닥 */
   --surface-elevated: #ffffff;     /* white: 일반 카드 */
   --surface-float: #ffffff;        /* white: 강조 카드 (shadow 추가) */
-  --border-subtle: #e2e8f0;        /* slate-200: 카드 보더 */
+  --border-subtle: #e5e5e5;        /* neutral-200: 카드 보더 */
+  --border-default: #d4d4d4;       /* neutral-300: 호버 보더 */
+  --border-strong: #a3a3a3;        /* neutral-400: 활성 보더 */
+
+  /* 텍스트 계층 */
+  --text-primary: #0a0a0a;
+  --text-secondary: #525252;
+  --text-muted: #737373;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card-background: #1a1a1a;
-  --card-border: #374151;
-  --muted: #9ca3af;
-  --accent: #38bdf8;  /* Electric Blue (light variant) */
+  /* === Linear/Vercel 스타일 - 다크 모드 === */
+  --background: #000000;           /* 순수 검정 (Linear 스타일) */
+  --foreground: #fafafa;
+  --card-background: #171717;
+  --card-border: #262626;
+  --muted: #737373;
+  --accent: #fafafa;  /* Linear 스타일: 흰색이 다크모드 액센트 */
 
-  /* 3단 서페이스 계층 (다크모드) */
-  --surface: #0f172a;              /* slate-900: 섹션 바닥 */
-  --surface-elevated: #1e293b;     /* slate-800: 일반 카드 */
-  --surface-float: #1e293b;        /* slate-800: 강조 카드 (shadow 추가) */
-  --border-subtle: #334155;        /* slate-700: 카드 보더 */
+  /* 3단 서페이스 계층 (Linear 스타일) */
+  --surface: #0a0a0a;              /* 섹션 바닥 */
+  --surface-elevated: #171717;     /* 일반 카드 */
+  --surface-float: #1a1a1a;        /* 강조 카드 (shadow 추가) */
+  --border-subtle: #262626;        /* neutral-800: 카드 보더 */
+  --border-default: #404040;       /* neutral-700: 호버 보더 */
+  --border-strong: #525252;        /* neutral-600: 활성 보더 */
+
+  /* 텍스트 계층 */
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
 }
 
 @theme inline {
@@ -144,11 +160,11 @@ body {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
 }
 
-/* 카드 호버 효과 */
+/* 카드 호버 효과 - Linear 스타일 */
 .card-base:hover,
 .card-float:hover {
   transform: translateY(-2px);
-  border-color: #3b82f6;         /* blue-500 */
+  border-color: var(--border-strong);  /* neutral-400 / neutral-600 */
 }
 
 /* 다크 테마 카드 (Showcase 섹션용) */

@@ -12,34 +12,35 @@ interface ProblemCardProps {
   problem: ProblemListItem;
 }
 
+// Linear 스타일: 톤다운된 색상, 미니멀한 그라데이션
 const difficultyConfig = {
   "Very Easy": {
-    colors: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700",
+    colors: "bg-blue-50/80 text-blue-700 border-blue-200/60 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800/50",
     icon: <TrendingDown className="w-3 h-3" />,
     label: "아주쉬움",
-    gradient: "from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950",
-    borderClass: "border-blue-300 dark:border-blue-700",
+    gradient: "from-neutral-50 to-blue-50/50 dark:from-neutral-900 dark:to-blue-950/30",
+    borderClass: "border-neutral-200 dark:border-neutral-800",
   },
   Easy: {
-    colors: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700",
+    colors: "bg-emerald-50/80 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800/50",
     icon: <TrendingDown className="w-3 h-3" />,
     label: "쉬움",
-    gradient: "from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950",
-    borderClass: "border-green-300 dark:border-green-700",
+    gradient: "from-neutral-50 to-emerald-50/50 dark:from-neutral-900 dark:to-emerald-950/30",
+    borderClass: "border-neutral-200 dark:border-neutral-800",
   },
   Medium: {
-    colors: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/40 dark:text-yellow-300 dark:border-yellow-700",
+    colors: "bg-amber-50/80 text-amber-700 border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/50",
     icon: <Minus className="w-3 h-3" />,
     label: "보통",
-    gradient: "from-yellow-50 to-amber-50 dark:from-yellow-950 dark:to-amber-950",
-    borderClass: "border-yellow-300 dark:border-yellow-700",
+    gradient: "from-neutral-50 to-amber-50/50 dark:from-neutral-900 dark:to-amber-950/30",
+    borderClass: "border-neutral-200 dark:border-neutral-800",
   },
   Hard: {
-    colors: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/40 dark:text-red-300 dark:border-red-700",
+    colors: "bg-red-50/80 text-red-700 border-red-200/60 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800/50",
     icon: <TrendingUp className="w-3 h-3" />,
     label: "어려움",
-    gradient: "from-red-50 to-rose-50 dark:from-red-950 dark:to-rose-950",
-    borderClass: "border-red-300 dark:border-red-700",
+    gradient: "from-neutral-50 to-red-50/50 dark:from-neutral-900 dark:to-red-950/30",
+    borderClass: "border-neutral-200 dark:border-neutral-800",
   },
 };
 
@@ -52,14 +53,14 @@ function isNewProblem(publishedAt?: string): boolean {
   return diffDays <= 7 && diffDays >= 0;
 }
 
-// 도메인 아이콘 및 레이블
+// 도메인 아이콘 및 레이블 - Linear 스타일: 톤다운된 색상
 const DOMAIN_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
-  common: { icon: "📚", label: "공통", color: "text-gray-600 dark:text-gray-400" },
+  common: { icon: "📚", label: "공통", color: "text-neutral-600 dark:text-neutral-400" },
   fintech: { icon: "💳", label: "핀테크", color: "text-emerald-600 dark:text-emerald-400" },
-  commerce: { icon: "🛒", label: "커머스", color: "text-orange-600 dark:text-orange-400" },
-  saas: { icon: "☁️", label: "SaaS", color: "text-sky-600 dark:text-sky-400" },
-  platform: { icon: "🔗", label: "플랫폼", color: "text-violet-600 dark:text-violet-400" },
-  content: { icon: "📝", label: "컨텐츠", color: "text-pink-600 dark:text-pink-400" },
+  commerce: { icon: "🛒", label: "커머스", color: "text-amber-600 dark:text-amber-400" },
+  saas: { icon: "☁️", label: "SaaS", color: "text-blue-600 dark:text-blue-400" },
+  platform: { icon: "🔗", label: "플랫폼", color: "text-purple-600 dark:text-purple-400" },
+  content: { icon: "📝", label: "컨텐츠", color: "text-rose-600 dark:text-rose-400" },
 };
 
 export default function ProblemCard({ problem }: ProblemCardProps) {
@@ -82,9 +83,9 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
       tabIndex={0}
     >
       <div className={`bg-gradient-to-br ${difficulty.gradient} rounded-lg shadow-md p-4 sm:p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col border-2 ${difficulty.borderClass} min-h-[180px] sm:min-h-[200px] relative`}>
-        {/* NEW 배지 */}
+        {/* NEW 배지 - Linear 스타일: 톤다운된 purple */}
         {isNew && (
-          <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 animate-pulse">
+          <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-purple-600 dark:bg-purple-700 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
             NEW
           </span>
@@ -109,19 +110,19 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
         </div>
 
         {/* 제목 (2줄) */}
-        <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 line-clamp-2 leading-snug mb-2">
+        <h3 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-snug mb-2">
           {displayTitle}
         </h3>
 
         {/* 문제 설명 미리보기 (1줄로 축소) */}
         {preview && (
-          <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1 mb-3 flex-1">
+          <p className="text-xs text-neutral-600 dark:text-neutral-300 line-clamp-1 mb-3 flex-1">
             {preview}
           </p>
         )}
 
         {/* 태그 + 버그 수 */}
-        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-neutral-200 dark:border-neutral-700">
           {/* 태그 */}
           <div className="flex flex-wrap gap-1" role="list" aria-label="문제 태그">
             {problem.skills && problem.skills.length > 0 && (() => {
