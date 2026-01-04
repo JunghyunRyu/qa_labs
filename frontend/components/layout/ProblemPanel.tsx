@@ -474,7 +474,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
                               [&_strong]:text-gray-800 [&_strong]:dark:text-gray-200 [&_strong]:font-semibold
                               [&_p]:mb-1.5 [&_p]:last:mb-0">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                  {summary}
+                  {summary.replace(/\s*•\s*/g, '\n• ')}
                 </ReactMarkdown>
               </div>
             </div>
