@@ -8,7 +8,7 @@ import TestResultsList from "./TestResultsList";
 import ErrorLogDisplay from "./ErrorLogDisplay";
 import { TestQualityPanel } from "./test-quality";
 import { parsePytestOutput } from "@/lib/pytestParser";
-import { AlertCircle, FileText, Sparkles, Lock, RefreshCw, ArrowRight, Lightbulb } from "lucide-react";
+import { AlertCircle, FileText, Sparkles, RefreshCw, ArrowRight, Lightbulb, Save, TrendingUp } from "lucide-react";
 import { Github } from "lucide-react";
 import Link from "next/link";
 import type { QualityGrade, TestQualityAnalysis } from "@/types/test-quality";
@@ -45,8 +45,61 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
       )
     : null;
 
+  // 게스트 사용자 여부
+  const isGuest = !submission.user_id;
+
   return (
     <div className="space-y-6">
+      {/* 게스트 사용자 결과 저장 유도 배너 - SUCCESS 상태에서만 표시 */}
+      {isGuest && submission.status === "SUCCESS" && (
+        <div className="relative overflow-hidden rounded-xl border-2 border-purple-300/50 dark:border-purple-700/50 bg-gradient-to-r from-purple-50 via-white to-blue-50 dark:from-purple-950/30 dark:via-neutral-900 dark:to-blue-950/30 p-5">
+          {/* 배경 장식 */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200/30 dark:bg-purple-800/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
+              <Save className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                이 결과를 저장하시겠어요?
+              </h4>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                로그인하면 <span className="font-medium text-purple-600 dark:text-purple-400">제출 이력</span>과
+                <span className="font-medium text-purple-600 dark:text-purple-400"> AI 상세 피드백</span>,
+                <span className="font-medium text-purple-600 dark:text-purple-400"> 성장 그래프</span>를
+                확인할 수 있습니다.
+              </p>
+            </div>
+
+            <a
+              href="/api/v1/auth/github/login"
+              className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors font-medium text-sm shadow-sm"
+            >
+              <Github className="w-4 h-4" />
+              결과 저장하기
+            </a>
+          </div>
+
+          {/* 혜택 미리보기 */}
+          <div className="relative mt-4 pt-4 border-t border-purple-200/50 dark:border-purple-800/50 flex flex-wrap gap-4 text-xs text-neutral-500 dark:text-neutral-400">
+            <span className="inline-flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+              실력 성장 추적
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+              AI 맞춤 피드백
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-blue-500" />
+              제출 이력 관리
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Status - Always shown */}
       <div className="bg-neutral-50/80 dark:bg-neutral-900/50 rounded-lg border border-neutral-200 dark:border-neutral-800 p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -186,22 +239,29 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
               </p>
             </div>
           ) : (
-            // 게스트인 경우 로그인 유도
-            <div className="text-center py-8">
-              <Lock className="w-12 h-12 text-purple-300 dark:text-purple-600 mx-auto mb-4" />
-              <p className="text-neutral-600 dark:text-neutral-400 mb-2 font-medium">
-                AI 피드백은 회원 전용 기능입니다
+            // 게스트인 경우 로그인 유도 - 결과 소유욕 자극
+            <div className="text-center py-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-4">
+                <Sparkles className="w-8 h-8 text-purple-500 dark:text-purple-400" />
+              </div>
+              <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                {submission.score !== undefined && submission.score >= 75
+                  ? "훌륭해요! AI가 더 높은 점수를 위한 힌트를 준비했어요"
+                  : "AI가 놓친 케이스를 분석했어요"}
               </p>
-              <p className="text-sm text-neutral-500 dark:text-neutral-500 mb-6">
-                로그인하면 상세한 AI 피드백과 개선 제안을 받을 수 있습니다.
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 max-w-sm mx-auto">
+                어떤 테스트 케이스를 보강하면 좋을지, AI가 맞춤 피드백을 제공합니다.
               </p>
               <a
                 href="/api/v1/auth/github/login"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 dark:bg-purple-700 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-800 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-medium shadow-sm"
               >
                 <Github className="w-5 h-5" />
-                GitHub로 로그인
+                로그인하고 피드백 확인하기
               </a>
+              <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
+                GitHub 계정으로 3초 만에 로그인
+              </p>
             </div>
           )}
         </div>

@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
 import HeroResultPanel from "@/components/hero/HeroResultPanel";
-import GuestModeBanner from "@/components/hero/GuestModeBanner";
 import ScenarioShowcase from "@/components/showcase/ScenarioShowcase";
 
 export const metadata: Metadata = {
@@ -15,14 +14,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Hero copy constants
-const heroCopy = {
-  headline: "숨은 버그, 얼마나 찾아내나요?",
-  subLine1: "당신의 테스트 시나리오가 얼마나 강력한지, 지금 바로 확인해보세요.",
-  domainLabel: "도메인 선택",
-  domainHelper: "선택하면 추천 문제가 바뀝니다",
-};
-
+// Domain 데이터 (Showcase 필터용)
 const domains = [
   { key: "common", label: "공통", title: "공통 시나리오", hint: "경계값 · 예외처리 · 타입검증 · 널체크" },
   { key: "fintech", label: "핀테크", title: "결제/정산/수수료", hint: "정산 · 수수료 · 반올림 · 중복결제" },
@@ -30,46 +22,6 @@ const domains = [
   { key: "saas", label: "SaaS", title: "권한/요금제/쿼터", hint: "권한 · 요금제 · 쿼터 · 레이트리밋" },
   { key: "platform", label: "플랫폼", title: "상태전이/복구/장애", hint: "상태전이 · 재시도 · 서킷브레이커" },
   { key: "content", label: "콘텐츠", title: "문자열/정규화/발송", hint: "길이 · 정규화 · 금칙어 · 발송제한" },
-];
-
-// Feature Card 데이터
-const features = [
-  {
-    image: "/images/qa-scenario-card.png",
-    title: "STEP 01. 실전 시나리오로 시작",
-    description: "계산기 예제가 아니라, 현업에서 실제로 터지는 장애 상황을 시나리오로 마주합니다.",
-    iconBg: "bg-red-100 dark:bg-red-900/30",
-    iconColor: "text-red-600 dark:text-red-400",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-    ),
-  },
-  {
-    image: "/images/auto-grading-card.png",
-    title: "STEP 02. 테스트 강도 검증",
-    description: "숨겨진 버그를 찾는 능력으로 테스트의 강도를 객관적으로 평가받아보세요.",
-    iconBg: "bg-amber-100 dark:bg-amber-900/30",
-    iconColor: "text-amber-600 dark:text-amber-400",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-  },
-  {
-    image: "/images/ai-code-review-card.png",
-    title: "STEP 03. AI 분석 리포트로 회고",
-    description: "'어떤 시나리오를 놓쳤을까?' AI가 커버리지 사각지대를 분석하고, 더 견고한 테스트를 위한 인사이트를 제공합니다.",
-    iconBg: "bg-sky-100 dark:bg-sky-900/30",
-    iconColor: "text-sky-600 dark:text-sky-400",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-      </svg>
-    ),
-  },
 ];
 
 // Target Audience 데이터
@@ -501,138 +453,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Showcase Section - Dark Theme with Domain Filter */}
+      {/* How It Works Section - 3단계 인터랙티브 설명 */}
+      <HowItWorksSection />
+
+      {/* Showcase Section - 실제 시나리오 미리보기 */}
       <ScenarioShowcase
         domains={domains.map((d) => ({ key: d.key, label: d.label }))}
         problems={showcase}
       />
-
-      {/* Features Section */}
-      <section id="features" className="section-base bg-[var(--background)]">
-        <div className="section-container">
-          <div className="section-header">
-            <h2 className="section-title break-keep">
-              막막했던 테스트 설계, 3단계로 완성됩니다
-            </h2>
-            <p className="section-subtitle break-keep">
-              이론이 아니라 실전입니다. 시나리오 → 검증 → 회고로 테스트 설계를 완성하세요.
-            </p>
-          </div>
-
-          {/* Feature Cards Grid with Flow Arrows (5-column layout) */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-8 md:gap-6 md:items-center">
-            {/* STEP 01 Card */}
-            <div className="card-base group overflow-hidden !p-0">
-              <div className="relative aspect-square">
-                <Image
-                  src={features[0].image}
-                  alt={features[0].title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
-              </div>
-              <div className="relative -mt-7 flex justify-center">
-                <div className={`h-14 w-14 rounded-full ${features[0].iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
-                  <div className={features[0].iconColor}>{features[0].icon}</div>
-                </div>
-              </div>
-              <div className="px-6 pb-7 pt-4 text-center">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">{features[0].title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{features[0].description}</p>
-              </div>
-            </div>
-
-            {/* Arrow 1 */}
-            <div className="hidden md:flex items-center justify-center -translate-y-12">
-              <svg
-                className="w-16 h-6 text-slate-400/70 dark:text-slate-500/70"
-                viewBox="0 0 64 24"
-                fill="none"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M2 12H54" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" />
-                <path d="M50 6l6 6-6 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
-            {/* STEP 02 Card */}
-            <div className="card-base group overflow-hidden !p-0">
-              <div className="relative aspect-square">
-                <Image
-                  src={features[1].image}
-                  alt={features[1].title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
-              </div>
-              <div className="relative -mt-7 flex justify-center">
-                <div className={`h-14 w-14 rounded-full ${features[1].iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
-                  <div className={features[1].iconColor}>{features[1].icon}</div>
-                </div>
-              </div>
-              <div className="px-6 pb-7 pt-4 text-center">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">{features[1].title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{features[1].description}</p>
-              </div>
-            </div>
-
-            {/* Arrow 2 */}
-            <div className="hidden md:flex items-center justify-center -translate-y-12">
-              <svg
-                className="w-16 h-6 text-slate-400/70 dark:text-slate-500/70"
-                viewBox="0 0 64 24"
-                fill="none"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M2 12H54" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" />
-                <path d="M50 6l6 6-6 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-
-            {/* STEP 03 Card */}
-            <div className="card-base group overflow-hidden !p-0">
-              <div className="relative aspect-square">
-                <Image
-                  src={features[2].image}
-                  alt={features[2].title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/90 dark:from-slate-800/90 to-transparent" />
-              </div>
-              <div className="relative -mt-7 flex justify-center">
-                <div className={`h-14 w-14 rounded-full ${features[2].iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
-                  <div className={features[2].iconColor}>{features[2].icon}</div>
-                </div>
-              </div>
-              <div className="px-6 pb-7 pt-4 text-center">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">{features[2].title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{features[2].description}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <HowItWorksSection />
-
-      {/* Guest Mode Banner Section - 로그인 상태에 따라 분기 */}
-      <GuestModeBanner />
 
       {/* Target Audience Section */}
       <section className="section-base bg-[var(--surface)]">
         <div className="section-container">
           <div className="section-header">
             <h2 className="section-title">
-              이런 분들을 위한 플랫폼입니다
+              이런 분들에게 필수입니다
             </h2>
             <p className="section-subtitle">
               QA Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다

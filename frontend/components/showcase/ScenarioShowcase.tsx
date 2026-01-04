@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Clock } from "lucide-react";
 
 // ============================================================
 // Types
@@ -78,6 +79,14 @@ function ProblemCard({ problem }: { problem: ShowcaseProblem }) {
       ? "bg-yellow-500/20 text-yellow-400"
       : "bg-red-500/20 text-red-400";
 
+  // 난이도별 예상 소요 시간
+  const estimatedTime =
+    problem.difficulty === "Easy"
+      ? "~3분"
+      : problem.difficulty === "Medium"
+      ? "~5분"
+      : "~8분";
+
   return (
     <Link
       href={problem.href}
@@ -91,9 +100,15 @@ function ProblemCard({ problem }: { problem: ShowcaseProblem }) {
           </span>
         </div>
         <div className="text-right text-xs">
-          <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${difficultyClass}`}>
-            {difficultyLabel}
-          </span>
+          <div className="flex items-center justify-end gap-2">
+            <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${difficultyClass}`}>
+              {difficultyLabel}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded px-2 py-1 bg-blue-500/20 text-blue-400 font-medium">
+              <Clock className="w-3 h-3" />
+              {estimatedTime}
+            </span>
+          </div>
           <div className="mt-1.5 text-slate-400">🐞 숨은 버그: {problem.mutants}개</div>
         </div>
       </div>

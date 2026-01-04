@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Code2,
-  Play,
   Keyboard,
   Loader2,
   FlaskConical,
@@ -12,6 +11,8 @@ import {
   X,
   Cloud,
   CloudOff,
+  Bug,
+  CheckCircle2,
 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import BottomTabs, { type TabId } from "@/components/layout/BottomTabs";
@@ -364,53 +365,85 @@ export default function CodeEditorPanel({
               </button>
             )}
 
-            {/* Local Test Button */}
+            {/* Local Test Button - 문법 검사 + Golden Code 통과 확인 */}
             {onLocalTest && (
+              <div className="relative group/test">
+                <button
+                  data-testid="btn-local-test"
+                  onClick={onLocalTest}
+                  disabled={isLocalTesting || isSubmitting || !code.trim()}
+                  className="px-2 xl:px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600
+                             disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+                             font-medium flex items-center gap-1.5 xl:gap-2 text-sm"
+                  aria-describedby="local-test-tooltip"
+                >
+                  {isLocalTesting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="hidden xl:inline">검증 중...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span className="hidden xl:inline">테스트 실행</span>
+                    </>
+                  )}
+                </button>
+                {/* Tooltip */}
+                <div
+                  id="local-test-tooltip"
+                  role="tooltip"
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2
+                             bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg
+                             opacity-0 invisible group-hover/test:opacity-100 group-hover/test:visible
+                             transition-all duration-200 whitespace-nowrap z-50 pointer-events-none
+                             shadow-lg"
+                >
+                  <div className="font-semibold mb-1">빠른 검증 (Shift+Enter)</div>
+                  <div className="text-gray-300">문법 오류 확인 + 정답 코드 통과 테스트</div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button - Buggy Code(Mutants)와 대결 */}
+            <div className="relative group/submit">
               <button
-                data-testid="btn-local-test"
-                onClick={onLocalTest}
-                disabled={isLocalTesting || isSubmitting || !code.trim()}
-                className="px-2 xl:px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600
+                data-testid="btn-submit"
+                onClick={onSubmit}
+                disabled={isSubmitting || isLocalTesting || !code.trim()}
+                className="px-2 xl:px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors
                            font-medium flex items-center gap-1.5 xl:gap-2 text-sm"
-                title="로컬에서 테스트 실행 (Shift+Enter)"
+                aria-describedby="submit-tooltip"
               >
-                {isLocalTesting ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="hidden xl:inline">테스트 중...</span>
+                    <span className="hidden xl:inline">채점 중...</span>
                   </>
                 ) : (
                   <>
-                    <FlaskConical className="w-4 h-4" />
-                    <span className="hidden xl:inline">로컬 테스트</span>
+                    <Bug className="w-4 h-4" />
+                    <span className="hidden xl:inline">숨은 버그 찾기</span>
                   </>
                 )}
               </button>
-            )}
-
-            {/* Submit Button */}
-            <button
-              data-testid="btn-submit"
-              onClick={onSubmit}
-              disabled={isSubmitting || isLocalTesting || !code.trim()}
-              className="px-2 xl:px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
-                         disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-                         font-medium flex items-center gap-1.5 xl:gap-2 text-sm"
-              title="서버에서 채점 (Ctrl+Enter)"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="hidden xl:inline">제출 중...</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  <span className="hidden xl:inline">채점하기</span>
-                </>
-              )}
-            </button>
+              {/* Tooltip */}
+              <div
+                id="submit-tooltip"
+                role="tooltip"
+                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2
+                           bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg
+                           opacity-0 invisible group-hover/submit:opacity-100 group-hover/submit:visible
+                           transition-all duration-200 whitespace-nowrap z-50 pointer-events-none
+                           shadow-lg"
+              >
+                <div className="font-semibold mb-1">채점 시작 (Ctrl+Enter)</div>
+                <div className="text-gray-300">숨겨진 버그 코드들과 대결하여 탐지율 측정</div>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -438,14 +471,14 @@ export default function CodeEditorPanel({
                   <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
                     Shift+Enter
                   </kbd>
-                  {" 로컬 테스트"}
+                  {" 테스트 실행"}
                 </span>
               )}
               <span>
                 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
                   Ctrl+Enter
                 </kbd>
-                {" 채점"}
+                {" 숨은 버그 찾기"}
               </span>
               {onSaveNow && (
                 <span>
