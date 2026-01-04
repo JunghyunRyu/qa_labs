@@ -11,8 +11,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
   WriteTestsPreview,
-  ValidatePreview,
-  MutantsPreview,
   DetectionPreview,
   ScorePreview,
 } from "./previews";
@@ -27,15 +25,11 @@ export default function PreviewPanel({ activeStepId }: PreviewPanelProps) {
       case 1:
         return <WriteTestsPreview />;
       case 2:
-        return <ValidatePreview />;
-      case 3:
-        return <MutantsPreview />;
-      case 4:
         return <DetectionPreview />;
-      case 5:
+      case 3:
         return <ScorePreview />;
       default:
-        return <DetectionPreview />;
+        return <WriteTestsPreview />;
     }
   };
 

@@ -6,7 +6,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Target, CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
+import { Shield, CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
 
 export default function DetectionPreview() {
   const results = [
@@ -24,9 +24,9 @@ export default function DetectionPreview() {
     <div className="space-y-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-          <Target className="w-5 h-5" />
-          <span className="font-semibold">버그 탐지율 측정</span>
+        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+          <Shield className="w-5 h-5" />
+          <span className="font-semibold">버그 방어</span>
         </div>
         <div className="flex items-center gap-1 text-xs">
           <TrendingUp className="w-3.5 h-3.5 text-green-500" />

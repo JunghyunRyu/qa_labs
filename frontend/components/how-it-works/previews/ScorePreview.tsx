@@ -6,7 +6,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Trophy, Sparkles, Target, Shield, Lightbulb } from "lucide-react";
+import { Sparkles, Target, Shield, Lightbulb } from "lucide-react";
 
 export default function ScorePreview() {
   const qualityChips = [
@@ -20,8 +20,8 @@ export default function ScorePreview() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-          <Trophy className="w-5 h-5" />
-          <span className="font-semibold">점수 & AI 피드백</span>
+          <Sparkles className="w-5 h-5" />
+          <span className="font-semibold">AI 회고</span>
         </div>
       </div>
 

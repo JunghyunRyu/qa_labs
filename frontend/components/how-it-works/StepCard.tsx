@@ -7,6 +7,8 @@ import {
   Code2,
   Target,
   Trophy,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 
 export type HowItWorksStep = {
@@ -15,7 +17,7 @@ export type HowItWorksStep = {
   title: string;
   titleKo: string;
   description: string;
-  icon: "code" | "check" | "bug" | "target" | "trophy";
+  icon: "code" | "check" | "bug" | "target" | "trophy" | "shield" | "sparkles";
 };
 
 function Icon({ name }: { name: HowItWorksStep["icon"] }) {
@@ -31,6 +33,10 @@ function Icon({ name }: { name: HowItWorksStep["icon"] }) {
       return <Target className={cls} />;
     case "trophy":
       return <Trophy className={cls} />;
+    case "shield":
+      return <Shield className={cls} />;
+    case "sparkles":
+      return <Sparkles className={cls} />;
   }
 }
 

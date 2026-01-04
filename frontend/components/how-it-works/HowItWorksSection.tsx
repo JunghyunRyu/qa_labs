@@ -25,34 +25,18 @@ const defaultSteps: HowItWorksStep[] = [
   {
     id: 2,
     number: "02",
-    title: "Validate on Golden",
-    titleKo: "정답 코드 실행",
-    description: "정답 코드에서 테스트가 통과하는지 확인합니다.",
-    icon: "check",
+    title: "Defend Against Bugs",
+    titleKo: "버그 방어",
+    description: "숨겨진 버그 코드(Mutants)를 테스트가 잡아내는지 검증합니다.",
+    icon: "shield",
   },
   {
     id: 3,
     number: "03",
-    title: "Generate Mutants",
-    titleKo: "버그 코드 생성",
-    description: "정상 코드에 버그를 심어 변형 코드(Mutant)를 만듭니다.",
-    icon: "bug",
-  },
-  {
-    id: 4,
-    number: "04",
-    title: "Measure Detection",
-    titleKo: "버그 탐지율 측정",
-    description: "테스트가 버그를 얼마나 잡아내는지 탐지율을 측정합니다.",
-    icon: "target",
-  },
-  {
-    id: 5,
-    number: "05",
-    title: "Score & Feedback",
-    titleKo: "점수 & 피드백",
-    description: "버그 탐지율 + 테스트 품질 분석 + AI 피드백을 제공합니다.",
-    icon: "trophy",
+    title: "AI Feedback",
+    titleKo: "AI 회고",
+    description: "놓친 케이스와 개선점을 AI가 분석하고 피드백을 제공합니다.",
+    icon: "sparkles",
   },
 ];
 
@@ -121,7 +105,7 @@ export default function HowItWorksSection({
     }
 
     isAutoPlayingRef.current = true;
-    const stepOrder = [1, 2, 3, 4, 5];
+    const stepOrder = [1, 2, 3];
 
     const timer = setInterval(() => {
       if (userInteracted) {
