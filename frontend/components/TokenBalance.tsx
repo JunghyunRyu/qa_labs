@@ -6,7 +6,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { getTokenStatus } from "@/lib/api/auth";
 import type { TokenStatus } from "@/types/auth";
 import { Coins } from "lucide-react";
@@ -52,22 +51,21 @@ export default function TokenBalance({ className = "" }: TokenBalanceProps) {
   const isExhausted = tokenStatus.tokens_remaining === 0;
 
   return (
-    <Link
-      href="/pricing"
-      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm transition-opacity hover:opacity-80
+    <div
+      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm
         ${isExhausted
           ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
           : isLow
             ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
             : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"
         } ${className}`}
-      title={`월간 토큰: ${tokenStatus.tokens_remaining}개 / 일일 보너스: ${tokenStatus.daily_bonus_remaining}회 남음 (클릭하여 플랜 보기)`}
+      title={`월간 토큰: ${tokenStatus.tokens_remaining}개 / 일일 보너스: ${tokenStatus.daily_bonus_remaining}회 남음`}
     >
       <Coins className="w-4 h-4" />
       <span className="font-medium">{totalRemaining}</span>
       {isExhausted && tokenStatus.daily_bonus_remaining > 0 && (
         <span className="text-xs opacity-75">+{tokenStatus.daily_bonus_remaining}</span>
       )}
-    </Link>
+    </div>
   );
 }

@@ -13,7 +13,6 @@ import {
   ArrowLeft,
   AlertTriangle,
 } from "lucide-react";
-import HouseAd from "@/components/pricing/HouseAd";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { getProgressSummary, getProgressTimeline } from "@/lib/api/progress";
 import type {
@@ -278,15 +277,6 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* House Ad - 업그레이드 유도 */}
-            <div className="mt-8">
-              <HouseAd
-                variant="sidebar"
-                targetPlan="lite"
-                placement="dashboard"
-                className="max-w-md mx-auto"
-              />
-            </div>
           </>
         )}
       </div>
