@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
 import HeroResultPanel from "@/components/hero/HeroResultPanel";
-import HeroStarter from "@/components/hero/HeroStarter";
 import GuestModeBanner from "@/components/hero/GuestModeBanner";
+import ScenarioShowcase from "@/components/showcase/ScenarioShowcase";
 
 export const metadata: Metadata = {
   title: "QA Arena - 버그 탐지율 챌린지",
@@ -328,11 +328,11 @@ export default function Home() {
             <div className="text-center lg:text-left">
               <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-8 sm:py-8 inline-block">
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
-                  숨은 버그,<br className="hidden sm:block" />{' '}
-                  <span className="highlight">얼마나 찾아내나요?</span>
+                  당신의 테스트는<br className="hidden sm:block" />{' '}
+                  <span className="highlight">버그를 잡을 수 있습니까?</span>
                 </h1>
                 <p className="mt-5 text-base sm:text-lg text-white/85 max-w-xl lg:max-w-none">
-                  당신의 테스트 시나리오가 얼마나 강력한지, 지금 바로 확인해보세요.
+                  테스트 커버리지 100%의 함정을 확인해보세요.
                 </p>
               </div>
 
@@ -344,63 +344,18 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 하단: HeroStarter (도메인 선택 + 추천 문제 통합) */}
-          <div className="mt-10 lg:mt-12 max-w-2xl mx-auto">
-            <HeroStarter
-              domains={domains}
-              recommendedProblems={{
-                common: {
-                  title: "점수 등급 계산 함수 테스트",
-                  difficulty: "Easy",
-                  mutants: 5,
-                  href: "/problems/problem-e04",
-                },
-                fintech: {
-                  title: "출금 가능 여부 판단 테스트",
-                  difficulty: "Easy",
-                  mutants: 4,
-                  href: "/problems/problem-ft-e01",
-                },
-                commerce: {
-                  title: "입장료 계산 함수 테스트",
-                  difficulty: "Easy",
-                  mutants: 4,
-                  href: "/problems/problem-e05",
-                },
-                saas: {
-                  title: "API 필수 파라미터 검증 테스트",
-                  difficulty: "Easy",
-                  mutants: 4,
-                  href: "/problems/problem-sa-e01",
-                },
-                platform: {
-                  title: "JWT 토큰 형식 검증 테스트",
-                  difficulty: "Easy",
-                  mutants: 4,
-                  href: "/problems/problem-pl-e01",
-                },
-                content: {
-                  title: "장바구니 아이템 검증 테스트",
-                  difficulty: "Easy",
-                  mutants: 4,
-                  href: "/problems/problem-e03",
-                },
-              }}
-              initialDomain="common"
-            />
-
-            {/* 보조 링크: 전체 문제 보기 */}
-            <div className="mt-4 text-center">
-              <Link
-                href="/problems"
-                className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white/90 transition-colors"
-              >
-                전체 문제 둘러보기
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
+          {/* 하단: 단순화된 CTA */}
+          <div className="mt-10 lg:mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              href="/problems"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-500/30 hover:scale-[1.02]"
+            >
+              3분 만에 실력 측정하기
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+            <span className="text-white/50 text-sm">로그인 없이 바로 시작</span>
           </div>
         </div>
       </section>
@@ -546,111 +501,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Showcase Section - Dark Theme */}
-      <section
-        id="scenario-showcase"
-        className="section-base bg-slate-900 dark:bg-slate-950 relative overflow-hidden scroll-mt-24"
-      >
-        {/* Grid Pattern Overlay */}
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 60%),
-              linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-            `,
-            backgroundSize: '100% 100%, 40px 40px, 40px 40px',
-          }}
-        />
-        <div className="section-container relative z-10">
-          <div className="section-header">
-            <h2 className="section-title !text-white">
-              운영에서 터지는 케이스들
-            </h2>
-            <p className="section-subtitle !text-slate-300">
-              평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.<br className="hidden sm:block" />
-              실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.
-            </p>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {showcase
-              .filter((p) => p.domain === "common")
-              .slice(0, 3)
-              .map((p) => (
-              <Link
-                key={p.title}
-                href={p.href}
-                className="card-dark group flex flex-col h-full"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{p.emoji}</span>
-                    <span className="rounded-full border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-medium text-slate-200 capitalize">
-                      {p.domain}
-                    </span>
-                  </div>
-                  <div className="text-right text-xs">
-                    <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${
-                      p.difficulty === 'Easy'
-                        ? 'bg-green-500/20 text-green-400'
-                        : p.difficulty === 'Medium'
-                        ? 'bg-yellow-500/20 text-yellow-400'
-                        : 'bg-red-500/20 text-red-400'
-                    }`}>
-                      {p.difficulty === 'Easy' ? '초급' : p.difficulty === 'Medium' ? '중급' : '고급'}
-                    </span>
-                    <div className="mt-1.5 text-slate-400">🐞 숨은 버그: {p.mutants}개</div>
-                  </div>
-                </div>
-
-                <h3 className="mt-4 text-lg font-semibold text-white group-hover:text-slate-100">
-                  {p.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-300">{p.scenario}</p>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {p.badges.map((b) => (
-                    <span
-                      key={b}
-                      className="rounded-full bg-slate-700 px-3 py-1 text-xs font-medium text-slate-300"
-                    >
-                      {b}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="mt-auto pt-6 text-sm font-bold text-blue-400 group-hover:text-blue-300 transition-colors inline-flex items-center gap-1">
-                  도전하기
-                  <svg
-                    className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* CTA 버튼 - 섹션 하단 중앙 */}
-          <div className="mt-10 flex items-center justify-center">
-            {/* 전체 문제 보기 버튼 */}
-            <Link
-              href="/problems"
-              className="inline-flex items-center justify-center rounded-full border border-blue-400/50 bg-blue-500/20 px-6 py-3 text-sm font-medium text-blue-300 hover:bg-blue-500/30 hover:border-blue-400 transition-colors"
-            >
-              전체 문제 보기
-              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Showcase Section - Dark Theme with Domain Filter */}
+      <ScenarioShowcase
+        domains={domains.map((d) => ({ key: d.key, label: d.label }))}
+        problems={showcase}
+      />
 
       {/* Features Section */}
       <section id="features" className="section-base bg-[var(--background)]">
