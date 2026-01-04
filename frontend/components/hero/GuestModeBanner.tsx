@@ -18,8 +18,8 @@ export default function GuestModeBanner() {
   // 로그인된 사용자에게는 환영 메시지 표시
   if (isAuthenticated) {
     return (
-      <section className="section-base bg-[var(--surface)]">
-        <div className="section-container !max-w-4xl text-center">
+      <section className="section-base bg-[var(--background)]">
+        <div className="section-container !max-w-xl text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <svg
               className="w-8 h-8 text-green-600 dark:text-green-400"
@@ -62,8 +62,8 @@ export default function GuestModeBanner() {
 
   // 비로그인 사용자에게 기존 UI 표시
   return (
-    <section className="section-base bg-[var(--surface)]">
-      <div className="section-container !max-w-4xl text-center">
+    <section className="section-base bg-[var(--background)]">
+      <div className="section-container !max-w-xl text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           <svg
             className="w-8 h-8 text-blue-600 dark:text-blue-400"

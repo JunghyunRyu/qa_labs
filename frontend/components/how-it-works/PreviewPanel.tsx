@@ -40,13 +40,22 @@ export default function PreviewPanel({ activeStepId }: PreviewPanelProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-950/50">
+    <div
+      className="rounded-2xl border p-5 shadow-sm"
+      style={{
+        backgroundColor: "var(--surface-elevated)",
+        borderColor: "var(--border-subtle)",
+      }}
+    >
       {/* Header */}
-      <div className="mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-        <div className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+      <div
+        className="mb-4 pb-3 border-b"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
+        <div className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
           Mutation Testing 흐름
         </div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
           좌측 단계를 클릭하여 각 과정을 확인하세요
         </div>
       </div>

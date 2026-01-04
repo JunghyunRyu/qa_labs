@@ -455,11 +455,11 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">숨은 버그 탐지율 채점</h3>
-              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">숨은 버그 탐지율 채점</h3>
+              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
                 단순 커버리지가 아닙니다. </p>
-              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
-                <span className="font-semibold text-blue-600 dark:text-blue-400">{''}버그 탐지율</span>{' '}
+              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
+                <span className="font-semibold text-[var(--accent)]">{''}버그 탐지율</span>{' '}
               로 진짜 검증 강도를 측정합니다.</p>
             </div>
 
@@ -489,9 +489,9 @@ export default function Home() {
                   <path fill="currentColor" d="M10 11v6l5-3-5-3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">브라우저에서 즉시 실행</h3>
-              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
-                <span className="font-semibold text-blue-600 dark:text-blue-400">로컬 세팅 없이</span>{' '}
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">브라우저에서 즉시 실행</h3>
+              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
+                <span className="font-semibold text-[var(--accent)]">로컬 세팅 없이</span>{' '}
                 바로 코드를 작성하고, 실행 결과와 로그를 즉시 확인합니다.
               </p>
             </div>
@@ -533,10 +533,10 @@ export default function Home() {
                   <path strokeWidth={1.5} d="M9 16h2" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">AI 분석 리포트</h3>
-              <p className="card-desc text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-2">
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">AI 분석 리포트</h3>
+              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
                 놓친 케이스와 취약 지점을 요약하고{" "}
-                <span className="card-desc font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                <span className="card-desc font-semibold text-[var(--accent)] whitespace-nowrap">
                   보완할 테스트 우선순위
                 </span>{" "}
                 를 제안합니다.
@@ -684,8 +684,8 @@ export default function Home() {
                 </div>
               </div>
               <div className="px-6 pb-7 pt-4 text-center">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{features[0].title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{features[0].description}</p>
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">{features[0].title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{features[0].description}</p>
               </div>
             </div>
 
@@ -721,8 +721,8 @@ export default function Home() {
                 </div>
               </div>
               <div className="px-6 pb-7 pt-4 text-center">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{features[1].title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{features[1].description}</p>
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">{features[1].title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{features[1].description}</p>
               </div>
             </div>
 
@@ -758,8 +758,8 @@ export default function Home() {
                 </div>
               </div>
               <div className="px-6 pb-7 pt-4 text-center">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{features[2].title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{features[2].description}</p>
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">{features[2].title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{features[2].description}</p>
               </div>
             </div>
           </div>
@@ -773,7 +773,7 @@ export default function Home() {
       <GuestModeBanner />
 
       {/* Target Audience Section */}
-      <section className="section-base bg-[var(--background)]">
+      <section className="section-base bg-[var(--surface)]">
         <div className="section-container">
           <div className="section-header">
             <h2 className="section-title">
@@ -828,17 +828,17 @@ export default function Home() {
       </section>
 
 {/* Final CTA Section */}
-<section className="section-base relative overflow-hidden bg-slate-50">
-  {/* subtle brand glow */}
-  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/15 via-transparent to-blue-600/10" />
-  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.18),transparent_55%)]" />
+<section className="section-base relative overflow-hidden bg-[var(--background)]">
+  {/* subtle brand glow - 라이트 모드만 */}
+  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/15 via-transparent to-blue-600/10 dark:from-transparent dark:via-transparent dark:to-transparent" />
+  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.18),transparent_55%)] dark:bg-transparent" />
 
   <div className="section-container relative !max-w-4xl text-center py-16 sm:py-20">
-    <h2 className="section-title mb-4 text-slate-900">
+    <h2 className="section-title mb-4 text-slate-900 dark:text-white">
       QA 역량, 운영에서 터지기 전에 잡아내세요
     </h2>
 
-    <p className="mb-8 max-w-xl mx-auto text-slate-600">
+    <p className="mb-8 max-w-xl mx-auto text-[var(--text-secondary)]">
       3분 안에 첫 문제를 풀고, 테스트 품질 피드백을 바로 받아볼 수 있습니다.
     </p>
 
@@ -848,7 +848,8 @@ export default function Home() {
         className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
                    bg-blue-600 text-white shadow-lg transition
                    hover:bg-blue-700 hover:shadow-xl
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                   dark:bg-[#238636] dark:hover:bg-[#2ea043]
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-[#0d1117]"
       >
         첫 문제 풀러 가기
       </Link>
@@ -858,13 +859,14 @@ export default function Home() {
         className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
                    bg-white text-slate-900 border border-slate-200 shadow-sm transition
                    hover:bg-slate-50
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                   dark:bg-[#21262d] text-[var(--foreground)] dark:border-[#30363d] dark:hover:bg-[#30363d] dark:hover:border-[#484f58]
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-[#0d1117]"
       >
         시나리오 둘러보기
       </Link>
     </div>
 
-    <p className="mt-6 text-sm text-slate-500">
+    <p className="mt-6 text-sm text-[var(--text-muted)]">
       회원가입 없이도 시작할 수 있어요.
     </p>
   </div>

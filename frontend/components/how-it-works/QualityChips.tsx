@@ -196,21 +196,26 @@ export default function QualityChips({ activeStepId }: QualityChipsProps) {
   return (
     <div
       ref={containerRef}
-      className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-950/50"
+      className="rounded-2xl border p-6"
+      style={{
+        backgroundColor: "var(--surface-elevated)",
+        borderColor: "var(--border-subtle)",
+      }}
     >
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
             테스트 품질 기준
           </h3>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
             버그 탐지율 외에도 다양한 품질 지표를 분석합니다
           </p>
         </div>
         <a
           href="/about/quality"
-          className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+          className="text-xs font-medium transition-colors"
+          style={{ color: "var(--accent)" }}
         >
           자세히 보기 &rarr;
         </a>
@@ -218,7 +223,7 @@ export default function QualityChips({ activeStepId }: QualityChipsProps) {
 
       {/* 품질 지표 그룹 */}
       <div className="mb-4">
-        <div className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-400">
+        <div className="mb-2 text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
           품질 지표
         </div>
         <div className="flex flex-wrap gap-2">
@@ -253,7 +258,7 @@ export default function QualityChips({ activeStepId }: QualityChipsProps) {
       </div>
 
       {/* Footer */}
-      <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
+      <p className="mt-4 text-xs text-center" style={{ color: "var(--text-muted)" }}>
         칩을 클릭하거나 마우스를 올리면 설명을 볼 수 있습니다
       </p>
     </div>
