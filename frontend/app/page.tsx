@@ -518,24 +518,24 @@ export default function Home() {
       </section>
 
 {/* Final CTA Section */}
-<section className="section-base relative overflow-hidden bg-[var(--background)]">
+<section className="relative overflow-hidden bg-[var(--background)]">
   {/* subtle brand glow - 라이트 모드만 */}
   <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/15 via-transparent to-blue-600/10 dark:from-transparent dark:via-transparent dark:to-transparent" />
   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.18),transparent_55%)] dark:bg-transparent" />
 
-  <div className="section-container relative !max-w-4xl text-center py-16 sm:py-20">
-    <h2 className="section-title mb-4 text-slate-900 dark:text-white">
+  <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center py-10 sm:py-12">
+    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-slate-900 dark:text-white">
       QA 역량, 운영에서 터지기 전에 잡아내세요
     </h2>
 
-    <p className="mb-8 max-w-xl mx-auto text-[var(--text-secondary)]">
+    <p className="mb-6 max-w-xl mx-auto text-[var(--text-secondary)]">
       3분 안에 첫 문제를 풀고, 테스트 품질 피드백을 바로 받아볼 수 있습니다.
     </p>
 
     <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
       <Link
         href="/problems"
-        className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
+        className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-semibold
                    bg-blue-600 text-white shadow-lg transition
                    hover:bg-blue-700 hover:shadow-xl
                    dark:bg-[#238636] dark:hover:bg-[#2ea043]
@@ -546,7 +546,7 @@ export default function Home() {
 
       <Link
         href="/scenarios"
-        className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
+        className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-semibold
                    bg-white text-slate-900 border border-slate-200 shadow-sm transition
                    hover:bg-slate-50
                    dark:bg-[#21262d] text-[var(--foreground)] dark:border-[#30363d] dark:hover:bg-[#30363d] dark:hover:border-[#484f58]
@@ -556,7 +556,7 @@ export default function Home() {
       </Link>
     </div>
 
-    <p className="mt-6 text-sm text-[var(--text-muted)]">
+    <p className="mt-4 text-sm text-[var(--text-muted)]">
       회원가입 없이도 시작할 수 있어요.
     </p>
   </div>
