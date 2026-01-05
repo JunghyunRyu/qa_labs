@@ -14,7 +14,7 @@ export default function PrivacyPage() {
             개인정보처리방침
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            시행일: 2025년 1월 1일
+            시행일: 2026년 1월 6일
           </p>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-8">

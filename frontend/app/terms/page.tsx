@@ -14,7 +14,7 @@ export default function TermsPage() {
             이용약관
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            시행일: 2025년 1월 1일
+            시행일: 2026년 1월 6일
           </p>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-8">
@@ -210,7 +210,7 @@ export default function TermsPage() {
                 부칙
               </h2>
               <p className="text-gray-700 dark:text-gray-300">
-                본 약관은 2025년 1월 1일부터 시행됩니다.
+                본 약관은 2026년 1월 6일부터 시행됩니다.
               </p>
             </section>
           </div>
