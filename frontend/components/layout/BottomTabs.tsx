@@ -547,6 +547,8 @@ function VerificationBadge({ submission }: { submission: Submission }) {
   const executionMode = submission.execution_mode || "client";
   const verified = submission.verified || false;
   const verificationStatus = submission.verification_status;
+  const isLoggedIn = !!submission.user_id;
+  const hasFeedback = !!submission.feedback_json;
 
   // 서버 실행은 기본적으로 신뢰
   if (executionMode === "server") {
@@ -568,7 +570,18 @@ function VerificationBadge({ submission }: { submission: Submission }) {
     );
   }
 
-  if (verificationStatus === "pending") {
+  // 회원이고 AI 피드백이 완료된 경우 - 검증 완료 표시
+  if (isLoggedIn && hasFeedback) {
+    return (
+      <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">
+        <ShieldCheck className="w-3 h-3" />
+        검증 완료
+      </span>
+    );
+  }
+
+  // 회원이고 AI 피드백 생성 중인 경우에만 "검증 중" 표시
+  if (isLoggedIn && verificationStatus === "pending") {
     return (
       <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
         <Loader2 className="w-3 h-3 animate-spin" />
@@ -586,7 +599,7 @@ function VerificationBadge({ submission }: { submission: Submission }) {
     );
   }
 
-  // 기본: 클라이언트 실행, 미검증
+  // 기본: 클라이언트 실행 (비회원 또는 미검증 상태)
   return (
     <span
       className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded"
@@ -623,6 +636,7 @@ function SuccessResultContent({
     const mutantDetails = submission.execution_log?.mutant_details as Array<{
       mutant_id: string | number;
       killed: boolean;
+      bug_description?: string;
       test_output?: string;
     }> | undefined;
 
@@ -632,8 +646,7 @@ function SuccessResultContent({
       .filter((m) => m.killed)
       .map((m) => ({
         id: String(m.mutant_id),
-        // Note: bug_description은 현재 백엔드에서 제공하지 않으므로 기본 메시지 사용
-        description: `버그 #${m.mutant_id} 탐지됨`,
+        description: m.bug_description || `버그 #${m.mutant_id} 탐지됨`,
       }));
   })();
 

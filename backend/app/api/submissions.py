@@ -129,10 +129,17 @@ async def create_submission(
             "total_execution_time_ms": client_result.total_execution_time,
         }
         if client_result.details:
+            # 버그 설명을 가져오기 위해 mutant_id -> bug_description 매핑 생성
+            bug_descriptions = {
+                str(bi.id): bi.bug_description
+                for bi in problem.buggy_implementations
+            }
+
             execution_log["mutant_details"] = [
                 {
                     "mutant_id": d.mutant_id,
                     "killed": d.killed,
+                    "bug_description": bug_descriptions.get(str(d.mutant_id), f"버그 #{d.mutant_id}"),
                     "test_output": d.test_output[:500] if d.test_output else None,  # 로그 크기 제한
                     "execution_time": d.execution_time,
                 }

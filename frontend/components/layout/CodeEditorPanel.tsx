@@ -393,7 +393,7 @@ export default function CodeEditorPanel({
                 <div
                   id="local-test-tooltip"
                   role="tooltip"
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2
                              bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg
                              opacity-0 invisible group-hover/test:opacity-100 group-hover/test:visible
                              transition-all duration-200 whitespace-nowrap z-50 pointer-events-none
@@ -401,7 +401,7 @@ export default function CodeEditorPanel({
                 >
                   <div className="font-semibold mb-1">빠른 검증 (Shift+Enter)</div>
                   <div className="text-gray-300">문법 오류 확인 + 정답 코드 통과 테스트</div>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900 dark:border-b-gray-700" />
                 </div>
               </div>
             )}
@@ -425,7 +425,7 @@ export default function CodeEditorPanel({
                 ) : (
                   <>
                     <Bug className="w-4 h-4" />
-                    <span className="hidden xl:inline">숨은 버그 찾기</span>
+                    <span className="hidden xl:inline">채점하기</span>
                   </>
                 )}
               </button>
@@ -433,7 +433,7 @@ export default function CodeEditorPanel({
               <div
                 id="submit-tooltip"
                 role="tooltip"
-                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2
                            bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg
                            opacity-0 invisible group-hover/submit:opacity-100 group-hover/submit:visible
                            transition-all duration-200 whitespace-nowrap z-50 pointer-events-none
@@ -441,7 +441,7 @@ export default function CodeEditorPanel({
               >
                 <div className="font-semibold mb-1">채점 시작 (Ctrl+Enter)</div>
                 <div className="text-gray-300">숨겨진 버그 코드들과 대결하여 탐지율 측정</div>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900 dark:border-b-gray-700" />
               </div>
             </div>
           </div>
@@ -478,7 +478,7 @@ export default function CodeEditorPanel({
                 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
                   Ctrl+Enter
                 </kbd>
-                {" 숨은 버그 찾기"}
+                {" 채점하기"}
               </span>
               {onSaveNow && (
                 <span>
