@@ -86,6 +86,7 @@ class ProblemDetailResponse(BaseModel):
     skills: Optional[List[str]] = None
     summary: Optional[str] = None
     short_description: Optional[str] = None
+    sample_code: Optional[str] = None  # 온보딩용 미리 입력된 테스트 코드
     created_at: datetime
     buggy_implementations: List[BuggyImplementationResponse] = []
 

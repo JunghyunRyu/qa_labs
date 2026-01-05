@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
 import ProblemCard from "@/components/ProblemCard";
 import ComingSoonBanner from "@/components/ComingSoonBanner";
+import SampleProblemsBanner from "@/components/SampleProblemsBanner";
 import ProblemStatsRow from "@/components/ProblemStatsRow";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import Loading from "@/components/Loading";
@@ -502,6 +503,9 @@ function ProblemsContent() {
           </button>
         </div>
       )}
+
+      {/* Sample Problems Banner - 신규 사용자 온보딩 */}
+      <SampleProblemsBanner />
 
       {/* Coming Soon Banner - 항상 표시 */}
       {nextScheduled && (

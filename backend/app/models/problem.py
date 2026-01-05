@@ -47,6 +47,9 @@ class Problem(Base):
     # Hint System (M5-5)
     hints = Column(JSONB, nullable=True)  # {"level1": "...", "level2": "...", "level3": "..."}
 
+    # Sample Code (온보딩용 미리 입력된 테스트 코드)
+    sample_code = Column(Text, nullable=True)
+
     # Relationships
     buggy_implementations = relationship(
         "BuggyImplementation", back_populates="problem", cascade="all, delete-orphan"

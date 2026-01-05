@@ -21,6 +21,7 @@ export interface Problem {
   skills?: string[];
   summary?: string;  // 핵심 테스트 포인트 요약 (마크다운)
   short_description?: string;  // 카드용 짧은 설명 (1-2문장)
+  sample_code?: string;  // 온보딩용 미리 입력된 테스트 코드
   created_at: string;
   buggy_implementations: BuggyImplementation[];
 }

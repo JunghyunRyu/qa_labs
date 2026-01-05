@@ -154,14 +154,16 @@ export default function ProblemDetailPage() {
       } else {
         // No submission param - check for saved draft first
         const template = getInitialTemplate(problem);
+        // sample_code가 있으면 sample_code 사용, 없으면 템플릿
+        const defaultCode = problem.sample_code || template;
         const savedDraft = loadDraft(problem.slug);
 
-        if (savedDraft && savedDraft.trim() !== template.trim()) {
-          // Restore saved draft
+        if (savedDraft && savedDraft.trim() !== defaultCode.trim()) {
+          // Restore saved draft (draft가 sample_code/템플릿과 다를 때만)
           setCode(savedDraft);
         } else {
-          // Use template
-          setCode(template);
+          // Use sample_code if exists, otherwise template
+          setCode(defaultCode);
         }
       }
     };
