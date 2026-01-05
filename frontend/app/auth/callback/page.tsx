@@ -18,7 +18,7 @@ function AuthCallbackContent() {
 
       if (error) {
         setStatus("error");
-        setErrorMessage(errorDescription || error || "Authentication failed");
+        setErrorMessage(errorDescription || error || "인증에 실패했습니다");
         return;
       }
 
@@ -33,7 +33,7 @@ function AuthCallbackContent() {
         }, 1500);
       } catch (err) {
         setStatus("error");
-        setErrorMessage("Failed to complete authentication");
+        setErrorMessage("인증을 완료하지 못했습니다");
       }
     };
 
@@ -44,9 +44,9 @@ function AuthCallbackContent() {
     <div className="text-center">
       {status === "loading" && (
         <>
-          <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <h1 className="text-xl font-semibold mb-2">Authenticating...</h1>
-          <p className="text-[var(--muted)]">Please wait while we complete your sign-in.</p>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">인증 중...</h1>
+          <p className="text-gray-500 dark:text-gray-400">로그인을 완료하는 중입니다. 잠시만 기다려주세요.</p>
         </>
       )}
 
@@ -67,8 +67,8 @@ function AuthCallbackContent() {
               />
             </svg>
           </div>
-          <h1 className="text-xl font-semibold mb-2">Sign-in successful!</h1>
-          <p className="text-[var(--muted)]">Redirecting you to the homepage...</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">로그인 성공!</h1>
+          <p className="text-gray-500 dark:text-gray-400">홈페이지로 이동 중...</p>
         </>
       )}
 
@@ -89,13 +89,13 @@ function AuthCallbackContent() {
               />
             </svg>
           </div>
-          <h1 className="text-xl font-semibold mb-2">Authentication failed</h1>
-          <p className="text-[var(--muted)] mb-4">{errorMessage}</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">인증 실패</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">{errorMessage}</p>
           <button
             onClick={() => router.push("/")}
-            className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-md hover:opacity-90 transition-opacity"
+            className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors font-medium"
           >
-            Return to Home
+            홈으로 돌아가기
           </button>
         </>
       )}
@@ -106,8 +106,8 @@ function AuthCallbackContent() {
 function LoadingFallback() {
   return (
     <div className="text-center">
-      <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-      <h1 className="text-xl font-semibold mb-2">Loading...</h1>
+      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">로딩 중...</h1>
     </div>
   );
 }
