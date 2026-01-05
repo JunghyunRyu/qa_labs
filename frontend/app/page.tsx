@@ -549,7 +549,7 @@ export default function Home() {
       </Link>
 
       <Link
-        href="/scenarios"
+        href="/#scenario-showcase"
         className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
                    bg-white text-slate-900 border border-slate-200 shadow-sm transition
                    hover:bg-slate-50
