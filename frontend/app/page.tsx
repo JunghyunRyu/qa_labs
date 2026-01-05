@@ -269,25 +269,22 @@ export default function Home() {
           className="object-cover"
           priority
         />
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
+        {/* Overlay - 전체적으로 어둡게 (박스 없이 텍스트 가독성 확보) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
 
         {/* Content */}
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6">
           {/* 2컬럼 그리드: Desktop (좌: 카피/CTA, 우: ResultPanel) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* 좌측: 카피 + CTA */}
-            <div className="text-center">
-              <div className="bg-black/15 backdrop-blur-sm rounded-2xl px-6 py-6 sm:px-8 sm:py-8 inline-block">
-                <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
-                  당신의 테스트는<br className="hidden sm:block" />{' '}
-                  <span className="highlight">버그를 잡을 수 있습니까?</span>
-                </h1>
-                <p className="mt-5 text-base sm:text-lg text-white/85 max-w-xl lg:max-w-none">
-                  단순 기능 통과(Pass)를 넘어, 테스트 케이스의 견고함(Robustness)을 검증합니다.
-                </p>
-              </div>
-
+            <div className="text-center lg:text-left">
+              <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
+                당신의 테스트는<br className="hidden sm:block" />{' '}
+                <span className="highlight">버그를 잡을 수 있습니까?</span>
+              </h1>
+              <p className="mt-5 text-base sm:text-lg text-white/90 max-w-xl lg:max-w-none">
+                단순 기능 통과(Pass)를 넘어, 테스트 케이스의 견고함(Robustness)을 검증합니다.
+              </p>
             </div>
 
             {/* 우측: HeroResultPanel */}
