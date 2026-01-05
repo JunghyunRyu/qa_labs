@@ -30,9 +30,10 @@ logger = logging.getLogger(__name__)
 class VerificationService:
     """클라이언트 실행 결과 검증 서비스."""
 
-    # 검증 설정
-    RANDOM_SAMPLE_RATE = 0.05  # 5% 랜덤 샘플링
-    HIGH_SCORE_THRESHOLD = 90  # 고득점 기준
+    # 검증 설정 [P0 Fix: 점수 조작 방지 강화]
+    RANDOM_SAMPLE_RATE = 0.20  # 20% 랜덤 샘플링 (기존 5%)
+    HIGH_SCORE_THRESHOLD = 70  # 고득점 기준 (기존 90)
+    MEDIUM_SCORE_THRESHOLD = 50  # 중간 점수 기준 (추가 검증)
     FAST_EXECUTION_THRESHOLD_MS = 1000  # 1초 미만
 
     # Redis 키 패턴 (이상 패턴 감지용) - DB 2 사용
@@ -107,11 +108,12 @@ class VerificationService:
         재검증이 필요한지 결정.
 
         다음 조건 중 하나라도 충족하면 재검증이 트리거됩니다:
-        1. 고득점 (90점 이상)
+        1. 고득점 (70점 이상) - 필수 검증
         2. 빠른 실행 (1초 미만)
         3. 동일 IP 반복 고득점 (1시간 내 5회 80점+)
         4. 동일 코드 해시 반복 (24시간 내 3회+)
-        5. 랜덤 샘플링 (5%)
+        5. 중간 점수 (50-69점) - 10% 확률 추가 검증
+        6. 랜덤 샘플링 (20%)
 
         Args:
             submission: Submission 객체
@@ -122,7 +124,7 @@ class VerificationService:
         Returns:
             (should_verify, trigger_reason) 튜플
         """
-        # 1. 고득점 (90점 이상)
+        # 1. 고득점 (70점 이상) - 필수 검증
         if score >= self.HIGH_SCORE_THRESHOLD:
             logger.info(
                 f"[VERIFICATION_TRIGGER] high_score submission_id={submission.id} score={score}"
@@ -154,7 +156,14 @@ class VerificationService:
             )
             return True, "duplicate_code_hash"
 
-        # 5. 랜덤 샘플링 (5%)
+        # 5. 중간 점수 (50-69점) - 10% 확률 추가 검증 [P0 Fix]
+        if score >= self.MEDIUM_SCORE_THRESHOLD and random.random() < 0.10:
+            logger.info(
+                f"[VERIFICATION_TRIGGER] medium_score_sample submission_id={submission.id} score={score}"
+            )
+            return True, "medium_score_sample"
+
+        # 6. 랜덤 샘플링 (20%)
         if random.random() < self.RANDOM_SAMPLE_RATE:
             logger.info(
                 f"[VERIFICATION_TRIGGER] random_sample submission_id={submission.id}"

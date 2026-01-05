@@ -98,6 +98,8 @@ class TokenService:
         1) Daily Free에서 먼저 차감
         2) Daily Free 소진 시 Monthly에서 차감
 
+        Note: 비관적 잠금(SELECT FOR UPDATE)으로 Race Condition 방지
+
         Args:
             user: User instance
             cost: Number of tokens to deduct
@@ -109,15 +111,21 @@ class TokenService:
             Tuple of (success: bool, deduction_type: str)
             deduction_type: "daily_free" | "monthly" | "failed"
         """
-        self._check_and_reset_if_needed(user)
+        # [P0 Fix] 비관적 잠금으로 동시성 문제 방지
+        locked_user = self.token_repo.get_user_with_lock(user.id)
+        if not locked_user:
+            logger.error(f"User not found for deduct_token: {user.id}")
+            return False, "user_not_found"
 
-        daily_bonus_limit = self._get_daily_bonus_limit(user)
+        self._check_and_reset_if_needed(locked_user)
+
+        daily_bonus_limit = self._get_daily_bonus_limit(locked_user)
 
         # 1순위: Daily Free에서 차감
-        if user.daily_bonus_used < daily_bonus_limit:
-            user.daily_bonus_used += 1
+        if locked_user.daily_bonus_used < daily_bonus_limit:
+            locked_user.daily_bonus_used += 1
             self._log_transaction(
-                user=user,
+                user=locked_user,
                 action_type=action_type or ActionType.FEEDBACK_BASE,
                 source_type=SourceType.DAILY_BONUS,
                 amount=-1,  # Daily bonus는 항상 1 차감
@@ -128,11 +136,11 @@ class TokenService:
             return True, "daily_free"
 
         # 2순위: Monthly에서 차감
-        tokens_remaining = user.token_balance - user.token_used
+        tokens_remaining = locked_user.token_balance - locked_user.token_used
         if tokens_remaining >= cost:
-            user.token_used += cost
+            locked_user.token_used += cost
             self._log_transaction(
-                user=user,
+                user=locked_user,
                 action_type=action_type or ActionType.FEEDBACK_BASE,
                 source_type=SourceType.MONTHLY,
                 amount=-cost,
