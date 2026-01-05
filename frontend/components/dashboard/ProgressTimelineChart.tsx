@@ -79,8 +79,8 @@ export default function ProgressTimelineChart({
           선택한 기간에 데이터가 없습니다.
         </div>
       ) : (
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[300px] min-h-[300px]">
+          <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
               <XAxis

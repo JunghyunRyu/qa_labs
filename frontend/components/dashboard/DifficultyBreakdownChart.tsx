@@ -74,8 +74,8 @@ export default function DifficultyBreakdownChart({
         난이도별 성과
       </h3>
 
-      <div className="h-[250px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[250px] min-h-[250px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
           <BarChart
             data={sortedData}
             layout="vertical"

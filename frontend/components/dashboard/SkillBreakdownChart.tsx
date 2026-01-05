@@ -83,8 +83,8 @@ export default function SkillBreakdownChart({
         </div>
       </div>
 
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[300px] min-h-[300px]">
+        <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
           <BarChart
             data={topSkills}
             layout="vertical"
