@@ -94,7 +94,13 @@ async def github_callback(
         logger.info(f"[OAUTH] Finding or creating user for github_id={github_user.id}")
         user = db.query(User).filter(User.github_id == github_user.id).first()
 
-        if not user:
+        if user:
+            # Check if user was soft-deleted and restore if so
+            if user.is_deleted:
+                user.is_deleted = False
+                user.deleted_at = None
+                logger.info(f"[OAUTH] Restored deleted user: {user.id} ({user.email})")
+        else:
             # Check if email already exists
             user = db.query(User).filter(User.email == github_user.email).first()
             if user:
@@ -102,6 +108,11 @@ async def github_callback(
                 user.github_id = github_user.id
                 user.github_username = github_user.login
                 user.avatar_url = github_user.avatar_url
+                # Also restore if soft-deleted
+                if user.is_deleted:
+                    user.is_deleted = False
+                    user.deleted_at = None
+                    logger.info(f"[OAUTH] Restored deleted user (email match): {user.id}")
             else:
                 # Create new user
                 user = User(
@@ -196,7 +207,8 @@ async def refresh_token(
         user_id = payload["sub"]
         user = db.query(User).filter(
             User.id == user_id,
-            User.is_active == True
+            User.is_active == True,
+            User.is_deleted == False
         ).first()
 
         if not user:

@@ -42,7 +42,8 @@ async def get_current_user_optional(
 
         user = db.query(User).filter(
             User.id == user_id,
-            User.is_active == True
+            User.is_active == True,
+            User.is_deleted == False
         ).first()
         return user
     except Exception:

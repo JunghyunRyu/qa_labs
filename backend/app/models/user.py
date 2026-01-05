@@ -26,6 +26,8 @@ class User(Base):
     # Account status
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
 
     # Token system for AI features
     token_balance = Column(Integer, default=50, nullable=False)  # Monthly token allocation

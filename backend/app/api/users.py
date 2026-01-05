@@ -100,38 +100,32 @@ async def delete_my_account(
     current_user: User = Depends(get_current_user),
 ):
     """
-    Delete current user's account and all associated data.
+    Soft delete current user's account.
 
-    This permanently deletes:
-    - All submissions
-    - Bookmarked problems (CASCADE)
-    - Hint views (CASCADE)
-    - Token transactions (CASCADE)
-    - AI conversations are anonymized (SET NULL)
-    - Feedback is anonymized (SET NULL)
+    This marks the user as deleted without removing data:
+    - Sets is_deleted = True
+    - Sets deleted_at = current timestamp
+    - All user data (submissions, bookmarks, etc.) is preserved
+
+    On re-registration via GitHub OAuth, the account will be restored
+    with all data intact (including token balance to prevent abuse).
     """
-    from app.models.submission import Submission
+    from datetime import datetime, timezone
 
-    logger.info(f"Deleting account for user {current_user.id} ({current_user.email})")
+    logger.info(f"Soft deleting account for user {current_user.id} ({current_user.email})")
 
     try:
-        # 1. Delete submissions explicitly (no CASCADE on FK)
-        deleted_submissions = db.query(Submission).filter(
-            Submission.user_id == current_user.id
-        ).delete(synchronize_session=False)
-        logger.info(f"Deleted {deleted_submissions} submissions for user {current_user.id}")
-
-        # 2. Delete user (CASCADE handles: bookmarked_problems, hint_views, token_transactions)
-        # SET NULL handles: ai_conversations, feedback
-        db.delete(current_user)
+        # Soft delete: mark as deleted instead of actual deletion
+        current_user.is_deleted = True
+        current_user.deleted_at = datetime.now(timezone.utc)
         db.commit()
 
-        logger.info(f"Successfully deleted account for user {current_user.id}")
+        logger.info(f"Successfully soft deleted account for user {current_user.id}")
         return {"message": "Account deleted successfully"}
 
     except Exception as e:
         db.rollback()
-        logger.error(f"Failed to delete account for user {current_user.id}: {e}")
+        logger.error(f"Failed to soft delete account for user {current_user.id}: {e}")
         raise
 
 
