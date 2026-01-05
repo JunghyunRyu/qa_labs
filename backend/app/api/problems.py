@@ -136,6 +136,10 @@ async def get_bookmarked_problems(
     problems = []
     for bookmark in bookmarks:
         problem = bookmark.problem
+        # [P2 Fix] None 체크 - DB 무결성 위반 시 방어
+        if not problem:
+            logger.warning(f"[BROKEN_BOOKMARK] bookmark_id={bookmark.id} has no problem")
+            continue
         problems.append({
             "id": problem.id,
             "slug": problem.slug,
@@ -143,7 +147,7 @@ async def get_bookmarked_problems(
             "difficulty": problem.difficulty,
             "domain": problem.domain,
             "skills": problem.skills,
-            "bugs_count": len(problem.buggy_implementations),
+            "bugs_count": len(problem.buggy_implementations or []),
             "bookmarked_at": bookmark.created_at.isoformat() if bookmark.created_at else None,
         })
 

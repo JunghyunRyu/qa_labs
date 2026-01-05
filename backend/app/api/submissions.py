@@ -164,23 +164,33 @@ async def create_submission(
         quality_analysis = None
 
         if submission_status == "SUCCESS":
-            try:
-                analyzer = TestQualityAnalyzer()
-                quality_result = analyzer.analyze(submission_data.code)
-                quality_grade = quality_result.grade.value
-                quality_score = quality_result.score
-                quality_analysis = quality_result.analysis.model_dump()
-                quality_bonus = calculate_quality_bonus(quality_grade)
-                logger.info(
-                    f"[QUALITY_BONUS] problem_id={submission_data.problem_id} "
-                    f"grade={quality_grade} bonus={quality_bonus}"
-                )
-            except Exception as qe:
-                logger.error(
-                    f"[QUALITY_ANALYSIS_ERROR] problem_id={submission_data.problem_id} "
-                    f"error={type(qe).__name__}: {str(qe)}",
-                    exc_info=True,
-                )
+            # [P2 Fix] 품질 분석 실패 시 1회 재시도
+            max_retries = 2
+            for attempt in range(max_retries):
+                try:
+                    analyzer = TestQualityAnalyzer()
+                    quality_result = analyzer.analyze(submission_data.code)
+                    quality_grade = quality_result.grade.value
+                    quality_score = quality_result.score
+                    quality_analysis = quality_result.analysis.model_dump()
+                    quality_bonus = calculate_quality_bonus(quality_grade)
+                    logger.info(
+                        f"[QUALITY_BONUS] problem_id={submission_data.problem_id} "
+                        f"grade={quality_grade} bonus={quality_bonus}"
+                    )
+                    break  # 성공 시 루프 종료
+                except Exception as qe:
+                    if attempt < max_retries - 1:
+                        logger.warning(
+                            f"[QUALITY_ANALYSIS_RETRY] problem_id={submission_data.problem_id} "
+                            f"attempt={attempt + 1} error={type(qe).__name__}"
+                        )
+                        continue
+                    logger.error(
+                        f"[QUALITY_ANALYSIS_ERROR] problem_id={submission_data.problem_id} "
+                        f"error={type(qe).__name__}: {str(qe)} (after {max_retries} attempts)",
+                        exc_info=True,
+                    )
 
         # 최종 점수 = 원점수 - 힌트 페널티 + 품질 보너스 (최소 0점, 최대 100점)
         mutation_score = max(0, client_result.score - hint_penalty)
