@@ -2,7 +2,7 @@
 
 import secrets
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
@@ -121,11 +121,14 @@ async def github_callback(
         logger.info(f"User logged in: {user.email} (GitHub: {github_user.login})")
 
         # 게스트 제출 마이그레이션: anonymous_id로 된 제출을 user_id로 연결
+        # [P1 Fix] 보안 강화: 최근 7일 내 제출만 마이그레이션 (쿠키 탈취 공격 완화)
         anonymous_id = request.cookies.get("qa_anonymous_id")
         if anonymous_id:
+            migration_cutoff = datetime.now(timezone.utc) - timedelta(days=7)
             migrated_count = db.query(Submission).filter(
                 Submission.anonymous_id == anonymous_id,
-                Submission.user_id.is_(None)
+                Submission.user_id.is_(None),
+                Submission.created_at >= migration_cutoff  # 최근 7일 내 제출만
             ).update({
                 "user_id": user.id,
                 "anonymous_id": None
@@ -158,11 +161,13 @@ async def github_callback(
         raise
     except Exception as e:
         import traceback
+        # 로그에는 상세 정보 기록 (디버깅용)
         logger.error(f"[OAUTH_ERROR] GitHub OAuth error: {type(e).__name__}: {e}")
         logger.error(f"[OAUTH_ERROR] Traceback: {traceback.format_exc()}")
+        # [P1 Fix] 클라이언트에는 일반적인 메시지만 반환 (정보 노출 방지)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Authentication failed: {type(e).__name__}"
+            detail="Authentication failed. Please try again later."
         )
 
 

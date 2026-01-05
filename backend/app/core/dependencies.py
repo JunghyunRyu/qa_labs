@@ -30,7 +30,16 @@ async def get_current_user_optional(
         if payload.get("type") != "access":
             return None
 
-        user_id = UUID(payload["sub"])
+        # [P1 Fix] JWT payload 검증 강화
+        sub = payload.get("sub")
+        if not sub or not isinstance(sub, str):
+            return None
+
+        try:
+            user_id = UUID(sub)
+        except (ValueError, TypeError):
+            return None
+
         user = db.query(User).filter(
             User.id == user_id,
             User.is_active == True
