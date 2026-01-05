@@ -304,7 +304,14 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </Link>
-            <span className="text-white/60 text-sm">로그인 없이 시작 · 가입 시 AI 분석 월 50회 무료</span>
+            <div className="flex flex-col items-center sm:items-start text-sm">
+              <span className="text-slate-400">
+                로그인 없이 바로 시작
+              </span>
+              <span className="font-semibold text-blue-200">
+                🎁 가입 시 <span className="text-white">AI 분석 월 50회</span> 무료
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -553,9 +560,14 @@ export default function Home() {
       </Link>
     </div>
 
-    <p className="mt-6 text-sm text-[var(--text-muted)]">
-      회원가입 없이 시작 · 가입 시 AI 분석 월 50회 무료
-    </p>
+    <div className="mt-6 flex flex-col items-center text-sm">
+      <span className="text-[var(--text-muted)]">
+        회원가입 없이 바로 시작
+      </span>
+      <span className="font-semibold text-blue-400">
+        🎁 가입 시 <span className="text-[var(--foreground)]">AI 분석 월 50회</span> 무료
+      </span>
+    </div>
   </div>
 </section>
     </div>
