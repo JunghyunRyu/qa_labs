@@ -304,7 +304,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </Link>
-            <span className="text-white/50 text-sm">로그인 없이 바로 시작</span>
+            <span className="text-white/60 text-sm">로그인 없이 시작 · 가입 시 AI 분석 월 50회 무료</span>
           </div>
         </div>
       </section>
@@ -554,7 +554,7 @@ export default function Home() {
     </div>
 
     <p className="mt-6 text-sm text-[var(--text-muted)]">
-      회원가입 없이도 시작할 수 있어요.
+      회원가입 없이 시작 · 가입 시 AI 분석 월 50회 무료
     </p>
   </div>
 </section>
