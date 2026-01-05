@@ -24,7 +24,7 @@
       "weight": 5
     }
   ],
-  "description_md": "## 문제 설명\n\n`safe_divide` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef safe_divide(numerator: float, denominator: float) -> float:\n```\n\n### 동작 규칙\n- 함수 명세에 따라 정확한 결과를 반환해야 함\n\n### 예시\n- `safe_divide(...)` → 결과\n\n### 테스트 힌트\n- 0으로 나누기\n- `0` 뿐 아니라 `0.0`과 같이 실수형 0에 대해서도 동일하게 예외가 처리되는지 확인해 보세요.\n",
+  "description_md": "## 문제 설명\n\n`safe_divide` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 역할\n- **함수명**: `safe_divide`\n- **입력**: `numerator: float`, `denominator: float`\n- **출력**: `float`\n\n### 수험자가 해야 할 일\n`pytest` 기반 테스트 코드를 작성하여, 주어진 `safe_divide` 함수 구현들 중 버그가 있는 구현을 최대한 많이 실패(fail)시키세요.\n올바른 구현(golden behavior)은 통과(pass)해야 합니다.",
   "initial_test_template": "import pytest\nfrom target import safe_divide\n\n\ndef test_normal_division():\n    # TODO: 정상적인 나눗셈 결과가 올바르게 반환되는지 테스트하세요.\n    # 예: 10 / 2 -> 5.0, 음수/실수 조합 등도 포함해 볼 수 있습니다.\n    pass\n\n\ndef test_zero_denominator_raises_zero_division_error():\n    # TODO: 분모가 0 또는 0.0일 때 ZeroDivisionError가 발생하는지 테스트하세요.\n    # pytest.raises를 사용해 예외 타입과 메시지('denominator must not be zero')를 함께 검증해 보세요.\n    pass\n\n\ndef test_invalid_type_raises_type_error():\n    # TODO: 문자열, 리스트, None 등 int/float가 아닌 값을 전달했을 때\n    # TypeError가 발생하고, 메시지가 'numerator and denominator must be int or float'\n    # 인지 확인하는 테스트를 작성하세요.\n    pass\n",
   "tags": [
     "단위 테스트",

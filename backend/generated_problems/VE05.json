@@ -24,7 +24,7 @@
       "weight": 5
     }
   ],
-  "description_md": "## 문제 설명\n\n`get_length` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef get_length(s: str) -> int:\n```\n\n### 동작 규칙\n- *문자의 개수** (`int`)\n\n### 예시\n- `get_length(...)` → 결과\n\n### 테스트 힌트\n- 일반적인 단어, 문장에 대해 `len(s)`와 결과가 같은지 확인해 보세요.\n- 경계값/간단한 경우\n- 빈 문자열 `\"\"`에 대해 올바르게 `0`을 반환하는지.\n",
+  "description_md": "## 문제 설명\n\n`get_length` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef get_length(s: str) -> int:\n```\n\n### 동작 규칙\n- *문자의 개수** (`int`)\n\n### 예시\n- `get_length(...)` → 결과\n\n### 테스트 힌트\n- 일반적인 단어, 문장에 대해 `len(s)`와 결과가 같은지 확인해 보세요.\n- 경계값/간단한 경우\n- 빈 문자열 `\"\"`에 대해 올바르게 `0`을 반환하는지.\n\n### 함수 역할\n- **함수명**: `get_length`\n- **입력**: `s: str`\n- **출력**: `int`\n\n### 수험자가 해야 할 일\n`pytest` 기반 테스트 코드를 작성하여, 주어진 `get_length` 함수 구현들 중 버그가 있는 구현을 최대한 많이 실패(fail)시키세요.\n올바른 구현(golden behavior)은 통과(pass)해야 합니다.",
   "initial_test_template": "import pytest\nfrom target import get_length\n\n\ndef test_basic_non_empty_string():\n    # TODO: 길이가 1 이상인 일반 문자열에 대해\n    # get_length(s) 가 len(s) 와 동일한 값을 반환하는지 확인하세요.\n    pass\n\n\ndef test_empty_string():\n    # TODO: 빈 문자열(\"\")에 대해 0을 반환하는지 확인하세요.\n    # 특히 \"길이에 +1\" 을 더하는 구현이나, 빈 문자열에서 1을 반환하는 구현을 잡아낼 수 있어야 합니다.\n    pass\n\n\ndef test_strings_with_whitespace_and_special_chars():\n    # TODO: 앞뒤 공백, 공백만 있는 문자열, 특수문자/이모지가 포함된 문자열에 대해\n    # get_length(s) 와 len(s) 가 항상 동일한지 확인하는 테스트를 작성하세요.\n    pass\n\n\ndef test_non_string_input_type_error():\n    # TODO(선택): 정수, 리스트, None 등 문자열이 아닌 입력에 대해\n    # TypeError 가 발생하는지 확인하는 테스트를 작성해 보세요.\n    pass\n",
   "tags": [
     "단위 테스트",

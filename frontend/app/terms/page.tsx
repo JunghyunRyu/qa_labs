@@ -25,7 +25,7 @@ export default function TermsPage() {
               </h2>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 본 약관은 QA Arena(이하 &quot;서비스&quot;)를 제공하는 운영자
-                류정현(개인, 이하 &quot;회사&quot;)과 서비스를 이용하는
+                류정현(개인, 이하 &quot;운영자&quot;)과 서비스를 이용하는
                 사용자(이하 &quot;회원&quot;) 간의 권리, 의무 및 책임사항과
                 서비스 이용 조건 및 절차를 규정함을 목적으로 합니다.
               </p>
@@ -38,7 +38,7 @@ export default function TermsPage() {
               </h2>
               <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  <strong>&quot;서비스&quot;</strong>란 회사가 제공하는 QA 코딩
+                  <strong>&quot;서비스&quot;</strong>란 운영자가 제공하는 QA 코딩
                   테스트, 채점, 피드백, 학습 콘텐츠 및 이에 부수하는 기능
                   일체를 말합니다.
                 </li>
@@ -57,13 +57,13 @@ export default function TermsPage() {
                   일체를 말합니다.
                 </li>
                 <li>
-                  <strong>&quot;콘텐츠&quot;</strong>란 회사가 서비스에서 제공하는
+                  <strong>&quot;콘텐츠&quot;</strong>란 운영자가 서비스에서 제공하는
                   문제, 설명, 데이터, UI/UX, 문서, 이미지, 로고 등 일체를
                   말합니다.
                 </li>
                 <li>
                   <strong>&quot;운영정책&quot;</strong>이란 토큰 정책, 실행 정책,
-                  제재 기준 등 서비스 운영을 위해 회사가 별도로 정해 공지하는
+                  제재 기준 등 서비스 운영을 위해 운영자가 별도로 정해 공지하는
                   기준을 말합니다.
                 </li>
               </ul>
@@ -80,14 +80,14 @@ export default function TermsPage() {
                   효력이 발생합니다.
                 </li>
                 <li>
-                  회사는 관련 법령을 위반하지 않는 범위에서 약관을 변경할 수
+                  운영자는 관련 법령을 위반하지 않는 범위에서 약관을 변경할 수
                   있으며, 변경 시 시행일 7일 전부터 서비스 내 공지를 통해
                   안내합니다.
                 </li>
                 <li>
                   회원이 변경 약관 시행일 이후에도 서비스를 계속 이용하는 경우,
                   변경 약관에 동의한 것으로 봅니다. 다만, 회원에게 불리하거나
-                  중요한 변경의 경우 회사는 합리적인 방법으로 추가 고지할 수
+                  중요한 변경의 경우 운영자는 합리적인 방법으로 추가 고지할 수
                   있습니다.
                 </li>
               </ol>
@@ -113,7 +113,7 @@ export default function TermsPage() {
                   불가합니다.
                 </li>
                 <li>
-                  회사는 다음 각 호에 해당하는 경우 가입을 제한하거나 사후에
+                  운영자는 다음 각 호에 해당하는 경우 가입을 제한하거나 사후에
                   회원자격을 제한/해지할 수 있습니다.
                   <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
                     <li>타인의 정보 도용 등 부정한 방법으로 가입한 경우</li>
@@ -123,7 +123,7 @@ export default function TermsPage() {
                   </ul>
                 </li>
                 <li>
-                  게스트는 일부 기능을 제한적으로 이용할 수 있으며, 회사는 게스트
+                  게스트는 일부 기능을 제한적으로 이용할 수 있으며, 운영자는 게스트
                   이용 범위/제한을 변경할 수 있습니다.
                 </li>
               </ol>
@@ -144,12 +144,12 @@ export default function TermsPage() {
                   또는 서버의 격리된 샌드박스 환경에서 실행될 수 있습니다.
                 </li>
                 <li>
-                  회사는 보안 및 안정성을 위해 실행 시간/메모리/네트워크/파일
+                  운영자는 보안 및 안정성을 위해 실행 시간/메모리/네트워크/파일
                   접근/프로세스 등 실행 정책을 제한할 수 있으며, 특정
                   라이브러리/기능 사용을 제한할 수 있습니다.
                 </li>
                 <li>
-                  회사는 서비스 운영, 보안 대응, 품질 개선을 위해 실행
+                  운영자는 서비스 운영, 보안 대응, 품질 개선을 위해 실행
                   결과/오류/메타데이터(예: 시간, 실패 유형 등)를 수집할 수
                   있으며, 개인정보 처리는 개인정보처리방침에 따릅니다.
                 </li>
@@ -163,7 +163,7 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  회사는 서비스 일부 기능(예: AI 코칭, 힌트, 심화 분석, 피드백
+                  운영자는 서비스 일부 기능(예: AI 코칭, 힌트, 심화 분석, 피드백
                   재생성 등)에 대해 일/월 사용량 제한(토큰), 쿨다운, 호출 제한
                   등 합리적인 범위의 제한을 적용할 수 있습니다.
                 </li>
@@ -172,7 +172,7 @@ export default function TermsPage() {
                   운영정책(예: &quot;토큰 정책&quot;)에 따릅니다.
                 </li>
                 <li>
-                  회사는 남용 방지 및 운영 안정화를 위해 운영정책을 변경할 수
+                  운영자는 남용 방지 및 운영 안정화를 위해 운영정책을 변경할 수
                   있으며, 중요한 변경은 사전 공지합니다.
                 </li>
               </ol>
@@ -190,25 +190,25 @@ export default function TermsPage() {
                   내에서 이용됩니다.
                 </li>
                 <li>
-                  회사는 전항의 목적을 위해 필요한 범위에서 제출물을
+                  운영자는 전항의 목적을 위해 필요한 범위에서 제출물을
                   저장/복제/가공할 수 있으며, 회원은 이에 대해 비독점적·무상 이용
                   허락을 부여합니다(단, 목적 범위 제한).
                 </li>
                 <li>
                   <strong>
                     AI 모델 학습(파인튜닝 등) 목적의 제출물 활용은 원칙적으로
-                    하지 않습니다. 회사가 이를 수행하려는 경우에는 별도의 명시적
+                    하지 않습니다. 운영자가 이를 수행하려는 경우에는 별도의 명시적
                     동의(옵트인)를 받습니다.
                   </strong>
                 </li>
                 <li>
                   회원은 제출물에 (i) 타인의 저작권을 침해하는 내용, (ii)
-                  영업비밀, (iii) 개인정보(본인 또는 제3자), (iv) 회사/조직의
+                  영업비밀, (iii) 개인정보(본인 또는 제3자), (iv) 운영자/조직의
                   비공개 소스코드 등 권리 침해 또는 민감 정보를 포함하여서는 안
                   됩니다.
                 </li>
                 <li>
-                  회사는 개인을 식별할 수 있는 정보와 제출물을 결합하여 외부에
+                  운영자는 개인을 식별할 수 있는 정보와 제출물을 결합하여 외부에
                   공개하지 않습니다. 다만, 법령에 따른 요청이 있는 경우 예외로
                   합니다.
                 </li>
@@ -222,12 +222,12 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  서비스 내 콘텐츠에 대한 저작권 및 지식재산권은 회사 또는 정당한
+                  서비스 내 콘텐츠에 대한 저작권 및 지식재산권은 운영자 또는 정당한
                   권리자에게 귀속됩니다.
                 </li>
                 <li>
                   회원은 서비스를 이용하는 범위 내에서만 콘텐츠를 열람/사용할 수
-                  있으며, 회사의 사전 동의 없이 콘텐츠를
+                  있으며, 운영자의 사전 동의 없이 콘텐츠를
                   복제/배포/전송/2차적 저작물 작성 등 상업적으로 이용할 수
                   없습니다.
                 </li>
@@ -265,7 +265,7 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  회사는 회원이 제9조를 위반하거나 서비스의 안정성/보안에 위해를
+                  운영자는 회원이 제9조를 위반하거나 서비스의 안정성/보안에 위해를
                   끼치는 경우, 다음 조치를 할 수 있습니다.
                   <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
                     <li>
@@ -275,13 +275,13 @@ export default function TermsPage() {
                   </ul>
                 </li>
                 <li>
-                  회사는 제재의 사유, 범위, 기간을 합리적으로 정하며, 가능한
+                  운영자는 제재의 사유, 범위, 기간을 합리적으로 정하며, 가능한
                   범위에서 회원에게 통지합니다(긴급한 보안 사유는 사후 통지
                   가능).
                 </li>
                 <li>
                   회원은 제재에 대해 문의 채널을 통해 이의제기할 수 있으며,
-                  회사는 합리적인 기간 내에 검토 결과를 안내합니다.
+                  운영자는 합리적인 기간 내에 검토 결과를 안내합니다.
                 </li>
               </ol>
             </section>
@@ -293,7 +293,7 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  회사는 서비스 개선을 위해 서비스 내용을 변경할 수 있으며,
+                  운영자는 서비스 개선을 위해 서비스 내용을 변경할 수 있으며,
                   중요한 변경은 사전 공지합니다.
                 </li>
                 <li>
@@ -301,7 +301,7 @@ export default function TermsPage() {
                   불가피한 사유로 서비스가 일시 중단될 수 있습니다.
                 </li>
                 <li>
-                  회사는 무료 제공 기능의 전부 또는 일부를 변경/중단할 수 있으며,
+                  운영자는 무료 제공 기능의 전부 또는 일부를 변경/중단할 수 있으며,
                   필요한 경우 사전 고지합니다.
                 </li>
               </ol>
@@ -314,21 +314,21 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  회사는 천재지변, 정전, 통신 장애, 외부 공격 등 불가항력으로
+                  운영자는 천재지변, 정전, 통신 장애, 외부 공격 등 불가항력으로
                   인한 서비스 제공의 중단/지연에 대하여 고의 또는 중대한 과실이
                   없는 한 책임을 부담하지 않습니다.
                 </li>
                 <li>
                   회원의 귀책사유(계정 관리 소홀, 규정 위반, 제출물의 위법성
-                  등)로 발생한 손해에 대하여 회사는 책임을 부담하지 않습니다.
+                  등)로 발생한 손해에 대하여 운영자는 책임을 부담하지 않습니다.
                 </li>
                 <li>
-                  AI 피드백/코칭 결과는 참고용이며, 회사는 그
+                  AI 피드백/코칭 결과는 참고용이며, 운영자는 그
                   정확성/완전성/특정 목적 적합성을 보장하지 않습니다.
                 </li>
                 <li>
-                  회사가 손해배상 책임을 부담하는 경우에도, 관련 법령이 허용하는
-                  범위 내에서 회사의 책임은 통상손해로 한정될 수 있습니다.
+                  운영자가 손해배상 책임을 부담하는 경우에도, 관련 법령이 허용하는
+                  범위 내에서 운영자의 책임은 통상손해로 한정될 수 있습니다.
                 </li>
               </ol>
             </section>
@@ -361,7 +361,7 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  회사는 서비스 내 공지, 이메일(수집·동의한 경우), 기타 합리적인
+                  운영자는 서비스 내 공지, 이메일(수집·동의한 경우), 기타 합리적인
                   방법으로 회원에게 통지할 수 있습니다.
                 </li>
                 <li>
@@ -380,7 +380,7 @@ export default function TermsPage() {
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>본 약관은 대한민국 법령에 따라 해석 및 적용됩니다.</li>
                 <li>
-                  본 약관과 관련하여 분쟁이 발생한 경우 회사와 회원은 성실히
+                  본 약관과 관련하여 분쟁이 발생한 경우 운영자와 회원은 성실히
                   협의하여 해결하도록 합니다.
                 </li>
                 <li>
@@ -397,7 +397,7 @@ export default function TermsPage() {
               </h2>
               <ul className="space-y-1 text-gray-700 dark:text-gray-300">
                 <li>
-                  <strong>운영자(회사):</strong> 류정현
+                  <strong>운영자:</strong> 류정현
                 </li>
                 <li>
                   <strong>문의 이메일:</strong> support@qalabs.kr

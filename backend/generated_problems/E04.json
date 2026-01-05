@@ -24,7 +24,7 @@
       "weight": 2
     }
   ],
-  "description_md": "## 문제 설명\n\n`calculate_grade` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef calculate_grade(score: int) -> str:\n```\n\n### 동작 규칙\n- 함수 명세에 따라 정확한 결과를 반환해야 함\n\n### 예시\n- `calculate_grade(...)` → 결과\n\n### 테스트 힌트\n- 다양한 입력 케이스를 테스트하세요\n",
+  "description_md": "## 문제 설명\n\n`calculate_grade` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 역할\n- **함수명**: `calculate_grade`\n- **입력**: `score: int`\n- **출력**: `str`\n\n### 수험자가 해야 할 일\n`pytest` 기반 테스트 코드를 작성하여, 주어진 `calculate_grade` 함수 구현들 중 버그가 있는 구현을 최대한 많이 실패(fail)시키세요.\n올바른 구현(golden behavior)은 통과(pass)해야 합니다.",
   "initial_test_template": "import pytest\nfrom target import calculate_grade\n\ndef test_each_grade_partition():\n    # TODO: 각 등급 구간(F, D, C, B, A)에 대해 대표 점수를 하나씩 선택해 기대 등급을 검증하세요.\n    pass\n\ndef test_boundary_scores():\n    # TODO: 0, 59, 60, 69, 70, 79, 80, 89, 90, 100 과 같은 경계 점수에서 올바른 등급이 나오는지 확인하세요.\n    pass\n\ndef test_invalid_scores_and_types():\n    # TODO: 0 미만, 100 초과 점수와 정수가 아닌 입력에 대해 적절한 예외(TypeError, ValueError)가 발생하는지 확인하세요.\n    pass\n",
   "tags": [
     "동등 분할",

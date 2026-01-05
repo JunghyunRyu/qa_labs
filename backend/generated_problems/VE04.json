@@ -24,7 +24,7 @@
       "weight": 2
     }
   ],
-  "description_md": "## 문제 설명\n\n`max_of_two` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef max_of_two(a: int, b: int) -> int:\n```\n\n### 동작 규칙\n- `a`와 `b` 중 더 큰 정수 값을 반환합니다.\n\n### 예시\n- `max_of_two(...)` → 결과\n\n### 테스트 힌트\n- 기본적인 비교:\n- 작은 양수와 큰 양수를 넣었을 때 올바른 값이 나오는지 확인하세요.\n- 동일한 값:\n- 두 입력 값이 같은 경우, 그 값을 그대로 반환하는지 확인해 보세요.\n",
+  "description_md": "## 문제 설명\n\n`max_of_two` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef max_of_two(a: int, b: int) -> int:\n```\n\n### 동작 규칙\n- `a`와 `b` 중 더 큰 정수 값을 반환합니다.\n\n### 예시\n- `max_of_two(...)` → 결과\n\n### 테스트 힌트\n- 기본적인 비교:\n- 작은 양수와 큰 양수를 넣었을 때 올바른 값이 나오는지 확인하세요.\n- 동일한 값:\n- 두 입력 값이 같은 경우, 그 값을 그대로 반환하는지 확인해 보세요.\n\n### 함수 역할\n- **함수명**: `max_of_two`\n- **입력**: `a: int`, `b: int`\n- **출력**: `int`\n\n### 수험자가 해야 할 일\n`pytest` 기반 테스트 코드를 작성하여, 주어진 `max_of_two` 함수 구현들 중 버그가 있는 구현을 최대한 많이 실패(fail)시키세요.\n올바른 구현(golden behavior)은 통과(pass)해야 합니다.",
   "initial_test_template": "import pytest\nfrom target import max_of_two\n\ndef test_basic_positive_numbers():\n    # TODO: 기본적인 양수 비교 (예: 작은 수, 큰 수) 에 대한 검증을 추가하세요.\n    # 예: 첫 번째가 더 작을 때, 두 번째가 더 작을 때 등\n    pass\n\ndef test_equal_numbers():\n    # TODO: 두 값이 같은 경우 올바른 값이 반환되는지 테스트를 작성하세요.\n    # 같은 양수, 같은 음수 등 다양한 동일 값 케이스를 고려해 보세요.\n    pass\n\ndef test_negative_and_mixed_numbers():\n    # TODO: 둘 다 음수일 때, 하나는 음수 하나는 양수일 때의 동작을 검증하세요.\n    # 비교 연산이 절댓값이 아니라 실제 값 기준으로 이루어지는지 확인해 보세요.\n    pass\n",
   "tags": [
     "기본 테스트",
