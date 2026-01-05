@@ -43,7 +43,7 @@ export default function PrivacyPage() {
                     필수 수집 정보
                   </h3>
                   <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
-                    <li>소셜 로그인 제공 ID (Google/GitHub 고유 식별자)</li>
+                    <li>소셜 로그인 제공 ID (GitHub 고유 식별자)</li>
                     <li>이메일 주소</li>
                     <li>프로필 이름</li>
                     <li>프로필 이미지 URL</li>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
                 제2조 (개인정보 수집 방법)
               </h2>
               <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
-                <li>소셜 로그인(Google, GitHub)을 통한 회원가입 시</li>
+                <li>소셜 로그인(GitHub)을 통한 회원가입 시</li>
                 <li>서비스 이용 과정에서 자동 생성 및 수집</li>
                 <li>고객 문의 시 이메일 등을 통한 수집</li>
               </ul>

@@ -49,8 +49,7 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  회원가입은 Google 또는 GitHub 계정을 통한 소셜 로그인으로
-                  진행됩니다.
+                  회원가입은 GitHub 계정을 통한 소셜 로그인으로 진행됩니다.
                 </li>
                 <li>
                   회원은 자신의 계정 정보를 안전하게 관리할 책임이 있습니다.
@@ -76,7 +75,7 @@ export default function TermsPage() {
                   격리 실행됩니다.
                 </li>
                 <li>
-                  AI 코칭 기능은 일일 사용 횟수가 제한될 수 있습니다.
+                  AI 코칭 기능은 월별 사용 횟수가 제한될 수 있습니다.
                 </li>
               </ol>
             </section>
