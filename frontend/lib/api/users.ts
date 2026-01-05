@@ -2,7 +2,7 @@
  * User-related API functions.
  */
 
-import { get } from "../api";
+import { get, del } from "../api";
 import type {
   UserSubmissionsResponse,
   UserStatisticsResponse,
@@ -46,4 +46,12 @@ export async function getMySubmissions(
  */
 export async function getMyStatistics(): Promise<UserStatisticsResponse> {
   return get<UserStatisticsResponse>(`${USERS_BASE}/me/statistics`);
+}
+
+/**
+ * Delete current user's account permanently.
+ * This removes all user data including submissions, bookmarks, etc.
+ */
+export async function deleteMyAccount(): Promise<void> {
+  await del(`${USERS_BASE}/me`);
 }

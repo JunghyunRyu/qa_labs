@@ -2,23 +2,57 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { History, Bookmark, BarChart2 } from "lucide-react";
+import { deleteMyAccount } from "@/lib/api/users";
+import { History, Bookmark, BarChart2, Trash2 } from "lucide-react";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0); // 0: closed, 1: first confirm, 2: final confirm
+  const [isDeleting, setIsDeleting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setDeleteStep(0);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleDeleteAccount = async () => {
+    if (deleteStep === 0) {
+      setDeleteStep(1);
+      return;
+    }
+    if (deleteStep === 1) {
+      setDeleteStep(2);
+      return;
+    }
+    // deleteStep === 2: Actually delete
+    setIsDeleting(true);
+    try {
+      await deleteMyAccount();
+      await logout();
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      alert("계정 삭제에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsDeleting(false);
+      setDeleteStep(0);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteStep(0);
+  };
 
   if (!user) return null;
 
@@ -101,6 +135,67 @@ export default function UserMenu() {
               </span>
             </a>
           )}
+
+          {/* Account Deletion Section */}
+          <div className="border-t border-[var(--card-border)]">
+            {deleteStep === 0 ? (
+              <button
+                onClick={handleDeleteAccount}
+                className="w-full text-left px-4 py-2 text-sm text-[var(--muted)] hover:text-red-500 hover:bg-[var(--background)] transition-colors"
+              >
+                <span className="flex items-center space-x-2">
+                  <Trash2 className="w-4 h-4" />
+                  <span>계정 삭제</span>
+                </span>
+              </button>
+            ) : deleteStep === 1 ? (
+              <div className="px-4 py-3 bg-red-50 dark:bg-red-900/20">
+                <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+                  정말 탈퇴하시겠습니까?
+                </p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleDeleteAccount}
+                    className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                  >
+                    계속
+                  </button>
+                  <button
+                    onClick={cancelDelete}
+                    className="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="px-4 py-3 bg-red-100 dark:bg-red-900/40">
+                <p className="text-sm text-red-700 dark:text-red-300 font-medium mb-1">
+                  모든 데이터가 삭제됩니다
+                </p>
+                <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                  제출 기록, 북마크 등 모든 정보가 영구 삭제됩니다.
+                </p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+                  >
+                    {isDeleting ? "삭제 중..." : "삭제 확인"}
+                  </button>
+                  <button
+                    onClick={cancelDelete}
+                    disabled={isDeleting}
+                    className="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={async () => {
               await logout();
@@ -108,7 +203,7 @@ export default function UserMenu() {
             }}
             className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-[var(--background)] transition-colors"
           >
-            Logout
+            로그아웃
           </button>
         </div>
       )}

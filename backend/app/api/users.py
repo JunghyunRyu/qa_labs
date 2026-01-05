@@ -94,6 +94,47 @@ async def get_my_submissions(
     )
 
 
+@router.delete("/me", status_code=200)
+async def delete_my_account(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Delete current user's account and all associated data.
+
+    This permanently deletes:
+    - All submissions
+    - Bookmarked problems (CASCADE)
+    - Hint views (CASCADE)
+    - Token transactions (CASCADE)
+    - AI conversations are anonymized (SET NULL)
+    - Feedback is anonymized (SET NULL)
+    """
+    from app.models.submission import Submission
+
+    logger.info(f"Deleting account for user {current_user.id} ({current_user.email})")
+
+    try:
+        # 1. Delete submissions explicitly (no CASCADE on FK)
+        deleted_submissions = db.query(Submission).filter(
+            Submission.user_id == current_user.id
+        ).delete(synchronize_session=False)
+        logger.info(f"Deleted {deleted_submissions} submissions for user {current_user.id}")
+
+        # 2. Delete user (CASCADE handles: bookmarked_problems, hint_views, token_transactions)
+        # SET NULL handles: ai_conversations, feedback
+        db.delete(current_user)
+        db.commit()
+
+        logger.info(f"Successfully deleted account for user {current_user.id}")
+        return {"message": "Account deleted successfully"}
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to delete account for user {current_user.id}: {e}")
+        raise
+
+
 @router.get("/me/statistics", response_model=UserStatisticsResponse)
 async def get_my_statistics(
     db: Session = Depends(get_db),
