@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { deleteMyAccount } from "@/lib/api/users";
-import { History, Bookmark, BarChart2, Trash2 } from "lucide-react";
+import { History, Bookmark, BarChart2, Trash2, LogOut } from "lucide-react";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
@@ -203,7 +203,10 @@ export default function UserMenu() {
             }}
             className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-[var(--background)] transition-colors"
           >
-            로그아웃
+            <span className="flex items-center space-x-2">
+              <LogOut className="w-4 h-4" />
+              <span>로그아웃</span>
+            </span>
           </button>
         </div>
       )}
