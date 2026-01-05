@@ -28,14 +28,16 @@ class ProblemService:
         """
         problem = self.repository.create(problem_in)
 
+        # [P0 Security] golden_code 제외하여 응답 생성
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
             title=problem.title,
             description_md=problem.description_md,
             function_signature=problem.function_signature,
-            golden_code=problem.golden_code,
+            # golden_code 제외 - 보안상 노출 금지
             difficulty=problem.difficulty,
+            domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
             created_at=problem.created_at,
         )    
@@ -127,24 +129,25 @@ class ProblemService:
                 detail=f"Problem with id {problem_id} not found",
             )
 
-        # Convert buggy_implementations to response schema
+        # [P0 Security] bug_description 제외하여 응답 생성
         buggy_impl_responses = [
             BuggyImplementationResponse(
                 id=bi.id,
                 buggy_code=bi.buggy_code,
-                bug_description=bi.bug_description,
+                # bug_description 제외 - 보안상 노출 금지
                 weight=bi.weight,
             )
             for bi in problem.buggy_implementations
         ]
 
+        # [P0 Security] golden_code 제외하여 응답 생성
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
             title=problem.title,
             description_md=problem.description_md,
             function_signature=problem.function_signature,
-            golden_code=problem.golden_code,
+            # golden_code 제외 - 보안상 노출 금지
             difficulty=problem.difficulty,
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
@@ -173,24 +176,25 @@ class ProblemService:
                 detail=f"Problem with slug '{slug}' not found",
             )
 
-        # Convert buggy_implementations to response schema
+        # [P0 Security] bug_description 제외하여 응답 생성
         buggy_impl_responses = [
             BuggyImplementationResponse(
                 id=bi.id,
                 buggy_code=bi.buggy_code,
-                bug_description=bi.bug_description,
+                # bug_description 제외 - 보안상 노출 금지
                 weight=bi.weight,
             )
             for bi in problem.buggy_implementations
         ]
 
+        # [P0 Security] golden_code 제외하여 응답 생성
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
             title=problem.title,
             description_md=problem.description_md,
             function_signature=problem.function_signature,
-            golden_code=problem.golden_code,
+            # golden_code 제외 - 보안상 노출 금지
             difficulty=problem.difficulty,
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,

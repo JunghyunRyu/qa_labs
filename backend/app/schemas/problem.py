@@ -55,20 +55,37 @@ class ProblemListResponse(BaseModel):
 
 
 class BuggyImplementationResponse(BaseModel):
-    """Schema for buggy implementation response."""
+    """Schema for buggy implementation response (public API).
+
+    [P0 Security] bug_description 제거 - 버그 힌트 노출 방지
+    """
 
     id: int
     buggy_code: str
-    bug_description: Optional[str] = None
+    # bug_description: 보안상 제거됨 (관리자 API에서만 노출)
     weight: int = 1
 
     model_config = {"from_attributes": True}
 
 
-class ProblemDetailResponse(ProblemBase):
-    """Schema for problem detail response (with buggy implementations for client-side execution)."""
+class ProblemDetailResponse(BaseModel):
+    """Schema for problem detail response (public API).
+
+    [P0 Security] golden_code 제거 - 정답 코드 노출 방지
+    클라이언트 실행(Pyodide)은 buggy_code만 필요합니다.
+    """
 
     id: int
+    slug: str
+    title: str
+    description_md: str
+    function_signature: str
+    # golden_code: 보안상 제거됨 (서버 채점에서만 사용)
+    difficulty: str
+    domain: str = "common"
+    skills: Optional[List[str]] = None
+    summary: Optional[str] = None
+    short_description: Optional[str] = None
     created_at: datetime
     buggy_implementations: List[BuggyImplementationResponse] = []
 
