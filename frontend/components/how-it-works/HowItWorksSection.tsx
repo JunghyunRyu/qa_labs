@@ -136,7 +136,7 @@ export default function HowItWorksSection({
     <section
       ref={sectionRef}
       id="how-it-works"
-      className="section-base bg-slate-50 dark:bg-slate-900"
+      className="section-base bg-slate-100 border-t border-slate-200 dark:bg-slate-900 dark:border-slate-700"
       aria-labelledby="how-it-works-title"
     >
       <div className="section-container">
