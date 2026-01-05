@@ -174,10 +174,7 @@ export function extractBugTypeHints(
 export function generateTestTemplate(problem: Problem): string {
   const { functionName, params } = parseSignature(problem.function_signature);
   const examples = parseExamples(problem.description_md);
-  const hints = parseHints(problem.description_md);
-  const bugTypeHints = extractBugTypeHints(problem.buggy_implementations);
   const hasExceptions = hasExceptionExamples(problem.description_md);
-  const mutantCount = problem.buggy_implementations?.length || 0;
 
   // Build parameter placeholder for comments
   const paramPlaceholder = params.map((p) => p.name).join(", ");
@@ -191,42 +188,10 @@ export function generateTestTemplate(problem: Problem): string {
     firstExampleComment = `  # 예시: ${ex.raw}`;
   }
 
-  // Build template with enhanced mission block
+  // Build clean template without mission/hint comments
   const lines: string[] = [
-    `# ============================================================`,
-    `# ${problem.title}`,
-    `# ============================================================`,
-    `# `,
-    `# 미션: 이 함수의 버그를 찾아내는 테스트 코드를 작성하세요!`,
-    `#   - 정상 구현(Golden Code) 통과 -> 기본 점수`,
-    `#   - 숨겨진 버그(Mutant)를 많이 잡을수록 높은 점수`,
-    `#   - 이 문제에는 ${mutantCount}개의 버그가 숨어 있습니다`,
-    `# `,
+    `import pytest`,
   ];
-
-  // Add test hints if available
-  if (hints.length > 0) {
-    lines.push(`# [테스트 힌트]`);
-    for (const hint of hints.slice(0, 3)) {
-      const cleanHint = hint.replace(/\*\*/g, "").replace(/`/g, "");
-      lines.push(`#   - ${cleanHint}`);
-    }
-    lines.push(`# `);
-  }
-
-  // Add bug type hints if available
-  if (bugTypeHints.length > 0) {
-    lines.push(`# [버그 유형 힌트]`);
-    for (const type of bugTypeHints.slice(0, 4)) {
-      lines.push(`#   - ${type}`);
-    }
-    lines.push(`# `);
-  }
-
-  lines.push(`# 채점: Mutation Score = (잡은 버그 수 / ${mutantCount}) x 100`);
-  lines.push(`# ============================================================`);
-  lines.push(``);
-  lines.push(`import pytest`);
   lines.push(`from target import ${functionName}`);
   lines.push(``);
   lines.push(``);
