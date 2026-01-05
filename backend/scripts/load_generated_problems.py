@@ -76,6 +76,7 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_u
         )
     
     # Create problem
+    from datetime import datetime, timezone
     problem = Problem(
         slug=slug,
         title=title,
@@ -87,6 +88,8 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_u
         skills=data.get('tags', []),  # Use tags as skills
         summary=data.get('summary'),  # Load summary from JSON
         short_description=data.get('short_description'),  # Load short_description from JSON
+        is_visible=True,  # 로드 시 바로 공개
+        published_at=datetime.now(timezone.utc),  # 현재 시간으로 공개
     )
     
     db.add(problem)
