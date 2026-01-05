@@ -28,7 +28,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     # Token system for AI features
-    token_balance = Column(Integer, default=100, nullable=False)  # Monthly token allocation
+    token_balance = Column(Integer, default=50, nullable=False)  # Monthly token allocation
     token_used = Column(Integer, default=0, nullable=False)  # Tokens used this month
     token_reset_at = Column(DateTime(timezone=True), nullable=True)  # Next monthly reset
     daily_bonus_used = Column(Integer, default=0, nullable=False)  # Bonus uses today (max 3)

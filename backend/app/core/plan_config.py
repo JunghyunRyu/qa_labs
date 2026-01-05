@@ -112,7 +112,7 @@ PLAN_CONFIGS: Dict[PlanKey, TierConfig] = {
             # Feature.SUCCESS_ANALYSIS 제외 (유료 전용)
         },
         limits={
-            Limit.MONTHLY_TOKENS: 100,
+            Limit.MONTHLY_TOKENS: 50,
             Limit.DAILY_FREE: 3,
             Limit.DAILY_AI_CAP: 30,
             Limit.MAX_CODE_LENGTH: 10000,

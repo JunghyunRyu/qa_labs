@@ -90,7 +90,7 @@ export const PLAN_CONFIGS: Record<PlanKey, PlanConfig> = {
       { key: 'priority_queue', name: '우선 처리', description: '빠른 채점', included: false },
     ],
     limits: [
-      { key: 'monthly_tokens', name: '월간 토큰', value: 100, unit: '개' },
+      { key: 'monthly_tokens', name: '월간 토큰', value: 50, unit: '개' },
       { key: 'daily_free', name: '일일 무료', value: 3, unit: '회' },
       { key: 'daily_ai_cap', name: '일일 AI 호출', value: 30, unit: '회' },
     ],

@@ -16,7 +16,7 @@ from app.core.plan_config import Limit, get_plan_config
 logger = logging.getLogger(__name__)
 
 # Constants (하위 호환)
-MONTHLY_TOKEN_BALANCE = 100  # Default monthly tokens for free tier
+MONTHLY_TOKEN_BALANCE = 50  # Default monthly tokens for free tier
 DAILY_BONUS_LIMIT = 3  # Max bonus uses per day when tokens exhausted
 KST = ZoneInfo("Asia/Seoul")
 

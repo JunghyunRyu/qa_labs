@@ -100,7 +100,7 @@ export default function TokenExhaustedModal({
           <ul className="list-disc list-inside space-y-1 ml-1">
             <li>AI 피드백은 무료입니다 (제출 시 자동 제공)</li>
             <li>AI 코치와 힌트 기능은 토큰을 사용합니다</li>
-            <li>매월 1일에 100개의 토큰이 리셋됩니다</li>
+            <li>매월 1일에 50개의 토큰이 리셋됩니다</li>
           </ul>
         </div>
 
