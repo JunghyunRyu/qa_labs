@@ -169,9 +169,17 @@ export default function PrivacyPage() {
                       <td className="py-2">Amazon Web Services</td>
                       <td className="py-2">클라우드 서버 운영</td>
                     </tr>
-                    <tr>
-                      <td className="py-2">OpenAI / Anthropic</td>
+                    <tr className="border-b border-gray-100 dark:border-gray-700">
+                      <td className="py-2">OpenAI</td>
                       <td className="py-2">AI 피드백 서비스</td>
+                    </tr>
+                    <tr className="border-b border-gray-100 dark:border-gray-700">
+                      <td className="py-2">Google</td>
+                      <td className="py-2">서비스 이용 통계 분석 (Google Analytics)</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2">Sentry</td>
+                      <td className="py-2">오류 추적 및 서비스 안정성 모니터링</td>
                     </tr>
                   </tbody>
                 </table>
