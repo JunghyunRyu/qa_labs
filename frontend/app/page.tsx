@@ -523,7 +523,7 @@ export default function Home() {
   <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/15 via-transparent to-blue-600/10 dark:from-transparent dark:via-transparent dark:to-transparent" />
   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.18),transparent_55%)] dark:bg-transparent" />
 
-  <div className="section-container relative !max-w-4xl text-center py-16 sm:py-20">
+  <div className="section-container relative !max-w-4xl text-center py-12 sm:py-14">
     <h2 className="section-title mb-4 text-slate-900 dark:text-white">
       QA 역량, 운영에서 터지기 전에 잡아내세요
     </h2>
