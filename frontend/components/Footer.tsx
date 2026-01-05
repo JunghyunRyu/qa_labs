@@ -16,17 +16,6 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#010409] text-[#8b949e]">
-      {/* Divider Pattern */}
-      <div className="w-full h-16 relative overflow-hidden">
-        <Image
-          src="/images/footer-divider-pattern.png"
-          alt=""
-          fill
-          className="object-cover"
-          aria-hidden="true"
-        />
-      </div>
-
       <div className="py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-8 mb-8">
