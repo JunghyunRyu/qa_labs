@@ -14,6 +14,26 @@ from app.models.problem import Problem
 from app.models.buggy_implementation import BuggyImplementation
 
 
+def get_description_md(problem_id: str, json_data: dict) -> str:
+    """
+    description_md 내용을 반환 (MD 파일 우선, JSON fallback).
+
+    우선순위:
+    1. backend/descriptions/{problem_id}.md 파일
+    2. JSON의 description_md 필드
+    """
+    script_dir = Path(__file__).parent.parent
+    md_file_path = script_dir / "descriptions" / f"{problem_id}.md"
+
+    if md_file_path.exists():
+        with open(md_file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        print(f"  📄 {problem_id}.md 파일에서 description 로드")
+        return content
+
+    return json_data.get('description_md', '')
+
+
 def extract_title_from_description(description_md: str, function_signature: str) -> str:
     """Extract title from description or use function name."""
     # Try to extract from description (first line after ## 문제 설명)
@@ -48,6 +68,9 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_u
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
+    # description_md 가져오기 (MD 파일 우선, JSON fallback)
+    description_md = get_description_md(problem_id, data)
+
     slug = create_slug_from_id(problem_id)
 
     # Check if problem already exists
@@ -55,7 +78,7 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_u
     if existing:
         if force_update:
             # Update existing problem
-            existing.description_md = data.get('description_md', existing.description_md or '')
+            existing.description_md = description_md
             existing.summary = data.get('summary', existing.summary)
             existing.short_description = data.get('short_description', existing.short_description)
             existing.title = data.get('title', existing.title)
@@ -71,16 +94,16 @@ def load_problem_from_json(json_path: str, problem_id: str, db: Session, force_u
     title = data.get('title')
     if not title:
         title = extract_title_from_description(
-            data.get('description_md', ''),
+            description_md,
             data.get('function_signature', '')
         )
-    
+
     # Create problem
     from datetime import datetime, timezone
     problem = Problem(
         slug=slug,
         title=title,
-        description_md=data.get('description_md', ''),
+        description_md=description_md,
         function_signature=data.get('function_signature', ''),
         golden_code=data.get('golden_code', ''),
         difficulty=data.get('difficulty', 'Easy'),
