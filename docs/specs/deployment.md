@@ -35,7 +35,7 @@ aws ssm start-session --target i-05b23ecec2bdcd44a --document-name AWS-StartInte
 
 ### 1. 프로젝트 디렉터리로 이동
 ```bash
-cd ~/qa_labs
+cd /home/ssm-user/qa_labs
 ```
 
 ### 2. main 브랜치 동기화
@@ -81,7 +81,7 @@ curl -I https://qa-arena.qalabs.kr -k
 
 또는 EC2 콘솔에서 직접 실행:
 ```bash
-cd ~/qa_labs && \
+cd /home/ssm-user/qa_labs && \
 git switch main && git pull origin main && \
 docker compose -f docker-compose.prod.yml --env-file .env up -d --build && \
 docker compose -f docker-compose.prod.yml ps

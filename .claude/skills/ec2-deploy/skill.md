@@ -122,39 +122,44 @@ echo "롤백 포인트: $PREV_COMMIT"
 ---
 
 ### Step 6: EC2 배포
-AWS SSM을 통해 EC2에 접속하여 배포합니다:
+AWS SSM send-command를 통해 EC2에 배포 명령을 전송합니다:
 ```bash
-# SSM 세션 시작
-aws ssm start-session --target <instance_id> --document-name AWS-StartInteractiveCommand --parameters command="bash -l"
+# 롤백 포인트 저장 + 배포 명령 전송
+COMMAND_ID=$(aws ssm send-command \
+  --instance-ids "i-05b23ecec2bdcd44a" \
+  --document-name "AWS-RunShellScript" \
+  --parameters 'commands=["cd /home/ssm-user/qa_labs && git rev-parse HEAD > .rollback_point && git switch main && git pull origin main && docker compose -f docker-compose.prod.yml --env-file .env up -d --build && docker ps"]' \
+  --query 'Command.CommandId' --output text)
 
-# EC2에서 실행
-cd ~/qa_labs
+echo "Command ID: $COMMAND_ID"
 
-# 롤백 포인트 저장
-PREV_COMMIT=$(git rev-parse HEAD)
-echo $PREV_COMMIT > .rollback_point
-
-# 배포
-git pull origin main
-docker compose -f docker-compose.prod.yml --env-file .env up -d --build
-docker ps
+# 30초 대기 후 결과 확인
+sleep 30
+aws ssm get-command-invocation \
+  --command-id "$COMMAND_ID" \
+  --instance-id "i-05b23ecec2bdcd44a" \
+  --query '[Status, StandardOutputContent, StandardErrorContent]'
 ```
 
 ---
 
 ### Step 7: 헬스체크
-배포 후 30초 대기 후 다음 확인:
+AWS SSM send-command로 EC2에서 헬스체크를 실행합니다:
 
 ```bash
-# 컨테이너 상태
-docker compose -f docker-compose.prod.yml ps
+# 헬스체크 명령 전송
+HEALTH_CMD_ID=$(aws ssm send-command \
+  --instance-ids "i-05b23ecec2bdcd44a" \
+  --document-name "AWS-RunShellScript" \
+  --parameters 'commands=["cd /home/ssm-user/qa_labs && docker compose -f docker-compose.prod.yml ps && echo \"=== Backend Logs ===\" && docker compose -f docker-compose.prod.yml logs backend --tail 20 && echo \"=== Celery Logs ===\" && docker compose -f docker-compose.prod.yml logs celery_worker --tail 20 && echo \"=== Health Check ===\" && curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8001/health"]' \
+  --query 'Command.CommandId' --output text)
 
-# 주요 서비스 로그
-docker compose -f docker-compose.prod.yml logs backend | tail -20
-docker compose -f docker-compose.prod.yml logs celery_worker | tail -20
-
-# API 응답 확인
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8001/health
+# 10초 대기 후 결과 확인
+sleep 10
+aws ssm get-command-invocation \
+  --command-id "$HEALTH_CMD_ID" \
+  --instance-id "i-05b23ecec2bdcd44a" \
+  --query '[Status, StandardOutputContent]' --output text
 ```
 
 **확인 사항:**
@@ -181,23 +186,22 @@ Mode: quick (빠른 검증만)
 
 ### Step 9: 롤백 (실패 시)
 
-헬스체크 또는 Smoke Test 실패 시 AWS SSM을 통해 EC2에서 롤백:
+헬스체크 또는 Smoke Test 실패 시 AWS SSM send-command로 롤백 실행:
 
 ```bash
-# SSM 세션 시작
-aws ssm start-session --target <instance_id> --document-name AWS-StartInteractiveCommand --parameters command="bash -l"
+# 롤백 명령 전송
+ROLLBACK_CMD_ID=$(aws ssm send-command \
+  --instance-ids "i-05b23ecec2bdcd44a" \
+  --document-name "AWS-RunShellScript" \
+  --parameters 'commands=["cd /home/ssm-user/qa_labs && PREV_COMMIT=$(cat .rollback_point) && git checkout $PREV_COMMIT && docker compose -f docker-compose.prod.yml --env-file .env up -d --build && echo \"롤백 완료: $PREV_COMMIT\""]' \
+  --query 'Command.CommandId' --output text)
 
-# EC2에서 실행
-cd ~/qa_labs
-
-# 저장된 롤백 포인트로 복원
-PREV_COMMIT=$(cat .rollback_point)
-git checkout $PREV_COMMIT
-
-# 컨테이너 재빌드
-docker compose -f docker-compose.prod.yml --env-file .env up -d --build
-
-echo "롤백 완료: $PREV_COMMIT"
+# 30초 대기 후 결과 확인
+sleep 30
+aws ssm get-command-invocation \
+  --command-id "$ROLLBACK_CMD_ID" \
+  --instance-id "i-05b23ecec2bdcd44a" \
+  --query '[Status, StandardOutputContent, StandardErrorContent]'
 ```
 
 자세한 롤백 정책은 [rollback-config.md](rollback-config.md) 참조
