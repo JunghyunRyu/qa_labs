@@ -209,10 +209,10 @@ export default function OSSPage() {
               <li>
                 - 라이선스 관련 문의사항이 있으시면{" "}
                 <a
-                  href="mailto:oss@qalabs.kr"
+                  href="mailto:support@qalabs.kr"
                   className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  oss@qalabs.kr
+                  support@qalabs.kr
                 </a>
                 로 연락 주시기 바랍니다.
               </li>
@@ -221,7 +221,7 @@ export default function OSSPage() {
 
           {/* Last Updated */}
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-400">
-            마지막 업데이트: 2025년 1월
+            마지막 업데이트: 2026년 1월
           </div>
         </div>
       </div>
