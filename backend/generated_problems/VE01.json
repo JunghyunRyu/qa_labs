@@ -1,5 +1,5 @@
 {
-  "title": "튼튼한 덧셈 계산기 만들기 (Integer Addition)",
+  "title": "[기초] 정수 덧셈기 검증: 입력 방어와 연산 무결성 테스트",
   "function_signature": "def add(amount_a: int, amount_b: int) -> int:",
   "golden_code": "def add(amount_a: int, amount_b: int) -> int:\n    \"\"\"Return the arithmetic sum of two integer amounts.\n\n    This helper is used to aggregate signed integer adjustments in a billing system\n    (e.g., base charge + discount, or refund adjustments). Negative values are valid\n    and must be added normally.\n\n    Args:\n        amount_a: First signed integer amount.\n        amount_b: Second signed integer amount.\n\n    Returns:\n        The arithmetic sum (amount_a + amount_b).\n\n    Notes:\n        - Negative values are allowed.\n        - Zero should behave normally.\n        - This function is intentionally simple and should be deterministic.\n    \"\"\"\n    return amount_a + amount_b\n",
   "buggy_implementations": [
@@ -38,5 +38,5 @@
   "problem_id": "VE01",
   "domain": "common",
   "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • 두 값의 부호가 다르면 뺄셈으로 처리함(예: 10 + (-3)을 7이 아니라 13으로...\n  • 음수+음수는 0으로 잘못 고정 반환함(예: -2 + -5 -> 0)\n  • 음수가 포함되면 절댓값으로 바꿔 더해버림(예: -3 + 1을 4로 계산)\n  • 한쪽이 0이면 다른 값을 반환하지 않고 0을 반환함(예: 0 + 5 -> 0)",
-  "short_description": "공통 로직인 결제 금액 합산: 우회 입력 방어·정수 검증 (경계값 포함)"
+  "short_description": "단순한 덧셈 뒤에 숨은 에러 케이스를 찾아라! 문자열, 소수점 등 잘못된 입력을 걸러내고, 음수 연산까지 완벽히 처리하는지 검증하는 방어적 테스팅 입문"
 }

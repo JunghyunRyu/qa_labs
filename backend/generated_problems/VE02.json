@@ -1,5 +1,5 @@
 {
-  "title": "짝수 판별 함수 is_even 테스트",
+  "title": "[논리] 홀짝 판별기 (is_even): 0과 음수의 엣지 케이스 정복하기",
   "function_signature": "def is_even(n: int) -> bool:",
   "golden_code": "def is_even(n: int) -> bool:\n    \"\"\"Return True if the given integer is even, otherwise False.\n\n    Even numbers are integers divisible by 2 with no remainder.\n    This includes negative even numbers and 0.\n    \"\"\"\n    return n % 2 == 0\n",
   "buggy_implementations": [
@@ -36,5 +36,5 @@
   "difficulty": "Very Easy",
   "domain": "common",
   "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • 0을 짝수로 취급하지 않는 버그: n == 0일 때 False를 반환함.\n  • bool이 아닌 int(0 또는 1)를 반환하는 버그: True/False 대신 0, 1을 반환함.\n  • 음수 짝수를 지원하지 않는 버그: n이 음수일 경우 항상 False를 반환함.\n\n🧠 **로직 검증**\n  • 짝수/홀수 판별이 뒤바뀐 버그: 홀수일 때 True, 짝수일 때 False를 반환함.",
-  "short_description": "공통 로직인 짝수 판별: 타입 검증·정수 검증 (경계값 포함)"
+  "short_description": "0은 짝수일까요? 음수는요? 개발자가 흔히 놓치는 수학적 예외와 경계값을 파고들어, 가장 기초적인 논리 함수를 빈틈없이 검증하는 엣지 케이스 탐색 훈련."
 }

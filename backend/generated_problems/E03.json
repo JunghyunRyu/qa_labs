@@ -1,5 +1,5 @@
 {
-  "title": "장바구니 아이템 검증 함수 테스트",
+  "title": "[커머스] 장바구니 유효성 검증: 비즈니스 로직과 예외 처리",
   "function_signature": "def validate_cart_items(items: list[str]) -> bool:",
   "golden_code": "def validate_cart_items(items: list[str]) -> bool:\n    '''Validate a list of shopping cart item identifiers.\n\n    The cart is considered valid when:\n    - items is a list instance\n    - the number of items is between 1 and 10 inclusive\n    - every item is a string whose stripped value is not empty\n\n    Any violation returns False. The function is designed not to raise\n    just because of invalid input types or values.\n    '''\n    if not isinstance(items, list):\n        return False\n\n    length = len(items)\n    if length < 1 or length > 10:\n        return False\n\n    for item in items:\n        if not isinstance(item, str):\n            return False\n        if item.strip() == '':\n            return False\n\n    return True\n",
   "buggy_implementations": [
@@ -36,5 +36,5 @@
   "difficulty": "Easy",
   "domain": "content",
   "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 상한 경계값 오류: 아이템이 정확히 10개일 때도 False를 반환한다\n  • 하한 경계값 누락: 빈 리스트(0개 아이템)를 허용해 True를 반환한다\n\n🔀 **동등 분할**\n  • 리스트 내용 검증 누락: 문자열이 아닌 요소나 공백뿐인 문자열이 있어도 True를 반환한다\n\n⚠️ **예외 처리**\n  • 입력 타입/요소 타입 미검사: 리스트가 아니거나 요소가 문자열이 아니면 예외가 발생할...",
-  "short_description": "콘텐츠 서비스에서 흔한 장바구니 아이템 검증: 타입 검증·예외 처리 검증"
+  "short_description": "빈 장바구니 결제는 막고, 11개는 거절하라! 수량 경계값(1~10)과 데이터 타입을 동시에 방어하는 커머스 필수 검증"
 }
