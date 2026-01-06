@@ -15,7 +15,7 @@ export interface Problem {
   title: string;
   description_md: string;
   function_signature: string;
-  golden_code: string;
+  golden_code?: string;  // Optional - 보안상 API에서 제외됨 (서버 채점에서만 사용)
   difficulty: "Very Easy" | "Easy" | "Medium" | "Hard";
   domain: DomainType;
   skills?: string[];
