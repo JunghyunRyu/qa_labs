@@ -1,40 +1,19 @@
 ---
-description: EC2 배포 전체 워크플로우를 자동화합니다 (체크 → 보안스캔 → 코드리뷰 → 커밋 → 머지 → 배포 → 헬스체크 → 롤백). context7-code-reviewer 및 devops-debug Agent와 연동합니다.
+description: EC2 배포 전체 워크플로우를 자동화합니다 (체크 → 보안스캔 → 코드리뷰 → 커밋 → 머지 → 배포 → 헬스체크 → 롤백).
 ---
 
 # EC2 Deploy Skill
 
 QA Labs 프로젝트를 EC2에 안전하게 배포하는 전체 워크플로우를 자동화합니다.
 
-## Agent 연동
+## Skill 연동
 
-이 Skill은 다음 Agent들과 연동하여 안전한 배포를 보장합니다:
+이 Skill은 다음 Skill들과 연동하여 안전한 배포를 보장합니다:
 
-| Agent | 역할 | 호출 시점 |
+| Skill | 역할 | 호출 시점 |
 |-------|------|-----------|
-| **context7-code-reviewer** | 대규모 변경사항 리뷰 | Step 3 (100줄 이상 변경 시) |
-| **devops-debug** | 배포 실패 진단 | Step 6 (헬스체크 실패 시) |
-
-### Agent 호출 방법
-```
-Task tool을 사용하여 agent를 호출합니다:
-
-# 코드 리뷰 (대규모 변경 시)
-subagent_type: "context7-code-reviewer"
-prompt: |
-  배포 전 코드 리뷰를 수행해주세요:
-  - 변경된 파일: {changed_files}
-  - 변경 라인 수: {lines_changed}
-  최신 문서 기반으로 best practices 준수 여부를 확인해주세요.
-
-# 배포 실패 진단
-subagent_type: "devops-debug"
-prompt: |
-  배포 후 헬스체크가 실패했습니다:
-  - 컨테이너 상태: {container_status}
-  - 에러 로그: {error_logs}
-  근본 원인을 분석하고 롤백 필요 여부를 판단해주세요.
-```
+| **`/code-review`** | 대규모 변경사항 리뷰 | Step 3 (100줄 이상 변경 시) |
+| **`/docker-debug`** | 배포 실패 진단 | Step 7 (헬스체크 실패 시) |
 
 ---
 
@@ -89,7 +68,7 @@ if [ "$LINES_CHANGED" -gt 100 ]; then
 fi
 ```
 
-> **Agent 호출**: context7-code-reviewer Agent를 호출하여 최신 문서 기반 코드 리뷰 수행
+> **대규모 변경 시**: `/code-review` skill을 실행하여 코드 리뷰 수행
 
 ---
 
@@ -167,7 +146,7 @@ aws ssm get-command-invocation \
 - 에러 로그가 없는가?
 - API 응답이 200인가?
 
-> **실패 시**: devops-debug Agent를 호출하여 근본 원인 분석
+> **실패 시**: `/docker-debug` skill을 실행하여 근본 원인 분석
 
 ---
 
@@ -221,7 +200,7 @@ EC2 배포 완료
 
 [검증 결과]
 [OK] 보안 스캔: 통과
-[OK] 코드 리뷰: 승인됨 (context7-code-reviewer)
+[OK] 코드 리뷰: 승인됨 (/code-review)
 [OK] 컨테이너 상태: 모두 Up
 [OK] 헬스체크: 정상 (HTTP 200)
 [OK] Smoke Test: 통과
@@ -245,7 +224,7 @@ EC2 배포 실패
 [에러 로그]
 ConnectionRefusedError: Redis 연결 실패
 
-[Agent 분석] (devops-debug)
+[원인 분석] (/docker-debug)
 근본 원인: Redis 컨테이너가 준비되기 전 celery_worker 시작
 권장 조치: depends_on에 condition: service_healthy 추가
 

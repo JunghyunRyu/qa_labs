@@ -1,38 +1,10 @@
 ---
-description: Docker 컨테이너 관련 문제를 진단하고 해결 방안을 제시합니다. devops-debug Agent와 연동하여 지능적인 근본 원인 분석을 제공합니다.
+description: Docker 컨테이너 관련 문제를 진단하고 해결 방안을 제시합니다.
 ---
 
 # Docker Debug Skill
 
 Docker 컨테이너, 볼륨, 네트워크 관련 문제를 체계적으로 진단하고 해결합니다.
-
-## Agent 연동
-
-이 Skill은 **devops-debug Agent**와 연동하여 더 정교한 분석을 제공합니다.
-
-### Agent 호출 시점
-- **Step 2 완료 후**: 로그 수집이 완료되면 devops-debug Agent를 호출하여 패턴 분석
-- **해결 실패 시**: 기본 해결책이 작동하지 않으면 Agent에게 심층 분석 요청
-
-### Agent 호출 방법
-```
-Task tool을 사용하여 devops-debug agent를 호출합니다:
-
-subagent_type: "devops-debug"
-prompt: |
-  Docker 진단 데이터를 분석해주세요:
-
-  ## 수집된 데이터
-  - 컨테이너 상태: {container_status}
-  - 로그 내용: {logs}
-  - 볼륨 상태: {volume_status}
-  - 네트워크 상태: {network_status}
-
-  ## 요청
-  근본 원인을 분석하고 해결 방안을 제시해주세요.
-```
-
----
 
 ## 진단 워크플로우
 
@@ -67,7 +39,7 @@ docker compose -f docker-compose.prod.yml logs nginx | tail -50
 - 타임스탬프 확인 (문제 발생 시점)
 - 스택 트레이스 전체 수집
 
-> **Agent 호출 시점**: 로그 수집 후 devops-debug Agent를 호출하여 패턴 분석 요청
+> **Tip**: 로그에서 에러 패턴을 식별한 후 아래 "일반적인 문제 패턴" 섹션을 참조하여 해결합니다.
 
 ---
 
@@ -252,14 +224,11 @@ Docker 진단 리포트
 - nginx 컨테이너가 반복적으로 재시작됨
 - 로그에서 "bind: address already in use" 에러 확인
 
-[3] Agent 분석 결과
-(devops-debug Agent 응답 내용)
-
-[4] 원인 분석
+[3] 원인 분석
 - 포트 80이 이미 사용 중
 - 다른 프로세스가 80 포트를 점유한 것으로 추정
 
-[5] 권장 해결 방법
+[4] 권장 해결 방법
 1. 포트를 점유한 프로세스 확인:
    sudo netstat -tuln | grep :80
 
@@ -268,7 +237,7 @@ Docker 진단 리포트
 3. nginx 컨테이너 재시작:
    docker compose -f docker-compose.prod.yml restart nginx
 
-[6] 자동 복구 가능 여부
+[5] 자동 복구 가능 여부
 - [AUTO] 컨테이너 재시작 가능
 - [MANUAL] 포트 충돌 해결 필요
 ```
