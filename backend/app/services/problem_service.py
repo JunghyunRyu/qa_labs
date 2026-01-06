@@ -152,6 +152,7 @@ class ProblemService:
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
             summary=problem.summary,
+            sample_code=problem.sample_code,
             created_at=problem.created_at,
             buggy_implementations=buggy_impl_responses,
         )
@@ -199,6 +200,7 @@ class ProblemService:
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
             summary=problem.summary,
+            sample_code=problem.sample_code,
             created_at=problem.created_at,
             buggy_implementations=buggy_impl_responses,
         )
