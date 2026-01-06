@@ -2,7 +2,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침 | QA Arena",
-  description: "QA Arena 개인정보처리방침",
+  description: "QA Arena 개인정보처리방침 (2025.4 개정 지침 반영)",
 };
 
 export default function PrivacyPage() {
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
             개인정보처리방침
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            시행일: 2026년 1월 6일 | 버전: 1.1
+            시행일: 2026년 1월 6일 | 버전: 1.2 (2025 표준지침 반영)
           </p>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-10">
@@ -136,43 +136,47 @@ export default function PrivacyPage() {
               </ul>
             </section>
 
-            {/* 제4조 */}
+            {/* 제4조 (보강됨: 파기절차 및 방법 추가) */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-l-4 border-blue-500 pl-3">
-                제4조 (개인정보의 보유 및 이용 기간)
+                제4조 (개인정보의 보유기간 및 파기)
               </h2>
+              
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">1. 보유 및 이용 기간</h3>
               <p className="text-gray-700 dark:text-gray-300 mb-3">
                 이용자의 개인정보는 원칙적으로 회원 탈퇴 시 지체 없이 파기합니다.
                 단, 다음의 정보는 명시한 기간 동안 보존합니다.
               </p>
 
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
                 <ul className="space-y-2 text-gray-700 dark:text-gray-300 text-sm">
                   <li className="flex justify-between border-b border-gray-200 dark:border-gray-600 pb-1">
                     <span>부정 이용 방지를 위한 기록(ID 등)</span>
                     <span className="font-medium text-red-500">1년</span>
                   </li>
-                  <li className="flex justify-between pt-1">
+                  <li className="flex justify-between border-b border-gray-200 dark:border-gray-600 py-1">
                     <span>제출 코드, 채점 결과, AI 피드백 내역</span>
                     <span className="font-medium">회원 탈퇴 시까지</span>
                   </li>
-                </ul>
-              </div>
-
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm">
-                  관련 법령에 의한 정보 보유 (통신비밀보호법 등)
-                </h3>
-                <ul className="space-y-1 text-gray-700 dark:text-gray-300 text-sm">
-                  <li className="flex justify-between">
-                    <span>웹사이트 방문(로그인) 기록</span>
+                  <li className="flex justify-between pt-1">
+                    <span>웹사이트 방문(로그인) 기록 (통신비밀보호법)</span>
                     <span className="font-medium">3개월</span>
                   </li>
                 </ul>
               </div>
+
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">2. 파기 절차 및 방법</h3>
+              <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+                <li>
+                  <strong>파기 절차:</strong> 파기 사유가 발생한 개인정보는 운영자의 책임 하에 내부 방침 및 기타 관련 법령에 따라 일정 기간 저장된 후 혹은 즉시 파기됩니다.
+                </li>
+                <li>
+                  <strong>파기 방법:</strong> 전자적 파일 형태로 기록·저장된 개인정보는 기록을 재생할 수 없도록 로우 레벨 포맷(Low Level Format) 등의 기술적 방법을 이용하여 파기하며, 종이 문서의 경우 분쇄하거나 소각하여 파기합니다.
+                </li>
+              </ul>
             </section>
 
-            {/* 제5조 (처리위탁 및 국외이전) - OpenAI 반영 */}
+            {/* 제5조 (처리위탁 및 국외이전) */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-l-4 border-blue-500 pl-3">
                 제5조 (개인정보 처리 위탁 및 국외 이전)
@@ -230,7 +234,7 @@ export default function PrivacyPage() {
               </div>
             </section>
 
-            {/* 제6조 (이용자의 권리) */}
+            {/* 제6조 (이용자의 권리 - 자동화된 결정권 추가) */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-l-4 border-blue-500 pl-3">
                 제6조 (정보주체의 권리 및 거부권)
@@ -245,39 +249,66 @@ export default function PrivacyPage() {
                   없이 조치합니다.
                 </li>
                 <li>
-                  단, 국외 이전(OpenAI 등)을 거부할 경우 AI 피드백 등 서비스의
-                  핵심 기능 이용이 불가능할 수 있습니다.
+                  <strong>자동화된 결정에 대한 권리:</strong> 이용자는 AI 기반 채점 및 피드백 등 자동화된 시스템에 의한 결정이 자신의 권리나 의무에 중대한 영향을 미치는 경우, 해당 결정에 대해 거부하거나 설명을 요구할 수 있습니다. 다만, 본 서비스의 AI 피드백은 학습 보조 도구로서 법적 효력을 갖지 않습니다.
                 </li>
               </ul>
             </section>
 
-            {/* 제7조 (안전성 확보조치) */}
+            {/* 신설: 제7조 (행태정보 수집 및 거부 설정) */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-l-4 border-blue-500 pl-3">
-                제7조 (개인정보의 안전성 확보 조치)
+                제7조 (자동 수집 장치의 설치·운영 및 거부)
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                서비스는 이용자에게 개별적인 맞춤 서비스를 제공하기 위해 이용 정보를 저장하고 수시로 불러오는 &#39;쿠키(cookie)&#39;를 사용합니다. 이용자는 쿠키 설치에 대한 선택권을 가지고 있습니다.
+              </p>
+              
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mt-2">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm">웹 브라우저에서 쿠키 차단 방법</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 text-sm">
+                  <li>
+                    <strong>Chrome:</strong> 설정 &gt; 개인정보 및 보안 &gt; 서드 파티 쿠키 &gt; 서드 파티 쿠키 차단 선택
+                  </li>
+                  <li>
+                    <strong>Edge:</strong> 설정 &gt; 쿠키 및 사이트 권한 &gt; 쿠키 및 사이트 데이터 관리 및 삭제 &gt; 타사 쿠키 차단 선택
+                  </li>
+                  <li>
+                    <strong>Whale:</strong> 설정 &gt; 개인정보 보호 &gt; 쿠키 및 기타 사이트 데이터 &gt; 타사 쿠키 차단 선택
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            {/* 제8조 (안전성 확보조치) */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-l-4 border-blue-500 pl-3">
+                제8조 (개인정보의 안전성 확보 조치)
               </h2>
               <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
-                <li>전송 구간 암호화 (SSL/TLS)</li>
-                <li>외부 공격 차단을 위한 보안 서비스 이용 (Cloudflare)</li>
-                <li>개인정보 취급자의 최소화 및 관리</li>
+                <li>
+                  <strong>관리적 조치:</strong> 내부관리계획 수립 및 시행, 개인정보 취급자 교육
+                </li>
+                <li>
+                  <strong>기술적 조치:</strong> 개인정보처리시스템 등의 접근권한 관리, 접근통제시스템 설치, 고유식별정보 등의 암호화 (SSL/TLS), 보안프로그램 설치 (Cloudflare)
+                </li>
               </ul>
             </section>
 
-            {/* 제8조 (가명정보) */}
+            {/* 제9조 (가명정보) */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-l-4 border-blue-500 pl-3">
-                제8조 (가명정보의 처리)
+                제9조 (가명정보의 처리)
               </h2>
               <p className="text-gray-700 dark:text-gray-300">
                 운영자는 서비스 개선 및 기술 연구를 위하여 수집한 데이터를 특정
-                개인을 알아볼 수 없도록 가명 처리하여 활용할 수 있습니다.
+                개인을 알아볼 수 없도록 가명 처리하여 활용할 수 있습니다. 가명정보는 재식별이 불가능하도록 별도의 안전조치를 취하여 관리합니다.
               </p>
             </section>
 
-            {/* 제9조 (권익침해 구제방법) */}
+            {/* 제10조 (권익침해 구제방법) */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 border-l-4 border-blue-500 pl-3">
-                제9조 (권익침해 구제방법)
+                제10조 (권익침해 구제방법)
               </h2>
               <p className="text-gray-700 dark:text-gray-300 mb-2">
                 개인정보 침해에 대한 신고나 상담이 필요한 경우:
@@ -294,7 +325,7 @@ export default function PrivacyPage() {
                 부칙
               </h2>
               <p className="text-gray-700 dark:text-gray-300">
-                본 개인정보처리방침은 2026년 1월 6일부터 적용됩니다.
+                본 개인정보처리방침은 2026년 1월 7일부터 적용됩니다.
               </p>
             </section>
           </div>
