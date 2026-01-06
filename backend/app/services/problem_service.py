@@ -28,14 +28,14 @@ class ProblemService:
         """
         problem = self.repository.create(problem_in)
 
-        # [P0 Security] golden_code 제외하여 응답 생성
+        # golden_code 포함 - 클라이언트 측 mutation testing에 필요
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
             title=problem.title,
             description_md=problem.description_md,
             function_signature=problem.function_signature,
-            # golden_code 제외 - 보안상 노출 금지
+            golden_code=problem.golden_code,
             difficulty=problem.difficulty,
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
@@ -140,14 +140,14 @@ class ProblemService:
             for bi in problem.buggy_implementations
         ]
 
-        # [P0 Security] golden_code 제외하여 응답 생성
+        # golden_code 포함 - 클라이언트 측 mutation testing에 필요
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
             title=problem.title,
             description_md=problem.description_md,
             function_signature=problem.function_signature,
-            # golden_code 제외 - 보안상 노출 금지
+            golden_code=problem.golden_code,
             difficulty=problem.difficulty,
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,
@@ -188,14 +188,14 @@ class ProblemService:
             for bi in problem.buggy_implementations
         ]
 
-        # [P0 Security] golden_code 제외하여 응답 생성
+        # golden_code 포함 - 클라이언트 측 mutation testing에 필요
         return ProblemDetailResponse(
             id=problem.id,
             slug=problem.slug,
             title=problem.title,
             description_md=problem.description_md,
             function_signature=problem.function_signature,
-            # golden_code 제외 - 보안상 노출 금지
+            golden_code=problem.golden_code,
             difficulty=problem.difficulty,
             domain=getattr(problem, 'domain', 'common'),
             skills=problem.skills,

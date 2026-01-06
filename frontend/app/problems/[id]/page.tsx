@@ -185,12 +185,6 @@ export default function ProblemDetailPage() {
   const handleLocalTest = useCallback(async () => {
     if (!problem || !code.trim() || !isPyodideReady) return;
 
-    // golden_code가 없으면 테스트 실행 불가 (보안상 API에서 제외됨)
-    if (!problem.golden_code) {
-      setLocalTestError("테스트 실행 기능은 이 문제에서 지원되지 않습니다. '채점하기' 버튼을 사용해주세요.");
-      return;
-    }
-
     setLocalTestResult(null);
     setLocalTestError(null);
 
@@ -430,9 +424,8 @@ export default function ProblemDetailPage() {
     pollingErrorCountRef.current = 0;
     setSubmissionError(null);
 
-    // If Pyodide is ready, golden_code is available, and we have buggy implementations, run client-side mutation test
-    // Note: golden_code가 없으면 서버 측 실행으로 fallback (보안상 API에서 golden_code 제외됨)
-    if (isPyodideReady && problem.golden_code && problem.buggy_implementations && problem.buggy_implementations.length > 0) {
+    // If Pyodide is ready and we have buggy implementations, run client-side mutation test
+    if (isPyodideReady && problem.buggy_implementations && problem.buggy_implementations.length > 0) {
       // Prepare buggy implementations for Pyodide
       const buggyImpls = problem.buggy_implementations.map((bi) => ({
         id: String(bi.id),

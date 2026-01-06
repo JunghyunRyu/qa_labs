@@ -71,8 +71,8 @@ class BuggyImplementationResponse(BaseModel):
 class ProblemDetailResponse(BaseModel):
     """Schema for problem detail response (public API).
 
-    [P0 Security] golden_code 제거 - 정답 코드 노출 방지
-    클라이언트 실행(Pyodide)은 buggy_code만 필요합니다.
+    Note: golden_code는 클라이언트 측 mutation testing에 필요합니다.
+    Pyodide에서 먼저 golden_code로 테스트 통과 여부를 확인한 후 buggy_code들을 테스트합니다.
     """
 
     id: int
@@ -80,7 +80,7 @@ class ProblemDetailResponse(BaseModel):
     title: str
     description_md: str
     function_signature: str
-    # golden_code: 보안상 제거됨 (서버 채점에서만 사용)
+    golden_code: str  # 클라이언트 측 mutation testing에 필요
     difficulty: str
     domain: str = "common"
     skills: Optional[List[str]] = None
