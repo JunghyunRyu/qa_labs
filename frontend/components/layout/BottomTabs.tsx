@@ -493,23 +493,23 @@ function ResultTabContent({
         mutant_details?: Array<{
           mutant_id: number | string;  // Can be string from Pyodide client-side execution
           killed: boolean;
+          bug_description?: string;  // 백엔드에서 제공하는 버그 설명
           test_output?: string;
         }>;
       } | undefined;
 
-      if (!executionLog?.mutant_details || !problem?.buggy_implementations) {
+      if (!executionLog?.mutant_details) {
         return [];
       }
 
       return executionLog.mutant_details
         .filter(m => !m.killed)
         .map(m => {
-          // Compare as strings to handle both number and string mutant_ids
           const mutantIdStr = String(m.mutant_id);
-          const buggyImpl = problem.buggy_implementations.find(b => String(b.id) === mutantIdStr);
           return {
             id: typeof m.mutant_id === 'number' ? m.mutant_id : parseInt(mutantIdStr, 10),
-            description: buggyImpl?.bug_description || `버그 #${m.mutant_id}`,
+            // execution_log에 이미 bug_description이 포함되어 있음
+            description: m.bug_description || `버그 #${m.mutant_id}`,
             testOutput: m.test_output,
           };
         });

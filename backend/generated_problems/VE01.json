@@ -1,5 +1,5 @@
 {
-  "title": "결제 금액 합산 add 함수 테스트",
+  "title": "튼튼한 덧셈 계산기 만들기 (Integer Addition)",
   "function_signature": "def add(amount_a: int, amount_b: int) -> int:",
   "golden_code": "def add(amount_a: int, amount_b: int) -> int:\n    \"\"\"Return the arithmetic sum of two integer amounts.\n\n    This helper is used to aggregate signed integer adjustments in a billing system\n    (e.g., base charge + discount, or refund adjustments). Negative values are valid\n    and must be added normally.\n\n    Args:\n        amount_a: First signed integer amount.\n        amount_b: Second signed integer amount.\n\n    Returns:\n        The arithmetic sum (amount_a + amount_b).\n\n    Notes:\n        - Negative values are allowed.\n        - Zero should behave normally.\n        - This function is intentionally simple and should be deterministic.\n    \"\"\"\n    return amount_a + amount_b\n",
   "buggy_implementations": [
