@@ -85,6 +85,13 @@ services:
     networks:
       - docker_internal
     restart: unless-stopped
+    # healthcheck 추가 - celery_worker가 준비되기 전 시작 방지
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:2375/_ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     # 보안 옵션
     security_opt:
       - no-new-privileges:true
@@ -95,7 +102,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 64M
+          memory: 128M  # 64M에서 상향 - HAProxy 안정성 개선
           cpus: "0.25"
 
   backend:
@@ -173,7 +180,7 @@ services:
       redis:
         condition: service_healthy
       docker-socket-proxy:
-        condition: service_started
+        condition: service_healthy  # service_started → service_healthy로 변경
     networks:
       - qa_arena_internal
       - qa_arena_frontend  # OpenAI API 접근을 위한 외부 네트워크

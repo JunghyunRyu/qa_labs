@@ -24,75 +24,109 @@ WORKDIR = "/workdir"
 # 타임아웃 (초)
 DEFAULT_TIMEOUT = 5
 
+# Docker 연결 재시도 설정
+DOCKER_CONNECT_MAX_RETRIES = 3
+DOCKER_CONNECT_INITIAL_DELAY = 1.0  # 초
+DOCKER_CONNECT_BACKOFF_MULTIPLIER = 2.0
+
 
 class DockerService:
     """Docker 컨테이너 관리를 위한 서비스 클래스."""
 
     def __init__(self):
-        """Docker 클라이언트 초기화."""
-        try:
-            import platform
-            import os
-            
-            # 컨테이너 내부에서 실행 중인지 확인
-            is_in_container = os.path.exists("/.dockerenv") or os.environ.get("DOCKER_CONTAINER") == "true"
-            
-            # DOCKER_HOST 환경변수 확인
-            docker_host = os.environ.get("DOCKER_HOST")
-            
-            # Windows 환경에서 호스트에서 실행 중인 경우
-            if platform.system() == "Windows" and not is_in_container:
-                # Windows 호스트에서는 named pipe 사용
-                try:
-                    self.client = docker.DockerClient(base_url="npipe:////./pipe/docker_engine")
-                    self.client.ping()
-                    logger.info("Docker 클라이언트 초기화 성공 (Windows named pipe)")
-                except Exception:
-                    # 실패 시 기본값 사용
-                    self.client = docker.from_env()
-                    logger.info("Docker 클라이언트 초기화 성공 (from_env)")
-            # 컨테이너 내부에서 실행 중인 경우
-            elif is_in_container:
-                # 컨테이너 내부에서는 Docker 소켓 사용
-                # Windows Docker Desktop에서는 DOCKER_HOST가 잘못 설정될 수 있으므로 정리
-                original_docker_host = os.environ.pop("DOCKER_HOST", None)
-                original_docker_tls = os.environ.pop("DOCKER_TLS_VERIFY", None)
-                original_docker_cert = os.environ.pop("DOCKER_CERT_PATH", None)
-                
-                try:
-                    # 먼저 Unix 소켓 시도
-                    try:
-                        self.client = docker.DockerClient(base_url="unix:///var/run/docker.sock")
-                        self.client.ping()
-                        logger.info("Docker 클라이언트 초기화 성공 (Unix socket)")
-                    except Exception as e:
-                        # Unix 소켓 실패 시 환경변수 없이 from_env 시도
-                        logger.warning(f"Unix socket 연결 실패: {e}, from_env 시도")
-                        self.client = docker.from_env()
-                        self.client.ping()
-                        logger.info("Docker 클라이언트 초기화 성공 (from_env)")
-                finally:
-                    # 원래 환경변수 복원 (다른 프로세스에 영향 주지 않도록)
-                    if original_docker_host:
-                        os.environ["DOCKER_HOST"] = original_docker_host
-                    if original_docker_tls:
-                        os.environ["DOCKER_TLS_VERIFY"] = original_docker_tls
-                    if original_docker_cert:
-                        os.environ["DOCKER_CERT_PATH"] = original_docker_cert
-            # Linux/Mac 호스트에서 실행 중인 경우
-            else:
-                self.client = docker.from_env()
-                logger.info("Docker 클라이언트 초기화 성공 (from_env)")
-                
-        except Exception as e:
-            error_msg = (
-                f"Docker 클라이언트 초기화 실패: {type(e).__name__}: {str(e)}. "
-                f"환경: Windows={platform.system() == 'Windows'}, "
-                f"컨테이너 내부={is_in_container}, "
-                f"DOCKER_HOST={docker_host or 'None'}"
-            )
-            logger.error(error_msg)
-            raise RuntimeError(f"Docker 클라이언트를 초기화할 수 없습니다: {str(e)}") from e
+        """Docker 클라이언트 초기화 (재시도 로직 포함)."""
+        import platform
+        import time
+
+        is_in_container = os.path.exists("/.dockerenv") or os.environ.get("DOCKER_CONTAINER") == "true"
+        docker_host = os.environ.get("DOCKER_HOST")
+        platform_system = platform.system()
+
+        logger.info(
+            f"[DOCKER_INIT_START] is_in_container={is_in_container} "
+            f"platform={platform_system} docker_host={docker_host}"
+        )
+
+        last_error = None
+        self._connection_method = "unknown"
+
+        for attempt in range(1, DOCKER_CONNECT_MAX_RETRIES + 1):
+            try:
+                self.client = self._create_docker_client(
+                    is_in_container=is_in_container,
+                    docker_host=docker_host,
+                    platform_system=platform_system,
+                )
+                # 연결 확인
+                self.client.ping()
+                logger.info(
+                    f"[DOCKER_INIT_SUCCESS] attempt={attempt}/{DOCKER_CONNECT_MAX_RETRIES} "
+                    f"method={self._connection_method}"
+                )
+                return
+
+            except Exception as e:
+                last_error = e
+                delay = DOCKER_CONNECT_INITIAL_DELAY * (DOCKER_CONNECT_BACKOFF_MULTIPLIER ** (attempt - 1))
+
+                logger.warning(
+                    f"[DOCKER_INIT_RETRY] attempt={attempt}/{DOCKER_CONNECT_MAX_RETRIES} "
+                    f"method={self._connection_method} "
+                    f"error_type={type(e).__name__} error={str(e)} "
+                    f"next_retry_in={delay:.1f}s"
+                )
+
+                if attempt < DOCKER_CONNECT_MAX_RETRIES:
+                    time.sleep(delay)
+
+        # 모든 재시도 실패
+        error_msg = (
+            f"[DOCKER_INIT_FAILED] Docker 클라이언트 초기화 실패 "
+            f"after {DOCKER_CONNECT_MAX_RETRIES} attempts. "
+            f"is_in_container={is_in_container}, docker_host={docker_host}, "
+            f"last_error={type(last_error).__name__}: {str(last_error)}"
+        )
+        logger.error(error_msg)
+        raise RuntimeError(f"Docker 클라이언트를 초기화할 수 없습니다: {str(last_error)}") from last_error
+
+    def _create_docker_client(
+        self,
+        is_in_container: bool,
+        docker_host: Optional[str],
+        platform_system: str,
+    ) -> docker.DockerClient:
+        """
+        Docker 클라이언트 생성.
+
+        우선순위:
+        1. DOCKER_HOST 환경변수가 TCP로 설정된 경우 (docker-socket-proxy)
+        2. Windows named pipe (Windows 호스트)
+        3. Unix socket (컨테이너 내부, 소켓 존재 시)
+        4. from_env 폴백
+        """
+        # 1. DOCKER_HOST가 TCP로 설정된 경우 (docker-socket-proxy 사용)
+        if docker_host and docker_host.startswith("tcp://"):
+            self._connection_method = f"tcp ({docker_host})"
+            return docker.DockerClient(base_url=docker_host)
+
+        # 2. Windows 호스트에서 실행 중인 경우
+        if platform_system == "Windows" and not is_in_container:
+            self._connection_method = "windows_named_pipe"
+            try:
+                return docker.DockerClient(base_url="npipe:////./pipe/docker_engine")
+            except Exception:
+                # Windows에서 named pipe 실패 시 from_env 폴백
+                self._connection_method = "from_env (windows fallback)"
+                return docker.from_env()
+
+        # 3. 컨테이너 내부에서 Unix socket 사용 가능한 경우
+        if is_in_container and os.path.exists("/var/run/docker.sock"):
+            self._connection_method = "unix_socket"
+            return docker.DockerClient(base_url="unix:///var/run/docker.sock")
+
+        # 4. from_env 폴백 (DOCKER_HOST 환경변수 존중)
+        self._connection_method = "from_env"
+        return docker.from_env()
 
     def create_container(
         self,

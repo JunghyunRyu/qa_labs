@@ -159,15 +159,71 @@ async def system_health() -> Dict[str, Any]:
     return result
 
 
+def check_docker_proxy() -> Dict[str, Any]:
+    """
+    Docker Socket Proxy 연결 상태 체크.
+
+    DockerService와 동일한 연결 우선순위를 사용합니다:
+    1. DOCKER_HOST (TCP) - docker-socket-proxy
+    2. Windows named pipe
+    3. Unix socket
+    4. from_env 폴백
+    """
+    import docker
+    import platform
+    import os
+    import time
+
+    try:
+        docker_host = os.environ.get("DOCKER_HOST")
+        is_in_container = os.path.exists("/.dockerenv") or os.environ.get("DOCKER_CONTAINER") == "true"
+        platform_system = platform.system()
+
+        # 연결 방법 결정 (DockerService와 동일 로직)
+        if docker_host and docker_host.startswith("tcp://"):
+            client = docker.DockerClient(base_url=docker_host, timeout=5)
+            connection_method = f"tcp ({docker_host})"
+        elif platform_system == "Windows" and not is_in_container:
+            client = docker.DockerClient(base_url="npipe:////./pipe/docker_engine", timeout=5)
+            connection_method = "windows_named_pipe"
+        elif is_in_container and os.path.exists("/var/run/docker.sock"):
+            client = docker.DockerClient(base_url="unix:///var/run/docker.sock", timeout=5)
+            connection_method = "unix_socket"
+        else:
+            client = docker.from_env(timeout=5)
+            connection_method = "from_env"
+
+        # Ping 테스트 및 응답 시간 측정
+        start_time = time.time()
+        client.ping()
+        latency_ms = (time.time() - start_time) * 1000
+        client.close()
+
+        return {
+            "status": "healthy",
+            "connection_method": connection_method,
+            "latency_ms": round(latency_ms, 2),
+        }
+
+    except Exception as e:
+        logger.error(f"[HEALTH_DOCKER_PROXY_ERROR] error_type={type(e).__name__} error={e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "error_type": type(e).__name__,
+        }
+
+
 @router.get("/judge")
 async def judge_health() -> Dict[str, Any]:
     """
     Judge 컨테이너 상태 확인.
-    
-    실행 중인 Judge 컨테이너와 최근 종료된 컨테이너 정보를 반환합니다.
+
+    Docker Proxy 연결 상태와 실행 중인 Judge 컨테이너 정보를 반환합니다.
     """
     result = {
         "status": "healthy",
+        "docker_proxy": {},
         "running_containers": [],
         "recent_containers": [],
         "stats": {
@@ -177,18 +233,28 @@ async def judge_health() -> Dict[str, Any]:
             "exited_failed": 0,
         }
     }
-    
+
+    # 1. Docker Proxy 연결 상태 체크
+    result["docker_proxy"] = check_docker_proxy()
+    if result["docker_proxy"]["status"] != "healthy":
+        result["status"] = "unhealthy"
+        result["error"] = "Docker proxy connection failed"
+        return result
+
     try:
         import docker
         import platform
         import os
-        
-        # Docker 클라이언트 초기화
+
+        # Docker 클라이언트 초기화 (DockerService와 동일 로직)
+        docker_host = os.environ.get("DOCKER_HOST")
         is_in_container = os.path.exists("/.dockerenv") or os.environ.get("DOCKER_CONTAINER") == "true"
-        
-        if platform.system() == "Windows" and not is_in_container:
+
+        if docker_host and docker_host.startswith("tcp://"):
+            client = docker.DockerClient(base_url=docker_host)
+        elif platform.system() == "Windows" and not is_in_container:
             client = docker.DockerClient(base_url="npipe:////./pipe/docker_engine")
-        elif is_in_container:
+        elif is_in_container and os.path.exists("/var/run/docker.sock"):
             client = docker.DockerClient(base_url="unix:///var/run/docker.sock")
         else:
             client = docker.from_env()
