@@ -3,9 +3,17 @@
 from datetime import timedelta
 
 from celery import Celery
+from celery.signals import celeryd_init
 from kombu import Queue
 
 from app.core.config import settings
+
+
+@celeryd_init.connect
+def init_sentry_for_celery(**kwargs):
+    """Celery worker 시작 시 Sentry 초기화."""
+    from app.core.sentry import init_sentry
+    init_sentry()
 
 # Redis URL에서 broker와 backend URL 생성
 # broker는 DB 0, backend는 DB 1 사용

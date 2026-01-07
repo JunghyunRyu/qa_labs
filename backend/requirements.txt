@@ -43,3 +43,6 @@ limits>=3.0.0  # slowapi dependency, explicit for custom rate limit logic
 
 # Authentication
 python-jose[cryptography]==3.3.0
+
+# Monitoring & Error Tracking
+sentry-sdk[fastapi,celery]>=2.0.0

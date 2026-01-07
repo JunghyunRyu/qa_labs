@@ -15,9 +15,13 @@ from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.security_utils import sanitize_log_message, sanitize_url_path
+from app.core.sentry import init_sentry
 from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress, plans, tokens, feedback
 from app.middleware.anonymous import AnonymousIDMiddleware
 from app.middleware.request_context import RequestContextMiddleware, get_request_id
+
+# Sentry 초기화 (가장 먼저 실행)
+init_sentry()
 
 # 로깅 설정
 setup_logging()
@@ -123,10 +127,22 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """일반 예외 핸들러."""
+    import sentry_sdk
+
     # 에러 ID 생성
     error_id = str(uuid.uuid4())[:8]
     # Request ID 가져오기
     request_id = get_request_id() or getattr(request.state, "request_id", "-")
+
+    # Sentry에 에러 전송
+    with sentry_sdk.push_scope() as scope:
+        scope.set_tag("error_id", error_id)
+        scope.set_tag("request_id", request_id)
+        scope.set_context("request", {
+            "method": request.method,
+            "path": request.url.path,
+        })
+        sentry_sdk.capture_exception(exc)
 
     # 로깅 (민감정보 마스킹 적용)
     sanitized_path = sanitize_url_path(str(request.url))

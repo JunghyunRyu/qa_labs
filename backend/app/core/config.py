@@ -134,6 +134,10 @@ class Settings(BaseSettings):
     # Server-side execution (disabled in production for resource optimization)
     ALLOW_SERVER_EXECUTION: bool = False
 
+    # Sentry Error Tracking
+    SENTRY_DSN: Optional[str] = None  # Sentry DSN (None이면 비활성화)
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 성능 모니터링 샘플링 비율 (프로덕션: 0.1)
+
     model_config = SettingsConfigDict(
         env_file=get_env_file_path(),
         env_file_encoding="utf-8",
