@@ -111,6 +111,7 @@ services:
       dockerfile: Dockerfile
     container_name: qa_arena_backend_prod
     environment:
+      TZ: Asia/Seoul
       DOCKER_CONTAINER: "true"
       DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
@@ -165,6 +166,7 @@ services:
     container_name: qa_arena_celery_worker_prod
     command: celery -A app.core.celery_app worker -Q feedback --pool=solo --concurrency=1 --loglevel=warning --prefetch-multiplier=1 -O fair
     environment:
+      TZ: Asia/Seoul
       DOCKER_CONTAINER: "true"
       DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
@@ -207,6 +209,7 @@ services:
     container_name: qa_arena_worker_monitor_prod
     command: python -m app.workers.monitor_scheduler
     environment:
+      TZ: Asia/Seoul
       DOCKER_CONTAINER: "true"
       DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
@@ -243,6 +246,7 @@ services:
         NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
     container_name: qa_arena_frontend_prod
     environment:
+      TZ: Asia/Seoul
       NODE_ENV: production
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
       # 서버 사이드 렌더링용 내부 API URL (컨테이너 간 통신)
