@@ -46,3 +46,6 @@ python-jose[cryptography]==3.3.0
 
 # Monitoring & Error Tracking
 sentry-sdk[fastapi,celery]>=2.0.0
+
+# System Metrics (for daily report)
+psutil>=5.9.0

@@ -1,0 +1,5 @@
+# Daily reports (generated locally)
+daily-report-*.md
+
+# Keep directory structure
+!.gitignore
