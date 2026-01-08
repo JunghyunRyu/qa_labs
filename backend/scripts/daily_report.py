@@ -109,6 +109,12 @@ class DailyReport:
     total_problems: int = 0
     published_problems: int = 0
 
+    # 회원/비회원 제출 구분
+    submissions_by_member: int = 0
+    submissions_by_anonymous: int = 0
+    submissions_today_by_member: int = 0
+    submissions_today_by_anonymous: int = 0
+
     # 문제별 통계
     problem_stats: List[Dict] = field(default_factory=list)
 
@@ -167,18 +173,43 @@ def get_user_stats(session) -> tuple:
     return total, new_today
 
 
-def get_submission_stats(session) -> tuple:
-    """제출 통계"""
+def get_submission_stats(session) -> dict:
+    """제출 통계 (회원/비회원 구분 포함)"""
     today = get_today_start()
 
+    # 전체 통계
     total = session.execute(text("SELECT COUNT(*) FROM submissions")).scalar() or 0
-
     today_count = session.execute(
         text("SELECT COUNT(*) FROM submissions WHERE created_at >= :today"),
         {"today": today}
     ).scalar() or 0
 
-    return total, today_count
+    # 회원 제출 (user_id가 있는 경우)
+    member_total = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NOT NULL")
+    ).scalar() or 0
+    member_today = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NOT NULL AND created_at >= :today"),
+        {"today": today}
+    ).scalar() or 0
+
+    # 비회원 제출 (user_id가 없고 anonymous_id가 있는 경우)
+    anonymous_total = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NULL AND anonymous_id IS NOT NULL")
+    ).scalar() or 0
+    anonymous_today = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NULL AND anonymous_id IS NOT NULL AND created_at >= :today"),
+        {"today": today}
+    ).scalar() or 0
+
+    return {
+        "total": total,
+        "today": today_count,
+        "member_total": member_total,
+        "member_today": member_today,
+        "anonymous_total": anonymous_total,
+        "anonymous_today": anonymous_today,
+    }
 
 
 def get_problem_stats_summary(session) -> tuple:
@@ -521,8 +552,16 @@ def generate_report() -> DailyReport:
 
         # DB 통계
         report.total_users, report.new_users_today = get_user_stats(session)
-        report.total_submissions, report.submissions_today = get_submission_stats(session)
         report.total_problems, report.published_problems = get_problem_stats_summary(session)
+
+        # 제출 통계 (회원/비회원 구분)
+        submission_stats = get_submission_stats(session)
+        report.total_submissions = submission_stats["total"]
+        report.submissions_today = submission_stats["today"]
+        report.submissions_by_member = submission_stats["member_total"]
+        report.submissions_by_anonymous = submission_stats["anonymous_total"]
+        report.submissions_today_by_member = submission_stats["member_today"]
+        report.submissions_today_by_anonymous = submission_stats["anonymous_today"]
 
         # 문제별 통계
         problem_stats = get_problem_failure_rates(session)
@@ -569,6 +608,10 @@ def generate_report() -> DailyReport:
 
 def format_text_report(report: DailyReport) -> str:
     """텍스트 형식 리포트"""
+    # 회원/비회원 비율 계산
+    member_pct = (report.submissions_by_member / report.total_submissions * 100) if report.total_submissions > 0 else 0
+    anon_pct = (report.submissions_by_anonymous / report.total_submissions * 100) if report.total_submissions > 0 else 0
+
     lines = [
         f"========================================",
         f"QA Labs Daily Report - {report.report_date}",
@@ -577,6 +620,8 @@ def format_text_report(report: DailyReport) -> str:
         f"[DB 현황]",
         f"  총 사용자: {report.total_users}명 (금일 가입: +{report.new_users_today}명)",
         f"  총 제출: {report.total_submissions}건 (금일: {report.submissions_today}건)",
+        f"    - 회원: {report.submissions_by_member}건 ({member_pct:.1f}%) / 금일: {report.submissions_today_by_member}건",
+        f"    - 비회원: {report.submissions_by_anonymous}건 ({anon_pct:.1f}%) / 금일: {report.submissions_today_by_anonymous}건",
         f"  총 문제: {report.total_problems}개 (공개: {report.published_problems}개)",
         f"",
         f"[문제별 실패율 Top 5]",
