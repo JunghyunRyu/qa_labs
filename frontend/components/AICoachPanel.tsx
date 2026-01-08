@@ -263,11 +263,11 @@ export default function AICoachPanel({
             AI 도우미는 로그인 후 이용할 수 있습니다
           </p>
           <button
-            onClick={login}
+            onClick={() => login()}
             className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
           >
             <LogIn className="w-4 h-4" />
-            GitHub로 로그인
+            로그인
           </button>
         </div>
       ) : (
