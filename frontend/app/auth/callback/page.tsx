@@ -10,7 +10,7 @@ type CallbackStatus = "loading" | "terms" | "success" | "error";
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshAuth, acceptTerms } = useAuth();
+  const { refreshAuth, acceptTerms, declineTerms } = useAuth();
   const [status, setStatus] = useState<CallbackStatus>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isAcceptingTerms, setIsAcceptingTerms] = useState(false);
@@ -67,8 +67,14 @@ function AuthCallbackContent() {
     }
   };
 
-  const handleDeclineTerms = () => {
-    // User declined terms - redirect to home without completing signup
+  const handleDeclineTerms = async () => {
+    // User declined terms - delete account and redirect to home
+    try {
+      await declineTerms();
+    } catch (err) {
+      // Even if API fails, redirect home
+      console.error('Failed to decline terms:', err);
+    }
     router.push("/");
   };
 

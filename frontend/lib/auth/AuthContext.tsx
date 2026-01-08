@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 import type { User, AuthStatus } from "@/types/auth";
-import { getAuthStatus, logout as apiLogout, refreshToken, acceptTerms as apiAcceptTerms } from "@/lib/api/auth";
+import { getAuthStatus, logout as apiLogout, refreshToken, acceptTerms as apiAcceptTerms, declineTerms as apiDeclineTerms } from "@/lib/api/auth";
 
 type OAuthProvider = "github" | "google";
 
@@ -21,6 +21,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   acceptTerms: () => Promise<void>;
+  declineTerms: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,6 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await apiAcceptTerms();
     await refreshAuth();
   }, [refreshAuth]);
+
+  const declineTerms = useCallback(async () => {
+    await apiDeclineTerms();
+    setUser(null);
+  }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -99,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         refreshAuth,
         acceptTerms,
+        declineTerms,
       }}
     >
       {children}

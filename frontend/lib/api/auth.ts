@@ -36,3 +36,7 @@ export async function getTokenStatus(): Promise<TokenStatus> {
 export async function acceptTerms(): Promise<{ message: string; accepted_at: string | null }> {
   return post(`${AUTH_BASE}/accept-terms`);
 }
+
+export async function declineTerms(): Promise<{ message: string; account_deleted: boolean }> {
+  return post(`${AUTH_BASE}/decline-terms`);
+}

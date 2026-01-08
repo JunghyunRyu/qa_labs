@@ -486,3 +486,35 @@ async def accept_terms(
         "accepted_at": user.terms_accepted_at.isoformat() if user.terms_accepted_at else None
     }
 
+
+
+@router.post("/decline-terms")
+async def decline_terms(
+    response: Response,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """
+    Handle user declining terms of service.
+    Only deletes account if user has never accepted terms (new signup).
+    """
+    if user.terms_accepted_at is not None:
+        # User already accepted terms before - just logout
+        logger.warning(f"[TERMS] User {user.id} tried to decline but already accepted")
+        clear_auth_cookies(response)
+        return {"message": "Logged out", "account_deleted": False}
+
+    # New user who never accepted - delete account
+    user_id = user.id
+    user_email = user.email
+
+    # Hard delete since they never actually used the service
+    db.delete(user)
+    db.commit()
+
+    logger.info(f"[TERMS] New user {user_id} ({user_email}) declined terms - account deleted")
+
+    # Clear auth cookies
+    clear_auth_cookies(response)
+
+    return {"message": "Account deleted", "account_deleted": True}
