@@ -43,7 +43,7 @@ export default function TermsPage() {
                   일체를 말합니다.
                 </li>
                 <li>
-                  <strong>&quot;회원&quot;</strong>이란 본 약관에 동의하고 GitHub
+                  <strong>&quot;회원&quot;</strong>이란 본 약관에 동의하고 GitHub 또는 Google
                   소셜 로그인(OAuth) 등을 통해 계정을 부여받아 서비스를 이용하는
                   자를 말합니다.
                 </li>
@@ -85,7 +85,7 @@ export default function TermsPage() {
               </h2>
               <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
                 <li>
-                  회원가입은 <strong>GitHub 계정 기반 소셜 로그인</strong>으로
+                  회원가입은 <strong>GitHub 또는 Google 계정 기반 소셜 로그인</strong>으로
                   진행됩니다.
                 </li>
                 <li>
@@ -93,7 +93,7 @@ export default function TermsPage() {
                   제한됩니다.
                 </li>
                 <li>
-                  회원은 자신의 계정(GitHub)에 대한 관리 책임이 있으며, 계정 도용이나
+                  회원은 자신의 계정(GitHub/Google)에 대한 관리 책임이 있으며, 계정 도용이나
                   관리 소홀로 인해 발생하는 손해에 대해 운영자는 책임을 지지 않습니다.
                 </li>
               </ol>

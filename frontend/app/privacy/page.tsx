@@ -14,7 +14,7 @@ export default function PrivacyPage() {
             개인정보처리방침
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            시행일: 2026년 1월 6일 | 버전: 1.2 (2025 표준지침 반영)
+            시행일: 2026년 1월 9일 | 버전: 1.3 (Google OAuth 추가)
           </p>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-10">
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
                 <br />
                 <br />
                 <span className="font-semibold text-red-500">
-                  ※ 본 서비스는 GitHub 소셜 로그인을 통해 제공되며, 로그인(가입)
+                  ※ 본 서비스는 GitHub 또는 Google 소셜 로그인을 통해 제공되며, 로그인(가입)
                   시 본 개인정보처리방침 및 이용약관에 동의한 것으로 간주합니다.
                 </span>
               </p>
@@ -80,12 +80,11 @@ export default function PrivacyPage() {
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                     <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
                       <li>
-                        <strong>회원 가입(로그인) 시:</strong> GitHub ID(고유
-                        식별자), GitHub 사용자명(username), 프로필 이미지 URL
+                        <strong>회원 가입(로그인) 시:</strong> GitHub ID 또는 Google ID(고유
+                        식별자), 사용자명(username/이름), 이메일, 프로필 이미지 URL
                         <br />
                         <span className="text-sm text-gray-500 ml-5">
-                          (이메일은 GitHub 계정 설정에 따라 제공된 경우에 한해
-                          수집)
+                          (소셜 로그인 제공자(GitHub/Google)로부터 제공받은 정보)
                         </span>
                       </li>
                       <li>
@@ -103,8 +102,8 @@ export default function PrivacyPage() {
                   </h3>
                   <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
                     <li>
-                      <strong>GitHub OAuth 연동:</strong> 이용자가 GitHub
-                      로그인을 진행하는 과정에서 GitHub로부터 제공받아 수집
+                      <strong>소셜 로그인(OAuth) 연동:</strong> 이용자가 GitHub 또는
+                      Google 로그인을 진행하는 과정에서 해당 서비스로부터 제공받아 수집
                     </li>
                     <li>
                       <strong>자동 수집:</strong> 서비스 이용 과정에서 생성된
@@ -325,7 +324,7 @@ export default function PrivacyPage() {
                 부칙
               </h2>
               <p className="text-gray-700 dark:text-gray-300">
-                본 개인정보처리방침은 2026년 1월 7일부터 적용됩니다.
+                본 개인정보처리방침은 2026년 1월 9일부터 적용됩니다.
               </p>
             </section>
           </div>
