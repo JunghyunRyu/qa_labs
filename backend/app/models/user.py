@@ -23,6 +23,9 @@ class User(Base):
     github_username = Column(String(100), nullable=True)
     avatar_url = Column(String(500), nullable=True)
 
+    # Google OAuth fields
+    google_id = Column(String(50), unique=True, nullable=True, index=True)
+
     # Account status
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True)
@@ -41,6 +44,9 @@ class User(Base):
     plan_key = Column(String(20), default="free", nullable=False)  # free / lite / pro
     plan_started_at = Column(DateTime(timezone=True), nullable=True)  # 플랜 시작일
     plan_expires_at = Column(DateTime(timezone=True), nullable=True)  # 플랜 만료일 (NULL = 영구)
+
+    # Terms acceptance
+    terms_accepted_at = Column(DateTime(timezone=True), nullable=True)  # 이용약관 동의 시점
 
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"

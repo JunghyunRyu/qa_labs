@@ -18,6 +18,7 @@ from app.core.auth import (
 )
 from app.core.dependencies import get_current_user, get_current_user_optional
 from app.services.github_oauth import github_oauth_service
+from app.services.google_oauth import google_oauth_service
 from app.models.user import User
 from app.services.token_service import TokenService
 from app.models.submission import Submission
@@ -26,6 +27,78 @@ from app.schemas.auth import UserResponse, AuthStatusResponse, TokenStatusRespon
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def find_or_create_user_by_oauth(
+    db: Session,
+    provider: str,
+    provider_id: str,
+    email: str,
+    username: str,
+    avatar_url: str | None = None,
+) -> tuple[User, bool]:
+    """
+    Find or create user by OAuth provider.
+
+    Returns:
+        (user, is_new_user) tuple
+    """
+    is_new_user = False
+
+    # 1. Find by provider ID
+    if provider == "github":
+        user = db.query(User).filter(User.github_id == provider_id).first()
+    elif provider == "google":
+        user = db.query(User).filter(User.google_id == provider_id).first()
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
+
+    if user:
+        # Existing user - restore if soft-deleted
+        if user.is_deleted:
+            user.is_deleted = False
+            user.deleted_at = None
+            logger.info(f"[OAUTH] Restored deleted user: {user.id} ({user.email})")
+        return user, False
+
+    # 2. Find by email (link providers)
+    user = db.query(User).filter(User.email == email).first()
+
+    if user:
+        # Link new provider to existing account
+        if provider == "github":
+            user.github_id = provider_id
+            user.github_username = username
+        elif provider == "google":
+            user.google_id = provider_id
+
+        if avatar_url and not user.avatar_url:
+            user.avatar_url = avatar_url
+
+        if user.is_deleted:
+            user.is_deleted = False
+            user.deleted_at = None
+            logger.info(f"[OAUTH] Restored deleted user (email match): {user.id}")
+
+        return user, False
+
+    # 3. Create new user
+    is_new_user = True
+    user = User(
+        email=email,
+        username=username,
+        avatar_url=avatar_url,
+    )
+
+    if provider == "github":
+        user.github_id = provider_id
+        user.github_username = username
+    elif provider == "google":
+        user.google_id = provider_id
+
+    # New user: terms_accepted_at = NULL (will be set after consent)
+    db.add(user)
+    return user, True
 
 
 @router.get("/github/login")
@@ -90,39 +163,16 @@ async def github_callback(
                 detail="GitHub account must have a public email or grant email access"
             )
 
-        # Find or create user
+        # Find or create user using common function
         logger.info(f"[OAUTH] Finding or creating user for github_id={github_user.id}")
-        user = db.query(User).filter(User.github_id == github_user.id).first()
-
-        if user:
-            # Check if user was soft-deleted and restore if so
-            if user.is_deleted:
-                user.is_deleted = False
-                user.deleted_at = None
-                logger.info(f"[OAUTH] Restored deleted user: {user.id} ({user.email})")
-        else:
-            # Check if email already exists
-            user = db.query(User).filter(User.email == github_user.email).first()
-            if user:
-                # Link GitHub to existing account
-                user.github_id = github_user.id
-                user.github_username = github_user.login
-                user.avatar_url = github_user.avatar_url
-                # Also restore if soft-deleted
-                if user.is_deleted:
-                    user.is_deleted = False
-                    user.deleted_at = None
-                    logger.info(f"[OAUTH] Restored deleted user (email match): {user.id}")
-            else:
-                # Create new user
-                user = User(
-                    email=github_user.email,
-                    username=github_user.name or github_user.login,
-                    github_id=github_user.id,
-                    github_username=github_user.login,
-                    avatar_url=github_user.avatar_url,
-                )
-                db.add(user)
+        user, is_new_user = find_or_create_user_by_oauth(
+            db=db,
+            provider="github",
+            provider_id=github_user.id,
+            email=github_user.email,
+            username=github_user.name or github_user.login,
+            avatar_url=github_user.avatar_url,
+        )
 
         # Update last login
         user.last_login_at = datetime.now(timezone.utc)
@@ -158,7 +208,9 @@ async def github_callback(
         # Redirect to frontend with cookies
         frontend_url = getattr(settings, 'FRONTEND_URL', None) or (settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else "http://localhost:3000")
         response = Response(status_code=status.HTTP_307_TEMPORARY_REDIRECT)
-        response.headers["Location"] = f"{frontend_url}/auth/callback"
+        # Add is_new parameter for frontend to show terms modal
+        is_new_param = "true" if is_new_user else "false"
+        response.headers["Location"] = f"{frontend_url}/auth/callback?is_new={is_new_param}"
 
         set_auth_cookies(response, access_token, refresh_token)
         response.delete_cookie("oauth_state", path="/")
@@ -250,7 +302,8 @@ async def get_me(user: User = Depends(get_current_user)):
         email=user.email,
         username=user.username,
         avatar_url=user.avatar_url,
-        github_username=user.github_username
+        github_username=user.github_username,
+        terms_accepted_at=user.terms_accepted_at
     )
 
 
@@ -265,7 +318,8 @@ async def get_auth_status(user: User = Depends(get_current_user_optional)):
                 email=user.email,
                 username=user.username,
                 avatar_url=user.avatar_url,
-                github_username=user.github_username
+                github_username=user.github_username,
+                terms_accepted_at=user.terms_accepted_at
             )
         )
     return AuthStatusResponse(authenticated=False, user=None)
@@ -278,4 +332,157 @@ async def get_token_status(
     """Get AI token status for the authenticated user."""
     token_service = TokenService(db)
     return TokenStatusResponse(**token_service.get_token_status(user))
+
+
+# ============================================================================
+# Google OAuth Endpoints
+# ============================================================================
+
+@router.get("/google/login")
+async def google_login(request: Request):
+    """Initiate Google OAuth login flow."""
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google OAuth is not configured"
+        )
+
+    # Generate state for CSRF protection
+    state = secrets.token_urlsafe(32)
+
+    # Get authorization URL
+    authorization_url = google_oauth_service.get_authorization_url(state)
+
+    response = Response(status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+    response.headers["Location"] = authorization_url
+    response.set_cookie(
+        key="oauth_state",
+        value=state,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite="lax",
+        max_age=600,  # 10 minutes
+        path="/"
+    )
+    return response
+
+
+@router.get("/google/callback")
+async def google_callback(
+    code: str,
+    state: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Handle Google OAuth callback."""
+    # Verify state
+    stored_state = request.cookies.get("oauth_state")
+    if not stored_state or stored_state != state:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid OAuth state"
+        )
+
+    try:
+        # Exchange code for token
+        logger.info("[OAUTH] Exchanging code for Google token...")
+        google_token = await google_oauth_service.exchange_code_for_token(code)
+        logger.info("[OAUTH] Google token exchange successful")
+
+        # Get user info from Google
+        logger.info("[OAUTH] Getting user info from Google...")
+        google_user = await google_oauth_service.get_user_info(google_token)
+        logger.info(f"[OAUTH] User info retrieved: {google_user.email}")
+
+        if not google_user.email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Google account must have an email"
+            )
+
+        # Find or create user using common function
+        logger.info(f"[OAUTH] Finding or creating user for google_id={google_user.id}")
+        user, is_new_user = find_or_create_user_by_oauth(
+            db=db,
+            provider="google",
+            provider_id=google_user.id,
+            email=google_user.email,
+            username=google_user.name or google_user.email.split("@")[0],
+            avatar_url=google_user.avatar_url,
+        )
+
+        # Update last login
+        user.last_login_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(user)
+
+        logger.info(f"User logged in: {user.email} (Google)")
+
+        # Guest submission migration (same as GitHub)
+        anonymous_id = request.cookies.get("qa_anonymous_id")
+        if anonymous_id:
+            migration_cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+            migrated_count = db.query(Submission).filter(
+                Submission.anonymous_id == anonymous_id,
+                Submission.user_id.is_(None),
+                Submission.created_at >= migration_cutoff
+            ).update({
+                "user_id": user.id,
+                "anonymous_id": None
+            })
+            if migrated_count > 0:
+                db.commit()
+                logger.info(
+                    f"[GUEST_SUBMISSIONS_MIGRATED] user_id={user.id} "
+                    f"anonymous_id={anonymous_id} count={migrated_count}"
+                )
+
+        # Create JWT tokens
+        access_token = create_access_token(user.id, user.email, user.username)
+        refresh_token = create_refresh_token(user.id)
+
+        # Redirect to frontend with cookies
+        frontend_url = getattr(settings, 'FRONTEND_URL', None) or (settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else "http://localhost:3000")
+        response = Response(status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+        # Add is_new parameter for frontend to show terms modal
+        is_new_param = "true" if is_new_user else "false"
+        response.headers["Location"] = f"{frontend_url}/auth/callback?is_new={is_new_param}"
+
+        set_auth_cookies(response, access_token, refresh_token)
+        response.delete_cookie("oauth_state", path="/")
+        response.delete_cookie("qa_anonymous_id", path="/")
+
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        logger.error(f"[OAUTH_ERROR] Google OAuth error: {type(e).__name__}: {e}")
+        logger.error(f"[OAUTH_ERROR] Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Authentication failed. Please try again later."
+        )
+
+
+# ============================================================================
+# Terms Acceptance Endpoint
+# ============================================================================
+
+@router.post("/accept-terms")
+async def accept_terms(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """Record user's acceptance of terms of service."""
+    if user.terms_accepted_at is None:
+        user.terms_accepted_at = datetime.now(timezone.utc)
+        db.commit()
+        logger.info(f"[TERMS] User {user.id} accepted terms at {user.terms_accepted_at}")
+
+    return {
+        "message": "Terms accepted",
+        "accepted_at": user.terms_accepted_at.isoformat() if user.terms_accepted_at else None
+    }
 

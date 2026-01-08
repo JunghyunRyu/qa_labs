@@ -3,18 +3,23 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
+import TermsModal from "@/components/TermsModal";
+
+type CallbackStatus = "loading" | "terms" | "success" | "error";
 
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshAuth } = useAuth();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const { refreshAuth, acceptTerms } = useAuth();
+  const [status, setStatus] = useState<CallbackStatus>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isAcceptingTerms, setIsAcceptingTerms] = useState(false);
 
   useEffect(() => {
     const handleCallback = async () => {
       const error = searchParams.get("error");
       const errorDescription = searchParams.get("error_description");
+      const isNew = searchParams.get("is_new") === "true";
 
       if (error) {
         setStatus("error");
@@ -26,11 +31,17 @@ function AuthCallbackContent() {
       // We just need to refresh the auth state
       try {
         await refreshAuth();
-        setStatus("success");
-        // Redirect to home after a brief delay
-        setTimeout(() => {
-          router.push("/");
-        }, 1500);
+
+        // Show terms modal for new users
+        if (isNew) {
+          setStatus("terms");
+        } else {
+          setStatus("success");
+          // Redirect to home after a brief delay
+          setTimeout(() => {
+            router.push("/");
+          }, 1500);
+        }
       } catch (err) {
         setStatus("error");
         setErrorMessage("인증을 완료하지 못했습니다");
@@ -40,6 +51,27 @@ function AuthCallbackContent() {
     handleCallback();
   }, [searchParams, refreshAuth, router]);
 
+  const handleAcceptTerms = async () => {
+    setIsAcceptingTerms(true);
+    try {
+      await acceptTerms();
+      setStatus("success");
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage("약관 동의 처리에 실패했습니다");
+    } finally {
+      setIsAcceptingTerms(false);
+    }
+  };
+
+  const handleDeclineTerms = () => {
+    // User declined terms - redirect to home without completing signup
+    router.push("/");
+  };
+
   return (
     <div className="text-center">
       {status === "loading" && (
@@ -48,6 +80,14 @@ function AuthCallbackContent() {
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">인증 중...</h1>
           <p className="text-gray-500 dark:text-gray-400">로그인을 완료하는 중입니다. 잠시만 기다려주세요.</p>
         </>
+      )}
+
+      {status === "terms" && (
+        <TermsModal
+          onAccept={handleAcceptTerms}
+          onDecline={handleDeclineTerms}
+          isLoading={isAcceptingTerms}
+        />
       )}
 
       {status === "success" && (

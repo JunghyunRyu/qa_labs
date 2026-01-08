@@ -1,5 +1,6 @@
 """Authentication schemas."""
 
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
@@ -11,6 +12,7 @@ class UserResponse(BaseModel):
     username: str
     avatar_url: Optional[str] = None
     github_username: Optional[str] = None
+    terms_accepted_at: Optional[datetime] = None
 
 
 class AuthStatusResponse(BaseModel):

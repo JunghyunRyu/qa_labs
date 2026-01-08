@@ -9,15 +9,18 @@ import {
   ReactNode,
 } from "react";
 import type { User, AuthStatus } from "@/types/auth";
-import { getAuthStatus, logout as apiLogout, refreshToken } from "@/lib/api/auth";
+import { getAuthStatus, logout as apiLogout, refreshToken, acceptTerms as apiAcceptTerms } from "@/lib/api/auth";
+
+type OAuthProvider = "github" | "google";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: () => void;
+  login: (provider?: OAuthProvider) => void;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
+  acceptTerms: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,10 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(() => {
+  const login = useCallback((provider: OAuthProvider = "github") => {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-    window.location.href = `${apiBaseUrl}/v1/auth/github/login`;
+    window.location.href = `${apiBaseUrl}/v1/auth/${provider}/login`;
   }, []);
+
+  const acceptTerms = useCallback(async () => {
+    await apiAcceptTerms();
+    await refreshAuth();
+  }, [refreshAuth]);
 
   const logout = useCallback(async () => {
     try {
@@ -90,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         refreshAuth,
+        acceptTerms,
       }}
     >
       {children}

@@ -24,6 +24,15 @@ export function getGitHubLoginUrl(): string {
   return `${apiBaseUrl}/v1/auth/github/login`;
 }
 
+export function getGoogleLoginUrl(): string {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  return `${apiBaseUrl}/v1/auth/google/login`;
+}
+
 export async function getTokenStatus(): Promise<TokenStatus> {
   return get<TokenStatus>(`${AUTH_BASE}/tokens`);
+}
+
+export async function acceptTerms(): Promise<{ message: string; accepted_at: string | null }> {
+  return post(`${AUTH_BASE}/accept-terms`);
 }
