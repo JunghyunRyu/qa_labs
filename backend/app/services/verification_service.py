@@ -107,68 +107,32 @@ class VerificationService:
         """
         재검증이 필요한지 결정.
 
-        다음 조건 중 하나라도 충족하면 재검증이 트리거됩니다:
-        1. 고득점 (70점 이상) - 필수 검증
-        2. 빠른 실행 (1초 미만)
-        3. 동일 IP 반복 고득점 (1시간 내 5회 80점+)
-        4. 동일 코드 해시 반복 (24시간 내 3회+)
-        5. 중간 점수 (50-69점) - 10% 확률 추가 검증
-        6. 랜덤 샘플링 (20%)
+        PRO 플랜 사용자의 Hard 난이도 문제에서 50점 이상일 때만 검증.
+        이는 PRO 플랜의 프리미엄 기능으로, 서버 사이드 재검증을 통해
+        더 정확한 채점 결과를 제공합니다.
 
         Args:
             submission: Submission 객체
             score: 클라이언트 보고 점수
-            execution_time_ms: 실행 시간 (밀리초)
-            client_ip: 클라이언트 IP 주소
+            execution_time_ms: 실행 시간 (밀리초) - 현재 미사용
+            client_ip: 클라이언트 IP 주소 - 현재 미사용
 
         Returns:
             (should_verify, trigger_reason) 튜플
         """
-        # 1. 고득점 (70점 이상) - 필수 검증
-        if score >= self.HIGH_SCORE_THRESHOLD:
+        # PRO 플랜 확인 (익명 사용자는 제외)
+        is_pro = submission.user and submission.user.plan_key == "pro"
+
+        # Hard 난이도 확인
+        is_hard = submission.problem and submission.problem.difficulty == "Hard"
+
+        # PRO + Hard + 50점 이상만 검증
+        if is_pro and is_hard and score >= 50:
             logger.info(
-                f"[VERIFICATION_TRIGGER] high_score submission_id={submission.id} score={score}"
+                f"[VERIFICATION_TRIGGER] pro_hard_high_score submission_id={submission.id} "
+                f"score={score} difficulty={submission.problem.difficulty}"
             )
-            return True, "high_score"
-
-        # 2. 빠른 실행 (1초 미만)
-        if execution_time_ms < self.FAST_EXECUTION_THRESHOLD_MS:
-            logger.info(
-                f"[VERIFICATION_TRIGGER] fast_execution submission_id={submission.id} "
-                f"time_ms={execution_time_ms}"
-            )
-            return True, "fast_execution"
-
-        # 3. 동일 IP 반복 고득점 감지
-        if self._detect_repeated_high_scores(client_ip, score):
-            logger.warning(
-                f"[VERIFICATION_TRIGGER] repeated_high_score_ip submission_id={submission.id} "
-                f"ip={client_ip}"
-            )
-            return True, "repeated_high_score_ip"
-
-        # 4. 동일 코드 해시 반복 감지
-        code_hash = submission.code_hash or self.compute_code_hash(submission.code)
-        if self._detect_duplicate_code_hash(code_hash, submission.problem_id):
-            logger.warning(
-                f"[VERIFICATION_TRIGGER] duplicate_code_hash submission_id={submission.id} "
-                f"hash={code_hash[:16]}..."
-            )
-            return True, "duplicate_code_hash"
-
-        # 5. 중간 점수 (50-69점) - 10% 확률 추가 검증 [P0 Fix]
-        if score >= self.MEDIUM_SCORE_THRESHOLD and random.random() < 0.10:
-            logger.info(
-                f"[VERIFICATION_TRIGGER] medium_score_sample submission_id={submission.id} score={score}"
-            )
-            return True, "medium_score_sample"
-
-        # 6. 랜덤 샘플링 (20%)
-        if random.random() < self.RANDOM_SAMPLE_RATE:
-            logger.info(
-                f"[VERIFICATION_TRIGGER] random_sample submission_id={submission.id}"
-            )
-            return True, "random_sample"
+            return True, "pro_hard_high_score"
 
         return False, None
 
