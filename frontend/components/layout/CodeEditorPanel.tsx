@@ -107,8 +107,11 @@ export default function CodeEditorPanel({
   onReset,
   lastSavedAt,
 }: CodeEditorPanelProps) {
-  // Get bottom panel height from global store (persisted)
-  const { bottomPanelHeight, setBottomPanelHeight } = useLayoutStore();
+  // Get bottom panel height and editor focus state from global store
+  const { bottomPanelHeight, setBottomPanelHeight, editorFocusRequested, clearEditorFocusRequest } = useLayoutStore();
+
+  // Monaco editor instance reference
+  const monacoEditorRef = useRef<any>(null);
 
   const [editorHeight, setEditorHeight] = useState(400);
   const [activeTab, setActiveTab] = useState<TabId>("local");
@@ -235,6 +238,14 @@ export default function CodeEditorPanel({
     setUserHasManuallyCollapsed(false);
     setIsBottomCollapsed(true);
   }, [problemId]);
+
+  // Handle editor focus request from global store
+  useEffect(() => {
+    if (editorFocusRequested && monacoEditorRef.current) {
+      monacoEditorRef.current.focus();
+      clearEditorFocusRequest();
+    }
+  }, [editorFocusRequested, clearEditorFocusRequest]);
 
   // Toggle collapse (manual action)
   const toggleCollapse = useCallback(() => {
@@ -458,6 +469,7 @@ export default function CodeEditorPanel({
             onChange={(value) => onCodeChange(value || "")}
             height={`${editorHeight}px`}
             language="python"
+            onEditorReady={(editor) => { monacoEditorRef.current = editor; }}
           />
         </div>
 

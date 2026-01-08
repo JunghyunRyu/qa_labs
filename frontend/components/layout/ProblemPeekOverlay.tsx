@@ -9,6 +9,7 @@ import ProblemDescription from "@/components/ProblemDescription";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { useLayoutStore } from "@/stores/layoutStore";
 
 interface ProblemPeekOverlayProps {
   problem: Problem;
@@ -31,8 +32,15 @@ export default function ProblemPeekOverlay({
 }: ProblemPeekOverlayProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [isSignatureCollapsed, setIsSignatureCollapsed] = useState(true);
-  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(true);
+  const [isSignatureCollapsed, setIsSignatureCollapsed] = useState(false);
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
+  const { requestEditorFocus } = useLayoutStore();
+
+  // Handle "Go to Editor" CTA button click
+  const handleGoToEditor = useCallback(() => {
+    requestEditorFocus();
+    onClose();
+  }, [requestEditorFocus, onClose]);
 
   // Close on ESC key
   const handleKeyDown = useCallback(
@@ -167,7 +175,7 @@ export default function ProblemPeekOverlay({
               </span>
             </button>
             <div className="flex items-center gap-2">
-              <CopyButton text={problem.function_signature} variant="light" />
+              <CopyButton text={problem.function_signature} variant="light" size="md" />
               <button
                 onClick={() => setIsSignatureCollapsed(!isSignatureCollapsed)}
                 className="p-1 hover:bg-purple-100 dark:hover:bg-purple-800/30 rounded transition-colors"
@@ -181,17 +189,17 @@ export default function ProblemPeekOverlay({
             </div>
           </div>
           {!isSignatureCollapsed && (
-            <pre className="mt-1.5 text-sm text-purple-900 dark:text-purple-100 font-mono
+            <pre className="mt-2 text-sm text-purple-900 dark:text-purple-100 font-mono
                             bg-white dark:bg-gray-900 p-2.5 rounded-lg
                             border border-purple-200 dark:border-purple-700
-                            max-h-[120px] overflow-auto">
+                            max-h-[120px] overflow-auto scrollbar-slim">
               {problem.function_signature}
             </pre>
           )}
         </div>
 
         {/* Summary - Key test points - Collapsible */}
-        <div className="flex-shrink-0 px-5 py-3 bg-sky-50 dark:bg-sky-900/20
+        <div className="flex-shrink-0 px-6 py-4 bg-sky-50 dark:bg-sky-900/20
                         border-b border-sky-100 dark:border-sky-800/30">
           <div className="flex items-center justify-between">
             <button
@@ -216,7 +224,10 @@ export default function ProblemPeekOverlay({
           </div>
           {!isSummaryCollapsed && (
             summary ? (
-              <div className="mt-1.5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed prose prose-sm max-w-none max-h-[150px] overflow-auto">
+              <div className="mt-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed
+                              prose prose-sm max-w-none max-h-[180px] overflow-auto scrollbar-slim
+                              prose-ul:my-1 prose-ul:pl-4 prose-li:my-0.5 prose-li:marker:text-sky-500
+                              prose-strong:text-gray-800 dark:prose-strong:text-gray-200">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                   {summary}
                 </ReactMarkdown>
@@ -230,22 +241,34 @@ export default function ProblemPeekOverlay({
         </div>
 
         {/* Full Content - Scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-slim px-5 py-4">
           <ProblemDescription description_md={problem.description_md} />
         </div>
 
-        {/* Footer hint */}
-        <div className="flex-shrink-0 px-5 py-2 bg-gray-50 dark:bg-gray-800
+        {/* Footer with CTA */}
+        <div className="flex-shrink-0 px-5 py-3 bg-gray-50 dark:bg-gray-800
                         border-t border-gray-200 dark:border-gray-700
-                        text-xs text-gray-500 dark:text-gray-400 text-center">
-          <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded font-mono">
-            ESC
-          </kbd>
-          {" 또는 바깥 클릭으로 닫기 • "}
-          <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded font-mono">
-            Alt+P
-          </kbd>
-          {" 토글"}
+                        flex items-center justify-between">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded font-mono">
+              ESC
+            </kbd>
+            {" 또는 바깥 클릭 • "}
+            <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded font-mono">
+              Alt+P
+            </kbd>
+            {" 토글"}
+          </div>
+          <button
+            onClick={handleGoToEditor}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg
+                       text-sm font-medium text-white bg-sky-500
+                       hover:bg-sky-600 active:bg-sky-700
+                       transition-colors shadow-sm"
+          >
+            <Code2 className="w-4 h-4" />
+            풀러 가기
+          </button>
         </div>
       </div>
     </div>

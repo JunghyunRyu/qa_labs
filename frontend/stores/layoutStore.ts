@@ -27,6 +27,9 @@ interface LayoutState {
   // Problem search state (session-only)
   isProblemSearchOpen: boolean;
 
+  // Editor focus request (session-only)
+  editorFocusRequested: boolean;
+
   // Editor settings
   editorFontSize: number;
 
@@ -55,6 +58,8 @@ interface LayoutState {
   closeProblemSearch: () => void;
   toggleProblemSearch: () => void;
   setAccordionDefault: (sectionType: AccordionSectionType, isOpen: boolean) => void;
+  requestEditorFocus: () => void;
+  clearEditorFocusRequest: () => void;
   resetLayout: () => void;
 }
 
@@ -67,6 +72,7 @@ const DEFAULT_STATE = {
   isFocusMode: false,
   isProblemPeekOpen: false,
   isProblemSearchOpen: false,
+  editorFocusRequested: false,
   editorFontSize: 14,
   activeTab: "code" as const,
   accordionDefaults: {
@@ -185,6 +191,14 @@ export const useLayoutStore = create<LayoutState>()(
             [sectionType]: isOpen,
           },
         }));
+      },
+
+      requestEditorFocus: () => {
+        set({ editorFocusRequested: true });
+      },
+
+      clearEditorFocusRequest: () => {
+        set({ editorFocusRequested: false });
       },
 
       resetLayout: () => {

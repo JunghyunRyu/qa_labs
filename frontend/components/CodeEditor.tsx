@@ -16,6 +16,8 @@ interface CodeEditorProps {
   resizable?: boolean;
   readOnly?: boolean;
   language?: string;
+  /** Callback to expose editor instance for external control (e.g., focus) */
+  onEditorReady?: (editor: any) => void;
 }
 
 // Track if completions have been registered
@@ -30,6 +32,7 @@ export default function CodeEditor({
   resizable = false,
   readOnly = false,
   language = "python",
+  onEditorReady,
 }: CodeEditorProps) {
   const editorRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,6 +66,8 @@ export default function CodeEditor({
         automaticLayout: true,
       });
     }
+    // Expose editor instance to parent
+    onEditorReady?.(editor);
   };
 
   // Resize handling
