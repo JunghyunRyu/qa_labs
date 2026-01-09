@@ -54,6 +54,29 @@ ls -lh ./backups
 # ./backups/qa_arena_backup_YYYYMMDD_HHMMSS.sql.gz 가 생성되었는지 확인
 ```
 
+### 3.5 DB Migration 적용 (필요 시)
+
+> ⚠️ `backend/alembic/versions/`에 새 migration 파일이 있는 경우에만 실행
+
+#### Migration이 필요한 경우
+- 새로운 테이블 추가
+- 컬럼 추가/수정/삭제
+- 인덱스 또는 제약조건 변경
+
+#### Migration 명령어
+```bash
+# Migration 적용
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+
+# 현재 버전 확인
+docker compose -f docker-compose.prod.yml exec backend alembic current
+
+# 히스토리 확인
+docker compose -f docker-compose.prod.yml exec backend alembic history
+```
+
+> 📖 자세한 내용: Serena memory `db_migration_guide` 참조
+
 ### 4. Docker Compose로 배포 (빌드 + 재기동)
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env up -d --build
