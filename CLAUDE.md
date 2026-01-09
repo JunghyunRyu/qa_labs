@@ -5,6 +5,18 @@
 
 ---
 
+## Claude Context 참조 문서
+
+> 세부 정보는 아래 파일에서 불러옵니다. 필요시 해당 파일을 읽어주세요.
+
+| 문서 | 경로 | 내용 |
+|------|------|------|
+| **인프라 정보** | `docs/claude-context/infrastructure.md` | EC2, SSM 접속, Docker 구성, 네트워크 |
+| **API 명세** | `docs/claude-context/api-reference.md` | REST API 엔드포인트, 에러 코드 |
+| **DB 스키마** | `docs/claude-context/db-schema.md` | 테이블 정의, 관계, 마이그레이션 |
+
+---
+
 ## 핵심 규칙
 
 > **AI 안전 수칙**: 모든 작업 전 `docs/specs/AI_SAFETY_PROTOCOLS.md`를 준수한다.
@@ -46,32 +58,7 @@
 
 ---
 
-## 아키텍처
-
-### Docker 서비스 구성
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         nginx (80/443)                       │
-│                    Reverse Proxy + SSL                       │
-└─────────────┬───────────────────────────────┬───────────────┘
-              │                               │
-              ▼                               ▼
-┌─────────────────────────┐     ┌─────────────────────────────┐
-│   frontend (:3000)      │     │      backend (:8000)        │
-│   Next.js + Pyodide     │     │      FastAPI + JWT          │
-└─────────────────────────┘     └──────────────┬──────────────┘
-                                               │
-              ┌────────────────────────────────┼────────────────┐
-              │                                │                │
-              ▼                                ▼                ▼
-┌─────────────────────┐  ┌─────────────────────┐  ┌────────────────────┐
-│  postgres (:5432)   │  │    redis (:6379)    │  │   celery_worker    │
-│   PostgreSQL 15     │  │   Celery Broker     │  │   AI Feedback용    │
-└─────────────────────┘  └─────────────────────┘  └────────────────────┘
-```
-
-### 기술 스택
+## 기술 스택
 
 | 레이어 | 기술 |
 |--------|------|
@@ -80,44 +67,21 @@
 | Auth | GitHub/Google OAuth, JWT |
 | Task Queue | Celery + Redis |
 | Database | PostgreSQL 15 |
-| Proxy | Nginx + Let's Encrypt |
-| Monitoring | Sentry, Discord Webhook |
-| Infra | Docker Compose, AWS EC2 |
+| Infra | Docker Compose, AWS EC2 (t3.medium) |
 
-### 네트워크 구조
-
-| 네트워크 | 용도 | 특성 |
-|---------|------|------|
-| qa_arena_internal | DB, Redis, Worker | internal (외부 차단) |
-| qa_arena_frontend | Nginx, Frontend, Backend | 외부 접근 가능 |
-| docker_internal | Docker Socket Proxy | internal |
+> 아키텍처 상세: `docs/claude-context/infrastructure.md`
 
 ---
 
 ## 개발 환경
 
-### 환경 정보
-
 | 항목 | 로컬 | 프로덕션 |
 |------|------|----------|
-| OS | Windows | Ubuntu 24.04 (EC2 t3.medium) |
-| 접속 방식 | 직접 | AWS SSM (SSH 미사용) |
+| OS | Windows | Ubuntu 24.04 |
 | Docker Compose | `docker-compose` | `docker compose` (v2) |
 | 인코딩 | UTF-8 | UTF-8 |
 
-### EC2 정보
-
-| 항목 | 값 |
-|------|---|
-| Instance ID | i-05b23ecec2bdcd44a |
-| Project Path | /home/ssm-user/qa_labs |
-| Domain | https://qa-arena.qalabs.kr |
-
-### Docker 특이사항
-
-- **Docker-in-Docker**: celery_worker가 judge 컨테이너 생성
-- **공유 볼륨**: `/tmp/qa_arena_judge` (호스트 ↔ 컨테이너)
-- **Docker Socket Proxy**: 보안을 위한 제한된 API 접근
+> EC2/SSM 접속 정보: `docs/claude-context/infrastructure.md`
 
 ---
 
@@ -274,20 +238,10 @@ Serena의 read_memory 도구 사용:
 
 ---
 
-## 환경 변수 (주요 항목)
+## 환경 변수
 
 > 실제 값은 `.env` 파일에서 관리 (Git 미추적)
-
-| 변수 | 설명 |
-|------|------|
-| DATABASE_URL | PostgreSQL 연결 |
-| REDIS_URL | Redis 연결 |
-| OPENAI_API_KEY | OpenAI API |
-| JWT_SECRET_KEY | JWT 서명 키 |
-| GITHUB_CLIENT_ID/SECRET | GitHub OAuth |
-| GOOGLE_CLIENT_ID/SECRET | Google OAuth |
-| SENTRY_DSN | Sentry 에러 추적 |
-| DISCORD_WEBHOOK_URL | 일일 리포트 알림 |
+> 상세 목록: `docs/claude-context/infrastructure.md`
 
 ---
 
@@ -295,6 +249,7 @@ Serena의 read_memory 도구 사용:
 
 | 날짜 | 변경 내용 |
 |------|----------|
+| 2026-01-09 | Claude Context 분리 (infrastructure, api-reference, db-schema) |
 | 2026-01-09 | P1~P5 설정 개선 반영, 전체 구조 재작성 |
 | 2025-12-31 | M5 마일스톤 완료, 보안 강화 |
 | 2025-12-30 | 브랜딩 리뉴얼(QA Arena), GA4 통합 |

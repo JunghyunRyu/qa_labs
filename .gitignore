@@ -102,4 +102,4 @@ sync_problems_clean.sql
 backend/problem_scan_results.csv
 docs/specs/milestones/
 
-nul
+nul.mcp.json
