@@ -134,7 +134,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/blog"
+                    href="https://velog.io/@ai_qa_patrick/series"
                     className="hover:text-[#58a6ff] transition-colors"
                   >
                     개발자 블로그

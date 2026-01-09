@@ -164,7 +164,44 @@
 
 ---
 
-### Health (`/api/v1/health`)
+### Plans (`/api/v1/plans`)
+
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | `/me` | 내 플랜 정보 조회 | Required |
+| GET | `/compare` | 전체 플랜 비교 (Pricing 페이지용) | - |
+| POST | `/check-feature` | 특정 기능 사용 가능 여부 확인 | Required |
+| GET | `/limits/{limit_key}` | 특정 제한 값 조회 | Required |
+| GET | `/{plan_key}` | 특정 플랜 정보 조회 | - |
+
+#### Plan Keys
+| 값 | 설명 |
+|----|------|
+| free | 무료 플랜 |
+| lite | 라이트 플랜 |
+| pro | 프로 플랜 |
+
+---
+
+### Test Quality (`/api/v1/test-quality`)
+
+| Method | Endpoint | 설명 | 인증 | 토큰 |
+|--------|----------|------|------|------|
+| GET | `/submissions/{submission_id}/quality` | 제출 품질 분석 조회 | Optional | - |
+| POST | `/analyze` | 코드 직접 분석 (테스트용) | - | - |
+| GET | `/submissions/{submission_id}/hints` | 테스트 개선 힌트 조회 | Required | 1 |
+
+#### Admin Endpoints
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | `/admin/analyze-submission/{submission_id}` | 제출 품질 수동 분석 | Admin |
+| POST | `/admin/analyze-problem/{problem_id}` | 문제 루브릭 생성 | Admin |
+| GET | `/admin/statistics` | 품질 통계 조회 | Admin |
+| GET | `/admin/runs` | 분석 실행 이력 조회 | Admin |
+
+---
+
+### Health (`/healthz`)
 
 | Method | Endpoint | 설명 | 인증 |
 |--------|----------|------|------|
@@ -174,7 +211,7 @@
 
 ---
 
-### Admin (`/api/v1/admin`)
+### Admin (`/api/admin`)
 
 > 관리자 전용 (미노출)
 
@@ -236,4 +273,4 @@
 
 ---
 
-*최종 업데이트: 2026-01-09*
+*최종 업데이트: 2026-01-10*

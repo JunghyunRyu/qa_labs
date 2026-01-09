@@ -1,6 +1,6 @@
 # QA Labs (QA Arena) 개발 가이드
 
-> **최종 업데이트**: 2026-01-09
+> **최종 업데이트**: 2026-01-10
 > **도메인**: https://qa-arena.qalabs.kr
 
 ---
@@ -111,6 +111,26 @@
 | `/submission-test` | 제출 시스템 빠른 테스트 |
 | `/submission-test --full` | 상세 E2E 검증 |
 
+### Agents (`.claude/agents/`)
+
+> 가상 팀원으로서 특정 영역을 전담하는 서브에이전트
+
+| Agent | 역할 | 사용 시점 |
+|-------|------|----------|
+| **QA Engineer** | 테스트 케이스 작성, 버그 재현, 회귀 테스트 | 기능 구현 후, PR 전 |
+| **DB Admin** | 스키마 관리, 쿼리 최적화, 마이그레이션 | 모델 변경, 성능 이슈 |
+| **Docs Writer** | 코드 변경 시 문서 자동 업데이트 | API/스키마 변경 후 |
+| **SRE/DevOps** | 인프라 관리, 배포 자동화, 모니터링 | 배포, 장애 대응 |
+
+#### Agent 호출 방식
+```
+Task 도구로 subagent_type 지정:
+- "QA Engineer Agent"
+- "Database Admin Agent"
+- "Docs Writer Agent"
+- "SRE/DevOps Agent"
+```
+
 ---
 
 ## 개발 워크플로우
@@ -163,6 +183,7 @@ qa_labs/
 ├── .claude/
 │   ├── commands/         # 슬래시 커맨드
 │   ├── skills/           # 전문화 스킬
+│   ├── agents/           # 서브에이전트 정의
 │   └── settings.local.json  # 권한 설정
 └── docker-compose.prod.yml  # 프로덕션 Docker 설정
 ```
@@ -249,6 +270,8 @@ Serena의 read_memory 도구 사용:
 
 | 날짜 | 변경 내용 |
 |------|----------|
+| 2026-01-10 | Agent 시스템 추가 (QA Engineer, DB Admin, Docs Writer, SRE/DevOps) |
+| 2026-01-10 | Claude Context 문서 동기화 (db-schema, api-reference, infrastructure) |
 | 2026-01-09 | Claude Context 분리 (infrastructure, api-reference, db-schema) |
 | 2026-01-09 | P1~P5 설정 개선 반영, 전체 구조 재작성 |
 | 2025-12-31 | M5 마일스톤 완료, 보안 강화 |

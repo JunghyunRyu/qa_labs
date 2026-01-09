@@ -77,8 +77,15 @@ cd /home/ssm-user/qa_labs && git pull && docker compose -f docker-compose.prod.y
               ▼                                ▼                ▼
 ┌─────────────────────┐  ┌─────────────────────┐  ┌────────────────────┐
 │  postgres (:5432)   │  │    redis (:6379)    │  │   celery_worker    │
-│   PostgreSQL 15     │  │   Celery Broker     │  │   AI Feedback용    │
-└─────────────────────┘  └─────────────────────┘  └────────────────────┘
+│   PostgreSQL 15     │  │   Celery Broker     │  │    ───────────     │
+└─────────────────────┘  └─────────────────────┘  │ worker_monitor     │
+                                                  └─────────┬──────────┘
+                                                            │
+                                                            ▼
+                                                  ┌────────────────────┐
+                                                  │ docker-socket-proxy │
+                                                  │  (보안 Docker API)   │
+                                                  └────────────────────┘
 ```
 
 ### 서비스 목록
@@ -90,7 +97,9 @@ cd /home/ssm-user/qa_labs && git pull && docker compose -f docker-compose.prod.y
 | backend | 8000 | FastAPI REST API | Custom (Python 3.11) |
 | postgres | 5432 | PostgreSQL 15 데이터베이스 | postgres:15-alpine |
 | redis | 6379 | Celery Broker, 캐시 | redis:7-alpine |
-| celery_worker | - | 비동기 작업 처리 (AI 피드백) | Custom (Python 3.11) |
+| celery_worker | - | 비동기 작업 처리 (AI 피드백, 채점) | Custom (Python 3.11) |
+| worker_monitor | - | Celery Worker 상태 모니터링 | Custom (Python 3.11) |
+| docker-socket-proxy | 2375 | Docker Socket 보안 프록시 | tecnativa/docker-socket-proxy |
 
 ---
 
@@ -111,7 +120,9 @@ cd /home/ssm-user/qa_labs && git pull && docker compose -f docker-compose.prod.y
 | backend | ✅ | ✅ | - |
 | postgres | ✅ | - | - |
 | redis | ✅ | - | - |
-| celery_worker | ✅ | - | ✅ |
+| celery_worker | ✅ | ✅ | ✅ |
+| worker_monitor | ✅ | - | - |
+| docker-socket-proxy | - | - | ✅ |
 
 ---
 
@@ -206,4 +217,4 @@ celery_worker ──────────────────────
 
 ---
 
-*최종 업데이트: 2026-01-09*
+*최종 업데이트: 2026-01-10*

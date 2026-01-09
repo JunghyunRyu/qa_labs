@@ -182,21 +182,20 @@ docs/
 
 ```
 .claude/
-├── agents/                  # AI 에이전트 정의
-│   ├── context7-code-reviewer.md
-│   ├── devops-debug.md
-│   ├── problem-generator.md
-│   ├── pytest-learning-coach.md
-│   ├── python-code-analyzer.md
-│   ├── submission-reviewer.md
-│   └── test-quality-analyzer.md
+├── agents/                  # 서브에이전트 정의 (가상 팀원)
+│   ├── qa-engineer/         # QA 엔지니어 - 테스트 작성, 버그 재현
+│   ├── db-admin/            # DB 관리자 - 스키마, 마이그레이션
+│   ├── docs-writer/         # 문서 작성자 - 자동 문서화
+│   ├── sre-devops/          # SRE/DevOps - 인프라, 배포
+│   └── _template/           # 에이전트 템플릿
 ├── commands/                # Slash commands
 │   ├── check-sync.md
 │   ├── deploy.md
 │   ├── init-serena.md
-│   ├── logs.md
-│   └── test-submit.md
+│   └── logs.md
 ├── skills/                  # Custom skills
+│   ├── code-review/
+│   ├── daily-report/
 │   ├── docker-debug/
 │   ├── ec2-deploy/
 │   ├── pytest-problem-reviewer/
@@ -205,6 +204,13 @@ docs/
 ├── config.json              # 실제 설정
 └── settings.local.json      # 로컬 설정 (gitignore)
 ```
+
+### Agent 호출 방식
+Task 도구로 subagent_type 지정:
+- "QA Engineer Agent" - 테스트 케이스 작성, 버그 재현, 회귀 테스트
+- "Database Admin Agent" - 스키마 관리, 쿼리 최적화, 마이그레이션
+- "Docs Writer Agent" - 코드 변경 시 문서 자동 업데이트
+- "SRE/DevOps Agent" - 인프라 관리, 배포 자동화, 모니터링
 
 ## Docker Compose 서비스
 
