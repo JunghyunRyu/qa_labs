@@ -44,6 +44,11 @@ const RecentSubmissions = dynamic(
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
+const SolvedProblemsDonut = dynamic(
+  () => import("@/components/dashboard/SolvedProblemsDonut"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+
 function ChartSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
@@ -214,68 +219,85 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {isLoadingSummary ? (
-                <>
-                  <SummaryCardSkeleton />
-                  <SummaryCardSkeleton />
-                  <SummaryCardSkeleton />
-                  <SummaryCardSkeleton />
-                </>
-              ) : summary ? (
-                <>
-                  <ProgressSummaryCard
-                    title="총 제출"
-                    value={summary.total_submissions}
-                    subtitle={`성공 ${summary.success_submissions}회`}
-                    icon={<BarChart3 className="w-6 h-6 text-blue-600" />}
-                  />
-                  <ProgressSummaryCard
-                    title="평균 점수"
-                    value={summary.avg_score}
-                    subtitle={`최고 ${summary.best_score}점`}
-                    icon={<TrendingUp className="w-6 h-6 text-green-600" />}
-                    format="number"
-                  />
-                  <ProgressSummaryCard
-                    title="성공률"
-                    value={
-                      summary.total_submissions > 0
-                        ? (summary.success_submissions / summary.total_submissions) * 100
-                        : 0
-                    }
-                    subtitle={`최근 10회 평균 ${summary.recent_avg_score}점`}
-                    icon={<CheckCircle className="w-6 h-6 text-emerald-600" />}
-                    format="percent"
-                  />
-                  <ProgressSummaryCard
-                    title="평균 Kill Ratio"
-                    value={summary.avg_kill_ratio}
-                    subtitle="버그 탐지율"
-                    icon={<Target className="w-6 h-6 text-purple-600" />}
-                    format="ratio"
-                  />
-                </>
-              ) : null}
+            {/* Overview Section: Donut + Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+              {/* Donut Chart - takes 1 column on lg */}
+              <div className="lg:col-span-1">
+                <SolvedProblemsDonut
+                  data={summary?.difficulty_stats || []}
+                  isLoading={isLoadingSummary}
+                />
+              </div>
+
+              {/* Summary Cards - takes 2 columns on lg, 2x2 grid */}
+              <div className="lg:col-span-2">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {isLoadingSummary ? (
+                    <>
+                      <SummaryCardSkeleton />
+                      <SummaryCardSkeleton />
+                      <SummaryCardSkeleton />
+                      <SummaryCardSkeleton />
+                    </>
+                  ) : summary ? (
+                    <>
+                      <ProgressSummaryCard
+                        title="총 제출"
+                        value={summary.total_submissions}
+                        subtitle={`성공 ${summary.success_submissions}회`}
+                        icon={<BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />}
+                        iconBgColor="bg-blue-50 dark:bg-blue-900/20"
+                      />
+                      <ProgressSummaryCard
+                        title="평균 점수"
+                        value={summary.avg_score}
+                        subtitle={`최고 ${summary.best_score}점`}
+                        icon={<TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />}
+                        iconBgColor="bg-green-50 dark:bg-green-900/20"
+                        format="number"
+                      />
+                      <ProgressSummaryCard
+                        title="성공률"
+                        value={
+                          summary.total_submissions > 0
+                            ? (summary.success_submissions / summary.total_submissions) * 100
+                            : 0
+                        }
+                        subtitle={`최근 10회 평균 ${summary.recent_avg_score}점`}
+                        icon={<CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />}
+                        iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
+                        format="percent"
+                      />
+                      <ProgressSummaryCard
+                        title="평균 Kill Ratio"
+                        value={summary.avg_kill_ratio}
+                        subtitle="버그 탐지율"
+                        icon={<Target className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />}
+                        iconBgColor="bg-purple-50 dark:bg-purple-900/20"
+                        format="ratio"
+                      />
+                    </>
+                  ) : null}
+                </div>
+              </div>
             </div>
 
-            {/* Charts Row 1 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Charts Row 1: Timeline */}
+            <div className="mb-6">
               <ProgressTimelineChart
                 data={timeline?.entries || []}
                 range={timeRange}
                 onRangeChange={setTimeRange}
                 isLoading={isLoadingTimeline}
               />
+            </div>
+
+            {/* Charts Row 2: Difficulty + Skill */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <DifficultyBreakdownChart
                 data={summary?.difficulty_stats || []}
                 isLoading={isLoadingSummary}
               />
-            </div>
-
-            {/* Charts Row 2 */}
-            <div className="grid grid-cols-1">
               <SkillBreakdownChart
                 data={summary?.skill_stats || []}
                 isLoading={isLoadingSummary}

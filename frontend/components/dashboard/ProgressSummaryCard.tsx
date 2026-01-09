@@ -8,6 +8,7 @@ interface ProgressSummaryCardProps {
   value: number | string;
   subtitle?: string;
   icon?: ReactNode;
+  iconBgColor?: string; // Custom background color for icon (e.g., "bg-green-50 dark:bg-green-900/20")
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
   format?: "number" | "percent" | "ratio";
@@ -18,6 +19,7 @@ export default function ProgressSummaryCard({
   value,
   subtitle,
   icon,
+  iconBgColor = "bg-blue-50 dark:bg-blue-900/20",
   trend,
   trendValue,
   format = "number",
@@ -48,23 +50,23 @@ export default function ProgressSummaryCard({
   const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 sm:p-5 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
             {title}
           </p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+          <p className="mt-1 sm:mt-2 text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             {formatValue(value)}
           </p>
           {subtitle && (
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
               {subtitle}
             </p>
           )}
         </div>
         {icon && (
-          <div className="flex-shrink-0 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div className={`flex-shrink-0 p-1.5 sm:p-2 rounded-lg ${iconBgColor}`}>
             {icon}
           </div>
         )}

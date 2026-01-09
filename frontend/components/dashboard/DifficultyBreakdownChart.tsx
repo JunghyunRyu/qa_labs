@@ -49,7 +49,7 @@ export default function DifficultyBreakdownChart({
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
-          <div className="h-[250px] bg-gray-100 dark:bg-gray-700 rounded"></div>
+          <div className="h-[180px] sm:h-[250px] bg-gray-100 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function DifficultyBreakdownChart({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           난이도별 성과
         </h3>
-        <div className="h-[250px] flex items-center justify-center text-gray-500 dark:text-gray-400">
+        <div className="h-[180px] sm:h-[250px] flex items-center justify-center text-gray-500 dark:text-gray-400">
           데이터가 없습니다.
         </div>
       </div>
@@ -74,7 +74,7 @@ export default function DifficultyBreakdownChart({
         난이도별 성과
       </h3>
 
-      <div className="h-[250px] min-h-[250px]">
+      <div className="h-[180px] sm:h-[250px] min-h-[180px] sm:h-[250px]">
         <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
           <BarChart
             data={sortedData}

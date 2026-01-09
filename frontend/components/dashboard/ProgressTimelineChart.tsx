@@ -48,7 +48,7 @@ export default function ProgressTimelineChart({
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
-          <div className="h-[300px] bg-gray-100 dark:bg-gray-700 rounded"></div>
+          <div className="h-[200px] sm:h-[300px] bg-gray-100 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -75,11 +75,11 @@ export default function ProgressTimelineChart({
       </div>
 
       {data.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-gray-500 dark:text-gray-400">
+        <div className="h-[200px] sm:h-[300px] flex items-center justify-center text-gray-500 dark:text-gray-400">
           선택한 기간에 데이터가 없습니다.
         </div>
       ) : (
-        <div className="h-[300px] min-h-[300px]">
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
