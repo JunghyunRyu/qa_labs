@@ -11,6 +11,7 @@ import os
 import sys
 import subprocess
 import re
+import requests
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, asdict, field
@@ -672,6 +673,133 @@ def format_text_report(report: DailyReport) -> str:
 
 
 # ============================================================
+# Discord 알림
+# ============================================================
+
+def send_discord_notification(report: DailyReport) -> bool:
+    """Discord Webhook으로 리포트 알림 전송"""
+    webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
+    if not webhook_url:
+        return False
+
+    # 위험 상태 체크
+    alerts = []
+    cpu = report.system_resources.get("cpu_percent", 0)
+    memory = report.system_resources.get("memory_percent", 0)
+    disk = report.system_resources.get("disk_percent", 0)
+
+    if cpu > 80:
+        alerts.append(f"🔴 CPU 사용률 {cpu}% (80% 초과)")
+    elif cpu > 60:
+        alerts.append(f"⚠️ CPU 사용률 {cpu}% (60% 초과)")
+
+    if memory > 85:
+        alerts.append(f"🔴 메모리 사용률 {memory}% (85% 초과)")
+    elif memory > 70:
+        alerts.append(f"⚠️ 메모리 사용률 {memory}% (70% 초과)")
+
+    if disk > 85:
+        alerts.append(f"🔴 디스크 사용률 {disk}% (85% 초과)")
+    elif disk > 70:
+        alerts.append(f"⚠️ 디스크 사용률 {disk}% (70% 초과)")
+
+    if report.error_count > 10:
+        alerts.append(f"🔴 오류 {report.error_count}건 발생")
+    elif report.error_count > 5:
+        alerts.append(f"⚠️ 오류 {report.error_count}건 발생")
+
+    timeout_rate = report.judge_stats.get("timeout_rate", 0)
+    if timeout_rate > 5:
+        alerts.append(f"🔴 타임아웃 비율 {timeout_rate}% (5% 초과)")
+
+    # 상태에 따른 색상
+    if any("🔴" in a for a in alerts):
+        color = 0xFF0000  # 빨강
+    elif any("⚠️" in a for a in alerts):
+        color = 0xFFA500  # 주황
+    else:
+        color = 0x00FF00  # 초록
+
+    # 회원/비회원 비율
+    member_pct = (report.submissions_by_member / report.total_submissions * 100) if report.total_submissions > 0 else 0
+
+    # Discord Embed 생성
+    embed = {
+        "title": f"📊 QA Labs Daily Report - {report.report_date}",
+        "color": color,
+        "fields": [
+            {
+                "name": "👥 사용자",
+                "value": f"{report.total_users}명 (+{report.new_users_today})",
+                "inline": True
+            },
+            {
+                "name": "📝 금일 제출",
+                "value": f"{report.submissions_today}건",
+                "inline": True
+            },
+            {
+                "name": "📊 총 제출",
+                "value": f"{report.total_submissions}건 (회원 {member_pct:.0f}%)",
+                "inline": True
+            },
+            {
+                "name": "💻 CPU",
+                "value": f"{cpu}%",
+                "inline": True
+            },
+            {
+                "name": "🧠 메모리",
+                "value": f"{memory}%",
+                "inline": True
+            },
+            {
+                "name": "💾 디스크",
+                "value": f"{disk}%",
+                "inline": True
+            },
+            {
+                "name": "🔴 오류",
+                "value": f"{report.error_count}건",
+                "inline": True
+            },
+            {
+                "name": "⏱️ 평균 채점",
+                "value": f"{report.judge_stats.get('avg_execution_time_seconds', 0)}초",
+                "inline": True
+            },
+            {
+                "name": "📋 큐 대기",
+                "value": f"{report.judge_stats.get('queue_pending', 0)}건",
+                "inline": True
+            },
+        ],
+        "footer": {
+            "text": f"생성: {report.generated_at}"
+        }
+    }
+
+    # 알림 항목이 있으면 추가
+    if alerts:
+        embed["fields"].insert(0, {
+            "name": "⚠️ 주의 필요",
+            "value": "\n".join(alerts),
+            "inline": False
+        })
+
+    payload = {
+        "embeds": [embed]
+    }
+
+    try:
+        response = requests.post(webhook_url, json=payload, timeout=10)
+        return response.status_code == 204
+    except Exception as e:
+        print(f"Discord 알림 전송 실패: {e}", file=sys.stderr)
+        return False
+
+
+# ============================================================
 # 메인
 # ============================================================
 
@@ -686,6 +814,11 @@ def main():
         default="json",
         help="Output format (default: json)"
     )
+    parser.add_argument(
+        "--notify",
+        action="store_true",
+        help="Send Discord notification"
+    )
     args = parser.parse_args()
 
     report = generate_report()
@@ -694,6 +827,13 @@ def main():
         print(json.dumps(asdict(report), ensure_ascii=False, indent=2))
     else:
         print(format_text_report(report))
+
+    # Discord 알림 전송
+    if args.notify:
+        if send_discord_notification(report):
+            print("\n✅ Discord 알림 전송 완료", file=sys.stderr)
+        else:
+            print("\n⚠️ Discord 알림 전송 실패 (DISCORD_WEBHOOK_URL 확인)", file=sys.stderr)
 
 
 if __name__ == "__main__":

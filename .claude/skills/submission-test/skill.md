@@ -1,12 +1,93 @@
 ---
-description: 제출 시스템의 end-to-end 테스트를 자동화합니다
+description: 제출 테스트 통합 - 빠른 테스트(기본) 또는 심층 E2E 검증(--full)
 ---
 
 # Submission Test Skill
 
-제출 시스템 전체 흐름을 테스트하여 Golden/Buggy 코드 동작, judge 컨테이너, pytest 실행을 검증합니다.
+제출 시스템을 테스트합니다. **빠른 모드(기본)**와 **상세 E2E 모드**를 지원합니다.
 
-## E2E 테스트 워크플로우
+## 모드 선택
+
+| 모드 | 사용법 | 용도 |
+|------|--------|------|
+| **빠른 테스트** | `/submission-test` | 일상적 테스트, 간단한 결과 확인 |
+| **상세 E2E** | `/submission-test --full` | 시스템 변경 후, Judge/성능 검증 |
+
+---
+
+## 빠른 테스트 모드 (기본)
+
+> 💡 테스트 코드가 정상 동작하는지 빠르게 확인할 때 사용
+
+### 워크플로우
+
+#### 1. 정보 수집
+AskUserQuestion 도구를 사용하여 다음 정보를 요청합니다:
+- **problem_id**: 테스트할 문제 번호
+- **test_code**: 테스트 코드 (직접 입력 또는 파일 경로)
+
+#### 2. JSON 생성
+수집한 정보를 올바른 JSON 형식으로 변환합니다:
+```json
+{
+  "problem_id": 1,
+  "code": "def test_example():\n    ..."
+}
+```
+
+**주의:**
+- 개행 문자는 `\n`으로 이스케이프
+- 따옴표는 `\"`로 이스케이프
+
+#### 3. 제출 API 호출
+```bash
+curl -X POST http://localhost:8001/api/v1/submissions \
+  -H "Content-Type: application/json" \
+  -d @/tmp/submission.json
+```
+
+#### 4. submission_id 추출
+API 응답에서 `"id"` 필드 값을 자동으로 추출합니다.
+
+#### 5. 결과 확인
+5초 대기 후 결과 API를 호출합니다:
+```bash
+curl http://localhost:8001/api/v1/submissions/{submission_id}
+```
+
+#### 6. 결과 요약
+다음 정보를 사용자에게 보기 좋게 표시합니다:
+- **status**: PENDING, RUNNING, SUCCESS, ERROR, FAILURE
+- **score**: 점수 (0-100)
+- **killed_mutants / total_mutants**: 잡은 mutant 개수
+- **Golden 테스트 결과**: 통과/실패
+- **주요 에러 메시지** (실패 시)
+
+### 빠른 테스트 출력 예시
+```
+✅ 제출 완료!
+Submission ID: 2a18dc78-3740-4d9a-88bb-9b1b87744eca
+Status: SUCCESS
+Score: 100/100
+Killed Mutants: 19/19
+
+Golden Code: ✅ 통과 (4 tests passed)
+Buggy Code: ✅ 19개 mutant 모두 탐지
+```
+
+**장점:**
+- JSON 작성 오류 방지
+- submission_id 수동 복사 불필요
+- 결과 자동 추적
+- 빠른 피드백 루프
+
+---
+
+## 상세 E2E 테스트 모드 (--full)
+
+> 💡 제출 시스템 변경 후, Judge 컨테이너/성능/에러 케이스 검증 시 사용
+
+### E2E 테스트 워크플로우
 
 ### 1. 테스트 준비
 

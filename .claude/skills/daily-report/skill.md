@@ -1,10 +1,19 @@
 ---
-description: EC2 프로덕션 환경의 일일 모니터링 리포트를 생성합니다 (DB/로그/시스템 메트릭).
+description: EC2 프로덕션 환경의 일일 모니터링 리포트를 생성합니다 (DB/로그/시스템 메트릭). Discord 알림 지원.
 ---
 
 # Daily Report Skill
 
 EC2 프로덕션 환경의 데이터를 수집하여 종합 일일 모니터링 리포트를 생성합니다.
+
+## 사용법
+
+| 명령 | 설명 |
+|------|------|
+| `/daily-report` | 리포트 생성 (Discord 알림 없음) |
+| `/daily-report --notify` | 리포트 생성 + Discord 알림 전송 |
+
+> 💡 **Discord 알림**: `DISCORD_WEBHOOK_URL` 환경변수 설정 필요
 
 ## 수집 항목
 
@@ -25,10 +34,18 @@ EC2 프로덕션 환경의 데이터를 수집하여 종합 일일 모니터링 
 AWS SSM send-command로 EC2에서 리포트 생성 스크립트를 실행합니다:
 
 ```bash
+# 기본 실행 (알림 없음)
 COMMAND_ID=$(aws ssm send-command \
   --instance-ids "i-05b23ecec2bdcd44a" \
   --document-name "AWS-RunShellScript" \
   --parameters 'commands=["cd /home/ssm-user/qa_labs && docker compose -f docker-compose.prod.yml exec -T backend python /app/scripts/daily_report.py --output json 2>/dev/null"]' \
+  --query 'Command.CommandId' --output text)
+
+# Discord 알림 포함 (--notify 옵션 사용 시)
+COMMAND_ID=$(aws ssm send-command \
+  --instance-ids "i-05b23ecec2bdcd44a" \
+  --document-name "AWS-RunShellScript" \
+  --parameters 'commands=["cd /home/ssm-user/qa_labs && docker compose -f docker-compose.prod.yml exec -T backend python /app/scripts/daily_report.py --output json --notify 2>/dev/null"]' \
   --query 'Command.CommandId' --output text)
 
 echo "Command ID: $COMMAND_ID"
@@ -135,6 +152,35 @@ JSON 결과를 파싱하여:
 - 매일 저녁: 퇴근 전 시스템 상태 확인
 - 이상 징후 발생 시: 빠른 현황 파악
 - 주간/월간 리포트 작성 시: 기초 데이터 수집
+
+---
+
+## Discord 알림 설정
+
+### 환경변수 설정
+EC2의 `.env.prod` 또는 `docker-compose.prod.yml`에 추가:
+```bash
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+```
+
+### 알림 조건
+
+| 조건 | 알림 레벨 |
+|------|---------|
+| CPU > 80% | 🔴 위험 |
+| CPU > 60% | ⚠️ 주의 |
+| 메모리 > 85% | 🔴 위험 |
+| 메모리 > 70% | ⚠️ 주의 |
+| 디스크 > 85% | 🔴 위험 |
+| 디스크 > 70% | ⚠️ 주의 |
+| 오류 > 10건 | 🔴 위험 |
+| 오류 > 5건 | ⚠️ 주의 |
+| 타임아웃 > 5% | 🔴 위험 |
+
+### 알림 색상
+- 🟢 초록: 모든 지표 정상
+- 🟠 주황: 주의 항목 존재
+- 🔴 빨강: 위험 항목 존재
 
 ---
 
