@@ -312,7 +312,7 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
               <span>
                 힌트를 보려면{" "}
                 <a
-                  href="/api/auth/login"
+                  href="/auth/login"
                   className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100"
                 >
                   로그인
