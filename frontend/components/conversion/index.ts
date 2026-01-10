@@ -7,6 +7,11 @@
 export { default as ConversionModal } from "./ConversionModal";
 export type { ConversionFeature } from "./ConversionModal";
 export { default as GuestConversionBanner } from "./GuestConversionBanner";
+export { default as AIFeedbackTeaser } from "./AIFeedbackTeaser";
+
+// 데이터
+export { MOCK_FEEDBACK_ITEMS, SCORE_TIERS, getScoreTier, getFeedbackItemCount } from "./mockFeedback";
+export type { MockFeedbackItem, ScoreTier } from "./mockFeedback";
 
 // 훅
 export { useGuestConversion } from "./useGuestConversion";
