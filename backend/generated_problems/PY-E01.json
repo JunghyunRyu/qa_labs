@@ -1,0 +1,54 @@
+{
+  "problem_id": "PY-E01",
+  "title": "리스트 필터링: 순회 중 수정의 함정",
+  "difficulty": "Easy",
+  "domain": "common",
+  "tags": [
+    "Python 함정",
+    "리스트 순회",
+    "인덱스 시프트",
+    "필터링",
+    "상태 변경"
+  ],
+  "function_signature": "def filter_items(items: list, predicate) -> list:",
+  "golden_code": "def filter_items(items: list, predicate) -> list:\n    \"\"\"조건을 만족하는 아이템만 남긴 새 리스트를 반환합니다.\n    \n    Args:\n        items: 필터링할 아이템 리스트\n        predicate: 유지할 아이템인지 판별하는 함수 (True면 유지)\n    \n    Returns:\n        predicate가 True를 반환하는 아이템만 포함된 새 리스트\n        \n    Example:\n        filter_items([1, 2, 3, 4], lambda x: x % 2 == 0)\n        # Returns: [2, 4]\n    \"\"\"\n    if items is None:\n        raise TypeError('items cannot be None')\n    return [item for item in items if predicate(item)]\n",
+  "buggy_implementations": [
+    {
+      "bug_description": "순회 중 리스트 수정: 연속된 삭제 대상이 있으면 인덱스 시프트로 일부 요소를 건너뜀",
+      "buggy_code": "def filter_items(items: list, predicate) -> list:\n    \"\"\"Buggy: for 순회 중 remove()로 요소 삭제 시 인덱스 시프트 발생\"\"\"\n    if items is None:\n        raise TypeError('items cannot be None')\n    for item in items:\n        if not predicate(item):\n            items.remove(item)  # Bug: 인덱스가 밀려서 다음 요소 스킵\n    return items\n",
+      "bug_type": "LIST_MODIFICATION_DURING_ITERATION",
+      "weight": 5,
+      "skip_auto_validation": true
+    },
+    {
+      "bug_description": "while과 인덱스 기반 삭제에서도 동일한 인덱스 시프트 버그 발생",
+      "buggy_code": "def filter_items(items: list, predicate) -> list:\n    \"\"\"Buggy: while 루프에서도 인덱스 시프트 문제 발생\"\"\"\n    if items is None:\n        raise TypeError('items cannot be None')\n    i = 0\n    while i < len(items):\n        if not predicate(items[i]):\n            del items[i]  # Bug: 삭제 후 i를 증가시키면 다음 요소 스킵\n        i += 1\n    return items\n",
+      "bug_type": "LIST_MODIFICATION_DURING_ITERATION",
+      "weight": 4,
+      "skip_auto_validation": true
+    },
+    {
+      "bug_description": "원본 리스트를 변경하여 부작용 발생 (원본이 수정됨)",
+      "buggy_code": "def filter_items(items: list, predicate) -> list:\n    \"\"\"Buggy: 원본 리스트를 직접 수정하여 부작용 발생\"\"\"\n    if items is None:\n        raise TypeError('items cannot be None')\n    items[:] = [item for item in items if predicate(item)]  # Bug: 원본 수정\n    return items\n",
+      "bug_type": "SIDE_EFFECT",
+      "weight": 3,
+      "skip_auto_validation": true
+    },
+    {
+      "bug_description": "predicate 조건이 반대로 적용되어 유지할 요소를 제거함",
+      "buggy_code": "def filter_items(items: list, predicate) -> list:\n    \"\"\"Buggy: predicate 조건이 반전되어 유지할 요소가 제거됨\"\"\"\n    if items is None:\n        raise TypeError('items cannot be None')\n    return [item for item in items if not predicate(item)]  # Bug: not이 잘못 적용됨\n",
+      "bug_type": "LOGIC_ERROR",
+      "weight": 2
+    },
+    {
+      "bug_description": "None 입력 시 TypeError 대신 빈 리스트 반환",
+      "buggy_code": "def filter_items(items: list, predicate) -> list:\n    \"\"\"Buggy: None 입력을 빈 리스트로 잘못 처리\"\"\"\n    if items is None:\n        return []  # Bug: TypeError를 발생시켜야 함\n    return [item for item in items if predicate(item)]\n",
+      "bug_type": "ERROR_HANDLING",
+      "weight": 2
+    }
+  ],
+  "description_md": "## 비즈니스 시나리오\n\n당신은 데이터 처리 모듈을 담당하는 QA 엔지니어입니다. `filter_items` 함수는 리스트에서 조건을 만족하지 않는 요소를 제거하는 핵심 유틸리티입니다.\n\n**실제 사용 사례**:\n- 검색 결과 필터링\n- 유효하지 않은 데이터 제거\n- 로그에서 특정 레벨만 추출\n- 장바구니에서 품절 상품 제거\n\n## Python 리스트 순회 중 수정의 함정\n\n### 잘못된 코드 (버그)\n```python\ndef filter_buggy(items, predicate):\n    for item in items:\n        if not predicate(item):\n            items.remove(item)  # 위험! 순회 중 수정\n    return items\n\nnums = [2, 4, 6, 8]  # 모두 짝수 (제거 대상)\nresult = filter_buggy(nums, lambda x: x % 2 != 0)\nprint(result)  # 기대: [], 실제: [4, 8] - 절반만 제거됨!\n```\n\n### 왜 이런 일이 발생하나요?\n\n```\n초기 상태: [2, 4, 6, 8], 인덱스 i=0\n\n1단계: items[0]=2 제거 -> [4, 6, 8]\n       i=1로 이동 (내부적으로)\n\n2단계: items[1]=6 검사 (4는 건너뜀!)\n       6 제거 -> [4, 8]\n       i=2로 이동\n\n3단계: len=2, i=2 -> 종료\n\n결과: [4, 8] (4와 8이 살아남음)\n```\n\n삭제 시 **인덱스가 밀리면서** 다음 요소를 건너뛰게 됩니다.\n\n### 올바른 코드\n```python\ndef filter_correct(items, predicate):\n    return [item for item in items if predicate(item)]  # 새 리스트 생성\n```\n\n또는 역순 순회:\n```python\ndef filter_reverse(items, predicate):\n    for i in range(len(items) - 1, -1, -1):\n        if not predicate(items[i]):\n            del items[i]  # 뒤에서부터 삭제하면 안전\n    return items\n```\n\n## 함수 명세\n\n### 시그니처\n```python\ndef filter_items(items: list, predicate) -> list:\n```\n\n### 동작 규칙\n- `predicate(item)`이 `True`인 요소만 포함된 **새 리스트** 반환\n- 원본 리스트는 수정되지 않아야 함\n- 빈 리스트 입력 시 빈 리스트 반환\n\n### 예외 처리\n- `items`가 `None`이면 `TypeError` 발생\n- 메시지: `'items cannot be None'`\n\n## 테스트 포인트\n\n| 테스트 유형 | 입력 | 기대 결과 | 버그 탐지 대상 |\n|------------|------|----------|---------------|\n| 연속 삭제 | `[2, 4, 6, 8]`, 홀수만 유지 | `[]` | 인덱스 시프트 |\n| 교차 패턴 | `[1, 2, 3, 4]`, 홀수만 유지 | `[1, 3]` | 인덱스 시프트 |\n| 원본 보존 | 필터 후 원본 확인 | 원본 불변 | 부작용 |\n| 조건 반전 | 짝수만 유지 | 짝수만 남음 | 로직 오류 |\n| None 입력 | `None` | TypeError | 예외 처리 |\n\n### 수험자가 해야 할 일\n`pytest` 기반 테스트 코드를 작성하여, 주어진 `filter_items` 함수 구현들 중 버그가 있는 구현을 최대한 많이 실패(fail)시키세요.\n올바른 구현(golden behavior)은 통과(pass)해야 합니다.",
+  "initial_test_template": "import pytest\nfrom target import filter_items\n\n\ndef test_basic_filtering():\n    # TODO: 기본 필터링 동작 확인\n    # 짝수만 유지, 홀수만 유지 등\n    pass\n\n\ndef test_consecutive_removal():\n    # TODO: 연속된 제거 대상이 있을 때 모두 제거되는지 확인\n    # 힌트: [2, 4, 6, 8]에서 홀수만 유지하면 []이 되어야 함\n    # 순회 중 수정 버그가 있으면 일부 요소가 살아남음\n    pass\n\n\ndef test_original_list_unchanged():\n    # TODO: 원본 리스트가 수정되지 않는지 확인\n    # 필터링 후 원본 리스트가 그대로인지 테스트\n    pass\n\n\ndef test_empty_and_edge_cases():\n    # TODO: 빈 리스트, 모든 요소 유지/제거 등 경계값 테스트\n    pass\n\n\ndef test_invalid_input():\n    # TODO: None 입력에 대한 예외 처리\n    pass\n",
+  "short_description": "리스트 순회 중 요소 삭제 시 발생하는 인덱스 시프트 버그를 검증하는 Python 필수 테스트",
+  "summary": "**이 문제에서 검증할 테스트 포인트**\n\n**Python 함정**\n  - 순회 중 리스트 수정: 연속된 삭제 대상이 있으면 인덱스 시프트로 일부 요소를 건너뜀\n  - while과 인덱스 기반 삭제에서도 동일한 인덱스 시프트 버그 발생\n\n**부작용 검증**\n  - 원본 리스트를 변경하여 부작용 발생 (원본이 수정됨)\n\n**로직 검증**\n  - predicate 조건이 반대로 적용되어 유지할 요소를 제거함"
+}
