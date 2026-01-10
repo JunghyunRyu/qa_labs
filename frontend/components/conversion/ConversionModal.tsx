@@ -13,6 +13,7 @@
 import { X, Github, Sparkles, History, TrendingUp } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useGuestConversion } from "./useGuestConversion";
+import { trackGuestConversionStart } from "@/lib/analytics";
 
 export type ConversionFeature = "ai_coach" | "hint" | "feedback" | "history";
 
@@ -91,6 +92,9 @@ export default function ConversionModal({
   const displayBenefits = benefits || config.defaultBenefits;
 
   const handleLogin = (provider: "github" | "google") => {
+    // GA4 전환 시작 트래킹
+    trackGuestConversionStart({ provider, feature });
+
     // OAuth 리다이렉트 전에 pending_merge 플래그 설정
     setPendingMerge(true);
     login(provider);

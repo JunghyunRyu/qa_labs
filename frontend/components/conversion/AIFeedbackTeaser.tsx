@@ -10,7 +10,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sparkles, Lock, TrendingUp } from "lucide-react";
 import ConversionModal from "./ConversionModal";
 import {
@@ -18,6 +18,7 @@ import {
   getScoreTier,
   getFeedbackItemCount,
 } from "./mockFeedback";
+import { trackGuestTeaserImpression, trackGuestModalOpen } from "@/lib/analytics";
 import type { MockFeedbackItem } from "./mockFeedback";
 
 interface AIFeedbackTeaserProps {
@@ -67,6 +68,24 @@ export default function AIFeedbackTeaser({
   const tier = getScoreTier(score);
   const itemCount = getFeedbackItemCount(score);
   const feedbackItems = MOCK_FEEDBACK_ITEMS.slice(0, itemCount);
+
+  // GA4 티저 노출 트래킹 (한 번만)
+  const hasTrackedImpression = useRef(false);
+  useEffect(() => {
+    if (!hasTrackedImpression.current) {
+      trackGuestTeaserImpression({
+        problemId,
+        score,
+        tier: tier.tier,
+      });
+      hasTrackedImpression.current = true;
+    }
+  }, [problemId, score, tier.tier]);
+
+  const handleOpenModal = () => {
+    trackGuestModalOpen({ feature: "feedback", problemId });
+    setIsModalOpen(true);
+  };
 
   return (
     <>
@@ -120,7 +139,7 @@ export default function AIFeedbackTeaser({
           {/* CTA 영역 */}
           <div className="text-center">
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleOpenModal}
               className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-medium shadow-lg shadow-purple-500/25"
             >
               <Sparkles className="w-5 h-5" />

@@ -10,10 +10,11 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AlertTriangle, X, Github, CloudUpload } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useGuestConversion } from "./useGuestConversion";
+import { trackGuestBannerImpression, trackGuestBannerClick } from "@/lib/analytics";
 
 interface GuestConversionBannerProps {
   /** 코드가 변경되었는지 여부 */
@@ -56,6 +57,15 @@ export default function GuestConversionBanner({
   // 표시 조건: 비회원 + 코드 변경됨 + 닫지 않음 + 하이드레이션 완료
   const shouldShow = isHydrated && !isAuthenticated && hasCodeChanged && !isDismissed;
 
+  // GA4 배너 노출 트래킹 (한 번만)
+  const hasTrackedImpression = useRef(false);
+  useEffect(() => {
+    if (shouldShow && !hasTrackedImpression.current) {
+      trackGuestBannerImpression({ problemId });
+      hasTrackedImpression.current = true;
+    }
+  }, [shouldShow, problemId]);
+
   if (!shouldShow) return null;
 
   const handleDismiss = () => {
@@ -69,6 +79,9 @@ export default function GuestConversionBanner({
   };
 
   const handleLogin = () => {
+    // GA4 클릭 트래킹
+    trackGuestBannerClick({ problemId });
+
     // OAuth 리다이렉트 전에 pending_merge 플래그 설정
     setPendingMerge(true);
 
