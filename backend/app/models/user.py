@@ -46,6 +46,9 @@ class User(Base):
     # Terms acceptance
     terms_accepted_at = Column(DateTime(timezone=True), nullable=True)  # 이용약관 동의 시점
 
+    # Onboarding tutorial
+    tutorial_completed_at = Column(DateTime(timezone=True), nullable=True)  # 튜토리얼 완료 시점
+
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"
 

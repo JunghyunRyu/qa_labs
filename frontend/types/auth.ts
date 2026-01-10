@@ -5,6 +5,7 @@ export interface User {
   avatar_url: string | null;
   github_username: string | null;
   terms_accepted_at: string | null;
+  tutorial_completed_at: string | null;
 }
 
 export interface AuthStatus {

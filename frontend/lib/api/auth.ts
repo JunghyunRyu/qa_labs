@@ -40,3 +40,7 @@ export async function acceptTerms(): Promise<{ message: string; accepted_at: str
 export async function declineTerms(): Promise<{ message: string; account_deleted: boolean }> {
   return post(`${AUTH_BASE}/decline-terms`);
 }
+
+export async function completeTutorial(): Promise<{ success: boolean; tutorial_completed_at: string }> {
+  return post(`${AUTH_BASE}/tutorial/complete`);
+}

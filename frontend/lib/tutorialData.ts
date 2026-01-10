@@ -191,7 +191,7 @@ export const TUTORIAL_COMPLETION = {
 export const TUTORIAL_STORAGE_KEY = "qa-arena-tutorial-completed";
 
 /**
- * 튜토리얼 완료 여부 확인
+ * 튜토리얼 완료 여부 확인 (localStorage 기반 - 동기 체크)
  */
 export function isTutorialCompleted(): boolean {
   if (typeof window === "undefined") return false;
@@ -199,11 +199,36 @@ export function isTutorialCompleted(): boolean {
 }
 
 /**
- * 튜토리얼 완료 저장
+ * 튜토리얼 완료 저장 (localStorage + API)
+ * - localStorage: 즉시 저장 (UI 반응성)
+ * - API: 로그인 사용자의 경우 서버에도 저장
  */
-export function markTutorialCompleted(): void {
+export async function markTutorialCompleted(): Promise<void> {
   if (typeof window === "undefined") return;
+
+  // localStorage에 즉시 저장
   localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+
+  // 로그인 사용자인 경우 API 호출 (비동기, 실패해도 무시)
+  try {
+    const { completeTutorial } = await import("@/lib/api/auth");
+    await completeTutorial();
+  } catch {
+    // API 호출 실패 시 무시 (localStorage에는 이미 저장됨)
+    console.debug("Tutorial completion API call failed (user may not be logged in)");
+  }
+}
+
+/**
+ * 서버 상태와 localStorage 동기화
+ * - 로그인 시 서버에 tutorial_completed_at이 있으면 localStorage에 반영
+ */
+export function syncTutorialStatus(tutorialCompletedAt: string | null): void {
+  if (typeof window === "undefined") return;
+
+  if (tutorialCompletedAt) {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+  }
 }
 
 /**

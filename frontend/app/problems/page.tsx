@@ -4,7 +4,7 @@
 
 import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { isTutorialCompleted } from "@/lib/tutorialData";
+import { isTutorialCompleted, syncTutorialStatus } from "@/lib/tutorialData";
 import { useTutorialStore } from "@/stores/tutorialStore";
 import { TutorialWelcomeModal, TutorialFullScreen } from "@/components/tutorial";
 import { getProblems, GetProblemsParams, getNextScheduledProblem, NextScheduledProblem } from "@/lib/api/problems";
@@ -82,8 +82,15 @@ const SORT_LABELS: Record<SortOption, string> = {
 // useSearchParams를 사용하는 내부 컴포넌트
 function ProblemsContent() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const searchParams = useSearchParams();
+
+  // 로그인 사용자의 튜토리얼 완료 상태 동기화
+  useEffect(() => {
+    if (user?.tutorial_completed_at) {
+      syncTutorialStatus(user.tutorial_completed_at);
+    }
+  }, [user?.tutorial_completed_at]);
 
   // Tutorial store
   const {

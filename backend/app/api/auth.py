@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.sql import func
 
 from app.models.db import get_db
 from app.core.config import settings
@@ -396,10 +397,24 @@ async def get_auth_status(user: User = Depends(get_current_user_optional)):
                 username=user.username,
                 avatar_url=user.avatar_url,
                 github_username=user.github_username,
-                terms_accepted_at=user.terms_accepted_at
+                terms_accepted_at=user.terms_accepted_at,
+                tutorial_completed_at=user.tutorial_completed_at
             )
         )
     return AuthStatusResponse(authenticated=False, user=None)
+
+
+@router.post("/tutorial/complete")
+async def complete_tutorial(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Mark onboarding tutorial as completed."""
+    if user.tutorial_completed_at is None:
+        user.tutorial_completed_at = func.now()
+        db.commit()
+        db.refresh(user)
+    return {"success": True, "tutorial_completed_at": user.tutorial_completed_at}
 
 @router.get("/tokens", response_model=TokenStatusResponse)
 async def get_token_status(

@@ -13,6 +13,7 @@ class UserResponse(BaseModel):
     avatar_url: Optional[str] = None
     github_username: Optional[str] = None
     terms_accepted_at: Optional[datetime] = None
+    tutorial_completed_at: Optional[datetime] = None
 
 
 class AuthStatusResponse(BaseModel):
