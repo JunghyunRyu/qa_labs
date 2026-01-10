@@ -22,6 +22,16 @@
       "bug_description": "입력 타입/요소 타입 미검사: 리스트가 아니거나 요소가 문자열이 아니면 예외가 발생할 수 있다. (list validation, 타입 안전성 부족)",
       "buggy_code": "def validate_cart_items(items: list[str]) -> bool:\n    '''Validate a list of shopping cart item identifiers.\n\n    This version forgets to check the runtime types of the input and\n    elements, which can cause runtime errors instead of returning False.\n    '''\n    # Bug: no type check for the top-level input; len(None) 등에서 예외 발생 가능\n    length = len(items)\n    if length < 1 or length > 10:\n        return False\n\n    for item in items:\n        # Bug: assumes every element is a string with .strip(), so non-string\n        # elements can raise AttributeError instead of returning False.\n        if item.strip() == '':\n            return False\n\n    return True\n",
       "weight": 4
+    },
+    {
+      "bug_description": "유니코드 공백 문자 미처리: strip()이 제거하지 못하는 유니코드 공백(NBSP 등)을 유효한 문자열로 허용함. '\\u00A0'(Non-Breaking Space)만 있는 문자열도 통과됨.",
+      "buggy_code": "def validate_cart_items(items: list[str]) -> bool:\n    '''Validate a list of shopping cart item identifiers.\n\n    This version uses strip() which only removes ASCII whitespace.\n    Unicode whitespace characters like NBSP (\\u00A0), em space (\\u2003),\n    or zero-width space (\\u200B) are NOT stripped and treated as valid content.\n    '''\n    if not isinstance(items, list):\n        return False\n\n    length = len(items)\n    if length < 1 or length > 10:\n        return False\n\n    for item in items:\n        if not isinstance(item, str):\n            return False\n        # Bug: strip() only removes ASCII whitespace, not unicode whitespace\n        if item.strip() == '':\n            return False\n\n    return True\n",
+      "weight": 5
+    },
+    {
+      "bug_description": "공백 문자열 검증 누락: strip() 없이 빈 문자열만 검사하여 공백으로만 이루어진 문자열('   ')을 유효하게 처리함.",
+      "buggy_code": "def validate_cart_items(items: list[str]) -> bool:\n    '''Validate a list of shopping cart item identifiers.\n\n    This version only checks for empty strings without stripping whitespace.\n    Strings containing only spaces or tabs are considered valid.\n    '''\n    if not isinstance(items, list):\n        return False\n\n    length = len(items)\n    if length < 1 or length > 10:\n        return False\n\n    for item in items:\n        if not isinstance(item, str):\n            return False\n        # Bug: only checks empty string, not whitespace-only strings\n        if item == '':\n            return False\n\n    return True\n",
+      "weight": 4
     }
   ],
   "description_md": "## 문제 설명\n\n`validate_cart_items` 함수에 버그가 숨어 있을 수 있습니다. pytest로 최대한 많은 버그를 찾아내세요.\n\n### 함수 시그니처\n\n```python\ndef validate_cart_items(items: list[str]) -> bool:\n```\n\n### 동작 규칙\n- 함수 명세에 따라 정확한 결과를 반환해야 함\n\n### 예시\n- `validate_cart_items(...)` → 결과\n\n### 테스트 힌트\n- 경계값 분석 (boundary value analysis)\n- 허용되는 아이템 개수의 경계 주변(예: 0, 1, 2, 9, 10, 11 등)에 대해\n- 리스트 검증 (list validation)\n- `items`가 리스트가 아닐 때 (예: `None`, 문자열, 숫자 등)\n",
