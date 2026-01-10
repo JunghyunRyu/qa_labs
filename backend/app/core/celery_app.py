@@ -35,7 +35,7 @@ celery_app = Celery(
     "qa_arena",
     broker=redis_broker,
     backend=redis_backend,
-    include=["app.workers.tasks", "app.workers.monitoring_tasks"],
+    include=["app.workers.tasks", "app.workers.monitoring_tasks", "app.workers.cleanup_tasks"],
 )
 
 # Celery 설정
@@ -55,6 +55,10 @@ celery_app.conf.update(
     task_send_sent_event=True,
     # Beat 스케줄 설정
     beat_schedule={
+        "cleanup-expired-withdrawal-logs": {
+            "task": "app.workers.cleanup_tasks.cleanup_expired_withdrawal_logs",
+            "schedule": timedelta(days=1),  # 매일 1회
+        },
         "check-worker-health": {
             "task": "app.workers.monitoring_tasks.check_worker_health",
             "schedule": timedelta(seconds=settings.WORKER_MONITOR_INTERVAL_SECONDS),
@@ -69,5 +73,6 @@ celery_app.conf.update(
     task_routes={
         "app.workers.tasks.generate_feedback_task": {"queue": "feedback"},
         "app.workers.monitoring_tasks.check_worker_health": {"queue": "feedback"},
+        "app.workers.cleanup_tasks.cleanup_expired_withdrawal_logs": {"queue": "feedback"},
     }
 )

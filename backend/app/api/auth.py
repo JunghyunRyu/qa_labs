@@ -2,10 +2,12 @@
 
 import secrets
 import logging
+import hashlib
 from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.models.db import get_db
 from app.core.config import settings
@@ -20,6 +22,7 @@ from app.core.dependencies import get_current_user, get_current_user_optional
 from app.services.github_oauth import github_oauth_service
 from app.services.google_oauth import google_oauth_service
 from app.models.user import User
+from app.models.withdrawal_log import WithdrawalLog
 from app.services.token_service import TokenService
 from app.models.submission import Submission
 from app.schemas.auth import UserResponse, AuthStatusResponse, TokenStatusResponse
@@ -29,6 +32,59 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+
+# Re-registration cooldown period (days)
+REREGISTRATION_COOLDOWN_DAYS = 7
+
+
+def _hash_identifier(value: str) -> str | None:
+    """Hash identifier using SHA-256 for abuse prevention lookup."""
+    if not value:
+        return None
+    return hashlib.sha256(value.encode()).hexdigest()
+
+
+def _check_withdrawal_abuse(
+    db: Session,
+    provider: str,
+    provider_id: str,
+    email: str,
+) -> tuple[bool, datetime | None]:
+    """
+    Check if this registration attempt is from a recently deleted user.
+
+    Returns:
+        (is_returning_user, cooldown_end_date)
+        - is_returning_user: True if found in withdrawal_logs
+        - cooldown_end_date: If within cooldown period, returns the date when re-registration is allowed
+    """
+    email_hash = _hash_identifier(email)
+    provider_hash = _hash_identifier(provider_id)
+
+    # Build filter conditions based on provider
+    conditions = [WithdrawalLog.email_hash == email_hash]
+    if provider == "github" and provider_hash:
+        conditions.append(WithdrawalLog.github_id_hash == provider_hash)
+    elif provider == "google" and provider_hash:
+        conditions.append(WithdrawalLog.google_id_hash == provider_hash)
+
+    # Find withdrawal record that hasn't expired
+    withdrawal = db.query(WithdrawalLog).filter(
+        or_(*conditions),
+        WithdrawalLog.expire_at > datetime.now(timezone.utc)
+    ).first()
+
+    if not withdrawal:
+        return False, None
+
+    # Check if within cooldown period
+    cooldown_end = withdrawal.deleted_at + timedelta(days=REREGISTRATION_COOLDOWN_DAYS)
+    if datetime.now(timezone.utc) < cooldown_end:
+        return True, cooldown_end
+
+    # Past cooldown - allow registration but mark as returning user
+    return True, None
+
 def find_or_create_user_by_oauth(
     db: Session,
     provider: str,
@@ -36,14 +92,17 @@ def find_or_create_user_by_oauth(
     email: str,
     username: str,
     avatar_url: str | None = None,
-) -> tuple[User, bool]:
+) -> tuple[User, bool, bool]:
     """
     Find or create user by OAuth provider.
 
     Returns:
-        (user, is_new_user) tuple
+        (user, is_new_user, is_returning_user) tuple
+        - is_returning_user: True if user is re-registering after account deletion
+          (token bonus will be skipped)
     """
     is_new_user = False
+    is_returning_user = False
 
     # 1. Find by provider ID
     if provider == "github":
@@ -54,12 +113,7 @@ def find_or_create_user_by_oauth(
         raise ValueError(f"Unknown provider: {provider}")
 
     if user:
-        # Existing user - restore if soft-deleted
-        if user.is_deleted:
-            user.is_deleted = False
-            user.deleted_at = None
-            logger.info(f"[OAUTH] Restored deleted user: {user.id} ({user.email})")
-        return user, False
+        return user, False, False
 
     # 2. Find by email (link providers)
     user = db.query(User).filter(User.email == email).first()
@@ -75,14 +129,30 @@ def find_or_create_user_by_oauth(
         if avatar_url and not user.avatar_url:
             user.avatar_url = avatar_url
 
-        if user.is_deleted:
-            user.is_deleted = False
-            user.deleted_at = None
-            logger.info(f"[OAUTH] Restored deleted user (email match): {user.id}")
+        return user, False, False
 
-        return user, False
+    # 3. Check for abuse (re-registration after deletion)
+    is_returning_user, cooldown_end = _check_withdrawal_abuse(
+        db=db,
+        provider=provider,
+        provider_id=provider_id,
+        email=email,
+    )
 
-    # 3. Create new user
+    if cooldown_end:
+        # Within cooldown period - block registration
+        cooldown_end_str = cooldown_end.strftime("%Y-%m-%d")
+        logger.warning(
+            f"[ABUSE_BLOCKED] Re-registration blocked until {cooldown_end_str}: "
+            f"email={email}, provider={provider}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Account re-registration is blocked until {cooldown_end_str}. "
+                   "Please wait before creating a new account."
+        )
+
+    # 4. Create new user
     is_new_user = True
     user = User(
         email=email,
@@ -96,9 +166,17 @@ def find_or_create_user_by_oauth(
     elif provider == "google":
         user.google_id = provider_id
 
+    # Returning user: skip token bonus (token_balance stays at default 0)
+    if is_returning_user:
+        user.token_balance = 0
+        logger.info(
+            f"[RETURNING_USER] Re-registration allowed with zero tokens: "
+            f"email={email}, provider={provider}"
+        )
+
     # New user: terms_accepted_at = NULL (will be set after consent)
     db.add(user)
-    return user, True
+    return user, True, is_returning_user
 
 
 @router.get("/github/login")
@@ -165,7 +243,7 @@ async def github_callback(
 
         # Find or create user using common function
         logger.info(f"[OAUTH] Finding or creating user for github_id={github_user.id}")
-        user, is_new_user = find_or_create_user_by_oauth(
+        user, is_new_user, is_returning_user = find_or_create_user_by_oauth(
             db=db,
             provider="github",
             provider_id=github_user.id,
@@ -260,7 +338,6 @@ async def refresh_token(
         user = db.query(User).filter(
             User.id == user_id,
             User.is_active == True,
-            User.is_deleted == False
         ).first()
 
         if not user:
@@ -402,7 +479,7 @@ async def google_callback(
 
         # Find or create user using common function
         logger.info(f"[OAUTH] Finding or creating user for google_id={google_user.id}")
-        user, is_new_user = find_or_create_user_by_oauth(
+        user, is_new_user, is_returning_user = find_or_create_user_by_oauth(
             db=db,
             provider="google",
             provider_id=google_user.id,
