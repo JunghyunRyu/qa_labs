@@ -100,32 +100,52 @@ async def delete_my_account(
     current_user: User = Depends(get_current_user),
 ):
     """
-    Soft delete current user's account.
+    Hard delete current user's account with abuse prevention logging.
 
-    This marks the user as deleted without removing data:
-    - Sets is_deleted = True
-    - Sets deleted_at = current timestamp
-    - All user data (submissions, bookmarks, etc.) is preserved
-
-    On re-registration via GitHub OAuth, the account will be restored
-    with all data intact (including token balance to prevent abuse).
+    개인정보보호법 준수를 위한 회원 탈퇴 처리:
+    - User 레코드 즉시 삭제 (Hard Delete)
+    - 부정 이용 방지를 위해 해시된 식별자를 withdrawal_logs에 1년간 보관
+    - 연관 데이터는 FK 설정에 따라 자동 처리:
+      - Submission: user_id = NULL (익명화)
+      - BookmarkedProblem, TokenTransaction, HintView: CASCADE 삭제
+      - AIConversation, Feedback: user_id = NULL
     """
-    from datetime import datetime, timezone
+    from datetime import datetime, timezone, timedelta
+    import hashlib
 
-    logger.info(f"Soft deleting account for user {current_user.id} ({current_user.email})")
+    from app.models.withdrawal_log import WithdrawalLog
+
+    logger.info(f"[ACCOUNT_DELETE_START] user_id={current_user.id} email={current_user.email}")
 
     try:
-        # Soft delete: mark as deleted instead of actual deletion
-        current_user.is_deleted = True
-        current_user.deleted_at = datetime.now(timezone.utc)
+        # 1. Hash identifiers for abuse prevention (SHA-256)
+        def hash_id(value: str) -> str | None:
+            if not value:
+                return None
+            return hashlib.sha256(value.encode()).hexdigest()
+
+        # 2. Create withdrawal log record (1년 보관)
+        withdrawal_log = WithdrawalLog(
+            github_id_hash=hash_id(current_user.github_id),
+            google_id_hash=hash_id(current_user.google_id),
+            email_hash=hash_id(current_user.email),
+            expire_at=datetime.now(timezone.utc) + timedelta(days=365),
+            reason="USER_REQUEST",
+        )
+        db.add(withdrawal_log)
+
+        # 3. Hard delete user (FK CASCADE/SET NULL handles related data)
+        user_id = current_user.id
+        user_email = current_user.email
+        db.delete(current_user)
         db.commit()
 
-        logger.info(f"Successfully soft deleted account for user {current_user.id}")
+        logger.info(f"[ACCOUNT_DELETE_SUCCESS] user_id={user_id} email={user_email}")
         return {"message": "Account deleted successfully"}
 
     except Exception as e:
         db.rollback()
-        logger.error(f"Failed to soft delete account for user {current_user.id}: {e}")
+        logger.error(f"[ACCOUNT_DELETE_ERROR] user_id={current_user.id} error={e}")
         raise
 
 
