@@ -10,10 +10,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Lightbulb, Lock, Unlock, ChevronDown, ChevronUp, AlertTriangle, LogIn } from "lucide-react";
+import { Lightbulb, Lock, Unlock, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHints, HINT_LEVELS } from "@/hooks/useHints";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { ConversionModal } from "@/components/conversion";
 
 /**
  * 코드 블록인지 감지 (Python 코드 패턴)
@@ -153,7 +154,7 @@ interface HintPanelProps {
 export default function HintPanel({ problemId, className = "" }: HintPanelProps) {
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null);
   const [confirmingLevel, setConfirmingLevel] = useState<number | null>(null);
-  const { login } = useAuth();
+  const [isConversionModalOpen, setIsConversionModalOpen] = useState(false);
 
   const {
     hintData,
@@ -309,18 +310,14 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
       {error && (
         <div className="px-4 pb-3">
           {error === "AUTH_REQUIRED" ? (
-            <div className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 p-3 rounded-lg">
-              <LogIn className="w-4 h-4 shrink-0" />
-              <span>
-                힌트를 보려면{" "}
-                <button
-                  onClick={() => login()}
-                  className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100"
-                >
-                  로그인
-                </button>
-                이 필요합니다.
-              </span>
+            <div className="flex items-center justify-between gap-2 text-sm text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 p-3 rounded-lg">
+              <span>힌트를 보려면 로그인이 필요합니다</span>
+              <button
+                onClick={() => setIsConversionModalOpen(true)}
+                className="px-3 py-1 bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                로그인하기
+              </button>
             </div>
           ) : (
             <div className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
@@ -329,6 +326,13 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
           )}
         </div>
       )}
+
+      {/* ConversionModal for hint feature */}
+      <ConversionModal
+        isOpen={isConversionModalOpen}
+        onClose={() => setIsConversionModalOpen(false)}
+        feature="hint"
+      />
 
       {/* 확인 모달 */}
       <AnimatePresence>
