@@ -163,11 +163,11 @@ def get_user_stats(session) -> tuple:
     today = get_today_start()
 
     total = session.execute(
-        text("SELECT COUNT(*) FROM users WHERE is_deleted = false")
+        text("SELECT COUNT(*) FROM users")
     ).scalar() or 0
 
     new_today = session.execute(
-        text("SELECT COUNT(*) FROM users WHERE created_at >= :today AND is_deleted = false"),
+        text("SELECT COUNT(*) FROM users WHERE created_at >= :today"),
         {"today": today}
     ).scalar() or 0
 
