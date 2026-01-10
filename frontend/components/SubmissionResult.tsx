@@ -12,6 +12,7 @@ import { AlertCircle, FileText, Sparkles, RefreshCw, ArrowRight, Lightbulb, Save
 import { Github } from "lucide-react";
 import Link from "next/link";
 import type { QualityGrade, TestQualityAnalysis } from "@/types/test-quality";
+import { AIFeedbackTeaser } from "@/components/conversion";
 
 interface SubmissionResultProps {
   submission: Submission;
@@ -239,30 +240,11 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
               </p>
             </div>
           ) : (
-            // 게스트인 경우 로그인 유도 - 결과 소유욕 자극
-            <div className="text-center py-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-4">
-                <Sparkles className="w-8 h-8 text-purple-500 dark:text-purple-400" />
-              </div>
-              <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-                {submission.score !== undefined && submission.score >= 75
-                  ? "훌륭해요! AI가 더 높은 점수를 위한 힌트를 준비했어요"
-                  : "AI가 놓친 케이스를 분석했어요"}
-              </p>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 max-w-sm mx-auto">
-                어떤 테스트 케이스를 보강하면 좋을지, AI가 맞춤 피드백을 제공합니다.
-              </p>
-              <a
-                href="/api/v1/auth/github/login"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-medium shadow-sm"
-              >
-                <Github className="w-5 h-5" />
-                로그인하고 피드백 확인하기
-              </a>
-              <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
-                GitHub 계정으로 3초 만에 로그인
-              </p>
-            </div>
+            // 게스트인 경우 AI 피드백 티저로 호기심 유발
+            <AIFeedbackTeaser
+              score={submission.score ?? 0}
+              problemId={problemId ?? ""}
+            />
           )}
         </div>
       )}

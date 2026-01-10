@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Bot, X, LogIn, Lock } from "lucide-react";
+import { Bot, X, Sparkles } from "lucide-react";
+import { ConversionModal } from "@/components/conversion";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { sendAIMessage, getAIConversation } from "@/lib/api/ai";
@@ -45,6 +46,7 @@ export default function AICoachPanel({
     dailyBonusRemaining: number;
     nextReset: string | null;
   } | null>(null);
+  const [isConversionModalOpen, setIsConversionModalOpen] = useState(false);
 
   // Reset conversation when problem changes
   useEffect(() => {
@@ -251,24 +253,34 @@ export default function AICoachPanel({
           </button>
         </div>
       ) : !isAuthenticated ? (
-        /* Members-only login prompt */
+        /* Members-only - ConversionModal trigger */
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
-            <Lock className="w-8 h-8 text-neutral-400" />
+          <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+            <Sparkles className="w-8 h-8 text-purple-500 dark:text-purple-400" />
           </div>
           <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2">
-            회원 전용 기능
+            AI 코치로 더 빠르게 성장하세요
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
-            AI 도우미는 로그인 후 이용할 수 있습니다
+            실시간 코드 리뷰와 맞춤형 학습 조언을 받아보세요
           </p>
           <button
-            onClick={() => login()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+            onClick={() => setIsConversionModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors font-medium"
           >
-            <LogIn className="w-4 h-4" />
-            로그인
+            <Sparkles className="w-4 h-4" />
+            AI 코치 시작하기
           </button>
+          <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
+            GitHub 계정으로 3초 만에 연결
+          </p>
+
+          {/* ConversionModal */}
+          <ConversionModal
+            isOpen={isConversionModalOpen}
+            onClose={() => setIsConversionModalOpen(false)}
+            feature="ai_coach"
+          />
         </div>
       ) : (
         <>

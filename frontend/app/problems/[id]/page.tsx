@@ -21,6 +21,7 @@ import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
+import { GuestConversionBanner } from "@/components/conversion";
 import MobileNotice from "@/components/MobileNotice";
 import { generateTestTemplate, generateFallbackTemplate } from "@/lib/templateGenerator";
 import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
@@ -32,6 +33,7 @@ import FloatingAIChat from "@/components/ai/FloatingAIChat";
 import AICoachPanel from "@/components/AICoachPanel";
 import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { trackCodeSubmit, trackProblemView, trackLocalTest } from "@/lib/analytics";
 
 export default function ProblemDetailPage() {
@@ -41,6 +43,7 @@ export default function ProblemDetailPage() {
   // Support both numeric ID and slug
   const problemIdOrSlug = params.id as string;
   const { isDesktop } = useMediaQuery();
+  const { isAuthenticated } = useAuth();
   const {
     toggleProblemPanel,
     toggleAIChat,
@@ -237,6 +240,13 @@ export default function ProblemDetailPage() {
 
   // Get current template for auto-save comparison
   const currentTemplate = problem ? getInitialTemplate(problem) : "";
+
+  // Detect if code has changed from initial state (for guest conversion banner)
+  const hasCodeChanged = useMemo(() => {
+    if (!problem || !code) return false;
+    const initialCode = problem.sample_code || currentTemplate;
+    return code.trim() !== initialCode.trim();
+  }, [code, problem, currentTemplate]);
 
   // Auto-save code to localStorage (debounced)
   const {
@@ -613,6 +623,13 @@ export default function ProblemDetailPage() {
           aria-hidden="true"
         />
 
+        {/* Guest Conversion Banner - 비회원 코드 휘발성 경고 */}
+        <GuestConversionBanner
+          hasCodeChanged={hasCodeChanged}
+          problemId={problem.slug}
+          className="mx-4 mt-2"
+        />
+
         {/* Main content - Split panel (Breadcrumb integrated into ProblemPanel) */}
         <div className="flex-1 min-h-0">
           <ResizableSplitPanel
@@ -704,6 +721,13 @@ export default function ProblemDetailPage() {
           </h1>
         </div>
       </div>
+
+      {/* Guest Conversion Banner - 비회원 코드 휘발성 경고 */}
+      <GuestConversionBanner
+        hasCodeChanged={hasCodeChanged}
+        problemId={problem.slug}
+        className="mx-3 mt-2"
+      />
 
       {/* Tab Layout */}
       <div className="flex-1 min-h-0">
