@@ -13,6 +13,7 @@ import { useState, useMemo } from "react";
 import { Lightbulb, Lock, Unlock, ChevronDown, ChevronUp, AlertTriangle, LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHints, HINT_LEVELS } from "@/hooks/useHints";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 /**
  * 코드 블록인지 감지 (Python 코드 패턴)
@@ -152,6 +153,7 @@ interface HintPanelProps {
 export default function HintPanel({ problemId, className = "" }: HintPanelProps) {
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null);
   const [confirmingLevel, setConfirmingLevel] = useState<number | null>(null);
+  const { login } = useAuth();
 
   const {
     hintData,
@@ -311,12 +313,12 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
               <LogIn className="w-4 h-4 shrink-0" />
               <span>
                 힌트를 보려면{" "}
-                <a
-                  href="/api/auth/login"
+                <button
+                  onClick={() => login()}
                   className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100"
                 >
                   로그인
-                </a>
+                </button>
                 이 필요합니다.
               </span>
             </div>
