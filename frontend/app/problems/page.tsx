@@ -3,7 +3,10 @@
 "use client";
 
 import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { isTutorialCompleted } from "@/lib/tutorialData";
+import { useTutorialStore } from "@/stores/tutorialStore";
+import { TutorialWelcomeModal, TutorialFullScreen } from "@/components/tutorial";
 import { getProblems, GetProblemsParams, getNextScheduledProblem, NextScheduledProblem } from "@/lib/api/problems";
 import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
@@ -78,8 +81,31 @@ const SORT_LABELS: Record<SortOption, string> = {
 
 // useSearchParams를 사용하는 내부 컴포넌트
 function ProblemsContent() {
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
+
+  // Tutorial store
+  const {
+    showModal,
+    showTutorial,
+    openModal,
+    closeModal,
+    startTutorial,
+    closeTutorial,
+    completeTutorial,
+  } = useTutorialStore();
+
+  // 튜토리얼 미완료 시 0.5초 후 환영 모달 표시
+  useEffect(() => {
+    if (!isTutorialCompleted()) {
+      const timer = setTimeout(() => {
+        openModal();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [openModal]);
+
   const [data, setData] = useState<ProblemListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -214,34 +240,66 @@ function ProblemsContent() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        {/* 헤더 Skeleton */}
-        <div className="mb-8">
-          <div className="h-9 w-32 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse mb-2" />
-          <div className="h-5 w-64 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse" />
-        </div>
-        {/* Control Bar Skeleton */}
-        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md p-4 mb-4 animate-pulse border border-[#d0d7de] dark:border-[#30363d]">
-          <div className="flex flex-col lg:flex-row gap-3">
-            <div className="h-10 flex-1 bg-[#d0d7de] dark:bg-[#30363d] rounded-lg" />
-            <div className="flex gap-2">
-              <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
-              <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
-              <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
+      <>
+        <div className="container mx-auto px-4 py-8">
+          {/* 헤더 Skeleton */}
+          <div className="mb-8">
+            <div className="h-9 w-32 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse mb-2" />
+            <div className="h-5 w-64 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse" />
+          </div>
+          {/* Control Bar Skeleton */}
+          <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md p-4 mb-4 animate-pulse border border-[#d0d7de] dark:border-[#30363d]">
+            <div className="flex flex-col lg:flex-row gap-3">
+              <div className="h-10 flex-1 bg-[#d0d7de] dark:bg-[#30363d] rounded-lg" />
+              <div className="flex gap-2">
+                <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
+                <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
+                <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
+              </div>
             </div>
           </div>
+          {/* Card Grid Skeleton */}
+          <ProblemCardSkeletonGrid count={8} />
         </div>
-        {/* Card Grid Skeleton */}
-        <ProblemCardSkeletonGrid count={8} />
-      </div>
+        {/* Tutorial Welcome Modal */}
+        {showModal && (
+          <TutorialWelcomeModal
+            onStart={startTutorial}
+            onSkip={closeModal}
+          />
+        )}
+        {/* Tutorial Full Screen Overlay */}
+        {showTutorial && (
+          <TutorialFullScreen
+            onClose={closeTutorial}
+            onComplete={completeTutorial}
+          />
+        )}
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Error message={error} onRetry={fetchProblems} />
-      </div>
+      <>
+        <div className="container mx-auto px-4 py-8">
+          <Error message={error} onRetry={fetchProblems} />
+        </div>
+        {/* Tutorial Welcome Modal */}
+        {showModal && (
+          <TutorialWelcomeModal
+            onStart={startTutorial}
+            onSkip={closeModal}
+          />
+        )}
+        {/* Tutorial Full Screen Overlay */}
+        {showTutorial && (
+          <TutorialFullScreen
+            onClose={closeTutorial}
+            onComplete={completeTutorial}
+          />
+        )}
+      </>
     );
   }
 
@@ -574,6 +632,22 @@ function ProblemsContent() {
 
       {/* Pyodide 사전 로딩 - 문제 상세 페이지 진입 전에 미리 로드 */}
       <PyodidePreloader initializeImmediately={true} delay={2000} />
+
+      {/* Tutorial Welcome Modal */}
+      {showModal && (
+        <TutorialWelcomeModal
+          onStart={startTutorial}
+          onSkip={closeModal}
+        />
+      )}
+
+      {/* Tutorial Full Screen Overlay */}
+      {showTutorial && (
+        <TutorialFullScreen
+          onClose={closeTutorial}
+          onComplete={completeTutorial}
+        />
+      )}
     </div>
   );
 }
