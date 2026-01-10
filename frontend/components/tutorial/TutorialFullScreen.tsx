@@ -437,6 +437,9 @@ export default function TutorialFullScreen({
                       {STEP_SUCCESS_MESSAGES[`step${currentStep}`].explanation}
                     </pre>
                   )}
+                  <p className="text-blue-400 text-sm mt-3 font-medium">
+                    👉 {STEP_SUCCESS_MESSAGES[`step${currentStep}`].nextAction}
+                  </p>
                 </div>
               )}
 
