@@ -6,6 +6,7 @@
 // 컴포넌트
 export { default as ConversionModal } from "./ConversionModal";
 export type { ConversionFeature } from "./ConversionModal";
+export { default as GuestConversionBanner } from "./GuestConversionBanner";
 
 // 훅
 export { useGuestConversion } from "./useGuestConversion";
