@@ -4,7 +4,7 @@
 -- ============================================================
 --
 -- 실행 방법 (EC2):
---   docker exec -i qa_arena_postgres_prod psql -U qa_arena_user -d qa_arena < backend/scripts/drip_schedule.sql
+--   docker exec -i qa_arena_postgres_prod psql -U qa_arena -d qa_arena < backend/scripts/drip_schedule.sql
 --
 -- 스케줄 전략:
 --   - 주 2회: 목요일, 월요일 순서로 공개

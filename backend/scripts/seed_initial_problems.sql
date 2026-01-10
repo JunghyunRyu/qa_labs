@@ -2,7 +2,7 @@
 -- 실행 시점: 마이그레이션 (j0k1l2m3n4o5_add_visibility_fields.py) 적용 후
 -- 실행 방법 (EC2):
 --   1. 마이그레이션: docker exec qa_arena_backend_prod alembic upgrade head
---   2. Seed 실행:    cat backend/scripts/seed_initial_problems.sql | docker exec -i qa_arena_postgres_prod psql -U qa_arena_user -d qa_arena
+--   2. Seed 실행:    cat backend/scripts/seed_initial_problems.sql | docker exec -i qa_arena_postgres_prod psql -U qa_arena -d qa_arena
 
 -- 1단계: 모든 문제 비공개 처리 (안전장치)
 UPDATE problems

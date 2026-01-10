@@ -11,8 +11,8 @@ PostgreSQL 데이터베이스의 백업 및 복구 절차를 정의합니다.
 
 | 환경 | 컨테이너 이름 | DB 이름 | DB 유저 |
 |------|--------------|---------|---------|
-| **로컬 개발** | `qa_arena_postgres` | `qa_arena` | `qa_arena_user` |
-| **프로덕션 (EC2)** | `qa_arena_postgres_prod` | `qa_arena` | `qa_arena_user` |
+| **로컬 개발** | `qa_arena_postgres` | `qa_arena` | `qa_arena` |
+| **프로덕션 (EC2)** | `qa_arena_postgres_prod` | `qa_arena` | `qa_arena` |
 
 ---
 
@@ -70,7 +70,7 @@ cd ~/qa_labs
 ```bash
 # 로컬 환경
 docker exec -t qa_arena_postgres \
-  pg_dump -U qa_arena_user qa_arena > backup_$(date +%Y%m%d_%H%M%S).sql
+  pg_dump -U qa_arena qa_arena > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # 압축 (선택)
 gzip backup_*.sql
@@ -88,11 +88,11 @@ docker cp qa_arena_postgres:/path/to/backup.sql ./backup.sql
 ```bash
 # 로컬 환경
 cat backup_20251218_120000.sql | docker exec -i qa_arena_postgres \
-  psql -U qa_arena_user qa_arena
+  psql -U qa_arena qa_arena
 
 # 압축 파일인 경우
 gunzip -c backup_20251218_120000.sql.gz | docker exec -i qa_arena_postgres \
-  psql -U qa_arena_user qa_arena
+  psql -U qa_arena qa_arena
 ```
 
 ---
@@ -106,7 +106,7 @@ gunzip -c backup_20251218_120000.sql.gz | docker exec -i qa_arena_postgres \
 ```bash
 # 프로덕션 환경 (EC2)
 docker exec -t qa_arena_postgres_prod \
-  pg_dump -U qa_arena_user qa_arena > /backup/postgres/qa_arena_$(date +%Y%m%d_%H%M%S).sql
+  pg_dump -U qa_arena qa_arena > /backup/postgres/qa_arena_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### 4.2 복구
@@ -114,7 +114,7 @@ docker exec -t qa_arena_postgres_prod \
 ```bash
 # 프로덕션 환경 (EC2)
 cat /backup/postgres/qa_arena_20251218_120000.sql | \
-  docker exec -i qa_arena_postgres_prod psql -U qa_arena_user qa_arena
+  docker exec -i qa_arena_postgres_prod psql -U qa_arena qa_arena
 ```
 
 ---

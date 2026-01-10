@@ -8,7 +8,7 @@ param(
 
 # 기본 설정
 $ContainerName = "qa_arena_postgres_prod"
-$DbUser = if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "qa_arena_user" }
+$DbUser = if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "qa_arena" }
 $DbName = if ($env:POSTGRES_DB) { $env:POSTGRES_DB } else { "qa_arena" }
 
 # 백업 파일 존재 확인

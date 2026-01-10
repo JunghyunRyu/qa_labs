@@ -46,7 +46,7 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: Optional[str] = (
-        "postgresql://qa_arena_user:qa_arena_password@localhost:5432/qa_arena"
+        "postgresql://qa_arena:qa_arena_password@localhost:5432/qa_arena"
     )
 
     # Redis

@@ -14,7 +14,7 @@ fi
 
 BACKUP_FILE="$1"
 CONTAINER_NAME="qa_arena_postgres_prod"
-DB_USER="${POSTGRES_USER:-qa_arena_user}"
+DB_USER="${POSTGRES_USER:-qa_arena}"
 DB_NAME="${POSTGRES_DB:-qa_arena}"
 
 # 백업 파일 존재 확인

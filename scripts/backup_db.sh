@@ -8,7 +8,7 @@ set -e
 # 기본 설정
 BACKUP_DIR="${1:-./backups}"
 CONTAINER_NAME="qa_arena_postgres_prod"
-DB_USER="${POSTGRES_USER:-qa_arena_user}"
+DB_USER="${POSTGRES_USER:-qa_arena}"
 DB_NAME="${POSTGRES_DB:-qa_arena}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_FILE="${BACKUP_DIR}/qa_arena_backup_${TIMESTAMP}.sql"

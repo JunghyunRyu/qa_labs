@@ -20,7 +20,7 @@ else:
     # Default for development
     config.set_main_option(
         "sqlalchemy.url",
-        "postgresql://qa_arena_user:qa_arena_password@localhost:5432/qa_arena",
+        "postgresql://qa_arena:qa_arena_password@localhost:5432/qa_arena",
     )
 
 # Interpret the config file for Python logging.

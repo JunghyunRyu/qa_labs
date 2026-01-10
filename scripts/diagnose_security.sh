@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 DB_SERVICE="postgres"
-DB_USER="qa_arena_user"
+DB_USER="qa_arena"
 DB_NAME="qa_arena"
 
 echo "========================================"

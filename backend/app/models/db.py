@@ -14,7 +14,7 @@ if settings.DATABASE_URL:
 else:
     # Default database URL for development
     engine = create_engine(
-        "postgresql://qa_arena_user:qa_arena_password@localhost:5432/qa_arena",
+        "postgresql://qa_arena:qa_arena_password@localhost:5432/qa_arena",
         pool_pre_ping=True,
         echo=settings.DEBUG,
     )

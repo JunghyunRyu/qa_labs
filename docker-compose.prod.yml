@@ -3,13 +3,13 @@ services:
     image: postgres:15-alpine
     container_name: qa_arena_postgres_prod
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-qa_arena_user}
+      POSTGRES_USER: ${POSTGRES_USER:-qa_arena}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-qa_arena}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qa_arena_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qa_arena}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -113,7 +113,7 @@ services:
     environment:
       TZ: Asia/Seoul
       DOCKER_CONTAINER: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
@@ -172,7 +172,7 @@ services:
     environment:
       TZ: Asia/Seoul
       DOCKER_CONTAINER: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
@@ -215,7 +215,7 @@ services:
     environment:
       TZ: Asia/Seoul
       DOCKER_CONTAINER: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qa_arena}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-qa_arena}
       REDIS_URL: redis://redis:6379/0
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
       SLACK_ALERT_ENABLED: ${SLACK_ALERT_ENABLED:-true}

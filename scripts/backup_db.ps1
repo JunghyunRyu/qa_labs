@@ -7,7 +7,7 @@ param(
 
 # 기본 설정
 $ContainerName = "qa_arena_postgres_prod"
-$DbUser = if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "qa_arena_user" }
+$DbUser = if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "qa_arena" }
 $DbName = if ($env:POSTGRES_DB) { $env:POSTGRES_DB } else { "qa_arena" }
 $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $BackupFile = Join-Path $BackupDir "qa_arena_backup_$Timestamp.sql"
