@@ -44,6 +44,6 @@
   "difficulty": "Hard",
   "problem_id": "H01",
   "domain": "fintech",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • stackable_with_vip=False인 쿠폰이 '최소 금액 미달'로 실제 적용...\n  • 수량 할인 경계값(3/5/10)에서 >= 대신 > 비교를 사용해 quantity가 정...\n  • 쿠폰 적용 조건(min_subtotal_cents) 판정 시\n\n⚠️ **예외 처리**\n  • 알 수 없는 vip_tier 입력에 대해 예외(ValueError)를 발생시키지 않고...\n  • 함수가 내부적으로 쿠폰 code를 전역/정적 상태로 '이미 사용됨' 처리하여",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • stackable_with_vip=False인 쿠폰이 '최소 금액 미달'로 실제 적용되지 않더라도 VIP 할인을 무조건 차단하여, 특정 상태 조합에서 VIP 할인 누락이 발생함(상태 기반/조합 규칙 버그).\n  • 수량 할인 경계값(3/5/10)에서 >= 대신 > 비교를 사용해 quantity가 정확히 3, 5, 10일 때 할인율이 한 단계 낮게 적용되는 off-by-one 버그.\n  • 쿠폰 적용 조건(min_subtotal_cents) 판정 시, 할인 제외 카테고리(gift_card)까지 포함한 subtotal을 사용하여 min_subtotal을 충족했다고 잘못 판단함(등가 분할/정책 위반).\n\n⚠️ **예외 처리**\n  • 알 수 없는 vip_tier 입력에 대해 예외(ValueError)를 발생시키지 않고 'NONE'으로 간주해 계속 계산하는 오류 처리 누락 버그.\n  • 함수가 내부적으로 쿠폰 code를 전역/정적 상태로 '이미 사용됨' 처리하여, 동일한 coupon code로 두 번 호출하면 coupon_already_redeemed=False여도 ValueError가 발생하는 숨은 상태(state leak) 버그.",
   "short_description": "핀테크에서 자주 쓰는 장바구니 복합 할인 계산(): 예외 처리·우회 입력 방어 검증"
 }

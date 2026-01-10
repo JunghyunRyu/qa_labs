@@ -35,6 +35,6 @@
   ],
   "difficulty": "Very Easy",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 경계값 포함 오류: index가 0일 때도 무효로 처리한다(0 < index < ar...\n  • 상한 경계 오프바이원: index==array_length를 유효로 처리한다(0 <=...\n\n🔀 **동등 분할**\n  • 음수 인덱스 체크 누락: index < array_length만 검사하여 음수도 Tr...\n  • 이변수 관계 처리 실수: array_length가 0 이하이면 모두 무효여야 하는데",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 경계값 포함 오류: index가 0일 때도 무효로 처리한다(0 < index < array_length로 검사). index=0, array_length>0에서 False가 반환됨.\n  • 상한 경계 오프바이원: index==array_length를 유효로 처리한다(0 <= index <= array_length). index=array_length에서 True가 반환됨.\n\n🔀 **동등 분할**\n  • 음수 인덱스 체크 누락: index < array_length만 검사하여 음수도 True가 될 수 있다. 예: index=-1, array_length=3에서 True가 반환됨.\n  • 이변수 관계 처리 실수: array_length가 0 이하이면 모두 무효여야 하는데, array_length<0일 때는 True를 반환할 수 있다(길이가 음수인 비정상 입력을 잘못 처리). 예: index=0, array_length=-1에서 True가 반환됨.",
   "short_description": "공통 로직인 배열 인덱스 범위 검증: 오프바이원·예외 처리 검증"
 }

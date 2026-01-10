@@ -40,6 +40,6 @@
   ],
   "difficulty": "Hard",
   "domain": "platform",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • event 문자열 정규화가 누락되어 대소문자 또는 공백이 포함된 입력이 실패합니다\n\n⚠️ **예외 처리**\n  • 잘못된 전이에서 InvalidTransitionError 대신 ValueError를 ...\n\n🧠 **로직 검증**\n  • allowed_events가 현재 상태를 무시하고 전체 이벤트 목록을 반환합니다\n  • history 메서드가 내부 히스토리 리스트를 그대로 반환합니다\n  • 전이 테이블이 비즈니스 규칙과 다릅니다",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • event 문자열 정규화가 누락되어 대소문자 또는 공백이 포함된 입력이 실패합니다. 예: ' PAY ' 또는 'Pay'가 정상 이벤트로 처리되지 않아 unknown event로 간주됩니다.\n\n⚠️ **예외 처리**\n  • 잘못된 전이에서 InvalidTransitionError 대신 ValueError를 발생시킵니다. 예: PENDING에서 'ship' 이벤트를 호출하면 커스텀 예외가 아니라 ValueError가 발생하여 에러 처리 계약을 위반합니다.\n\n🧠 **로직 검증**\n  • allowed_events가 현재 상태를 무시하고 전체 이벤트 목록을 반환합니다. 예: SHIPPED 상태에서도 'pay'나 'cancel'이 가능한 것처럼 보여 비즈니스 로직 검증이 실패합니다.\n  • history 메서드가 내부 히스토리 리스트를 그대로 반환합니다. 호출자가 반환값을 수정하면 내부 상태 히스토리가 오염될 수 있어, 상태 추적의 신뢰성이 깨집니다.\n  • 전이 테이블이 비즈니스 규칙과 다릅니다. 예: SHIPPED 상태에서 'cancel'이 가능하도록 허용되어, 배송 이후 취소 불가 정책을 위반합니다.",
   "short_description": "플랫폼에서 흔한 주문 상태 머신 생성: 예외 처리·우회 입력 방어 검증"
 }

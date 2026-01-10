@@ -35,6 +35,6 @@
   ],
   "difficulty": "Very Easy",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 관리자도 로그인해야만 접근 가능하게 처리함\n  • 로그인 여부를 반대로 해석함\n  • 로그인한 일반 사용자만 접근 가능하게 하려고 했지만 조건식을 뒤집어 관리자만 허용함\n  • 입력 인자를 혼동하여 관리자 플래그를 로그인으로 취급함",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 관리자도 로그인해야만 접근 가능하게 처리함. (is_admin=True, is_logged_in=False) 조합에서 False를 반환\n  • 로그인 여부를 반대로 해석함. 로그인하지 않은 일반 사용자도 접근 가능해짐. (is_logged_in=False, is_admin=False) 조합에서 True를 반환\n  • 로그인한 일반 사용자만 접근 가능하게 하려고 했지만 조건식을 뒤집어 관리자만 허용함. (is_logged_in=True, is_admin=False) 조합에서 False를 반환\n  • 입력 인자를 혼동하여 관리자 플래그를 로그인으로 취급함. (is_logged_in=True, is_admin=False) 조합에서 False를 반환",
   "short_description": "공통 로직인 로그인/관리자 조합에 따른 접근 권한 판정: 타입 검증·경계값 검증"
 }

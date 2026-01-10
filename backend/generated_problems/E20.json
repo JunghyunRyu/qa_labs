@@ -36,6 +36,6 @@
   ],
   "difficulty": "Easy",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • min_price 경계값을 잘못 처리함\n  • 여러 조건을 AND가 아니라 OR처럼 처리함\n\n⚠️ **예외 처리**\n  • None인 필터를 무시하지 않고 비교해버림\n  • in_stock 필터가 True일 때만 적용되고 False를 요청하면 무시됨",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • min_price 경계값을 잘못 처리함. price가 min_price와 정확히 같은 경우에도 False가 되는 등, 비교 연산이 > 로 되어 경계값에서 실패한다. (경계값, 조합 테스트에서 min_price 포함 케이스)\n  • 여러 조건을 AND가 아니라 OR처럼 처리함. 예를 들어 category는 맞지만 min_price는 미달인 경우에도 True가 되는 등, 필터 조합에서 잘못된 결과를 반환한다. (조합 테스트, 필터 조합 오류)\n\n⚠️ **예외 처리**\n  • None인 필터를 무시하지 않고 비교해버림. 예를 들어 category가 None이면 product['category'] == None 비교를 수행하여 대부분 False가 되어, 필터를 주지 않았는데도 매칭이 실패한다. (null 처리, 선택적 매개변수)\n  • in_stock 필터가 True일 때만 적용되고 False를 요청하면 무시됨. 예를 들어 in_stock=False로 품절 상품만 보고 싶어도 필터가 적용되지 않아 재고 있는 상품이 섞여 True가 반환될 수 있다. (선택적 매개변수, boolean 필터, null 처리와 조합 테스트)",
   "short_description": "공통 로직인 상품 필터 조합: 타입 검증·예외 처리 검증 (경계값 포함)"
 }

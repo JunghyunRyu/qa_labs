@@ -41,6 +41,6 @@
   ],
   "difficulty": "Hard",
   "domain": "platform",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 복구 타임아웃 경계값(time boundary) 처리 오류: OPEN에서 HALF_O...\n  • 실패 임계값 `failure_threshold` 경계값 처리 오류: 연속 실패가 임계...\n\n🔀 **동등 분할**\n  • 연속 실패(consecutive failures) 처리 오류: CLOSED에서 성공해...\n\n⚠️ **예외 처리**\n  • HALF_OPEN 상태 전이 오류: HALF_OPEN에서 성공해도 CLOSED로 복귀...\n  • OPEN 상태에서 차단이 제대로 동작하지 않음: 복구 타임아웃이 지나지 않았는데도 `...",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 복구 타임아웃 경계값(time boundary) 처리 오류: OPEN에서 HALF_OPEN으로 전환 조건이 `>=`가 아니라 `>`라서 정확히 타임아웃 시점에는 여전히 OPEN으로 막힌다.\n  • 실패 임계값 `failure_threshold` 경계값 처리 오류: 연속 실패가 임계값과 같을 때는 OPEN으로 전환하지 않고, 임계값을 초과해야만 OPEN으로 전환된다(오프바이원).\n\n🔀 **동등 분할**\n  • 연속 실패(consecutive failures) 처리 오류: CLOSED에서 성공해도 실패 카운터를 0으로 리셋하지 않아, 실패-성공-실패처럼 연속이 아닌 실패도 누적되어 OPEN으로 전환된다(상태 기반 테스트 필요).\n\n⚠️ **예외 처리**\n  • HALF_OPEN 상태 전이 오류: HALF_OPEN에서 성공해도 CLOSED로 복귀하지 않아 상태가 HALF_OPEN에 머물거나 카운터가 초기화되지 않는다(상태 머신 복구 실패).\n  • OPEN 상태에서 차단이 제대로 동작하지 않음: 복구 타임아웃이 지나지 않았는데도 `call(fn)`이 예외를 던지지 않고 `fn`을 실행해버린다(차단 우회).",
   "short_description": "플랫폼에서 흔한 상태 머신 테스트 (//): 예외 처리·우회 입력 방어 검증"
 }

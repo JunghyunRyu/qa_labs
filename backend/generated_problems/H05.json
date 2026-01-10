@@ -36,6 +36,6 @@
   ],
   "difficulty": "Hard",
   "domain": "platform",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n⚠️ **예외 처리**\n  • 단계 간 데이터 전달 오류: 재고 체크 단계에서 남은 재고를 계산하지만\n\n🧠 **로직 검증**\n  • 상태 관리/통합 버그: 결제 처리에서 payment_methods 딕셔너리를 깊은 복...\n  • 워크플로우 통합 버그: 주문 합계 검증 시 소수점 반올림을 잘못 사용하여 총액이 약간...\n  • 통합 단계 누락 버그: 결제 실패 시에도 배송 준비 단계가 실행되어 status가 r...",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n⚠️ **예외 처리**\n  • 단계 간 데이터 전달 오류: 재고 체크 단계에서 남은 재고를 계산하지만, 성공 경로에서 remaining_inventory 대신 원래 inventory를 반환하여, 워크플로우 전체의 상태가 일관되지 않음. workflow/integration testing으로 재고 감소가 제대로 반영되는지 확인해야 함.\n\n🧠 **로직 검증**\n  • 상태 관리/통합 버그: 결제 처리에서 payment_methods 딕셔너리를 깊은 복사하지 않고 직접 수정하여, 한 주문의 호출이 다음 주문 호출에 영향을 주는 공유 상태(side effect)를 만듦. integration testing과 multi-function coordination 관점에서 여러 번 호출 시 상태 변경을 검증해야 함.\n  • 워크플로우 통합 버그: 주문 합계 검증 시 소수점 반올림을 잘못 사용하여 총액이 약간 다른(valid) 케이스가 실패하거나, 반대로 유효하지 않은 합계가 통과할 수 있음. workflow testing 및 multi-function coordination에서 validation 단계에 대한 정밀 검증 필요.\n  • 통합 단계 누락 버그: 결제 실패 시에도 배송 준비 단계가 실행되어 status가 ready_to_ship으로 표시될 수 있음. workflow testing 및 multi-function coordination을 통해 실패 경로에서 이후 단계가 실행되지 않는지 확인 필요.",
   "short_description": "플랫폼에서 흔한 주문 전체 워크플로우 통합: 예외 처리·우회 입력 방어 검증"
 }

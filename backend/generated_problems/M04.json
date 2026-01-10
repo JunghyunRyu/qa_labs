@@ -35,6 +35,6 @@
   ],
   "difficulty": "Medium",
   "domain": "saas",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • status='error'일 때 error가 빈 문자열이어도 통과시키는 버그\n\n⚠️ **예외 처리**\n  • status가 'success' 또는 'error'가 아닌 임의의 문자열도 허용하는 버그\n  • 추가 필드를 허용하는 버그\n\n🧠 **로직 검증**\n  • status='success'일 때 data가 dict가 아니라 list나 다른 타입...",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • status='error'일 때 error가 빈 문자열이어도 통과시키는 버그. 에러 메시지 필드를 제대로 검증하지 못함.\n\n⚠️ **예외 처리**\n  • status가 'success' 또는 'error'가 아닌 임의의 문자열도 허용하는 버그. API validation에서 허용되지 않은 상태값을 잡지 못함.\n  • 추가 필드를 허용하는 버그. status, data, error 외의 키가 있어도 에러가 발생하지 않아, JSON 구조 제약을 위반.\n\n🧠 **로직 검증**\n  • status='success'일 때 data가 dict가 아니라 list나 다른 타입이어도 허용하는 버그. JSON 구조 검증이 느슨함.",
   "short_description": "SaaS에서 중요한 응답 구조 검증: 타입 검증·예외 처리 검증"
 }

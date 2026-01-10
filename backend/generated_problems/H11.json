@@ -35,6 +35,6 @@
   ],
   "difficulty": "Hard",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • decrement에서 잔액 확인은 락 안에서 하지만 실제 차감은 락 밖에서 수행하는 ...\n  • increment와 decrement가 락 없이 read-modify-write를 수행한다\n\n🧠 **로직 검증**\n  • increment/decrement에서 매 호출마다 새로운 Lock을 생성해 잠근다\n  • increment와 decrement가 서로 다른 락으로 보호된다",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n🔀 **동등 분할**\n  • decrement에서 잔액 확인은 락 안에서 하지만 실제 차감은 락 밖에서 수행하는 check-then-act 경쟁 조건이 있다. 동시에 여러 decrement가 실행되면 둘 다 성공해 음수 값이 되거나, 기대했던 예외가 발생하지 않는다.\n  • increment와 decrement가 락 없이 read-modify-write를 수행한다. 여러 스레드가 동시에 호출하면 업데이트가 유실되어 최종 값이 기대보다 작아지거나, 경쟁 조건에서 음수 값이 될 수 있다.\n\n🧠 **로직 검증**\n  • increment/decrement에서 매 호출마다 새로운 Lock을 생성해 잠근다. 락이 공유되지 않아 스레드 간 상호 배제가 되지 않으며, 동시 증가/감소에서 race condition이 발생한다.\n  • increment와 decrement가 서로 다른 락으로 보호된다. 각 연산은 자기 락 아래에서만 안전하지만, 서로 다른 연산이 동시에 실행되면 동일한 상태를 독립적으로 read-modify-write하여 업데이트 유실이 발생한다.",
   "short_description": "공통 로직인 동시성 정합성: 우회 입력 방어·stateful 검증"
 }

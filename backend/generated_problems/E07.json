@@ -35,6 +35,6 @@
   ],
   "difficulty": "Easy",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • denominator <= 0 조건을 사용하여 분모가 0뿐 아니라 음수일 때도 Zer...\n\n🔀 **동등 분할**\n  • 0으로 나누기 전에 분모를 직접 검사하지 않고 바로 나눗셈을 수행하여\n  • float()로 강제 변환을 시도하면서\n  • 잘못된 타입이나 0 분모에서 예외를 던지지 않고 None 또는 0",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • denominator <= 0 조건을 사용하여 분모가 0뿐 아니라 음수일 때도 ZeroDivisionError를 던지는 off-by-one 스타일 오류.\n\n🔀 **동등 분할**\n  • 0으로 나누기 전에 분모를 직접 검사하지 않고 바로 나눗셈을 수행하여, ZeroDivisionError 메시지가 Python 기본값('division by zero', 'float division by zero')로 나와 명세된 메시지와 달라짐.\n  • float()로 강제 변환을 시도하면서, 변환 가능한 문자열(예: '10')은 예외 없이 계산하고, 변환 불가능한 값은 ValueError를 던져 TypeError 사양과 다르게 동작함.\n  • 잘못된 타입이나 0 분모에서 예외를 던지지 않고 None 또는 0.0을 반환하여 호출 측에서 오류를 감지하기 어렵게 만드는 예외 삼키기(silent failure) 버그.",
   "short_description": "공통 로직인 안전한 나눗셈: 타입 검증·예외 처리 검증 (경계값 포함)"
 }

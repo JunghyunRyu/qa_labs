@@ -41,6 +41,6 @@
   ],
   "difficulty": "Medium",
   "domain": "common",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 여러 규칙 위반이 동시에 발생하는 조합에서\n\n🧠 **로직 검증**\n  • `bank` 결제는 `express` 배송과 결합될 수 없는데\n  • `cash`는 국내 전용이어야 하는데 조건을 반대로 적용하여\n  • `pickup`에서는 `gift_wrap`이 불가해야 하지만\n  • 국제 배송에서 `pickup`이 금지되어야 하지만",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 여러 규칙 위반이 동시에 발생하는 조합에서, 모든 에러를 누적해야 하는데 첫 번째 에러만 반환하도록 구현되어 일부 위반이 누락됨\n\n🧠 **로직 검증**\n  • `bank` 결제는 `express` 배송과 결합될 수 없는데, 해당 규칙을 누락하여 `payment_method='bank'` + `shipping_method='express'` 조합이 통과함\n  • `cash`는 국내 전용이어야 하는데 조건을 반대로 적용하여, 국내 `cash` 주문을 부당하게 실패 처리하거나 국제 `cash`를 통과시키는 케이스가 생김\n  • `pickup`에서는 `gift_wrap`이 불가해야 하지만, 국제 배송일 때만 선물포장을 막고 `pickup` 제약을 누락하여 국내 `pickup` + `gift_wrap=True`가 통과함\n  • 국제 배송에서 `pickup`이 금지되어야 하지만, 해당 제약을 누락하여 `is_international=True` + `shipping_method='pickup'` 조합을 유효하다고 처리함",
   "short_description": "공통 로직인 주문 조합 규칙 검증 함수 테스트:: 경계값·e-commerce 검증"
 }

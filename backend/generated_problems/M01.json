@@ -37,6 +37,6 @@
   "difficulty": "Medium",
   "problem_id": "M01",
   "domain": "saas",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 경계값 처리 오류: local-part 길이가 정확히 64인 유효 이메일까지 잘못 거...\n  • 도메인 검증 불충분: 도메인 라벨의 시작/끝 하이픈 및 빈 라벨(연속된 점)을 제대로...\n\n🔀 **동등 분할**\n  • 동치 분할 누락: local-part에서 연속된 점('\n  • 예외/입력 처리 정책 위반: non-str 입력에서 TypeError를 발생시키지 않...",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 경계값 처리 오류: local-part 길이가 정확히 64인 유효 이메일까지 잘못 거부(off-by-one)합니다. (boundary value analysis)\n  • 도메인 검증 불충분: 도메인 라벨의 시작/끝 하이픈 및 빈 라벨(연속된 점)을 제대로 거부하지 않아 'user@-example.com', 'user@example..com' 같은 케이스가 통과할 수 있습니다. (equivalence partitioning, boundary conditions on labels)\n\n🔀 **동등 분할**\n  • 동치 분할 누락: local-part에서 연속된 점('..')을 허용하여 'a..b@example.com' 같은 입력이 잘못 통과합니다. (equivalence partitioning)\n  • 예외/입력 처리 정책 위반: non-str 입력에서 TypeError를 발생시키지 않고 문자열로 캐스팅하거나, 앞뒤 공백을 strip하여 ' user@example.com ' 같은 입력을 유효로 처리할 수 있습니다. (error handling, input sanitization expectations)",
   "short_description": "SaaS에서 중요한 이메일 주소 유효성 검증: 타입 검증·예외 처리 검증"
 }

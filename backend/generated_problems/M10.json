@@ -37,6 +37,6 @@
   ],
   "difficulty": "Medium",
   "domain": "commerce",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • `in_stock=False` 필터를 적용해야 하는데\n  • 가격 경계값에서 `inclusive`여야 하는데 `exclusive`로 처리한다\n  • 빈 필터(또는 None)에서 전체 상품을 반환해야 하는데\n  • 여러 조건을 AND로 조합해야 하는데",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • `in_stock=False` 필터를 적용해야 하는데, False인 경우를 필터 미지정처럼 취급하여 재고 여부를 필터링하지 않는다. 단일 조건과 다중 조건 조합에서 결과가 과다하게 나온다.\n  • 가격 경계값에서 `inclusive`여야 하는데 `exclusive`로 처리한다. 예를 들어 price가 price_min과 같거나 price_max와 같은 상품이 누락된다. `boundary value`와 다중 조건 조합에서 잘 드러난다.\n  • 빈 필터(또는 None)에서 전체 상품을 반환해야 하는데, 빈 리스트를 반환한다. 빈 상품 리스트와의 조합에서도 오동작이 숨을 수 있어 `equivalence partition` 관점 테스트가 필요하다.\n  • 여러 조건을 AND로 조합해야 하는데, 일부 조건을 OR처럼 처리하여 하나라도 맞으면 통과한다. `combinatorial testing`로 다중 조건 조합을 만들지 않으면 놓치기 쉽다.",
   "short_description": "커머스에서 자주 쓰는 상품 검색 필터 조합: 타입 검증·필터 검증"
 }

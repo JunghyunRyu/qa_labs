@@ -41,6 +41,6 @@
   ],
   "difficulty": "Hard",
   "domain": "fintech",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 입력 검증 단계에서 quantity==0을 허용하고\n\n⚠️ **예외 처리**\n  • 내부 데이터 이상(예: user['balance'] 타입 불일치)을 Validatio...\n  • 데이터 조회 단계에서 존재하지 않는 user_id/item_id에 대해 NotFoun...\n  • 비즈니스 규칙 위반 중 재고 부족과 잔액 부족을 NotFoundError로 잘못 매핑...\n\n🧠 **로직 검증**\n  • 성공 경로에서 inventory_db의 stock을 감소시키는 부수효과가 있어",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • 입력 검증 단계에서 quantity==0을 허용하고, 음수일 때만 ValidationError를 발생시켜 경계값 테스트에서 실패한다.\n\n⚠️ **예외 처리**\n  • 내부 데이터 이상(예: user['balance'] 타입 불일치)을 ValidationError로 삼켜버려, 원래 의도한 내부 예외 전파가 이루어지지 않는다.\n  • 데이터 조회 단계에서 존재하지 않는 user_id/item_id에 대해 NotFoundError 대신 ValidationError를 던져 계층형 예외 구분 테스트에서 실패한다.\n  • 비즈니스 규칙 위반 중 재고 부족과 잔액 부족을 NotFoundError로 잘못 매핑하여 예외 체인 구분이 무너진다.\n\n🧠 **로직 검증**\n  • 성공 경로에서 inventory_db의 stock을 감소시키는 부수효과가 있어, 다중 호출/상태 의존 테스트에서 실패한다.",
   "short_description": "핀테크에서 자주 쓰는 계층형 예외 처리 주문 처리: 예외 처리·타입 검증 검증"
 }

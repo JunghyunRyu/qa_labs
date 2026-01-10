@@ -33,6 +33,6 @@
   ],
   "difficulty": "Easy",
   "domain": "saas",
-  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • Off-by-one 오류: page를 0-based로 취급하여 page=1일 때 of...\n  • 경계값 처리 버그: page=0을 허용하여 (0\n\n🔀 **동등 분할**\n  • 입력 검증 버그: page_size=0 또는 음수를 예외로 처리하지 않고 (page-...\n\n🧠 **로직 검증**\n  • 결과 포맷/의미 버그: 반환 순서를 (limit",
+  "summary": "🎯 **이 문제에서 검증할 테스트 포인트**\n\n📏 **경계값 분석**\n  • Off-by-one 오류: page를 0-based로 취급하여 page=1일 때 offset이 page_size로 계산됨 (첫 페이지가 밀림).\n  • 경계값 처리 버그: page=0을 허용하여 (0, page_size)를 반환함. 실제 요구사항에서는 page는 1 이상이어야 함.\n\n🔀 **동등 분할**\n  • 입력 검증 버그: page_size=0 또는 음수를 예외로 처리하지 않고 (page-1)*page_size, page_size를 그대로 반환하여 limit이 0/음수가 될 수 있음.\n\n🧠 **로직 검증**\n  • 결과 포맷/의미 버그: 반환 순서를 (limit, offset)으로 뒤바꿔 반환함. 작은 값에서는 테스트가 없으면 놓치기 쉬움.",
   "short_description": "SaaS에서 중요한 페이지네이션 / 계산: 오프바이원·예외 처리 검증"
 }
