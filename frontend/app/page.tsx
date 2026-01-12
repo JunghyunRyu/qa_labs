@@ -481,7 +481,7 @@ export default function Home() {
           {/* CTA 버튼 그룹 */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
-              href="/login"
+              href="/auth/login"
               className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-500 shadow-lg shadow-blue-600/25 transition-all hover:-translate-y-1 w-full sm:w-auto overflow-hidden"
             >
               {/* 배경 그라데이션 Hover 효과 */}
