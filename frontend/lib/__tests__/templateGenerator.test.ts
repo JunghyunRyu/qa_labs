@@ -243,17 +243,18 @@ describe("generateTestTemplate", () => {
     ...overrides,
   });
 
-  it("should generate template with problem title", () => {
+  it("should generate template with step sections", () => {
     const problem = createMockProblem();
     const template = generateTestTemplate(problem);
-    expect(template).toContain("# 테스트 문제");
+    expect(template).toContain("# Step 1: 기본 동작 테스트");
+    expect(template).toContain("# Step 2: 경계값 테스트");
   });
 
-  it("should include correct mutant count", () => {
+  it("should include test functions", () => {
     const problem = createMockProblem();
     const template = generateTestTemplate(problem);
-    expect(template).toContain("이 문제에는 3개의 버그가 숨어 있습니다");
-    expect(template).toContain("/ 3) × 100");
+    expect(template).toContain("def test_basic():");
+    expect(template).toContain("def test_edge_cases():");
   });
 
   it("should include function import statement", () => {
@@ -268,23 +269,23 @@ describe("generateTestTemplate", () => {
     expect(template).toContain("assert add(1, 2) == 3");
   });
 
-  it("should include hints as comments", () => {
+  it("should include edge case guidance", () => {
     const problem = createMockProblem();
     const template = generateTestTemplate(problem);
-    expect(template).toContain("음수를 테스트하세요");
+    expect(template).toContain("0, 빈 값, 최대/최소값");
   });
 
-  it("should handle zero buggy implementations", () => {
+  it("should handle zero buggy implementations gracefully", () => {
     const problem = createMockProblem({ buggy_implementations: [] });
     const template = generateTestTemplate(problem);
-    expect(template).toContain("이 문제에는 0개의 버그가 숨어 있습니다");
+    expect(template).toContain("def test_basic():");
   });
 
-  it("should handle missing buggy_implementations", () => {
+  it("should handle missing buggy_implementations gracefully", () => {
     const problem = createMockProblem();
     delete (problem as Partial<Problem>).buggy_implementations;
     const template = generateTestTemplate(problem);
-    expect(template).toContain("이 문제에는 0개의 버그가 숨어 있습니다");
+    expect(template).toContain("def test_basic():");
   });
 
   it("should include exception test section when exceptions mentioned", () => {
