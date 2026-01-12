@@ -19,14 +19,16 @@ import TokenBalance from "./TokenBalance";
 
 // 홈 variant 메뉴 항목
 const homeNavItems = [
-  { label: "문제 보기", href: "/problems", isAnchor: false },
-  { label: "진행 방식", href: "/#how-it-works", anchor: "how-it-works", isAnchor: true },
-  { label: "시나리오", href: "/#scenario-showcase", anchor: "scenario-showcase", isAnchor: true },
+  { label: "전체 문제", href: "/problems", isAnchor: false },
+  { label: "가이드", href: "/#how-it-works", anchor: "how-it-works", isAnchor: true },
+  { label: "실전 예제", href: "/#scenario-showcase", anchor: "scenario-showcase", isAnchor: true },
+  { label: "AI Copilot", href: "/#ai-features", anchor: "ai-features", isAnchor: true, isAI: true },
 ];
 
 // 앱 variant 메뉴 항목
 const appNavItems = [
-  { label: "문제 보기", href: "/problems" },
+  { label: "전체 문제", href: "/problems" },
+  { label: "AI Copilot", href: "/ai", isAI: true },
 ];
 
 // 로그인 사용자 전용 메뉴 항목
@@ -128,18 +130,39 @@ export default function Header() {
         {/* Navigation */}
         <nav className="flex flex-1 items-center space-x-4 sm:space-x-6 text-sm font-medium">
           {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={
-                "isAnchor" in item && item.isAnchor && "anchor" in item
-                  ? (e) => handleAnchorClick(e, item.anchor as string)
-                  : undefined
-              }
-              className="transition-colors hover:text-[var(--accent)] text-[var(--muted)] whitespace-nowrap"
-            >
-              {item.label}
-            </Link>
+            "isAI" in item && item.isAI ? (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={
+                  "isAnchor" in item && item.isAnchor && "anchor" in item
+                    ? (e) => handleAnchorClick(e, item.anchor as string)
+                    : undefined
+                }
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all hover:bg-purple-50 dark:hover:bg-purple-950/30 group whitespace-nowrap"
+              >
+                <span className="text-purple-500 group-hover:animate-pulse">✨</span>
+                <span className="font-semibold text-purple-600 dark:text-purple-400">
+                  {item.label}
+                </span>
+                <span className="ml-0.5 px-1.5 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full">
+                  BETA
+                </span>
+              </Link>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={
+                  "isAnchor" in item && item.isAnchor && "anchor" in item
+                    ? (e) => handleAnchorClick(e, item.anchor as string)
+                    : undefined
+                }
+                className="transition-colors hover:text-[var(--accent)] text-[var(--muted)] whitespace-nowrap"
+              >
+                {item.label}
+              </Link>
+            )
           ))}
         </nav>
 

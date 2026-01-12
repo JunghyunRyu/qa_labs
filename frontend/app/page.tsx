@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import HowItWorksSection from "@/components/how-it-works/HowItWorksSection";
 import HeroResultPanel from "@/components/hero/HeroResultPanel";
 import ScenarioShowcase from "@/components/showcase/ScenarioShowcase";
+import AITeaserSection from "@/components/home/AITeaserSection";
 
 export const metadata: Metadata = {
   title: "QA Arena - 버그 탐지율 챌린지",
@@ -22,48 +22,6 @@ const domains = [
   { key: "saas", label: "SaaS", title: "권한/요금제/쿼터", hint: "권한 · 요금제 · 쿼터 · 레이트리밋" },
   { key: "platform", label: "플랫폼", title: "상태전이/복구/장애", hint: "상태전이 · 재시도 · 서킷브레이커" },
   { key: "content", label: "콘텐츠", title: "문자열/정규화/발송", hint: "길이 · 정규화 · 금칙어 · 발송제한" },
-];
-
-// Target Audience 데이터
-const audiences = [
-  {
-    title: "QA 엔지니어",
-    desc: "테스트 자동화 스킬을 객관적으로 검증하고 싶은 현업 전문가",
-    iconBg: "bg-blue-100 dark:bg-blue-900/30",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    imageSrc: "/images/audience/qa-engineer.webp",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    title: "SDET 지망생",
-    desc: "pytest 기반 테스트 설계를 실전처럼 연습하고 싶은 취준생",
-    iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
-    iconColor: "text-emerald-600 dark:text-emerald-400",
-    imageSrc: "/images/audience/sdet.webp",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M12 14l9-5-9-5-9 5 9 5z" />
-        <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-      </svg>
-    ),
-  },
-  {
-    title: "개발팀 리드",
-    desc: "팀원의 QA 역량을 객관적으로 평가하고 싶은 매니저",
-    iconBg: "bg-purple-100 dark:bg-purple-900/30",
-    iconColor: "text-purple-600 dark:text-purple-400",
-    imageSrc: "/images/audience/lead.webp",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-  },
 ];
 
 // Showcase 데이터 (실제 DB 문제와 연결)
@@ -258,318 +216,310 @@ const showcase = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col">
-      {/* Hero Section - 2컬럼 레이아웃 */}
-      <section className="relative min-h-[70svh] flex items-center justify-center overflow-hidden py-8 lg:py-12">
-        {/* Background Image */}
-        <Image
-          src="/images/hero-background.png"
-          alt="Hero background"
-          fill
-          className="object-cover"
-          priority
-        />
-        {/* Overlay - 전체적으로 어둡게 (박스 없이 텍스트 가독성 확보) */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+    <div className="flex flex-col min-h-screen bg-slate-950 text-white selection:bg-violet-500/30">
 
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6">
-          {/* 2컬럼 그리드: Desktop (좌: 카피/CTA, 우: ResultPanel) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* 좌측: 카피 + CTA */}
-            <div className="text-center lg:text-left">
-              <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] xl:text-5xl font-bold text-white drop-shadow-lg hero-headline leading-tight">
-                당신의 테스트는<br className="hidden sm:block" />{' '}
-                <span className="highlight">버그를 잡을 수 있습니까?</span>
+      {/* ========================================
+          1. Hero Section: Dark Theme + Neon Gradient
+          ======================================== */}
+      <section className="relative min-h-[85svh] flex items-center justify-center overflow-hidden py-20">
+        {/* 배경 효과: Grid 패턴 */}
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+            backgroundSize: "60px 60px",
+          }}
+        />
+        {/* Glow 효과 */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+            {/* 좌측: Copywriting & CTA */}
+            <div className="text-center lg:text-left space-y-8">
+              {/* Live Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/50 border border-slate-700 backdrop-blur-sm mx-auto lg:mx-0">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-xs font-medium text-slate-300">🚀 Now Running: Mutation Analysis Engine</span>
+              </div>
+
+              {/* Main Title */}
+              <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight break-keep">
+                <span className="block text-white mb-2">당신의 테스트 방패는</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">
+                  얼마나 촘촘합니까?
+                </span>
               </h1>
-              <p className="mt-5 text-base sm:text-lg text-white/90 max-w-xl lg:max-w-none">
-                단순 기능 통과(Pass)를 넘어, 테스트 케이스의 견고함(Robustness)을 검증합니다.
+
+              {/* Subtitle */}
+              <p className="text-lg lg:text-xl text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed mt-6">
+                코드에 <strong className="text-slate-200">수백 개의 인공 버그(Mutants)</strong>를 심어 빈틈을 파고듭니다.<br className="hidden lg:block" />
+                당신의 테스트가 이 공격을 막아낼 수 있는지 지금 검증하세요.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link
+                  href="/problems"
+                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-blue-600 rounded-xl hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:ring-offset-slate-900"
+                >
+                  <span>챌린지 시작하기</span>
+                  <svg className="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+                <Link
+                  href="/ai"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-bold text-slate-300 transition-all duration-200 bg-slate-800/50 border border-slate-700 rounded-xl hover:bg-slate-800 hover:text-white"
+                >
+                  <span>AI Copilot 알아보기</span>
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full">BETA</span>
+                </Link>
+              </div>
+
+              {/* Bonus Info */}
+              <p className="text-sm text-slate-500">
+                🎁 가입 즉시 <span className="text-blue-400 font-semibold">AI 분석 토큰 50개</span> 무료 제공
               </p>
             </div>
 
-            {/* 우측: HeroResultPanel */}
+            {/* 우측: HeroResultPanel (동적 애니메이션 버전) */}
             <div className="flex justify-center lg:justify-end">
               <HeroResultPanel />
-            </div>
-          </div>
-
-          {/* 하단: 단순화된 CTA */}
-          <div className="mt-10 lg:mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/problems"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-500/30 hover:scale-[1.02]"
-            >
-              3분 만에 실력 측정하기
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
-            <div className="flex flex-col items-center sm:items-start text-sm">
-              <span className="text-slate-400">
-                로그인 없이 바로 시작
-              </span>
-              <span className="font-semibold text-blue-200">
-                🎁 가입 시 <span className="text-white">AI 분석 월 50회</span> 무료
-              </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Proof Points Section */}
-      <section id="why" className="section-base bg-[var(--surface)] relative scroll-mt-16">
-        <div className="section-container">
-          {/* Section Header */}
-          <div className="section-header">
-            <h2 className="section-title break-keep">
+      {/* ========================================
+          2. AI Teaser Section: "The Missing Link"
+          ======================================== */}
+      <section id="ai-features" className="scroll-mt-16">
+        <AITeaserSection />
+      </section>
+
+      {/* ========================================
+          3. Proof Points Section (Dark Mode)
+          ======================================== */}
+      <section className="py-24 bg-slate-950">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
               테스트 통과 ≠ 버그 없음
             </h2>
-            <p className="section-subtitle break-keep">
+            <p className="text-slate-400 max-w-2xl mx-auto">
               테스트가 초록불(Pass)이라고 해서, 버그가 없는 것은 아닙니다.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1: 버그 탐지율 채점 */}
-            <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                {/* 타겟 + 버그 아이콘 */}
-                <svg
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  {/* 타겟 원 */}
-                  <circle cx="12" cy="12" r="9" strokeWidth={1.5} />
-                  <circle cx="12" cy="12" r="5" strokeWidth={1.5} />
-
-                  {/* 십자선 */}
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M12 3v4M12 17v4M3 12h4M17 12h4"
-                  />
-
-                  {/* 버그 몸통 */}
-                  <ellipse cx="12" cy="12" rx="2" ry="2.5" strokeWidth={1.5} fill="currentColor" />
-
-                  {/* 버그 더듬이 */}
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M10.5 10l-1-1.5M13.5 10l1-1.5"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">가짜 커버리지 판별</h3>
-              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
-                단순 커버리지가 아닙니다.{' '}
-                <span className="font-semibold text-[var(--accent)]">버그 탐지율</span>로 진짜 검증 강도를 측정합니다.
+            {/* Card 1 */}
+            <div className="group p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-blue-900/30 rounded-xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">🎯</div>
+              <h3 className="text-xl font-bold text-white mb-3">가짜 커버리지 판별</h3>
+              <p className="text-slate-400 leading-relaxed">
+                단순 커버리지가 아닙니다.
+                <span className="text-blue-400 font-semibold"> 버그 탐지율</span>로 진짜 검증 강도를 측정합니다.
               </p>
             </div>
 
-            {/* Card 2: 로컬 설정 Zero */}
-            <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                {/* 브라우저 + 플레이 아이콘 */}
-                <svg
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  {/* 브라우저 창 */}
-                  <rect x="3" y="4" width="18" height="16" rx="2" strokeWidth={1.5} />
-
-                  {/* 브라우저 상단 바 */}
-                  <path strokeWidth={1.5} d="M3 8h18" />
-
-                  {/* 상단 점들 */}
-                  <circle cx="6" cy="6" r="0.8" fill="currentColor" />
-                  <circle cx="9" cy="6" r="0.8" fill="currentColor" />
-
-                  {/* 플레이 버튼 (fill-only) */}
-                  <path fill="currentColor" d="M10 11v6l5-3-5-3z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">로컬 설정 Zero</h3>
-              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
-                복잡한 로컬 환경 탓하지 마세요.{' '}
-                <span className="font-semibold text-[var(--accent)]">0초 만에</span>{' '}
-                격리된 환경에서 순수 로직을 검증합니다.
+            {/* Card 2 */}
+            <div className="group p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-emerald-900/30 rounded-xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">⚡</div>
+              <h3 className="text-xl font-bold text-white mb-3">로컬 설정 Zero</h3>
+              <p className="text-slate-400 leading-relaxed">
+                복잡한 로컬 환경 탓하지 마세요.
+                <span className="text-emerald-400 font-semibold"> 0초 만에</span> 격리된 환경에서 순수 로직을 검증합니다.
               </p>
             </div>
 
-            {/* Card 3: 테스트 사각지대 분석 */}
-            <div className="card-base p-8 text-center min-h-[280px] flex flex-col items-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                {/* 문서 + 돋보기 + AI 노드 아이콘 */}
-                <svg
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  {/* 문서 */}
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 4h10l4 4v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
-                  />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 4v4h4" />
-
-                  {/* 문서 라인 */}
-                  <path strokeLinecap="round" strokeWidth={1.5} d="M7 9h4" />
-                  <path strokeLinecap="round" strokeWidth={1.5} d="M7 12h6" />
-
-                  {/* 돋보기 */}
-                  <circle cx="17" cy="17" r="3" strokeWidth={1.5} />
-                  <path strokeLinecap="round" strokeWidth={1.5} d="M19.5 19.5L22 22" />
-
-                  {/* AI 노드 점들 */}
-                  <circle cx="8" cy="16" r="1" fill="currentColor" />
-                  <circle cx="12" cy="16" r="1" fill="currentColor" />
-
-                  {/* 노드 연결 */}
-                  <path strokeWidth={1.5} d="M9 16h2" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">테스트 사각지대 분석</h3>
-              <p className="card-desc text-sm text-[var(--text-secondary)] leading-relaxed px-2">
-                AI가 당신이 놓친{' '}
-                <span className="card-desc font-semibold text-[var(--accent)] whitespace-nowrap">
-                  사각지대(Blind Spots)
-                </span>
-                를 찾아내고, 보완할 엣지 케이스를 제안합니다.
+            {/* Card 3 */}
+            <div className="group p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-violet-500/50 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-violet-900/30 rounded-xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">🤖</div>
+              <h3 className="text-xl font-bold text-white mb-3">테스트 사각지대 분석</h3>
+              <p className="text-slate-400 leading-relaxed">
+                AI가 당신이 놓친
+                <span className="text-violet-400 font-semibold"> 사각지대(Blind Spots)</span>를 찾아내고, 보완할 엣지 케이스를 제안합니다.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section - 3단계 인터랙티브 설명 */}
-      <HowItWorksSection />
+      {/* ========================================
+          4. How It Works Section
+          ======================================== */}
+      <section id="how-it-works" className="py-24 bg-slate-900/50 scroll-mt-16">
+        <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">어떻게 진행되나요?</h2>
+          <p className="text-slate-400">단 3단계로 당신의 테스트 역량을 증명하세요.</p>
+        </div>
+        <HowItWorksSection />
+      </section>
 
-      {/* Showcase Section - 실제 시나리오 미리보기 */}
-      <ScenarioShowcase
-        domains={domains.map((d) => ({ key: d.key, label: d.label }))}
-        problems={showcase}
-      />
-
-      {/* Target Audience Section */}
-      <section className="section-base bg-[var(--surface)]">
-        <div className="section-container">
-          <div className="section-header">
-            <h2 className="section-title">
-              이런 분들에게 필수입니다
-            </h2>
-            <p className="section-subtitle">
-              QA Arena는 테스트 역량을 키우고 싶은 모든 분을 위해 만들어졌습니다
-            </p>
+      {/* ========================================
+          5. Showcase Section
+          ======================================== */}
+      <section id="scenario-showcase" className="py-24 bg-slate-950 scroll-mt-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">운영에서 터지는 실제 시나리오</h2>
+            <p className="text-slate-400">평범한 테스트는 통과하지만, 운영에서는 사고가 나는 케이스들을 모았습니다.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {audiences.map((a) => (
-              <div
-                key={a.title}
-                className="card-base group relative overflow-hidden !p-0"
-              >
-                {/* Image area */}
-                <div className="relative h-44">
-                  <Image
-                    src={a.imageSrc}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    priority={false}
-                  />
-                  {/* readability overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-white/90 dark:to-slate-800/90" />
-                </div>
+          <ScenarioShowcase
+            domains={domains.map((d) => ({ key: d.key, label: d.label }))}
+            problems={showcase}
+          />
+        </div>
+      </section>
 
-                {/* Icon badge (overlap) */}
-                <div className="relative -mt-7 flex justify-center">
-                  <div className={`h-14 w-14 rounded-full ${a.iconBg} shadow ring-1 ring-black/5 grid place-items-center`}>
-                    <div className={a.iconColor}>{a.icon}</div>
-                  </div>
-                </div>
+      {/* ========================================
+          6. Target Audience Section
+          ======================================== */}
+      <section className="py-24 bg-slate-900/50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-4">이런 분들에게 필수입니다</h2>
+            <p className="text-slate-400">QA Arena는 실전 역량을 키우고 싶은 엔지니어를 위해 만들어졌습니다.</p>
+          </div>
 
-                {/* Content */}
-                <div className="px-6 pb-7 pt-4 text-center">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{a.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{a.desc}</p>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <div className="group p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-blue-900/20 rounded-xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">🔍</div>
+              <h3 className="text-xl font-bold text-white mb-3">QA 엔지니어</h3>
+              <p className="text-slate-400 leading-relaxed">
+                단순 기능 점검을 넘어, 코드 레벨에서 결함을 찾아내는
+                <span className="text-blue-400"> SDET 역량</span>을 증명하고 싶으신가요?
+              </p>
+            </div>
 
-                {/* subtle hover sheen (optional) */}
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100">
-                  <div className="absolute -left-24 top-10 h-24 w-40 rotate-12 bg-white/20 blur-2xl" />
-                </div>
-              </div>
-            ))}
+            {/* Card 2 */}
+            <div className="group p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-emerald-900/20 rounded-xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">🎓</div>
+              <h3 className="text-xl font-bold text-white mb-3">취업/이직 준비생</h3>
+              <p className="text-slate-400 leading-relaxed">
+                &quot;테스트 짤 줄 압니다&quot;라고 말만 하지 마세요.
+                객관적인 <span className="text-emerald-400">지표와 포트폴리오</span>로 증명하세요.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="group p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-purple-900/20 rounded-xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">👥</div>
+              <h3 className="text-xl font-bold text-white mb-3">개발 팀 리드</h3>
+              <p className="text-slate-400 leading-relaxed">
+                팀원들의 테스트 코드 품질이 걱정되시나요?
+                실전 같은 시나리오로 <span className="text-purple-400">팀 전체의 QA 수준</span>을 높이세요.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-{/* Final CTA Section */}
-<section className="section-base relative overflow-hidden bg-[var(--background)]">
-  {/* subtle brand glow - 라이트 모드만 */}
-  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/15 via-transparent to-blue-600/10 dark:from-transparent dark:via-transparent dark:to-transparent" />
-  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.18),transparent_55%)] dark:bg-transparent" />
+      {/* ========================================
+          7. Footer CTA: 회원가입 유도 강화형
+          ======================================== */}
+      <section className="py-24 relative overflow-hidden bg-slate-950 border-t border-slate-900">
+        {/* 배경 효과 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-blue-900/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-  <div className="section-container relative !max-w-4xl text-center py-12 sm:py-14">
-    <h2 className="section-title mb-4 text-slate-900 dark:text-white">
-      QA 역량, 운영에서 터지기 전에 잡아내세요
-    </h2>
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+          {/* 메인 카피 */}
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight break-keep">
+            로그인 없이도 풀 수 있지만,
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">
+              당신의 성장은 기록되어야 합니다.
+            </span>
+          </h2>
+          <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">
+            일회성 문제 풀이로 끝내지 마세요.
+            <br />
+            회원이 되어 <strong className="text-white">AI Copilot</strong>과 함께 당신만의{" "}
+            <strong className="text-white">QA 포트폴리오</strong>를 완성하세요.
+          </p>
 
-    <p className="mb-8 max-w-xl mx-auto text-[var(--text-secondary)]">
-      3분 안에 첫 문제를 풀고, 테스트 품질 피드백을 바로 받아볼 수 있습니다.
-    </p>
+          {/* 회원 혜택 3단 콤보 (Benefit Grid) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-left max-w-3xl mx-auto">
+            <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl flex items-center gap-4 hover:border-blue-500/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-2xl shrink-0">
+                ⚡
+              </div>
+              <div>
+                <div className="text-white font-bold">월 50 토큰 무료</div>
+                <div className="text-sm text-slate-500">AI 심층 분석 & 코칭</div>
+              </div>
+            </div>
+            <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl flex items-center gap-4 hover:border-emerald-500/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-2xl shrink-0">
+                📊
+              </div>
+              <div>
+                <div className="text-white font-bold">성장 데이터 시각화</div>
+                <div className="text-sm text-slate-500">영역별 강점/약점 분석</div>
+              </div>
+            </div>
+            <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl flex items-center gap-4 hover:border-purple-500/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-2xl shrink-0">
+                💾
+              </div>
+              <div>
+                <div className="text-white font-bold">풀이 기록 영구 저장</div>
+                <div className="text-sm text-slate-500">나만의 오답노트 생성</div>
+              </div>
+            </div>
+          </div>
 
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-      <Link
-        href="/problems"
-        className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
-                   bg-blue-600 text-white shadow-lg transition
-                   hover:bg-blue-700 hover:shadow-xl
-                   dark:bg-[#238636] dark:hover:bg-[#2ea043]
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-[#0d1117]"
-      >
-        첫 문제 풀러 가기
-      </Link>
+          {/* CTA 버튼 그룹 */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              href="/login"
+              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-500 shadow-lg shadow-blue-600/25 transition-all hover:-translate-y-1 w-full sm:w-auto overflow-hidden"
+            >
+              {/* 배경 그라데이션 Hover 효과 */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      <Link
-        href="/#scenario-showcase"
-        className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-semibold text-lg
-                   bg-white text-slate-900 border border-slate-200 shadow-sm transition
-                   hover:bg-slate-50
-                   dark:bg-[#21262d] text-[var(--foreground)] dark:border-[#30363d] dark:hover:bg-[#30363d] dark:hover:border-[#484f58]
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-[#0d1117]"
-      >
-        시나리오 둘러보기
-      </Link>
-    </div>
+              <span className="relative flex items-center gap-3">
+                <span>GitHub / Google로 3초 만에 시작</span>
+                {/* 아이콘 그룹 */}
+                <div className="flex items-center gap-1.5 pl-2 border-l border-white/20">
+                  {/* GitHub Icon */}
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                  </svg>
+                  {/* Google Icon */}
+                  <svg className="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  </svg>
+                </div>
+              </span>
+            </Link>
 
-    <div className="mt-6 flex flex-col items-center text-sm">
-      <span className="text-[var(--text-muted)]">
-        회원가입 없이 바로 시작
-      </span>
-      <span className="font-semibold text-blue-400">
-        🎁 가입 시 <span className="text-[var(--foreground)]">AI 분석 월 50회</span> 무료
-      </span>
-    </div>
-  </div>
-</section>
+            <Link
+              href="/problems"
+              className="px-8 py-4 text-lg font-bold text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
+            >
+              일단 구경만 할게요
+            </Link>
+          </div>
+
+          <p className="mt-6 text-xs text-slate-600">
+            * 이메일 스팸 없음. 오직 로그인 식별용으로만 사용됩니다.
+          </p>
+        </div>
+      </section>
+
     </div>
   );
 }

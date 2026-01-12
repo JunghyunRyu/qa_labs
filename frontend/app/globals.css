@@ -275,3 +275,16 @@ body {
 .dark .scrollbar-slim::-webkit-scrollbar-thumb:hover {
   background-color: rgba(100, 100, 100, 0.7);
 }
+
+/* ========================================
+   Floating Animation - AI Hero Section
+   ======================================== */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

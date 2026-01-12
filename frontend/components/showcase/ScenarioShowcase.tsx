@@ -1,20 +1,18 @@
 "use client";
 
 /**
- * ScenarioShowcase Component
+ * ScenarioShowcase Component (Dark Theme Version)
  *
- * 실제 시나리오 미리보기 섹션.
- * 도메인별 필터 칩으로 문제를 분류하여 표시합니다.
+ * 실제 시나리오 미리보기 - 필터 버튼과 카드 그리드만 렌더링.
+ * 제목/설명은 부모(page.tsx)에서 제공하므로 여기서는 생략.
  */
 
 import { useState } from "react";
 import Link from "next/link";
-import { Clock } from "lucide-react";
 
 // ============================================================
 // Types
 // ============================================================
-
 interface Domain {
   key: string;
   label: string;
@@ -37,185 +35,131 @@ interface ScenarioShowcaseProps {
 }
 
 // ============================================================
-// Sub-Components
-// ============================================================
-
-function DomainFilterChip({
-  domain,
-  isSelected,
-  onClick,
-}: {
-  domain: Domain;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium rounded-full border transition-all
-        ${
-          isSelected
-            ? "bg-blue-500/30 border-blue-400/50 text-white"
-            : "text-slate-300 bg-slate-800/50 border-slate-600 hover:bg-slate-700/50 hover:border-slate-500 hover:text-white"
-        }`}
-    >
-      {domain.label}
-    </button>
-  );
-}
-
-function ProblemCard({ problem }: { problem: ShowcaseProblem }) {
-  const difficultyLabel =
-    problem.difficulty === "Easy"
-      ? "초급"
-      : problem.difficulty === "Medium"
-      ? "중급"
-      : "고급";
-
-  const difficultyClass =
-    problem.difficulty === "Easy"
-      ? "bg-green-500/20 text-green-400"
-      : problem.difficulty === "Medium"
-      ? "bg-yellow-500/20 text-yellow-400"
-      : "bg-red-500/20 text-red-400";
-
-  // 난이도별 예상 소요 시간
-  const estimatedTime =
-    problem.difficulty === "Easy"
-      ? "~3분"
-      : problem.difficulty === "Medium"
-      ? "~5분"
-      : "~8분";
-
-  return (
-    <Link
-      href={problem.href}
-      className="card-dark group flex flex-col h-full"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">{problem.emoji}</span>
-          <span className="rounded-full border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-medium text-slate-200 capitalize">
-            {problem.domain}
-          </span>
-        </div>
-        <div className="text-right text-xs">
-          <div className="flex items-center justify-end gap-2">
-            <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${difficultyClass}`}>
-              {difficultyLabel}
-            </span>
-            <span className="inline-flex items-center gap-1 rounded px-2 py-1 bg-blue-500/20 text-blue-400 font-medium">
-              <Clock className="w-3 h-3" />
-              {estimatedTime}
-            </span>
-          </div>
-          <div className="mt-1.5 text-slate-400">🐞 숨은 버그: {problem.mutants}개</div>
-        </div>
-      </div>
-
-      <h3 className="mt-4 text-lg font-semibold text-white group-hover:text-slate-100">
-        {problem.title}
-      </h3>
-      <p className="mt-2 text-sm leading-6 text-slate-300">{problem.scenario}</p>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {problem.badges.map((b) => (
-          <span
-            key={b}
-            className="rounded-full bg-slate-700 px-3 py-1 text-xs font-medium text-slate-300"
-          >
-            {b}
-          </span>
-        ))}
-      </div>
-
-      <div className="mt-auto pt-6 text-sm font-bold text-blue-400 group-hover:text-blue-300 transition-colors inline-flex items-center gap-1">
-        도전하기
-        <svg
-          className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
-    </Link>
-  );
-}
-
-// ============================================================
 // Main Component
 // ============================================================
-
 export default function ScenarioShowcase({ domains, problems }: ScenarioShowcaseProps) {
-  const [selectedDomain, setSelectedDomain] = useState("common");
+  const [activeDomain, setActiveDomain] = useState("common");
 
+  // 필터링 로직 (선택된 도메인의 문제만, 최대 3개)
   const filteredProblems = problems
-    .filter((p) => p.domain === selectedDomain)
+    .filter((p) => p.domain === activeDomain)
     .slice(0, 3);
 
   return (
-    <section
-      id="scenario-showcase"
-      className="section-base bg-slate-900 dark:bg-slate-950 relative overflow-hidden scroll-mt-24"
-    >
-      {/* Grid Pattern Overlay */}
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 60%),
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: "100% 100%, 40px 40px, 40px 40px",
-        }}
-      />
-      <div className="section-container relative z-10">
-        <div className="section-header">
-          <h2 className="section-title !text-white">
-            운영에서 터지는 실제 시나리오
-          </h2>
-          <p className="section-subtitle !text-slate-300">
-            평범한 테스트는 통과합니다. 하지만 운영에서는 사고가 납니다.
-            <br className="hidden sm:block" />
-            실제 현업에서 자주 발생하는 시나리오를 미리 확인해보세요.
-          </p>
-        </div>
+    <div className="w-full">
 
-        {/* Domain Filter Chips */}
-        <div className="flex flex-wrap justify-center gap-3 mb-10">
-          {domains.map((d) => (
-            <DomainFilterChip
-              key={d.key}
-              domain={d}
-              isSelected={d.key === selectedDomain}
-              onClick={() => setSelectedDomain(d.key)}
-            />
-          ))}
-        </div>
-
-        {/* Problem Cards */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredProblems.map((p) => (
-            <ProblemCard key={p.href} problem={p} />
-          ))}
-        </div>
-
-        {/* CTA 버튼 */}
-        <div className="mt-10 flex items-center justify-center">
-          <Link
-            href="/problems"
-            className="inline-flex items-center justify-center rounded-full border border-blue-400/50 bg-blue-500/20 px-6 py-3 text-sm font-medium text-blue-300 hover:bg-blue-500/30 hover:border-blue-400 transition-colors"
+      {/* 1. 도메인 필터 (Pill Shape Tabs) */}
+      <div className="flex flex-wrap justify-center gap-3 mb-12">
+        {domains.map((domain) => (
+          <button
+            key={domain.key}
+            onClick={() => setActiveDomain(domain.key)}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 border ${
+              activeDomain === domain.key
+                ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/30"
+                : "bg-slate-900 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            }`}
           >
-            전체 문제 보기
-            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
+            {domain.label}
+          </button>
+        ))}
       </div>
-    </section>
+
+      {/* 2. 문제 카드 그리드 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredProblems.map((problem) => (
+          <Link
+            key={problem.href}
+            href={problem.href}
+            className="group relative block"
+          >
+            {/* Hover Glow Effect */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-violet-500 rounded-2xl opacity-0 group-hover:opacity-30 transition duration-500 blur"></div>
+
+            <div className="relative h-full bg-slate-900/80 border border-slate-800 rounded-2xl p-6 hover:bg-slate-900 transition-all flex flex-col backdrop-blur-sm">
+
+              {/* Card Header */}
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-3xl filter drop-shadow-md">{problem.emoji}</span>
+                <div className="flex gap-2">
+                  <span
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold border ${
+                      problem.difficulty === "Easy"
+                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                        : problem.difficulty === "Medium"
+                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                        : "bg-red-500/20 text-red-300 border-red-500/40"
+                    }`}
+                  >
+                    {problem.difficulty}
+                  </span>
+                  <span className="px-2 py-1 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                    🦠 {problem.mutants}
+                  </span>
+                </div>
+              </div>
+
+              {/* Title & Desc */}
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                {problem.title}
+              </h3>
+              <p className="text-sm text-slate-400 leading-relaxed mb-6 flex-grow">
+                {problem.scenario}
+              </p>
+
+              {/* Footer Badges */}
+              <div className="flex flex-wrap gap-2 mt-auto">
+                {problem.badges.map((badge) => (
+                  <span
+                    key={badge}
+                    className="px-2 py-1 text-[11px] rounded bg-slate-800 text-slate-300 border border-slate-700"
+                  >
+                    {badge}
+                  </span>
+                ))}
+              </div>
+
+              {/* CTA Arrow */}
+              <div className="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
+                <span className="text-sm font-bold text-blue-400 group-hover:text-blue-300 transition-colors">
+                  도전하기
+                </span>
+                <svg
+                  className="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-transform group-hover:translate-x-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* 3. '전체 문제 보기' 링크 */}
+      <div className="mt-12 text-center">
+        <Link
+          href="/problems"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold text-blue-400 border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 hover:border-blue-500/50 transition-all"
+        >
+          전체 문제 라이브러리 탐색하기
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </Link>
+      </div>
+    </div>
   );
 }
