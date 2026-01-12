@@ -150,66 +150,90 @@ def get_db_session():
     return Session()
 
 
-def get_today_start() -> datetime:
-    """오늘 00:00:00 반환 (Asia/Seoul 기준)"""
+def get_date_start(target_date: str = None) -> datetime:
+    """특정 날짜의 00:00:00 반환 (Asia/Seoul 기준)
+
+    Args:
+        target_date: YYYY-MM-DD 형식의 날짜 문자열. None이면 오늘 날짜.
+    """
     from zoneinfo import ZoneInfo
     tz = ZoneInfo("Asia/Seoul")
-    now = datetime.now(tz)
-    return now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    if target_date:
+        # YYYY-MM-DD 형식 파싱
+        year, month, day = map(int, target_date.split("-"))
+        return datetime(year, month, day, 0, 0, 0, tzinfo=tz)
+    else:
+        now = datetime.now(tz)
+        return now.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def get_user_stats(session) -> tuple:
+def get_date_end(target_date: str = None) -> datetime:
+    """특정 날짜의 23:59:59 반환 (Asia/Seoul 기준)"""
+    start = get_date_start(target_date)
+    return start.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+
+def get_user_stats(session, target_date: str = None) -> tuple:
     """사용자 통계"""
-    today = get_today_start()
+    date_start = get_date_start(target_date)
+    date_end = get_date_end(target_date)
 
     total = session.execute(
-        text("SELECT COUNT(*) FROM users")
+        text("SELECT COUNT(*) FROM users WHERE created_at <= :date_end"),
+        {"date_end": date_end}
     ).scalar() or 0
 
-    new_today = session.execute(
-        text("SELECT COUNT(*) FROM users WHERE created_at >= :today"),
-        {"today": today}
+    new_on_date = session.execute(
+        text("SELECT COUNT(*) FROM users WHERE created_at >= :date_start AND created_at <= :date_end"),
+        {"date_start": date_start, "date_end": date_end}
     ).scalar() or 0
 
-    return total, new_today
+    return total, new_on_date
 
 
-def get_submission_stats(session) -> dict:
+def get_submission_stats(session, target_date: str = None) -> dict:
     """제출 통계 (회원/비회원 구분 포함)"""
-    today = get_today_start()
+    date_start = get_date_start(target_date)
+    date_end = get_date_end(target_date)
 
-    # 전체 통계
-    total = session.execute(text("SELECT COUNT(*) FROM submissions")).scalar() or 0
-    today_count = session.execute(
-        text("SELECT COUNT(*) FROM submissions WHERE created_at >= :today"),
-        {"today": today}
+    # 전체 통계 (해당 날짜까지 누적)
+    total = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE created_at <= :date_end"),
+        {"date_end": date_end}
+    ).scalar() or 0
+    on_date_count = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE created_at >= :date_start AND created_at <= :date_end"),
+        {"date_start": date_start, "date_end": date_end}
     ).scalar() or 0
 
     # 회원 제출 (user_id가 있는 경우)
     member_total = session.execute(
-        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NOT NULL")
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NOT NULL AND created_at <= :date_end"),
+        {"date_end": date_end}
     ).scalar() or 0
-    member_today = session.execute(
-        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NOT NULL AND created_at >= :today"),
-        {"today": today}
+    member_on_date = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NOT NULL AND created_at >= :date_start AND created_at <= :date_end"),
+        {"date_start": date_start, "date_end": date_end}
     ).scalar() or 0
 
     # 비회원 제출 (user_id가 없고 anonymous_id가 있는 경우)
     anonymous_total = session.execute(
-        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NULL AND anonymous_id IS NOT NULL")
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NULL AND anonymous_id IS NOT NULL AND created_at <= :date_end"),
+        {"date_end": date_end}
     ).scalar() or 0
-    anonymous_today = session.execute(
-        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NULL AND anonymous_id IS NOT NULL AND created_at >= :today"),
-        {"today": today}
+    anonymous_on_date = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE user_id IS NULL AND anonymous_id IS NOT NULL AND created_at >= :date_start AND created_at <= :date_end"),
+        {"date_start": date_start, "date_end": date_end}
     ).scalar() or 0
 
     return {
         "total": total,
-        "today": today_count,
+        "today": on_date_count,
         "member_total": member_total,
-        "member_today": member_today,
+        "member_today": member_on_date,
         "anonymous_total": anonymous_total,
-        "anonymous_today": anonymous_today,
+        "anonymous_today": anonymous_on_date,
     }
 
 
@@ -270,9 +294,10 @@ def get_problem_failure_rates(session) -> List[ProblemStats]:
     return results
 
 
-def get_token_usage_today(session) -> tuple:
-    """금일 토큰 사용 통계"""
-    today = get_today_start()
+def get_token_usage(session, target_date: str = None) -> tuple:
+    """특정 날짜 토큰 사용 통계"""
+    date_start = get_date_start(target_date)
+    date_end = get_date_end(target_date)
 
     query = text("""
         SELECT
@@ -280,7 +305,7 @@ def get_token_usage_today(session) -> tuple:
             COUNT(*) as count,
             SUM(ABS(amount)) as total_amount
         FROM token_transactions
-        WHERE created_at >= :today AND amount < 0
+        WHERE created_at >= :date_start AND created_at <= :date_end AND amount < 0
         GROUP BY action_type
         ORDER BY total_amount DESC
     """)
@@ -288,7 +313,7 @@ def get_token_usage_today(session) -> tuple:
     results = []
     total_used = 0
 
-    for row in session.execute(query, {"today": today}):
+    for row in session.execute(query, {"date_start": date_start, "date_end": date_end}):
         amount = int(row.total_amount or 0)
         results.append(TokenStats(
             action_type=row.action_type,
@@ -300,41 +325,42 @@ def get_token_usage_today(session) -> tuple:
     return results, total_used
 
 
-def get_judge_stats(session) -> JudgeStats:
+def get_judge_stats(session, target_date: str = None) -> JudgeStats:
     """채점 시스템 통계"""
-    today = get_today_start()
+    date_start = get_date_start(target_date)
+    date_end = get_date_end(target_date)
 
     # 평균 채점 시간 (execution_log에서 추출)
     avg_time_query = text("""
         SELECT AVG((execution_log->>'execution_time')::float) as avg_time
         FROM submissions
-        WHERE created_at >= :today
+        WHERE created_at >= :date_start AND created_at <= :date_end
         AND status IN ('SUCCESS', 'FAILURE')
         AND execution_log IS NOT NULL
         AND execution_log->>'execution_time' IS NOT NULL
     """)
-    avg_time = session.execute(avg_time_query, {"today": today}).scalar() or 0.0
+    avg_time = session.execute(avg_time_query, {"date_start": date_start, "date_end": date_end}).scalar() or 0.0
 
     # 타임아웃 발생 수 (ERROR 상태 + timeout 키워드)
     timeout_query = text("""
         SELECT COUNT(*) FROM submissions
-        WHERE created_at >= :today AND status = 'ERROR'
+        WHERE created_at >= :date_start AND created_at <= :date_end AND status = 'ERROR'
         AND (
             execution_log->>'error' ILIKE '%timeout%'
             OR execution_log->>'error' ILIKE '%timed out%'
         )
     """)
-    timeout_count = session.execute(timeout_query, {"today": today}).scalar() or 0
+    timeout_count = session.execute(timeout_query, {"date_start": date_start, "date_end": date_end}).scalar() or 0
 
-    # 전체 금일 제출 대비 타임아웃 비율
-    total_today = session.execute(
-        text("SELECT COUNT(*) FROM submissions WHERE created_at >= :today"),
-        {"today": today}
+    # 전체 해당일 제출 대비 타임아웃 비율
+    total_on_date = session.execute(
+        text("SELECT COUNT(*) FROM submissions WHERE created_at >= :date_start AND created_at <= :date_end"),
+        {"date_start": date_start, "date_end": date_end}
     ).scalar() or 0
 
-    timeout_rate = (timeout_count / total_today * 100) if total_today > 0 else 0.0
+    timeout_rate = (timeout_count / total_on_date * 100) if total_on_date > 0 else 0.0
 
-    # 큐 대기 (PENDING/RUNNING 상태)
+    # 큐 대기 (PENDING/RUNNING 상태) - 현재 상태이므로 날짜와 무관
     pending = session.execute(
         text("SELECT COUNT(*) FROM submissions WHERE status = 'PENDING'")
     ).scalar() or 0
@@ -537,26 +563,33 @@ def get_container_status() -> List[ContainerInfo]:
 # 리포트 생성
 # ============================================================
 
-def generate_report() -> DailyReport:
-    """리포트 생성"""
+def generate_report(target_date: str = None) -> DailyReport:
+    """리포트 생성
+
+    Args:
+        target_date: YYYY-MM-DD 형식의 날짜 문자열. None이면 오늘 날짜.
+    """
     from zoneinfo import ZoneInfo
     tz = ZoneInfo("Asia/Seoul")
     now = datetime.now(tz)
 
+    # 리포트 날짜 결정
+    report_date = target_date if target_date else now.strftime("%Y-%m-%d")
+
     report = DailyReport(
         generated_at=now.isoformat(),
-        report_date=now.strftime("%Y-%m-%d")
+        report_date=report_date
     )
 
     try:
         session = get_db_session()
 
         # DB 통계
-        report.total_users, report.new_users_today = get_user_stats(session)
+        report.total_users, report.new_users_today = get_user_stats(session, target_date)
         report.total_problems, report.published_problems = get_problem_stats_summary(session)
 
         # 제출 통계 (회원/비회원 구분)
-        submission_stats = get_submission_stats(session)
+        submission_stats = get_submission_stats(session, target_date)
         report.total_submissions = submission_stats["total"]
         report.submissions_today = submission_stats["today"]
         report.submissions_by_member = submission_stats["member_total"]
@@ -569,12 +602,12 @@ def generate_report() -> DailyReport:
         report.problem_stats = [asdict(p) for p in problem_stats]
 
         # 토큰 사용
-        token_stats, total_tokens = get_token_usage_today(session)
+        token_stats, total_tokens = get_token_usage(session, target_date)
         report.token_stats = [asdict(t) for t in token_stats]
         report.total_tokens_used_today = total_tokens
 
         # 채점 시스템
-        judge_stats = get_judge_stats(session)
+        judge_stats = get_judge_stats(session, target_date)
         report.judge_stats = asdict(judge_stats)
 
         session.close()
@@ -587,16 +620,17 @@ def generate_report() -> DailyReport:
             probable_cause="DB 연결 문제"
         )))
 
-    # 오류 로그 (DB 외부)
-    errors = parse_error_logs()
-    report.errors_today.extend([asdict(e) for e in errors])
+    # 오류 로그 (DB 외부) - 현재 상태만 확인 가능
+    if not target_date or target_date == now.strftime("%Y-%m-%d"):
+        errors = parse_error_logs()
+        report.errors_today.extend([asdict(e) for e in errors])
     report.error_count = len(report.errors_today)
 
-    # 시스템 리소스
+    # 시스템 리소스 - 현재 상태만 확인 가능
     resources = get_system_resources()
     report.system_resources = asdict(resources)
 
-    # 컨테이너 상태
+    # 컨테이너 상태 - 현재 상태만 확인 가능
     containers = get_container_status()
     report.container_status = [asdict(c) for c in containers]
 
@@ -819,9 +853,15 @@ def main():
         action="store_true",
         help="Send Discord notification"
     )
+    parser.add_argument(
+        "--date",
+        type=str,
+        default=None,
+        help="Target date in YYYY-MM-DD format (default: today)"
+    )
     args = parser.parse_args()
 
-    report = generate_report()
+    report = generate_report(args.date)
 
     if args.output == "json":
         print(json.dumps(asdict(report), ensure_ascii=False, indent=2))
