@@ -4,6 +4,13 @@ import { render, screen } from '@testing-library/react';
 import ProblemCard from '../ProblemCard';
 import type { ProblemListItem } from '@/types/problem';
 
+// Mock BookmarkButton to avoid AuthProvider dependency
+jest.mock('../BookmarkButton', () => {
+  return function MockBookmarkButton() {
+    return <button data-testid="bookmark-button">Bookmark</button>;
+  };
+});
+
 const mockProblem: ProblemListItem = {
   id: 1,
   slug: 'test-problem',

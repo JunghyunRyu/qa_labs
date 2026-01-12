@@ -37,7 +37,7 @@ describe('Problems API', () => {
 
       const result = await getProblems();
 
-      expect(mockGet).toHaveBeenCalledWith('/v1/problems?page=1&page_size=10');
+      expect(mockGet).toHaveBeenCalledWith('/v1/problems?page=1&page_size=10&sort=difficulty-asc');
       expect(result).toEqual(mockResponse);
     });
 
@@ -54,7 +54,7 @@ describe('Problems API', () => {
 
       const result = await getProblems({ page: 2, pageSize: 20 });
 
-      expect(mockGet).toHaveBeenCalledWith('/v1/problems?page=2&page_size=20');
+      expect(mockGet).toHaveBeenCalledWith('/v1/problems?page=2&page_size=20&sort=difficulty-asc');
       expect(result).toEqual(mockResponse);
     });
 
