@@ -1,6 +1,6 @@
 # QA Labs (QA Arena) 개발 가이드
 
-> **최종 업데이트**: 2026-01-10
+> **최종 업데이트**: 2026-01-14
 > **도메인**: https://qa-arena.qalabs.kr
 
 ---
@@ -65,8 +65,10 @@
 | Frontend | Next.js 14, TypeScript, Monaco Editor, Pyodide |
 | Backend | FastAPI, Python 3.11+, SQLAlchemy |
 | Auth | GitHub/Google OAuth, JWT |
+| AI/LLM | OpenAI GPT-5.2 (피드백/문제생성), GPT-4o-mini (AI Coach) |
 | Task Queue | Celery + Redis |
 | Database | PostgreSQL 15 |
+| Monitoring | Sentry (에러 트래킹), Google Analytics 4 |
 | Infra | Docker Compose, AWS EC2 (t3.medium) |
 
 > 아키텍처 상세: `docs/claude-context/infrastructure.md`
@@ -82,6 +84,43 @@
 | 인코딩 | UTF-8 | UTF-8 |
 
 > EC2/SSM 접속 정보: `docs/claude-context/infrastructure.md`
+
+### 로컬 환경 트러블슈팅
+
+> **중요**: 로컬 개발 환경 문제 발생 시 `docs/troubleshooting/local-dev-setup.md` 참조
+
+#### 자주 발생하는 문제
+
+| 증상 | 원인 | 빠른 해결 |
+|------|------|----------|
+| Docker 연결 실패 | Docker Desktop 미실행 | Docker Desktop 실행 후 30초 대기 |
+| PostgreSQL 인증 실패 | DATABASE_URL 미설정 | `.env`에 DATABASE_URL 명시 |
+| CORS 에러 (브라우저) | 실제로는 500 에러 | `curl`로 백엔드 직접 확인 |
+| 빈 문제 목록 | 시드 데이터 없음 | `load_generated_problems.py` 실행 |
+| 유니코드 에러 | Windows cp949 | `PYTHONIOENCODING=utf-8` 설정 |
+
+#### 로컬 환경 빠른 시작
+
+```bash
+# 1. Docker 서비스 시작
+docker-compose up -d postgres redis
+
+# 2. DB 마이그레이션 (최초/스키마 변경 시)
+cd backend && alembic upgrade head
+
+# 3. 문제 데이터 로드 (DB 비어있을 경우)
+PYTHONIOENCODING=utf-8 python scripts/load_generated_problems.py
+
+# 4. 서버 시작
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload  # 백엔드
+cd frontend && npm run dev  # 프론트엔드 (별도 터미널)
+```
+
+#### 핵심 교훈
+
+1. **PostgreSQL 환경변수는 최초 볼륨 생성 시에만 적용** - 변경 시 볼륨 재생성 필요
+2. **CORS 에러는 실제 서버 에러를 숨길 수 있음** - curl로 직접 확인
+3. **`.env`에 DATABASE_URL 명시적 설정 권장** - 기본값 의존 시 불일치 발생
 
 ---
 
@@ -240,6 +279,7 @@ test: 테스트 추가/수정
 | 배포 가이드 | `docs/specs/deployment.md` | 배포 절차 |
 | 에러 처리 | `docs/specs/ERROR_HANDLING.md` | 에러 코드 규격 |
 | 백업/복구 | `docs/specs/backup_restore.md` | DB 백업 절차 |
+| **로컬 트러블슈팅** | `docs/troubleshooting/local-dev-setup.md` | 로컬 환경 문제 해결 |
 
 ---
 
@@ -270,6 +310,8 @@ Serena의 read_memory 도구 사용:
 
 | 날짜 | 변경 내용 |
 |------|----------|
+| 2026-01-14 | 기술 스택에 AI/LLM (GPT-5.2, GPT-4o-mini), Monitoring (Sentry, GA4) 추가 |
+| 2026-01-14 | 로컬 환경 트러블슈팅 가이드 추가 (`docs/troubleshooting/local-dev-setup.md`) |
 | 2026-01-10 | Agent 시스템 추가 (QA Engineer, DB Admin, Docs Writer, SRE/DevOps) |
 | 2026-01-10 | Claude Context 문서 동기화 (db-schema, api-reference, infrastructure) |
 | 2026-01-09 | Claude Context 분리 (infrastructure, api-reference, db-schema) |
