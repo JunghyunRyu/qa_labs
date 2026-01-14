@@ -1,4 +1,4 @@
-/** Problems list page */
+/** Problems list page - Mission Control Center */
 
 "use client";
 
@@ -13,19 +13,17 @@ import type { ProblemListResponse, ProblemListItem } from "@/types/problem";
 import ProblemCard from "@/components/ProblemCard";
 import ComingSoonBanner from "@/components/ComingSoonBanner";
 import SampleProblemsBanner from "@/components/SampleProblemsBanner";
-import ProblemStatsRow from "@/components/ProblemStatsRow";
+import UserStatsBar from "@/components/problems/UserStatsBar";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
-import Loading from "@/components/Loading";
-import Error from "@/components/Error";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
-import { Search, Filter, X, Bookmark, ChevronDown, Tag, Globe, ArrowUpDown, Sparkles } from "lucide-react";
+import { Search, X, Bookmark, ChevronDown, Tag, ArrowUpDown, Sparkles, Package } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 type DifficultyFilter = "All" | "Very Easy" | "Easy" | "Medium" | "Hard";
 type DomainFilter = "All" | "common" | "fintech" | "commerce" | "saas" | "platform" | "content";
-type SortOption = "difficulty-asc" | "difficulty-desc" | "success-rate-desc" | "success-rate-asc";
+type SortOption = "recommended" | "newest" | "difficulty-asc" | "difficulty-desc" | "success-rate-desc" | "success-rate-asc";
 
 // 도메인 레이블 정의
 const DOMAIN_LABELS: Record<DomainFilter, string> = {
@@ -41,42 +39,71 @@ const DOMAIN_LABELS: Record<DomainFilter, string> = {
 // 난이도 레이블 정의
 const DIFFICULTY_LABELS: Record<DifficultyFilter, string> = {
   All: "전체",
-  "Very Easy": "아주쉬움",
+  "Very Easy": "입문",
   Easy: "쉬움",
   Medium: "보통",
   Hard: "어려움",
 };
 
-// 난이도 Pill 버튼 색상 (선택/비선택) - GitHub Dark 스타일
-const DIFFICULTY_PILL_COLORS: Record<DifficultyFilter, { active: string; inactive: string }> = {
+// Mission Control 스타일 난이도 Pill 색상
+const DIFFICULTY_PILL_COLORS: Record<DifficultyFilter, { active: string; inactive: string; dot: string }> = {
   All: {
-    active: "bg-[#c9d1d9] text-[#0d1117] dark:bg-[#c9d1d9] dark:text-[#0d1117]",
-    inactive: "bg-[#f6f8fa] text-[#57606a] hover:bg-[#d0d7de] dark:bg-[#21262d] dark:text-[#8b949e] dark:hover:bg-[#30363d]",
+    active: "bg-slate-600 text-white",
+    inactive: "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300",
+    dot: "bg-slate-400",
   },
   "Very Easy": {
-    active: "bg-[#58a6ff] text-white dark:bg-[#58a6ff] dark:text-white",
-    inactive: "bg-[#ddf4ff] text-[#0969da] hover:bg-[#b6e3ff] dark:bg-[#388bfd26] dark:text-[#58a6ff] dark:hover:bg-[#388bfd40]",
+    active: "bg-sky-600 text-white",
+    inactive: "bg-slate-800 text-sky-400 hover:bg-sky-900/50",
+    dot: "bg-sky-400",
   },
   Easy: {
-    active: "bg-[#3fb950] text-white dark:bg-[#3fb950] dark:text-white",
-    inactive: "bg-[#dafbe1] text-[#1a7f37] hover:bg-[#aceebb] dark:bg-[#238636]/20 dark:text-[#3fb950] dark:hover:bg-[#238636]/40",
+    active: "bg-emerald-600 text-white",
+    inactive: "bg-slate-800 text-emerald-400 hover:bg-emerald-900/50",
+    dot: "bg-emerald-400",
   },
   Medium: {
-    active: "bg-[#d29922] text-white dark:bg-[#d29922] dark:text-white",
-    inactive: "bg-[#fff8c5] text-[#9a6700] hover:bg-[#fae17d] dark:bg-[#9e6a03]/20 dark:text-[#d29922] dark:hover:bg-[#9e6a03]/40",
+    active: "bg-amber-600 text-white",
+    inactive: "bg-slate-800 text-amber-400 hover:bg-amber-900/50",
+    dot: "bg-amber-400",
   },
   Hard: {
-    active: "bg-[#f85149] text-white dark:bg-[#f85149] dark:text-white",
-    inactive: "bg-[#ffebe9] text-[#cf222e] hover:bg-[#ffc1ba] dark:bg-[#f85149]/20 dark:text-[#f85149] dark:hover:bg-[#f85149]/40",
+    active: "bg-rose-600 text-white",
+    inactive: "bg-slate-800 text-rose-400 hover:bg-rose-900/50",
+    dot: "bg-rose-400",
   },
 };
 
-// 정렬 옵션 레이블
-const SORT_LABELS: Record<SortOption, string> = {
-  "difficulty-asc": "난이도 낮은순",
-  "difficulty-desc": "난이도 높은순",
-  "success-rate-desc": "정답률 높은순",
-  "success-rate-asc": "정답률 낮은순",
+// 도메인 Chip 색상
+const DOMAIN_CHIP_COLORS: Record<DomainFilter, { active: string; inactive: string }> = {
+  All: {
+    active: "bg-indigo-600 text-white border-indigo-500",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300",
+  },
+  common: {
+    active: "bg-slate-600 text-white border-slate-500",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700",
+  },
+  fintech: {
+    active: "bg-emerald-600 text-white border-emerald-500",
+    inactive: "bg-slate-800 text-emerald-400 border-slate-700 hover:bg-emerald-900/30",
+  },
+  commerce: {
+    active: "bg-amber-600 text-white border-amber-500",
+    inactive: "bg-slate-800 text-amber-400 border-slate-700 hover:bg-amber-900/30",
+  },
+  saas: {
+    active: "bg-blue-600 text-white border-blue-500",
+    inactive: "bg-slate-800 text-blue-400 border-slate-700 hover:bg-blue-900/30",
+  },
+  platform: {
+    active: "bg-purple-600 text-white border-purple-500",
+    inactive: "bg-slate-800 text-purple-400 border-slate-700 hover:bg-purple-900/30",
+  },
+  content: {
+    active: "bg-rose-600 text-white border-rose-500",
+    inactive: "bg-slate-800 text-rose-400 border-slate-700 hover:bg-rose-900/30",
+  },
 };
 
 // useSearchParams를 사용하는 내부 컴포넌트
@@ -117,15 +144,15 @@ function ProblemsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 12;
 
   // 필터 및 검색 상태
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("All");
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("Easy"); // 기본값: Easy (Very Easy 숨김)
   const [domainFilter, setDomainFilter] = useState<DomainFilter>("All");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortOption, setSortOption] = useState<SortOption>("difficulty-asc");
+  const [sortOption, setSortOption] = useState<SortOption>("recommended"); // 기본값: 추천순
   const [showFilters, setShowFilters] = useState(false);
   const [showNewOnly, setShowNewOnly] = useState(false);
   const [nextScheduled, setNextScheduled] = useState<NextScheduledProblem | null>(null);
@@ -135,7 +162,6 @@ function ProblemsContent() {
     const domainParam = searchParams.get("domain");
     if (domainParam && Object.keys(DOMAIN_LABELS).includes(domainParam)) {
       setDomainFilter(domainParam as DomainFilter);
-      setShowFilters(true);  // 필터 패널 자동 열기
     }
   }, [searchParams]);
 
@@ -146,7 +172,6 @@ function ProblemsContent() {
         const result = await getNextScheduledProblem();
         setNextScheduled(result);
       } catch {
-        // Silently fail - Coming Soon card is optional
         setNextScheduled(null);
       }
     }
@@ -217,7 +242,7 @@ function ProblemsContent() {
     return data.problems;
   }, [data, showNewOnly, isNewProblem]);
 
-  // 사용 가능한 모든 태그 추출 (난이도 태그 제외, 한글화 적용)
+  // 사용 가능한 모든 태그 추출
   const availableTags = useMemo((): TagViewModel[] => {
     if (!data) return [];
     const tagSet = new Set<string>();
@@ -236,425 +261,437 @@ function ProblemsContent() {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setDifficultyFilter("All");
+    setDifficultyFilter("Easy"); // 기본값: Easy
     setDomainFilter("All");
     setSelectedTags([]);
-    setSortOption("difficulty-asc");
+    setSortOption("recommended"); // 기본값: 추천
     setShowNewOnly(false);
   };
 
-  const hasActiveFilters = debouncedSearchQuery || difficultyFilter !== "All" || domainFilter !== "All" || selectedTags.length > 0 || showNewOnly;
+  // 기본값(Easy, recommended)과 다른 필터가 적용되었는지 확인
+  const hasActiveFilters = debouncedSearchQuery ||
+    (difficultyFilter !== "Easy" && difficultyFilter !== "All") ||
+    domainFilter !== "All" ||
+    selectedTags.length > 0 ||
+    showNewOnly ||
+    (sortOption !== "recommended" && sortOption !== "difficulty-asc");
 
+  // ============================
+  // 로딩 상태 (Mission Control 다크 스켈레톤)
+  // ============================
   if (loading) {
     return (
-      <>
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-slate-950 text-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           {/* 헤더 Skeleton */}
-          <div className="mb-8">
-            <div className="h-9 w-32 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse mb-2" />
-            <div className="h-5 w-64 bg-[#d0d7de] dark:bg-[#30363d] rounded animate-pulse" />
+          <div className="mb-6">
+            <div className="h-8 w-48 bg-slate-800 rounded-lg animate-pulse mb-2" />
+            <div className="h-5 w-72 bg-slate-800/50 rounded animate-pulse" />
+          </div>
+          {/* Stats Bar Skeleton */}
+          <div className="bg-slate-900/50 border border-slate-800 rounded-xl px-6 py-4 mb-6 animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-slate-800" />
+                <div className="h-6 w-24 bg-slate-800 rounded" />
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-slate-800" />
+                <div className="h-6 w-20 bg-slate-800 rounded" />
+              </div>
+              <div className="h-10 w-28 bg-slate-800 rounded-lg" />
+            </div>
           </div>
           {/* Control Bar Skeleton */}
-          <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md p-4 mb-4 animate-pulse border border-[#d0d7de] dark:border-[#30363d]">
-            <div className="flex flex-col lg:flex-row gap-3">
-              <div className="h-10 flex-1 bg-[#d0d7de] dark:bg-[#30363d] rounded-lg" />
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 mb-6 animate-pulse">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="h-12 flex-1 bg-slate-800 rounded-lg" />
               <div className="flex gap-2">
-                <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
-                <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
-                <div className="h-10 w-20 bg-[#d0d7de] dark:bg-[#30363d] rounded-full" />
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-10 w-16 bg-slate-800 rounded-full" />
+                ))}
               </div>
             </div>
           </div>
           {/* Card Grid Skeleton */}
-          <ProblemCardSkeletonGrid count={8} />
+          <ProblemCardSkeletonGrid count={12} />
         </div>
-        {/* Tutorial Welcome Modal */}
-        {showModal && (
-          <TutorialWelcomeModal
-            onStart={startTutorial}
-            onSkip={closeModal}
-          />
-        )}
-        {/* Tutorial Full Screen Overlay */}
-        {showTutorial && (
-          <TutorialFullScreen
-            onClose={closeTutorial}
-            onComplete={completeTutorial}
-          />
-        )}
-      </>
+
+        {/* Tutorial Modals */}
+        {showModal && <TutorialWelcomeModal onStart={startTutorial} onSkip={closeModal} />}
+        {showTutorial && <TutorialFullScreen onClose={closeTutorial} onComplete={completeTutorial} />}
+      </div>
     );
   }
 
+  // ============================
+  // 에러 상태
+  // ============================
   if (error) {
     return (
-      <>
-        <div className="container mx-auto px-4 py-8">
-          <Error message={error} onRetry={fetchProblems} />
+      <div className="min-h-screen bg-slate-950 text-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="bg-slate-900 border border-rose-500/30 rounded-xl p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/10 flex items-center justify-center">
+              <X className="w-8 h-8 text-rose-400" />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">오류가 발생했습니다</h2>
+            <p className="text-slate-400 mb-6">{error}</p>
+            <button
+              onClick={fetchProblems}
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors"
+            >
+              다시 시도
+            </button>
+          </div>
         </div>
-        {/* Tutorial Welcome Modal */}
-        {showModal && (
-          <TutorialWelcomeModal
-            onStart={startTutorial}
-            onSkip={closeModal}
-          />
-        )}
-        {/* Tutorial Full Screen Overlay */}
-        {showTutorial && (
-          <TutorialFullScreen
-            onClose={closeTutorial}
-            onComplete={completeTutorial}
-          />
-        )}
-      </>
+        {showModal && <TutorialWelcomeModal onStart={startTutorial} onSkip={closeModal} />}
+        {showTutorial && <TutorialFullScreen onClose={closeTutorial} onComplete={completeTutorial} />}
+      </div>
     );
   }
 
-  if (!data) {
-    return null;
-  }
+  if (!data) return null;
 
+  // ============================
+  // 메인 렌더링
+  // ============================
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-[#24292f] dark:text-[#c9d1d9] mb-2">문제 목록</h1>
-            {hasActiveFilters ? (
-              <p className="text-[#57606a] dark:text-[#8b949e] text-sm">
-                필터링 결과: {data.total}개
+    <div className="min-h-screen bg-slate-950 text-slate-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* 페이지 헤더 */}
+        <div className="mb-6">
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+                Mission Control
+              </h1>
+              <p className="text-slate-400 text-sm">
+                {hasActiveFilters
+                  ? `필터링 결과: ${data.total}개의 미션`
+                  : `${data.total}개의 버그 탐지 미션이 당신을 기다립니다`}
               </p>
-            ) : (
-              <ProblemStatsRow />
+            </div>
+            {isAuthenticated && (
+              <Link
+                href="/problems/bookmarked"
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-colors text-sm font-medium border border-amber-500/20"
+              >
+                <Bookmark className="w-4 h-4" />
+                북마크
+              </Link>
             )}
           </div>
-          {isAuthenticated && (
-            <Link
-              href="/problems/bookmarked"
-              className="flex items-center gap-2 px-4 py-2 bg-[#fff8c5] dark:bg-[#9e6a03]/20 text-[#9a6700] dark:text-[#d29922] rounded-lg hover:bg-[#fae17d] dark:hover:bg-[#9e6a03]/40 transition-colors text-sm font-medium"
-            >
-              <Bookmark className="w-4 h-4" />
-              북마크한 문제
-            </Link>
-          )}
         </div>
-      </div>
 
-      {/* 컨트롤 바 - 검색 + 빠른 필터 + 정렬 */}
-      <div className="sticky top-14 z-30 bg-white dark:bg-[#161b22] rounded-lg shadow-md p-4 mb-4 transition-colors border border-[#d0d7de] dark:border-[#30363d]">
-        <div className="flex flex-col lg:flex-row gap-3">
-          {/* 검색창 */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#57606a] dark:text-[#8b949e] w-5 h-5" />
-            <input
-              type="text"
-              placeholder="문제 검색..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-[#d0d7de] dark:border-[#30363d] rounded-lg focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent bg-white dark:bg-[#0d1117] text-[#24292f] dark:text-[#c9d1d9] placeholder-[#6e7781] dark:placeholder-[#6e7681] text-sm"
-              aria-label="문제 검색"
-            />
+        {/* User Stats Bar */}
+        <UserStatsBar totalProblems={data.total} />
+
+        {/* ============================================
+            Sticky Control Bar (검색 + 필터) - 2줄 압축 레이아웃
+            ============================================ */}
+        <div className="sticky top-14 z-30 bg-slate-950/80 backdrop-blur-md border border-slate-800 rounded-xl p-4 mb-6 transition-all">
+
+          {/* Row 1: 검색창 + 정렬 드롭다운 */}
+          <div className="flex gap-3 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="검색할 버그 유형을 입력하세요 (예: 할인 계산, 경계값)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-20 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                aria-label="문제 검색"
+              />
+              <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs text-slate-600 bg-slate-800 px-2 py-1 rounded hidden sm:block">
+                Ctrl+K
+              </span>
+            </div>
+            {/* 정렬 드롭다운 - 데스크탑에서만 Row 1에 표시 */}
+            <div className="relative hidden lg:block">
+              <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                className="appearance-none h-full pl-9 pr-10 py-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer transition-all shadow-lg"
+              >
+                <option value="recommended">추천</option>
+                <option value="newest">최신</option>
+                <option value="difficulty-asc">난이도 낮음</option>
+                <option value="difficulty-desc">난이도 높음</option>
+                <option value="success-rate-desc">정답률 높음</option>
+                <option value="success-rate-asc">정답률 낮음</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
           </div>
 
-          {/* NEW 필터 + 난이도 Pill 버튼 */}
-          <div className="flex items-center gap-1" role="group" aria-label="필터">
-            {/* NEW 필터 버튼 - GitHub Dark 스타일: 하늘색 */}
-            <button
-              onClick={() => setShowNewOnly(!showNewOnly)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${
-                showNewOnly
-                  ? "bg-[#58a6ff] text-white"
-                  : "bg-[#ddf4ff] text-[#0969da] hover:bg-[#b6e3ff] dark:bg-[#388bfd26] dark:text-[#58a6ff] dark:hover:bg-[#388bfd40]"
-              }`}
-              aria-pressed={showNewOnly}
-            >
-              <Sparkles className="w-3 h-3" />
-              NEW
-            </button>
-            <span className="w-px h-5 bg-[#d0d7de] dark:bg-[#30363d] mx-1" />
-            {/* 난이도 필터 버튼 */}
+          {/* Row 2: 도메인 + 난이도 + 기타 필터 (한 줄에 모두) */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* 도메인 Chips */}
+            <span className="text-xs text-slate-500 shrink-0 hidden sm:inline">도메인:</span>
+            {(Object.keys(DOMAIN_LABELS) as DomainFilter[]).map((domain) => (
+              <button
+                key={domain}
+                onClick={() => setDomainFilter(domain)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border shrink-0 ${
+                  domainFilter === domain
+                    ? DOMAIN_CHIP_COLORS[domain].active
+                    : DOMAIN_CHIP_COLORS[domain].inactive
+                }`}
+              >
+                {DOMAIN_LABELS[domain]}
+              </button>
+            ))}
+
+            <span className="w-px h-5 bg-slate-700 hidden sm:block" />
+
+            {/* 난이도 Pills (컴팩트 버전) */}
             {(["All", "Very Easy", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map((diff) => (
               <button
                 key={diff}
                 onClick={() => setDifficultyFilter(diff)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 ${
                   difficultyFilter === diff
                     ? DIFFICULTY_PILL_COLORS[diff].active
                     : DIFFICULTY_PILL_COLORS[diff].inactive
                 }`}
-                aria-pressed={difficultyFilter === diff}
               >
+                {diff !== "All" && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${DIFFICULTY_PILL_COLORS[diff].dot}`} />
+                )}
                 {DIFFICULTY_LABELS[diff]}
               </button>
             ))}
-          </div>
 
-          {/* 도메인/정렬 드롭다운 + Reset */}
-          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-px h-5 bg-slate-700 hidden sm:block" />
 
-            {/* 도메인 드롭다운 */}
-            <div className="relative flex items-center">
-              <Globe className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
-              <select
-                value={domainFilter}
-                onChange={(e) => setDomainFilter(e.target.value as DomainFilter)}
-                className={`appearance-none pl-8 pr-8 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent cursor-pointer ${
-                  domainFilter !== "All"
-                    ? "bg-[#dafbe1] border-[#aceebb] text-[#1a7f37] dark:bg-[#238636]/20 dark:border-[#238636]/40 dark:text-[#3fb950]"
-                    : "bg-white border-[#d0d7de] text-[#24292f] dark:bg-[#0d1117] dark:border-[#30363d] dark:text-[#c9d1d9]"
-                }`}
-                aria-label="도메인 필터"
-              >
-                <option value="All">도메인</option>
-                <option value="common">공통</option>
-                <option value="fintech">핀테크</option>
-                <option value="commerce">커머스</option>
-                <option value="saas">SaaS</option>
-                <option value="platform">플랫폼</option>
-                <option value="content">컨텐츠</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
-            </div>
-
-            {/* 정렬 드롭다운 */}
-            <div className="relative flex items-center">
-              <ArrowUpDown className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
-              <select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="appearance-none pl-8 pr-8 py-2 border border-[#d0d7de] dark:border-[#30363d] rounded-lg text-sm bg-white dark:bg-[#0d1117] text-[#24292f] dark:text-[#c9d1d9] focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent cursor-pointer"
-                aria-label="정렬 옵션"
-              >
-                <option value="difficulty-asc">난이도 낮은순</option>
-                <option value="difficulty-desc">난이도 높은순</option>
-                <option value="success-rate-desc">정답률 높은순</option>
-                <option value="success-rate-asc">정답률 낮은순</option>
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#6e7781] dark:text-[#8b949e] pointer-events-none" />
-            </div>
+            {/* NEW 필터 */}
+            <button
+              onClick={() => setShowNewOnly(!showNewOnly)}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 ${
+                showNewOnly
+                  ? "bg-sky-600 text-white"
+                  : "bg-slate-800 text-sky-400 hover:bg-sky-900/50"
+              }`}
+            >
+              <Sparkles className="w-3 h-3" />
+              NEW
+            </button>
 
             {/* 태그 필터 버튼 */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
                 showFilters || selectedTags.length > 0
-                  ? "bg-[#ddf4ff] text-[#0969da] border border-[#b6e3ff] dark:bg-[#388bfd26] dark:text-[#58a6ff] dark:border-[#388bfd40]"
-                  : "bg-[#f6f8fa] text-[#24292f] border border-[#d0d7de] dark:bg-[#21262d] dark:text-[#c9d1d9] dark:border-[#30363d] hover:bg-[#eaeef2] dark:hover:bg-[#30363d]"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
               }`}
-              aria-expanded={showFilters}
-              aria-label="태그 필터"
             >
-              <Tag className="w-4 h-4" />
-              <span className="hidden sm:inline">태그</span>
+              <Tag className="w-3.5 h-3.5" />
+              태그
               {selectedTags.length > 0 && (
-                <span className="px-1.5 py-0.5 bg-[#58a6ff] text-white text-xs rounded-full min-w-[18px] text-center">
+                <span className="px-1.5 py-0.5 bg-white/20 text-white text-[10px] rounded-full">
                   {selectedTags.length}
                 </span>
               )}
             </button>
 
-            {/* Reset 버튼 - 활성 필터가 있을 때만 표시 */}
+            {/* 정렬 드롭다운 - 모바일/태블릿에서 Row 2에 표시 */}
+            <div className="relative lg:hidden shrink-0">
+              <ArrowUpDown className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                className="appearance-none pl-8 pr-7 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-300 hover:bg-slate-800 hover:border-slate-600 focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-all"
+              >
+                <option value="recommended">추천</option>
+                <option value="newest">최신</option>
+                <option value="difficulty-asc">난이도↑</option>
+                <option value="difficulty-desc">난이도↓</option>
+                <option value="success-rate-desc">정답률↑</option>
+                <option value="success-rate-asc">정답률↓</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            </div>
+
+            {/* Reset 버튼 */}
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-[#ffebe9] text-[#cf222e] border border-[#ffc1ba] hover:bg-[#ffc1ba] dark:bg-[#f85149]/20 dark:text-[#f85149] dark:border-[#f85149]/40 dark:hover:bg-[#f85149]/30 transition-colors"
-                aria-label="모든 필터 초기화"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all shrink-0 ml-auto"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
                 초기화
               </button>
             )}
           </div>
+
+          {/* 태그 필터 패널 (확장 시) */}
+          {showFilters && availableTags.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-slate-800">
+              <div className="flex flex-wrap gap-2">
+                {availableTags.map((tag) => (
+                  <button
+                    key={tag.slug}
+                    onClick={() => handleTagToggle(tag.slug)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      selectedTags.includes(tag.slug)
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300"
+                    }`}
+                  >
+                    {tag.labelKo}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* 태그 필터 패널 */}
-        {showFilters && availableTags.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-[#d0d7de] dark:border-[#30363d]">
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map((tag) => (
-                <button
-                  key={tag.slug}
-                  onClick={() => handleTagToggle(tag.slug)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    selectedTags.includes(tag.slug)
-                      ? "bg-[#58a6ff] text-white"
-                      : "bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] hover:bg-[#eaeef2] dark:hover:bg-[#30363d]"
-                  }`}
-                  aria-pressed={selectedTags.includes(tag.slug)}
-                >
-                  {tag.labelKo}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Active Filter Summary */}
-      {hasActiveFilters && (
-        <div className="flex flex-wrap items-center gap-2 mb-4 px-1">
-          {showNewOnly && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#ddf4ff] dark:bg-[#388bfd26] text-[#0969da] dark:text-[#58a6ff] rounded-full text-xs font-medium">
-              <Sparkles className="w-3 h-3" />
-              NEW
-              <button
-                onClick={() => setShowNewOnly(false)}
-                className="ml-0.5 hover:text-[#0550ae] dark:hover:text-[#79c0ff]"
-                aria-label="NEW 필터 제거"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-          {difficultyFilter !== "All" && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded-full text-xs font-medium">
-              {DIFFICULTY_LABELS[difficultyFilter]}
-              <button
-                onClick={() => setDifficultyFilter("All")}
-                className="ml-0.5 hover:text-[#0d1117] dark:hover:text-white"
-                aria-label={`${DIFFICULTY_LABELS[difficultyFilter]} 필터 제거`}
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-          {domainFilter !== "All" && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#dafbe1] dark:bg-[#238636]/20 text-[#1a7f37] dark:text-[#3fb950] rounded-full text-xs font-medium">
-              {DOMAIN_LABELS[domainFilter]}
-              <button
-                onClick={() => setDomainFilter("All")}
-                className="ml-0.5 hover:text-[#116329] dark:hover:text-[#56d364]"
-                aria-label={`${DOMAIN_LABELS[domainFilter]} 필터 제거`}
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-          {selectedTags.map((tagSlug) => {
-            const tagModel = availableTags.find(t => t.slug === tagSlug);
-            return (
-              <span
-                key={tagSlug}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#ddf4ff] dark:bg-[#388bfd26] text-[#0969da] dark:text-[#58a6ff] rounded-full text-xs font-medium"
-              >
-                {tagModel?.labelKo || tagSlug}
-                <button
-                  onClick={() => handleTagToggle(tagSlug)}
-                  className="ml-0.5 hover:text-[#0550ae] dark:hover:text-[#79c0ff]"
-                  aria-label={`${tagModel?.labelKo || tagSlug} 태그 제거`}
-                >
+        {/* Active Filter Summary */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap items-center gap-2 mb-6 px-1">
+            {showNewOnly && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-sky-500/10 text-sky-400 rounded-full text-xs font-medium">
+                <Sparkles className="w-3 h-3" />
+                NEW
+                <button onClick={() => setShowNewOnly(false)} className="ml-1 hover:text-sky-300">
                   <X className="w-3 h-3" />
                 </button>
               </span>
-            );
-          })}
-          {debouncedSearchQuery && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded-full text-xs font-medium">
-              &quot;{debouncedSearchQuery}&quot;
-              <button
-                onClick={() => setSearchQuery("")}
-                className="ml-0.5 hover:text-[#0d1117] dark:hover:text-white"
-                aria-label="검색어 제거"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-          <button
-            onClick={clearFilters}
-            className="text-xs text-[#6e7781] dark:text-[#8b949e] hover:text-[#24292f] dark:hover:text-[#c9d1d9] underline ml-2"
-          >
-            모두 지우기
-          </button>
-        </div>
-      )}
-
-      {/* Sample Problems Banner - 신규 사용자 온보딩 */}
-      <SampleProblemsBanner />
-
-      {/* Coming Soon Banner - 항상 표시 */}
-      {nextScheduled && (
-        <ComingSoonBanner nextProblem={nextScheduled} />
-      )}
-
-      {sortedProblems.length === 0 ? (
-        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md border border-[#d0d7de] dark:border-[#30363d] p-8 text-center transition-colors">
-          <p className="text-[#57606a] dark:text-[#8b949e]">
-            {hasActiveFilters
-              ? "필터 조건에 맞는 문제가 없습니다."
-              : "등록된 문제가 없습니다."}
-          </p>
-          {hasActiveFilters && (
+            )}
+            {difficultyFilter !== "All" && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-800 text-slate-300 rounded-full text-xs font-medium">
+                {DIFFICULTY_LABELS[difficultyFilter]}
+                <button onClick={() => setDifficultyFilter("All")} className="ml-1 hover:text-white">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {domainFilter !== "All" && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-full text-xs font-medium">
+                {DOMAIN_LABELS[domainFilter]}
+                <button onClick={() => setDomainFilter("All")} className="ml-1 hover:text-indigo-300">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {selectedTags.map((tagSlug) => {
+              const tagModel = availableTags.find((t) => t.slug === tagSlug);
+              return (
+                <span
+                  key={tagSlug}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-full text-xs font-medium"
+                >
+                  {tagModel?.labelKo || tagSlug}
+                  <button onClick={() => handleTagToggle(tagSlug)} className="ml-1 hover:text-indigo-300">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              );
+            })}
+            {debouncedSearchQuery && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-800 text-slate-300 rounded-full text-xs font-medium">
+                &quot;{debouncedSearchQuery}&quot;
+                <button onClick={() => setSearchQuery("")} className="ml-1 hover:text-white">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
             <button
               onClick={clearFilters}
-              className="mt-4 px-4 py-2 bg-[#24292f] dark:bg-[#f0f6fc] text-white dark:text-[#24292f] rounded-lg hover:bg-[#32383f] dark:hover:bg-[#d0d7de] transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-300 underline ml-2"
             >
-              필터 초기화
+              모두 지우기
             </button>
-          )}
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8">
-            {sortedProblems.map((problem) => (
-              <ProblemCard key={problem.id} problem={problem} />
-            ))}
           </div>
+        )}
 
-          {/* Pagination */}
-          {data.total_pages > 1 && (
-            <nav aria-label="페이지 네비게이션" className="flex items-center justify-center gap-2 flex-wrap">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 md:px-4 py-2 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded hover:bg-[#eaeef2] dark:hover:bg-[#30363d] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:ring-offset-2"
-                aria-label="이전 페이지"
-              >
-                이전
-              </button>
-              <span className="px-3 md:px-4 py-2 text-[#24292f] dark:text-[#c9d1d9] text-sm md:text-base" aria-current="page">
-                {page} / {data.total_pages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))}
-                disabled={page === data.total_pages}
-                className="px-3 md:px-4 py-2 bg-[#f6f8fa] dark:bg-[#21262d] text-[#24292f] dark:text-[#c9d1d9] rounded hover:bg-[#eaeef2] dark:hover:bg-[#30363d] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:ring-offset-2"
-                aria-label="다음 페이지"
-              >
-                다음
-              </button>
-            </nav>
-          )}
-        </>
-      )}
+        {/* Tutorial Banner (온보딩 섹션) */}
+        <SampleProblemsBanner />
 
-      <div className="mt-8">
-        <Link
-          href="/"
-          className="text-[#57606a] hover:text-[#24292f] dark:text-[#8b949e] dark:hover:text-[#c9d1d9] transition-colors"
-        >
-          ← 홈으로 돌아가기
-        </Link>
+        {/* Coming Soon Banner */}
+        {nextScheduled && <ComingSoonBanner nextProblem={nextScheduled} />}
+
+        {/* ============================================
+            문제 카드 그리드 or 빈 상태
+            ============================================ */}
+        {sortedProblems.length === 0 ? (
+          // Empty State - 위트 있는 메시지
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-800 flex items-center justify-center">
+              <Package className="w-10 h-10 text-slate-600" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              이런, 버그가 완벽하게 숨었네요
+            </h3>
+            <p className="text-slate-400 mb-6">
+              {hasActiveFilters
+                ? "다른 키워드나 필터로 검색해보세요."
+                : "등록된 문제가 없습니다."}
+            </p>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors"
+              >
+                필터 초기화
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
+              {sortedProblems.map((problem) => (
+                <ProblemCard key={problem.id} problem={problem} />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {data.total_pages > 1 && (
+              <nav aria-label="페이지 네비게이션" className="flex items-center justify-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  이전
+                </button>
+                <span className="px-4 py-2 text-slate-400 text-sm">
+                  {page} / {data.total_pages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))}
+                  disabled={page === data.total_pages}
+                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  다음
+                </button>
+              </nav>
+            )}
+          </>
+        )}
+
+        {/* 홈으로 돌아가기 링크 */}
+        <div className="mt-8">
+          <Link
+            href="/"
+            className="text-slate-500 hover:text-slate-300 transition-colors text-sm"
+          >
+            ← 홈으로 돌아가기
+          </Link>
+        </div>
+
+        {/* Pyodide 사전 로딩 */}
+        <PyodidePreloader initializeImmediately={true} delay={2000} />
+
+        {/* Tutorial Modals */}
+        {showModal && <TutorialWelcomeModal onStart={startTutorial} onSkip={closeModal} />}
+        {showTutorial && <TutorialFullScreen onClose={closeTutorial} onComplete={completeTutorial} />}
       </div>
-
-      {/* Pyodide 사전 로딩 - 문제 상세 페이지 진입 전에 미리 로드 */}
-      <PyodidePreloader initializeImmediately={true} delay={2000} />
-
-      {/* Tutorial Welcome Modal */}
-      {showModal && (
-        <TutorialWelcomeModal
-          onStart={startTutorial}
-          onSkip={closeModal}
-        />
-      )}
-
-      {/* Tutorial Full Screen Overlay */}
-      {showTutorial && (
-        <TutorialFullScreen
-          onClose={closeTutorial}
-          onComplete={completeTutorial}
-        />
-      )}
     </div>
   );
 }
@@ -662,13 +699,17 @@ function ProblemsContent() {
 // Suspense로 감싼 메인 컴포넌트
 export default function ProblemsPage() {
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-8">
-        <Loading />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-slate-400">미션 로딩 중...</p>
+          </div>
+        </div>
+      }
+    >
       <ProblemsContent />
     </Suspense>
   );
 }
-

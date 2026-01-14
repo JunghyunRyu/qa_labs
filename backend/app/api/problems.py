@@ -33,7 +33,7 @@ async def get_problems(
     domain: Optional[str] = Query(None, description="Filter by domain (common, fintech, commerce, saas, platform, content)"),
     search: Optional[str] = Query(None, description="Search in title, slug, or skills"),
     tags: Optional[str] = Query(None, description="Comma-separated skill tags to filter by"),
-    sort: str = Query("difficulty-asc", description="Sort: difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc"),
+    sort: str = Query("recommended", description="Sort: recommended, newest, difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc"),
     db: Session = Depends(get_db),
 ):
     """

@@ -121,8 +121,32 @@ class ProblemRepository:
             else_=4
         )
 
+        # 추천 정렬용 난이도 우선순위 (Easy -> Medium -> Hard -> Very Easy)
+        recommended_order = case(
+            (Problem.difficulty == "Easy", 0),
+            (Problem.difficulty == "Medium", 1),
+            (Problem.difficulty == "Hard", 2),
+            (Problem.difficulty == "Very Easy", 3),
+            else_=4
+        )
+
         # Apply sorting
-        if sort == "difficulty-asc":
+        if sort == "recommended":
+            # 추천: Easy/Medium 우선, 정답률 높은 순
+            query = query.order_by(
+                recommended_order.asc(),
+                case((success_rate_expr.is_(None), 1), else_=0),
+                success_rate_expr.desc(),
+                Problem.id.asc()
+            )
+        elif sort == "newest":
+            # 최신: published_at 기준 (없으면 created_at)
+            query = query.order_by(
+                Problem.published_at.desc().nulls_last(),
+                Problem.created_at.desc(),
+                Problem.id.desc()
+            )
+        elif sort == "difficulty-asc":
             query = query.order_by(difficulty_order.asc(), Problem.id.asc())
         elif sort == "difficulty-desc":
             query = query.order_by(difficulty_order.desc(), Problem.id.asc())
@@ -141,8 +165,13 @@ class ProblemRepository:
                 Problem.id.asc()
             )
         else:
-            # 기본: 난이도 낮은순
-            query = query.order_by(difficulty_order.asc(), Problem.id.asc())
+            # 기본: 추천 정렬
+            query = query.order_by(
+                recommended_order.asc(),
+                case((success_rate_expr.is_(None), 1), else_=0),
+                success_rate_expr.desc(),
+                Problem.id.asc()
+            )
 
         # Apply pagination
         results = query.offset(skip).limit(limit).all()
