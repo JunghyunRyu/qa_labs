@@ -3,6 +3,7 @@
 **우선순위**: P0-P1
 **의존성**: Milestone 1 (anonymous_id 지원)
 **예상 작업량**: 대
+**상태**: ✅ 완료
 
 ---
 
@@ -29,8 +30,8 @@
 
 ### 1. [DB] ai_conversations 테이블 생성
 
-- [ ] **마이그레이션 파일 생성**: `backend/alembic/versions/xxx_create_ai_tables.py`
-- [ ] **테이블 정의**:
+- [x] **마이그레이션 파일 생성**: `backend/alembic/versions/xxx_create_ai_tables.py`
+- [x] **테이블 정의**:
   ```sql
   CREATE TABLE ai_conversations (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -52,7 +53,7 @@
 
 ### 2. [DB] ai_messages 테이블 생성
 
-- [ ] **테이블 정의**:
+- [x] **테이블 정의**:
   ```sql
   CREATE TABLE ai_messages (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -70,7 +71,7 @@
 
 ### 3. [BE] AI 모델 정의
 
-- [ ] **파일 생성**: `backend/app/models/ai_conversation.py`
+- [x] **파일 생성**: `backend/app/models/ai_conversation.py`
   ```python
   class AIConversation(Base):
       __tablename__ = "ai_conversations"
@@ -89,7 +90,7 @@
       user = relationship("User")
   ```
 
-- [ ] **파일 생성**: `backend/app/models/ai_message.py`
+- [x] **파일 생성**: `backend/app/models/ai_message.py`
   ```python
   class AIMessage(Base):
       __tablename__ = "ai_messages"
@@ -105,11 +106,11 @@
       conversation = relationship("AIConversation", back_populates="messages")
   ```
 
-- [ ] **__init__.py 업데이트**: `backend/app/models/__init__.py`
+- [x] **__init__.py 업데이트**: `backend/app/models/__init__.py`
 
 ### 4. [BE] AI 스키마 정의
 
-- [ ] **파일 생성**: `backend/app/schemas/ai.py`
+- [x] **파일 생성**: `backend/app/schemas/ai.py`
   ```python
   class AIChatMode(str, Enum):
       OFF = "OFF"
@@ -149,8 +150,8 @@
 
 ### 5. [BE] AI Chat API 구현
 
-- [ ] **파일 생성**: `backend/app/api/ai.py`
-- [ ] **엔드포인트 구현**:
+- [x] **파일 생성**: `backend/app/api/ai.py`
+- [x] **엔드포인트 구현**:
 
   ```python
   router = APIRouter(prefix="/ai", tags=["AI Coach"])
@@ -195,8 +196,8 @@
 
 ### 6. [BE] AI 코치 서비스
 
-- [ ] **파일 생성**: `backend/app/services/ai_coach_service.py`
-- [ ] **시스템 프롬프트 정의**:
+- [x] **파일 생성**: `backend/app/services/ai_coach_service.py`
+- [x] **시스템 프롬프트 정의**:
   ```python
   COACH_SYSTEM_PROMPT = """
   당신은 QA/테스트 코드 작성을 도와주는 AI 코치입니다.
@@ -223,7 +224,7 @@
   """
   ```
 
-- [ ] **서비스 클래스 구현**:
+- [x] **서비스 클래스 구현**:
   ```python
   class AICoachService:
       def __init__(self, db: Session):
@@ -254,7 +255,7 @@
 
 ### 7. [BE] AI 응답 후처리 필터
 
-- [ ] **가드레일 구현** (ai_coach_service.py 내):
+- [x] **가드레일 구현** (ai_coach_service.py 내):
   ```python
   def apply_guardrails(self, response: str) -> str:
       """가드레일 적용"""
@@ -275,8 +276,8 @@
 
 ### 8. [BE] AI 전용 레이트리밋
 
-- [ ] **파일 수정**: `backend/app/core/rate_limiter.py`
-- [ ] **AI 전용 레이트리밋 함수 추가**:
+- [x] **파일 수정**: `backend/app/core/rate_limiter.py`
+- [x] **AI 전용 레이트리밋 함수 추가**:
   ```python
   def get_ai_rate_limit_key(request: Request, user: Optional[User]) -> str:
       if user:
@@ -286,7 +287,7 @@
       return f"ai:guest:{ip}:{anonymous_id}"
   ```
 
-- [ ] **config.py에 설정 추가**:
+- [x] **config.py에 설정 추가**:
   ```python
   RATE_LIMIT_AI_GUEST = "5/minute;30/day"
   RATE_LIMIT_AI_MEMBER = "10/minute;200/day"
@@ -294,7 +295,7 @@
 
 ### 9. [BE] AI 호출 로깅
 
-- [ ] **구조화 로그 추가**:
+- [x] **구조화 로그 추가**:
   ```python
   import structlog
 
@@ -321,7 +322,7 @@
 
 ### 10. [BE] 라우터 등록
 
-- [ ] **파일 수정**: `backend/app/main.py`
+- [x] **파일 수정**: `backend/app/main.py`
   ```python
   from app.api import ai
 
@@ -349,11 +350,11 @@
 
 ## 완료 조건
 
-- [ ] `/api/v1/ai/chat` API 정상 동작
-- [ ] 대화 이력 DB 저장/조회 가능
-- [ ] AI 가드레일로 정답 코드 제공 억제
-- [ ] 게스트/회원별 레이트리밋 동작
-- [ ] 구조화된 로그 기록
+- [x] `/api/v1/ai/chat` API 정상 동작
+- [x] 대화 이력 DB 저장/조회 가능
+- [x] AI 가드레일로 정답 코드 제공 억제
+- [x] 게스트/회원별 레이트리밋 동작
+- [x] 구조화된 로그 기록
 
 ---
 

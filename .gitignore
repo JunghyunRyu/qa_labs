@@ -67,9 +67,6 @@ out/
 build/
 .vercel
 
-# cursor
-.cursor/
-
 # Claude Code environment-specific configs
 .claude/config.json
 .claude/config.local.json
@@ -103,3 +100,4 @@ backend/problem_scan_results.csv
 docs/specs/milestones/
 
 nul.mcp.json
+reports/

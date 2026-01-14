@@ -3,6 +3,7 @@
 **우선순위**: P2
 **의존성**: Milestone 5 (성장 대시보드 백엔드)
 **예상 작업량**: 중
+**상태**: ✅ 완료
 
 ---
 
@@ -28,8 +29,8 @@
 
 ### 1. [FE] 대시보드 페이지
 
-- [ ] **파일 생성**: `frontend/app/dashboard/page.tsx`
-- [ ] **레이아웃**:
+- [x] **파일 생성**: `frontend/app/dashboard/page.tsx`
+- [x] **레이아웃**:
   ```tsx
   export default function DashboardPage() {
     const { data: summary, isLoading } = useSWR('/api/v1/progress/summary');
@@ -58,12 +59,12 @@
     );
   }
   ```
-- [ ] **인증 체크**: 비로그인 시 로그인 페이지로 리다이렉트
+- [x] **인증 체크**: 비로그인 시 로그인 페이지로 리다이렉트
 
 ### 2. [FE] 요약 카드 컴포넌트
 
-- [ ] **파일 생성**: `frontend/components/ProgressSummaryCard.tsx`
-- [ ] **Props**:
+- [x] **파일 생성**: `frontend/components/ProgressSummaryCard.tsx`
+- [x] **Props**:
   ```typescript
   interface ProgressSummaryCardProps {
     title: string;
@@ -74,28 +75,28 @@
     trendValue?: string;
   }
   ```
-- [ ] **카드 종류**:
+- [x] **카드 종류**:
   - 총 제출 수
   - 평균 점수
   - 성공률
   - 평균 Kill Ratio
-- [ ] **디자인**:
+- [x] **디자인**:
   - 아이콘 + 큰 숫자 + 부제목
   - 트렌드 화살표 (선택)
 
 ### 3. [FE] 타임라인 차트
 
-- [ ] **파일 생성**: `frontend/components/ProgressTimeline.tsx`
-- [ ] **라이브러리**: recharts
-- [ ] **차트 유형**: Line Chart
-- [ ] **데이터 표시**:
+- [x] **파일 생성**: `frontend/components/ProgressTimeline.tsx`
+- [x] **라이브러리**: recharts
+- [x] **차트 유형**: Line Chart
+- [x] **데이터 표시**:
   - X축: 날짜
   - Y축: 점수 (0-100)
   - 선: 평균 점수, kill ratio (선택적으로 토글)
-- [ ] **인터랙션**:
+- [x] **인터랙션**:
   - 호버 시 툴팁
   - 기간 필터 (7d, 30d, 90d)
-- [ ] **예시**:
+- [x] **예시**:
   ```tsx
   import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -112,31 +113,31 @@
 
 ### 4. [FE] 난이도별 성과 차트
 
-- [ ] **파일 생성**: `frontend/components/DifficultyBreakdown.tsx`
-- [ ] **차트 유형**: Bar Chart 또는 Pie Chart
-- [ ] **데이터 표시**:
+- [x] **파일 생성**: `frontend/components/DifficultyBreakdown.tsx`
+- [x] **차트 유형**: Bar Chart 또는 Pie Chart
+- [x] **데이터 표시**:
   - EASY: 초록
   - MEDIUM: 주황
   - HARD: 빨강
   - 각 난이도별: 제출 수, 평균 점수, 성공률
-- [ ] **레이아웃**:
+- [x] **레이아웃**:
   - 차트 + 범례
   - 호버 시 상세 정보
 
 ### 5. [FE] 태그별 성과 차트
 
-- [ ] **파일 생성**: `frontend/components/TagBreakdown.tsx`
-- [ ] **차트 유형**: Radar Chart 또는 Horizontal Bar Chart
-- [ ] **데이터 표시**:
+- [x] **파일 생성**: `frontend/components/TagBreakdown.tsx`
+- [x] **차트 유형**: Radar Chart 또는 Horizontal Bar Chart
+- [x] **데이터 표시**:
   - 상위 10개 태그
   - 각 태그별: 제출 수, 평균 점수
-- [ ] **강점/약점 시각화**:
+- [x] **강점/약점 시각화**:
   - 평균 이상: 강점 (초록 표시)
   - 평균 이하: 약점 (빨강 표시)
 
 ### 6. [FE] Progress API 클라이언트
 
-- [ ] **파일 생성**: `frontend/lib/api/progress.ts`
+- [x] **파일 생성**: `frontend/lib/api/progress.ts`
   ```typescript
   import { api } from '../api';
 
@@ -174,12 +175,12 @@
 ### 7. [FE] 기간 선택 필터
 
 - [ ] **파일 생성/수정**: `frontend/components/TimeRangeFilter.tsx`
-- [ ] **옵션**: 7일, 30일, 90일, 전체
-- [ ] **UI**: 버튼 그룹 또는 드롭다운
-- [ ] **상태 관리**:
+- [x] **옵션**: 7일, 30일, 90일, 전체
+- [x] **UI**: 버튼 그룹 또는 드롭다운
+- [x] **상태 관리**:
   - URL 파라미터로 상태 관리 (`?range=30d`)
   - useSearchParams 활용
-- [ ] **예시**:
+- [x] **예시**:
   ```tsx
   const ranges = ['7d', '30d', '90d', 'all'];
 
@@ -198,20 +199,20 @@
 
 ### 8. [FE] 로딩/빈 상태 처리
 
-- [ ] **로딩 상태**:
+- [x] **로딩 상태**:
   - 스켈레톤 UI (차트 영역)
   - 숫자 카드는 플레이스홀더
-- [ ] **빈 상태**:
+- [x] **빈 상태**:
   - 제출 이력이 없을 때
   - "아직 제출 기록이 없습니다. 첫 문제를 풀어보세요!"
   - 문제 목록으로 이동 버튼
 
 ### 9. [FE] 헤더에 대시보드 링크 추가
 
-- [ ] **파일 수정**: `frontend/components/Header.tsx`
-- [ ] **조건**: 로그인 사용자에게만 표시
-- [ ] **위치**: 문제 목록 옆 또는 사용자 메뉴 내
-- [ ] **예시**:
+- [x] **파일 수정**: `frontend/components/Header.tsx`
+- [x] **조건**: 로그인 사용자에게만 표시
+- [x] **위치**: 문제 목록 옆 또는 사용자 메뉴 내
+- [x] **예시**:
   ```tsx
   {isLoggedIn && (
     <Link href="/dashboard" className="...">
@@ -239,13 +240,13 @@
 
 ## 완료 조건
 
-- [ ] 대시보드 페이지 접근 가능 (회원 전용)
-- [ ] 요약 카드 4개 정상 표시
-- [ ] 타임라인 차트 렌더링
-- [ ] 난이도별 성과 차트 렌더링
-- [ ] 태그별 성과 차트 렌더링
-- [ ] 기간 필터 동작
-- [ ] 로딩/빈 상태 처리
+- [x] 대시보드 페이지 접근 가능 (회원 전용)
+- [x] 요약 카드 4개 정상 표시
+- [x] 타임라인 차트 렌더링
+- [x] 난이도별 성과 차트 렌더링
+- [x] 태그별 성과 차트 렌더링
+- [x] 기간 필터 동작
+- [x] 로딩/빈 상태 처리
 
 ---
 

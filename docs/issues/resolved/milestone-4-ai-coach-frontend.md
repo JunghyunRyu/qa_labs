@@ -3,6 +3,7 @@
 **우선순위**: P1
 **의존성**: Milestone 3 (AI 코치 백엔드)
 **예상 작업량**: 대
+**상태**: ✅ 완료
 
 ---
 
@@ -29,8 +30,8 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
 
 ### 1. [FE] AI 패널 컴포넌트
 
-- [ ] **파일 생성**: `frontend/components/AICoachPanel.tsx`
-- [ ] **구조**:
+- [x] **파일 생성**: `frontend/components/AICoachPanel.tsx`
+- [x] **구조**:
   ```tsx
   <AICoachPanel problemId={id} codeContext={code}>
     <AIModeToggle mode={mode} onToggle={setMode} />
@@ -39,15 +40,15 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
     <AISavePolicy isLoggedIn={isLoggedIn} />
   </AICoachPanel>
   ```
-- [ ] **스타일**:
+- [x] **스타일**:
   - 고정 높이 (예: calc(100vh - header - padding))
   - 내부 스크롤
   - 우측 사이드바 형태
 
 ### 2. [FE] AI 모드 토글 (OFF/COACH)
 
-- [ ] **파일 생성**: `frontend/components/AIModeToggle.tsx`
-- [ ] **Props**:
+- [x] **파일 생성**: `frontend/components/AIModeToggle.tsx`
+- [x] **Props**:
   ```typescript
   interface AIModeToggleProps {
     mode: 'OFF' | 'COACH';
@@ -55,11 +56,11 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
     disabled?: boolean;
   }
   ```
-- [ ] **UI**:
+- [x] **UI**:
   - 세그먼트 버튼 또는 스위치
   - OFF: 비활성 상태 (회색)
   - COACH: 활성 상태 (브랜드 컬러)
-- [ ] **localStorage 저장**:
+- [x] **localStorage 저장**:
   ```typescript
   useEffect(() => {
     localStorage.setItem('ai_coach_mode', mode);
@@ -68,8 +69,8 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
 
 ### 3. [FE] AI 대화 입력 컴포넌트
 
-- [ ] **파일 생성**: `frontend/components/AIMessageInput.tsx`
-- [ ] **Props**:
+- [x] **파일 생성**: `frontend/components/AIMessageInput.tsx`
+- [x] **Props**:
   ```typescript
   interface AIMessageInputProps {
     onSend: (message: string) => void;
@@ -77,20 +78,20 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
     loading?: boolean;
   }
   ```
-- [ ] **기능**:
+- [x] **기능**:
   - 텍스트 입력 (textarea)
   - Enter로 전송, Shift+Enter로 줄바꿈
   - 전송 버튼 (아이콘)
   - 전송 중 로딩 상태
   - 빈 메시지 전송 방지
-- [ ] **UI**:
+- [x] **UI**:
   - 하단 고정
   - 입력창 + 전송 버튼
 
 ### 4. [FE] AI 대화 메시지 컴포넌트
 
-- [ ] **파일 생성**: `frontend/components/AIMessage.tsx`
-- [ ] **Props**:
+- [x] **파일 생성**: `frontend/components/AIMessage.tsx`
+- [x] **Props**:
   ```typescript
   interface AIMessageProps {
     role: 'user' | 'assistant';
@@ -98,7 +99,7 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
     timestamp?: Date;
   }
   ```
-- [ ] **UI**:
+- [x] **UI**:
   - 사용자 메시지: 우측 정렬, 브랜드 컬러 배경
   - AI 응답: 좌측 정렬, 회색 배경
   - 마크다운 렌더링 (react-markdown)
@@ -107,15 +108,15 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
 
 ### 5. [FE] AI 대화 리스트 컴포넌트
 
-- [ ] **파일 생성**: `frontend/components/AIConversationList.tsx`
-- [ ] **Props**:
+- [x] **파일 생성**: `frontend/components/AIConversationList.tsx`
+- [x] **Props**:
   ```typescript
   interface AIConversationListProps {
     messages: AIMessage[];
     loading?: boolean;
   }
   ```
-- [ ] **기능**:
+- [x] **기능**:
   - 스크롤 가능한 대화 목록
   - 새 메시지 시 자동 스크롤 (scrollIntoView)
   - 로딩 인디케이터 (AI 응답 대기 중)
@@ -123,8 +124,8 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
 
 ### 6. [FE] AI API 클라이언트
 
-- [ ] **파일 생성**: `frontend/lib/api/ai.ts`
-- [ ] **함수 구현**:
+- [x] **파일 생성**: `frontend/lib/api/ai.ts`
+- [x] **함수 구현**:
   ```typescript
   export async function sendMessage(
     problemId: number,
@@ -155,7 +156,7 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
   }
   ```
 
-- [ ] **타입 정의**: `frontend/types/ai.ts`
+- [x] **타입 정의**: `frontend/types/ai.ts`
   ```typescript
   export interface AIChatResponse {
     reply: string;
@@ -183,37 +184,37 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
 
 ### 7. [FE] 저장 정책 안내
 
-- [ ] **파일 수정**: `frontend/components/AICoachPanel.tsx` 또는 별도 컴포넌트
-- [ ] **UI**:
+- [x] **파일 수정**: `frontend/components/AICoachPanel.tsx` 또는 별도 컴포넌트
+- [x] **UI**:
   - 비회원: "로그인하면 대화 기록이 저장됩니다" + 로그인 링크
   - 회원: "대화 기록이 자동 저장됩니다"
-- [ ] **위치**: 패널 하단 또는 입력창 위
+- [x] **위치**: 패널 하단 또는 입력창 위
 
 ### 8. [FE] 대화 히스토리 UI (회원 전용)
 
-- [ ] **기능**:
+- [x] **기능**:
   - 이전 대화 목록 드롭다운 또는 탭
   - 대화 선택 시 해당 대화 내용 로드
   - 새 대화 시작 버튼
-- [ ] **조건**: 로그인 사용자만 표시
-- [ ] **위치**: 패널 상단
+- [x] **조건**: 로그인 사용자만 표시
+- [x] **위치**: 패널 상단
 
 ### 9. [FE] 모바일 AI 패널
 
-- [ ] **파일 생성**: `frontend/components/AICoachMobileDrawer.tsx`
-- [ ] **트리거**:
+- [x] **파일 생성**: `frontend/components/AICoachMobileDrawer.tsx`
+- [x] **트리거**:
   - 하단 FAB 버튼 (AI 아이콘)
   - 또는 Sticky 패널의 AI 토글 클릭 시
-- [ ] **UI**:
+- [x] **UI**:
   - 전체 화면 모달 또는 하단 시트 (80% 높이)
   - 닫기 버튼
   - 내용은 AICoachPanel과 동일
-- [ ] **반응형**: 모바일(< lg)에서만 표시
+- [x] **반응형**: 모바일(< lg)에서만 표시
 
 ### 10. [FE] 문제 페이지 통합
 
-- [ ] **파일 수정**: `frontend/app/problems/[id]/page.tsx`
-- [ ] **레이아웃 변경**:
+- [x] **파일 수정**: `frontend/app/problems/[id]/page.tsx`
+- [x] **레이아웃 변경**:
   ```tsx
   <div className="flex">
     <main className="flex-1">
@@ -228,14 +229,14 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
   <AICoachMobileFAB onClick={openDrawer} />
   <AICoachMobileDrawer isOpen={isOpen} onClose={closeDrawer} ... />
   ```
-- [ ] **상태 관리**:
+- [x] **상태 관리**:
   - AI 모드 상태
   - 대화 메시지 상태
   - 로딩 상태
 
 ### 11. [FE] 레이트리밋 에러 처리
 
-- [ ] **에러 핸들링**:
+- [x] **에러 핸들링**:
   ```typescript
   try {
     const response = await sendMessage(...);
@@ -247,7 +248,7 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
     }
   }
   ```
-- [ ] **UI**: 토스트 또는 인라인 에러 메시지
+- [x] **UI**: 토스트 또는 인라인 에러 메시지
 
 ---
 
@@ -269,12 +270,12 @@ AI 코치 패널 UI 및 대화 기능을 구현합니다. 사용자가 문제 �
 
 ## 완료 조건
 
-- [ ] AI 패널 ON/OFF 토글 동작
-- [ ] 대화 전송 및 AI 응답 표시
-- [ ] 마크다운/코드 블록 렌더링
-- [ ] 회원 대화 히스토리 저장/조회
-- [ ] 모바일에서 AI 패널 접근 가능 (FAB + Drawer)
-- [ ] 레이트리밋 에러 처리
+- [x] AI 패널 ON/OFF 토글 동작
+- [x] 대화 전송 및 AI 응답 표시
+- [x] 마크다운/코드 블록 렌더링
+- [x] 회원 대화 히스토리 저장/조회
+- [x] 모바일에서 AI 패널 접근 가능 (FAB + Drawer)
+- [x] 레이트리밋 에러 처리
 
 ---
 

@@ -3,6 +3,7 @@
 **우선순위**: P1-P2
 **의존성**: Milestone 1 (user_id/anonymous_id 지원)
 **예상 작업량**: 중
+**상태**: ✅ 완료
 
 ---
 
@@ -27,8 +28,8 @@
 
 ### 1. [BE] Progress Summary API
 
-- [ ] **파일 생성**: `backend/app/api/progress.py`
-- [ ] **엔드포인트 구현**:
+- [x] **파일 생성**: `backend/app/api/progress.py`
+- [x] **엔드포인트 구현**:
   ```python
   @router.get("/summary", response_model=ProgressSummaryResponse)
   async def get_progress_summary(
@@ -39,7 +40,7 @@
       service = ProgressService(db)
       return service.get_summary(current_user.id)
   ```
-- [ ] **응답 내용**:
+- [x] **응답 내용**:
   - 총 제출 수
   - 성공 제출 수
   - 평균 점수 (최근 N회)
@@ -49,7 +50,7 @@
 
 ### 2. [BE] Progress Timeline API
 
-- [ ] **엔드포인트 구현**:
+- [x] **엔드포인트 구현**:
   ```python
   @router.get("/timeline", response_model=ProgressTimelineResponse)
   async def get_progress_timeline(
@@ -61,14 +62,14 @@
       service = ProgressService(db)
       return service.get_timeline(current_user.id, range)
   ```
-- [ ] **응답 내용**:
+- [x] **응답 내용**:
   - 일/주 단위 데이터 포인트
   - 각 포인트: 날짜, 제출 수, 평균 점수, 평균 kill ratio
 
 ### 3. [BE] 난이도별 집계
 
-- [ ] **구현 위치**: ProgressService
-- [ ] **집계 내용**:
+- [x] **구현 위치**: ProgressService
+- [x] **집계 내용**:
   ```python
   def get_difficulty_stats(self, user_id: UUID) -> List[DifficultyStats]:
       """난이도별 통계"""
@@ -99,8 +100,8 @@
 
 ### 4. [BE] 태그별 집계
 
-- [ ] **구현 위치**: ProgressService
-- [ ] **집계 내용**:
+- [x] **구현 위치**: ProgressService
+- [x] **집계 내용**:
   ```python
   def get_tag_stats(self, user_id: UUID) -> List[TagStats]:
       """태그별 통계"""
@@ -133,7 +134,7 @@
 
 ### 5. [BE] Progress 스키마 정의
 
-- [ ] **파일 생성**: `backend/app/schemas/progress.py`
+- [x] **파일 생성**: `backend/app/schemas/progress.py`
   ```python
   class DifficultyStats(BaseModel):
       difficulty: str  # 'EASY', 'MEDIUM', 'HARD'
@@ -170,7 +171,7 @@
 
 ### 6. [BE] Progress 서비스
 
-- [ ] **파일 생성**: `backend/app/services/progress_service.py`
+- [x] **파일 생성**: `backend/app/services/progress_service.py`
   ```python
   class ProgressService:
       def __init__(self, db: Session):
@@ -256,7 +257,7 @@
 
 ### 7. [BE] 라우터 등록
 
-- [ ] **파일 수정**: `backend/app/main.py`
+- [x] **파일 수정**: `backend/app/main.py`
   ```python
   from app.api import progress
 
@@ -265,8 +266,8 @@
 
 ### 8. [BE] (선택) Progress 스냅샷 캐시
 
-- [ ] **목적**: 대량 데이터 시 성능 최적화
-- [ ] **테이블 생성**:
+- [x] **목적**: 대량 데이터 시 성능 최적화
+- [x] **테이블 생성**:
   ```sql
   CREATE TABLE user_progress_snapshots (
       id UUID PRIMARY KEY,
@@ -281,8 +282,8 @@
       UNIQUE(user_id, snapshot_date)
   );
   ```
-- [ ] **일별 배치 작업**: Celery Beat으로 매일 자정에 스냅샷 생성
-- [ ] **우선순위**: 사용자 수 증가 시 구현
+- [x] **일별 배치 작업**: Celery Beat으로 매일 자정에 스냅샷 생성
+- [x] **우선순위**: 사용자 수 증가 시 구현
 
 ---
 
@@ -299,11 +300,11 @@
 
 ## 완료 조건
 
-- [ ] `/api/v1/progress/summary` API 정상 동작
-- [ ] `/api/v1/progress/timeline` API 정상 동작
-- [ ] 난이도별 집계 정확성 확인
-- [ ] 태그별 집계 정확성 확인
-- [ ] 데이터 없는 신규 유저 응답 처리
+- [x] `/api/v1/progress/summary` API 정상 동작
+- [x] `/api/v1/progress/timeline` API 정상 동작
+- [x] 난이도별 집계 정확성 확인
+- [x] 태그별 집계 정확성 확인
+- [x] 데이터 없는 신규 유저 응답 처리
 
 ---
 
