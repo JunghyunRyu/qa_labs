@@ -1,10 +1,10 @@
 # Token Policy (SDD Spec)
 
-- Product: QA-Arena / QA-Labs Arena
-- Doc: docs/spec/token-policy.md
-- Version: v0.2
+- Product: QA Arena
+- Doc: docs/specs/token-policy.md
+- Version: v0.3
 - Status: Implemented
-- Date (KST): 2025-12-28
+- Date (KST): 2026-01-14
 - Owner: Product/Backend
 
 ## 0. 목적 (Purpose)
@@ -44,7 +44,7 @@
 
 ### 4.1 회원 기본 제공량
 - **Daily Free**: 3 tokens / day
-- **Monthly Allowance**: 100 tokens / month
+- **Monthly Allowance**: 50 tokens / month
 
 ### 4.2 리셋 기준
 - Daily Free 리셋: 매일 00:00 KST
@@ -109,6 +109,26 @@
 ### 7.2 출력 제한(Output Bound)
 - 기본 피드백은 길이/항목 수 제한 (ai-feedback.md 참조)
 - 심화 분석은 별도 제한을 두되, 무제한 텍스트 금지
+
+### 7.3 Rate Limiting
+
+토큰과 별개로, API 호출 빈도 제한이 적용됩니다.
+
+#### 제출(Submission) Rate Limit
+| 구분 | 분당 | 일당 |
+|------|------|------|
+| 회원 | 10회 | 200회 |
+| 게스트 | 5회 | 30회 |
+
+#### AI Chat Rate Limit
+| 구분 | 분당 | 일당 |
+|------|------|------|
+| 회원 | 10회 | 200회 |
+| 게스트 | 5회 | 30회 |
+| 게스트 IP (우회 방지) | - | 15회 |
+
+> **게스트 IP 제한**: 쿠키를 삭제하여 Rate Limit을 우회하는 것을 방지합니다.
+> IP 기반 일일 15회 제한이 추가로 적용됩니다.
 
 ## 8. API 레벨 규격 (Backend Contract)
 

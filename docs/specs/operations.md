@@ -6,9 +6,9 @@
 > ⚠ AI / 코드 어시스턴트로 트러블슈팅을 진행할 때는
 > 반드시 `docs/specs/AI_SAFETY_PROTOCOLS.md`의 **절대 금지 사항**을 먼저 확인한다.
 
-> 📅 Last Updated: 2025-12-31
+> 📅 Last Updated: 2026-01-14
 > 하이브리드 아키텍처 (클라이언트 + 서버 사이드 실행) 반영
-> M5 마일스톤 완료, 보안 강화 적용
+> M5 마일스톤 완료, AI Coach/Hint 기능 추가, GPT-5.2 업그레이드
 
 ## 0. Claude Code 슬래시 명령어
 
@@ -334,3 +334,4 @@ docker logs qa_arena_backend_prod --tail 100
 | 2025-12-28 | 슬래시 명령어/SSM 추가, 백업 정책을 수동(배포 전)으로 단순화 | AI Copilot |
 | 2025-12-30 | 브랜딩 리뉴얼(QA Arena), GA4 환경변수 문서화 | AI Copilot |
 | 2025-12-31 | M4-2 코드 자동 저장, M5-1/M5-2 AI 연동, 보안 강화 반영 | AI Copilot |
+| 2026-01-14 | GPT-5.2 업그레이드, AI Coach/Hint 기능 추가 반영 | AI Copilot |

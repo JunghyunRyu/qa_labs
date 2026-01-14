@@ -1,10 +1,10 @@
 # AI Feedback (SDD Spec)
 
-- Product: QA-Arena / QA-Labs Arena
-- Doc: docs/spec/ai-feedback.md
-- Version: v0.2
-- Status: Partially Implemented (Base만 구현됨)
-- Date (KST): 2025-12-28
+- Product: QA Arena
+- Doc: docs/specs/ai-feedback.md
+- Version: v0.3
+- Status: Implemented (Base + AI Coach + AI Hint)
+- Date (KST): 2026-01-14
 - Owner: Product/Backend
 
 ## 0. 목적 (Purpose)
@@ -40,10 +40,24 @@
 - **캐시**: 생성 결과 저장(선택: 최신 1개만 유지)
 
 ### 2.3 Regenerate (재생성)
-- **트리거**: 사용자가 “재생성” 버튼 클릭
+- **트리거**: 사용자가 "재생성" 버튼 클릭
 - **비용**: 1 토큰
 - **쿨다운**: submission 기준 30초
 - **정책**: 기존 Base(또는 Deep)를 대체하거나, `regen_count` 증가 후 최신본 저장
+
+### 2.4 AI Coach (AI 코치 채팅)
+- **트리거**: 사용자가 AI 코치 채팅창에서 질문
+- **비용**: 1 토큰/메시지
+- **모델**: GPT-4o-mini (빠른 응답 우선)
+- **Rate Limit**: 회원 10회/분, 200회/일 | 게스트 5회/분, 30회/일
+- **컨텍스트**: 문제 정보, 최근 제출 결과, 이전 대화 내역 포함
+- **Guardrails**: 직접적인 정답/코드 제공 금지, 힌트 위주 안내
+
+### 2.5 AI Hint (AI 힌트)
+- **트리거**: 사용자가 "힌트 요청" 버튼 클릭
+- **비용**: 1 토큰
+- **정책**: 단계별 힌트 제공, 정답 코드 미포함
+- **캐시**: 문제별/난이도별 공통 힌트는 캐시 가능
 
 ## 3. 상태 머신 (State Model)
 

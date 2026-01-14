@@ -1,8 +1,8 @@
 # 에러 처리 가이드
 
 > 작성일: 2025-12-07
-> 최종 수정: 2025-12-28
-> 목적: QA-Arena 프로젝트의 에러 처리 전략 및 가이드 문서화 (하이브리드 아키텍처 반영)
+> 최종 수정: 2026-01-14
+> 목적: QA Arena 프로젝트의 에러 처리 전략 및 가이드 문서화 (하이브리드 아키텍처 반영)
 
 ---
 
@@ -369,10 +369,13 @@ grep "\[GRADING_ERROR\]" logs/app.log
 
 | 제한 대상 | 회원 | 게스트 |
 |----------|------|--------|
-| 제출 (분당) | RATE_LIMIT_MEMBER_SUBMISSIONS | RATE_LIMIT_GUEST_SUBMISSIONS |
-| 제출 (일당) | RATE_LIMIT_MEMBER_SUBMISSIONS_DAILY | RATE_LIMIT_GUEST_SUBMISSIONS_DAILY |
-| AI 채팅 (분당) | RATE_LIMIT_AI_MEMBER | RATE_LIMIT_AI_GUEST |
-| AI 채팅 (일당) | RATE_LIMIT_AI_MEMBER_DAILY | RATE_LIMIT_AI_GUEST_DAILY |
+| 제출 (분당) | 10/minute | 5/minute |
+| 제출 (일당) | 200/day | 30/day |
+| AI 채팅 (분당) | 10/minute | 5/minute |
+| AI 채팅 (일당) | 200/day | 30/day |
+| AI 채팅 IP 일당 (게스트만) | - | 15/day |
+
+> **게스트 IP 제한**: `RATE_LIMIT_AI_GUEST_IP_DAILY` 설정으로 쿠키 삭제를 통한 우회 방지
 
 ### 9.2. 커스텀 예외 클래스
 
@@ -630,4 +633,5 @@ Sentry로 전송되는 데이터에서 민감정보 필터링:
 | 2025-12-18 | 클라이언트 사이드 에러 처리(Pyodide) 섹션 추가 | AI Copilot |
 | 2025-12-28 | Section 9 Rate Limit 에러 처리 추가, 429 상태 코드 추가, generate_feedback_task 상세 설명 보완 | AI Copilot |
 | 2025-12-28 | Section 11 민감정보 마스킹 추가 (security_utils, Sentry PII 필터, Validation 단순화) | AI Copilot |
+| 2026-01-14 | Rate Limit 구체적인 수치 업데이트, 게스트 IP 제한 설명 추가 | AI Copilot |
 

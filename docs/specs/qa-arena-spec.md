@@ -1,8 +1,8 @@
 
 # QA Arena – AI-Assisted QA Coding Test Platform Spec
 
-> Version: 0.7 (Updated 2025-12-31)
-> Scope: MVP + AI 통합 + GitHub OAuth 인증 + 모니터링 통합 + **클라이언트 사이드 실행(Pyodide)** + **토큰 시스템** + **테스트 품질 분석** + **AI 코치** + **Google Analytics 4** + **랜딩 페이지 리뉴얼** + **코드 자동 저장** + **함수 Contract 노출** + **테스트 포인트 AI 연동** + **보안 강화**
+> Version: 0.8 (Updated 2026-01-14)
+> Scope: MVP + AI 통합 + GitHub/Google OAuth 인증 + 모니터링 통합 + **클라이언트 사이드 실행(Pyodide)** + **토큰 시스템** + **테스트 품질 분석** + **AI 코치** + **AI 힌트** + **Google Analytics 4** + **랜딩 페이지 리뉴얼** + **코드 자동 저장** + **함수 Contract 노출** + **테스트 포인트 AI 연동** + **보안 강화** + **GPT-5.2 업그레이드**
 
 ---
 
@@ -63,7 +63,9 @@
   - `AI Coach` (실시간 학습 도우미 채팅)
   - `AI Test Generator` (Admin용 테스트 코드 자동 생성)
   - `Test Hint Generator` (사용자용 텍스트 힌트 생성)
-  - OpenAI API 기반 (gpt-4o-mini 등)
+  - OpenAI API 기반:
+    - **GPT-5.2**: 기본 모델 (피드백/문제 생성)
+    - **GPT-4o-mini**: AI Coach 전용 (빠른 응답)
 
 - **Test Quality System**
   - 테스트 코드 품질 자동 분석 (AST 기반)
@@ -872,6 +874,7 @@ export interface ClientExecutionResult {
 | 2025-12-28 | 0.5 | 실제 구현과 스펙 동기화: 토큰 시스템, 테스트 품질 시스템, AI 코치, 비회원 제출, 도메인 분류 등 추가 | AI Copilot |
 | 2025-12-30 | 0.6 | 브랜딩 리뉴얼(QA-Arena→QA Arena), GA4 통합, 랜딩 페이지 UI 대폭 개선, SEO 최적화, E2E 테스트 추가 | AI Copilot |
 | 2025-12-31 | 0.7 | M4-2 코드 자동 저장, M5-1 함수 Contract 노출, M5-2 테스트 포인트 AI 연동, 보안 강화 (conftest.py, submission.py) | AI Copilot |
+| 2026-01-14 | 0.8 | GPT-5.2 업그레이드, Google OAuth 추가, AI 힌트 기능 추가, Rate Limit 설정 상세화 | AI Copilot |
 
 ---
 

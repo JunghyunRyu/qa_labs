@@ -3,9 +3,9 @@
 ## 📌 Purpose
 This document provides a high-level overview of the QA Arena production architecture, including service composition, routing, and operational components.
 
-> 📅 Last Updated: 2025-12-31
+> 📅 Last Updated: 2026-01-14
 > 하이브리드 아키텍처 (클라이언트 + 서버 사이드 실행) 반영
-> M5 마일스톤 (함수 Contract 노출, 테스트 포인트 AI 연동) 완료
+> M5 마일스톤 완료, AI Coach/Hint 기능 추가, GPT-5.2 업그레이드
 
 ---
 
@@ -64,11 +64,12 @@ qa_labs/
 - **Frontend:** Next.js 14 + TypeScript + Monaco Editor
 - **Client-side Execution:** Pyodide (WebAssembly Python) + Web Worker
 - **Backend:** FastAPI (Python 3.11+)
-- **Authentication:** GitHub OAuth + JWT
+- **Authentication:** GitHub/Google OAuth + JWT
 - **Task Queue:** Celery + Redis (서버 사이드 Fallback 및 AI 피드백용)
 - **Database:** PostgreSQL 15
 - **Reverse Proxy:** Nginx + Let's Encrypt SSL
-- **Monitoring:** Sentry (Frontend + Backend)
+- **AI/LLM:** OpenAI GPT-5.2 (피드백/문제생성), GPT-4o-mini (AI Coach)
+- **Monitoring:** Sentry (Frontend + Backend), Google Analytics 4
 - **Alerting:** Slack Webhook (Worker Monitor)
 - **Orchestration:** Docker Compose
 - **Hosting:** AWS EC2
@@ -83,3 +84,4 @@ qa_labs/
 | 2025-12-18 | 클라이언트 사이드 실행(Pyodide) 하이브리드 아키텍처 반영 |
 | 2025-12-30 | 브랜딩 리뉴얼(QA Arena), GA4 통합, Playwright E2E 테스트 추가 |
 | 2025-12-31 | M4-2 코드 자동 저장, M5-1 함수 Contract 노출, M5-2 테스트 포인트 AI 연동, 보안 강화 |
+| 2026-01-14 | GPT-5.2 업그레이드, AI Coach 기능 추가, Google OAuth 추가, 기술 스택 업데이트 |

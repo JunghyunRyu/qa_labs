@@ -3,7 +3,7 @@
 ## 📌 Purpose
 Defines the official and quick deployment flows for the QA Arena production environment.
 
-> 📅 Last Updated: 2025-12-31
+> 📅 Last Updated: 2026-01-14
 
 ---
 
@@ -164,3 +164,4 @@ docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 | 2025-12-28 | SSM 접속, 슬래시 명령어 추가 | AI Copilot |
 | 2025-12-30 | GA4 환경변수 섹션 추가 | AI Copilot |
 | 2025-12-31 | M5 마일스톤(Contract 노출, AI 연동) 및 보안 강화 배포 | AI Copilot |
+| 2026-01-14 | 문서 날짜 업데이트, GPT-5.2 및 AI Coach 기능 반영 | AI Copilot |
