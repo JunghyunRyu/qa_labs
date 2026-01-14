@@ -4,6 +4,7 @@ import logging
 import re
 from typing import Optional, List, Dict, Tuple
 
+from app.core.config import settings
 from app.core.llm_client import llm_client
 from app.models.ai_conversation import AIConversation, AIMessage
 from app.models.problem import Problem
@@ -106,6 +107,7 @@ def generate_response(
     conversation_messages: List[AIMessage],
     problem: Optional[Problem] = None,
     code_context: Optional[str] = None,
+    is_guest: bool = False,
 ) -> Tuple[str, int]:
     """
     Generate AI coach response.
@@ -115,6 +117,7 @@ def generate_response(
         conversation_messages: Previous messages in conversation
         problem: Problem context (optional)
         code_context: User's current code (optional)
+        is_guest: Whether the user is a guest (for model routing)
 
     Returns:
         Tuple of (AI response text, estimated token count)
@@ -146,11 +149,14 @@ def generate_response(
     messages.append({"role": "user", "content": user_message_with_context})
 
     try:
-        # Call LLM with AI Coach model
+        # Guest uses low-cost model, member uses default AI Coach model
+        model = settings.AI_GUEST_MODEL if is_guest else llm_client.ai_coach_model
+
+        # Call LLM
         response = llm_client.generate_chat_completion(
             messages=messages,
             temperature=0.7,
-            model=llm_client.ai_coach_model,
+            model=model,
         )
 
         # Apply guardrails
@@ -164,7 +170,8 @@ def generate_response(
             f"message_len={len(user_message)}, "
             f"response_len={len(response)}, "
             f"token_estimate={token_estimate}, "
-            f"history_count={len(conversation_messages)}"
+            f"history_count={len(conversation_messages)}, "
+            f"model={model}, is_guest={is_guest}"
         )
 
         return response, token_estimate

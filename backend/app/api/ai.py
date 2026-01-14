@@ -1,7 +1,7 @@
 """AI Coach API endpoints."""
 
 import logging
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from app.core.dependencies import (
     get_current_user,
     require_ai_access,
     AIAccessResult,
+    GuestAIAccessResult,
 )
 # PR3: New quota-based dependencies (from decorators to avoid circular import)
 from app.core.decorators import (
@@ -44,32 +45,29 @@ async def chat(
     request: Request,
     chat_request: AIChatRequest,
     db: Session = Depends(get_db),
-    ai_access: AIAccessResult = Depends(require_ai_access),
+    ai_access: Union[AIAccessResult, GuestAIAccessResult] = Depends(require_ai_access),
 ):
     """
-    Send a message to AI Coach. Requires auth + AI tokens.
+    Send a message to AI Coach. Supports both members and guests.
+
+    - Members: Token-based access with deduction
+    - Guests: Rate-limit based access (session limit managed by frontend)
 
     Note: 이 엔드포인트는 require_ai_access를 사용합니다.
-    새 엔드포인트에서는 require_quota(ActionType.AI_COACH)를 사용하세요:
-
-    ```python
-    @router.post("/chat/v2")
-    async def chat_v2(
-        chat_request: AIChatRequest,
-        quota_ctx: QuotaContext = Depends(require_quota(ActionType.AI_COACH)),
-    ):
-        # ... AI 처리 ...
-        quota_ctx.consume()  # 성공 시 토큰 차감
-        return result
-    ```
+    새 엔드포인트에서는 require_quota(ActionType.AI_COACH)를 사용하세요.
     """
     if chat_request.mode == AIChatMode.OFF:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="AI mode is OFF")
 
-    user_id = ai_access.user.id
+    # 게스트 여부에 따라 user_id/anonymous_id 결정
+    is_guest = ai_access.is_guest
+    user_id = None if is_guest else ai_access.user.id
+    anonymous_id = ai_access.anonymous_id if is_guest else None
 
+    # Rate limit 체크 (게스트/회원 공통)
     try:
-        check_ai_rate_limit(request, ai_access.user, None)
+        user = None if is_guest else ai_access.user
+        check_ai_rate_limit(request, user, anonymous_id)
     except AIRateLimitExceeded as e:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -89,12 +87,24 @@ async def chat(
         conversation = ai_repo.get_conversation_by_id(chat_request.conversation_id)
         if not conversation:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
-        if conversation.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this conversation")
+        # 대화 소유권 검증 (회원: user_id, 게스트: anonymous_id)
+        if is_guest:
+            if conversation.anonymous_id != anonymous_id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this conversation")
+        else:
+            if conversation.user_id != user_id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this conversation")
     else:
-        conversation = AIConversation(user_id=user_id, problem_id=chat_request.problem_id, mode=chat_request.mode.value)
+        # 새 대화 생성
+        conversation = AIConversation(
+            user_id=user_id,
+            anonymous_id=anonymous_id,
+            problem_id=chat_request.problem_id,
+            mode=chat_request.mode.value
+        )
         conversation = ai_repo.create_conversation(conversation)
-        logger.info(f"[AI_CHAT_NEW_CONVERSATION] conversation_id={conversation.id} problem_id={chat_request.problem_id} user_id={user_id}")
+        owner_info = f"anonymous_id={anonymous_id}" if is_guest else f"user_id={user_id}"
+        logger.info(f"[AI_CHAT_NEW_CONVERSATION] conversation_id={conversation.id} problem_id={chat_request.problem_id} {owner_info} is_guest={is_guest}")
 
     conversation_messages = ai_repo.get_conversation_messages(conversation.id, limit=ai_coach_service.MAX_CONTEXT_MESSAGES)
 
@@ -111,6 +121,7 @@ async def chat(
         conversation_messages=conversation_messages,
         problem=problem,
         code_context=chat_request.code_context,
+        is_guest=is_guest,
     )
 
     ai_message = AIMessage(
@@ -121,10 +132,11 @@ async def chat(
     )
     ai_message = ai_repo.add_message(ai_message)
 
-    # Deduct AI token after successful operation
+    # Deduct AI token after successful operation (no-op for guests)
     ai_access.deduct(cost=1)
 
-    logger.info(f"[AI_CHAT] conversation_id={conversation.id} problem_id={chat_request.problem_id} user_tokens={user_message.token_estimate} ai_tokens={token_estimate} user_id={user_id}")
+    owner_info = f"anonymous_id={anonymous_id}" if is_guest else f"user_id={user_id}"
+    logger.info(f"[AI_CHAT] conversation_id={conversation.id} problem_id={chat_request.problem_id} user_tokens={user_message.token_estimate} ai_tokens={token_estimate} {owner_info} is_guest={is_guest}")
 
     return AIChatResponse(
         reply=ai_response_text,

@@ -1,6 +1,7 @@
 """FastAPI dependencies for authentication and AI access control."""
 
-from typing import Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Optional, Tuple, Union
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status, Request, Header
@@ -128,42 +129,76 @@ class AIAccessResult:
         """Get current token status."""
         return self.token_service.get_token_status(self.user)
 
+    @property
+    def is_guest(self) -> bool:
+        """회원 여부 - AIAccessResult는 항상 회원"""
+        return False
+
+
+@dataclass
+class GuestAIAccessResult:
+    """
+    게스트(비회원) AI 접근 결과.
+
+    - 토큰 차감 없음 (rate limit으로만 제어)
+    - 세션당 3회 무료 사용 (프론트엔드에서 관리)
+    - anonymous_id로 사용자 식별
+    """
+    anonymous_id: Optional[str] = None
+    is_guest: bool = field(default=True, init=False)
+    _request: Optional[Request] = field(default=None, repr=False)
+
+    def deduct(self, cost: int = 1, submission_id: Optional[UUID] = None) -> Tuple[bool, str]:
+        """게스트는 토큰 차감 없음 - 항상 성공 반환"""
+        return True, "guest_free"
+
+    def get_status(self) -> dict:
+        """게스트 토큰 상태 - 무제한으로 표시"""
+        return {
+            "tokens_remaining": 999,
+            "daily_bonus_remaining": 3,
+            "is_guest": True,
+        }
+
 
 async def require_ai_access(
     request: Request,
     db: Session = Depends(get_db),
-) -> AIAccessResult:
+) -> Union[AIAccessResult, GuestAIAccessResult]:
     """
-    Dependency that requires authentication and checks AI token availability.
+    Dependency that checks AI access for both members and guests.
 
-    - Non-members: 401 Unauthorized
-    - No tokens left (and no daily free): 402 Payment Required
-    - OK: Returns AIAccessResult for token deduction after operation
+    - Guests: Returns GuestAIAccessResult (rate limit only, no token deduction)
+    - Members with tokens: Returns AIAccessResult for token deduction
+    - Members without tokens: 402 Payment Required
 
     token-policy.md 준수:
     - §4.3: 차감 우선순위 (Daily Free → Monthly)
     - §6.2: 중복 차감 방지 (Idempotency)
     - §8.2: 표준 에러 규격 (TOKEN_INSUFFICIENT)
 
+    게스트 정책:
+    - Rate limit으로 abuse 방지 (5회/분, 30회/일)
+    - 세션당 3회 무료 (프론트엔드에서 관리)
+
     Usage:
         @router.post("/ai/chat")
         async def chat(
-            ai_access: AIAccessResult = Depends(require_ai_access)
+            ai_access: Union[AIAccessResult, GuestAIAccessResult] = Depends(require_ai_access)
         ):
             # Do AI operation
             result = await do_ai_stuff()
-            # Deduct token on success
+            # Deduct token on success (no-op for guests)
             ai_access.deduct()
             return result
     """
     # Check authentication
     user = await get_current_user_optional(request, db)
+
+    # 게스트 허용 - GuestAIAccessResult 반환
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="AI 기능을 사용하려면 로그인이 필요합니다.",
-            headers={"X-Error-Code": "AUTH_REQUIRED"}
-        )
+        anonymous_id = request.cookies.get("qa_anonymous_id")
+        return GuestAIAccessResult(anonymous_id=anonymous_id, _request=request)
 
     # Check token availability
     token_service = TokenService(db)

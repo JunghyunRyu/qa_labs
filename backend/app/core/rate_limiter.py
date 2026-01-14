@@ -167,6 +167,7 @@ def check_ai_rate_limit(
     Check rate limit for AI chat based on user type.
 
     Checks both per-minute and per-day limits.
+    For guests, also checks IP-only daily limit to prevent cookie bypass abuse.
 
     Args:
         request: Starlette request object
@@ -180,6 +181,7 @@ def check_ai_rate_limit(
         return
 
     key = get_rate_limit_key(request, user, anonymous_id)
+    storage = limiter._storage
 
     if user:
         limits_to_check = [
@@ -194,7 +196,22 @@ def check_ai_rate_limit(
         ]
         user_type = "guest"
 
-    storage = limiter._storage
+        # Guest-only: Check IP-based daily limit (bypass protection)
+        # This prevents guests from clearing cookies to get unlimited access
+        ip = get_client_ip(request)
+        ip_key = f"guest_ip:{ip}"
+        ip_daily_limit = settings.RATE_LIMIT_AI_GUEST_IP_DAILY
+        ip_limit_item = parse(ip_daily_limit)
+        ip_storage_key = f"LIMITER/ai_chat/{ip_daily_limit}/{ip_key}"
+
+        ip_current = storage.get(ip_storage_key)
+        if ip_current >= ip_limit_item.amount:
+            retry_after = ip_limit_item.get_expiry()
+            logger.warning(
+                f"[AI_IP_RATE_LIMIT_EXCEEDED] ip={ip} limit={ip_daily_limit} "
+                f"current={ip_current} retry_after={retry_after}"
+            )
+            raise AIRateLimitExceeded(ip_daily_limit, retry_after)
 
     for limit_str in limits_to_check:
         limit_item = parse(limit_str)
@@ -219,5 +236,14 @@ def check_ai_rate_limit(
         storage_key = f"LIMITER/ai_chat/{limit_str}/{key}"
         expiry = limit_item.get_expiry()
         storage.incr(storage_key, expiry)
+
+    # Guest-only: Also increment IP-based counter
+    if not user:
+        ip = get_client_ip(request)
+        ip_key = f"guest_ip:{ip}"
+        ip_daily_limit = settings.RATE_LIMIT_AI_GUEST_IP_DAILY
+        ip_limit_item = parse(ip_daily_limit)
+        ip_storage_key = f"LIMITER/ai_chat/{ip_daily_limit}/{ip_key}"
+        storage.incr(ip_storage_key, ip_limit_item.get_expiry())
 
     logger.debug(f"[AI_RATE_LIMIT_PASSED] key={key} user_type={user_type}")

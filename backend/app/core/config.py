@@ -106,8 +106,12 @@ class Settings(BaseSettings):
     # AI Coach Rate Limiting
     RATE_LIMIT_AI_GUEST: str = "5/minute"  # Guest AI chat per minute
     RATE_LIMIT_AI_GUEST_DAILY: str = "30/day"  # Guest AI chat per day
+    RATE_LIMIT_AI_GUEST_IP_DAILY: str = "15/day"  # Guest IP-only daily limit (bypass protection)
     RATE_LIMIT_AI_MEMBER: str = "10/minute"  # Member AI chat per minute
     RATE_LIMIT_AI_MEMBER_DAILY: str = "200/day"  # Member AI chat per day
+
+    # AI Guest Model (cost optimization)
+    AI_GUEST_MODEL: str = "gpt-4o-mini"  # Low-cost model for guests
 
     # GitHub OAuth
     GITHUB_CLIENT_ID: Optional[str] = None
