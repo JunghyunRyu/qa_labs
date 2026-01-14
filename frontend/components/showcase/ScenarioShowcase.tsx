@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { trackScenarioCardClick, trackLandingCTAClick } from "@/lib/analytics";
 
 // ============================================================
 // Types
@@ -45,6 +46,24 @@ export default function ScenarioShowcase({ domains, problems }: ScenarioShowcase
     .filter((p) => p.domain === activeDomain)
     .slice(0, 3);
 
+  // 카드 클릭 핸들러
+  const handleCardClick = (problem: ShowcaseProblem) => {
+    trackScenarioCardClick({
+      problemSlug: problem.href.replace("/problems/", ""),
+      domain: problem.domain,
+      difficulty: problem.difficulty,
+    });
+  };
+
+  // 전체 문제 보기 클릭 핸들러
+  const handleViewAllClick = () => {
+    trackLandingCTAClick({
+      location: "showcase",
+      ctaType: "browse",
+      destination: "/problems",
+    });
+  };
+
   return (
     <div className="w-full">
 
@@ -71,6 +90,7 @@ export default function ScenarioShowcase({ domains, problems }: ScenarioShowcase
           <Link
             key={problem.href}
             href={problem.href}
+            onClick={() => handleCardClick(problem)}
             className="group relative block"
           >
             {/* Hover Glow Effect */}
@@ -147,6 +167,7 @@ export default function ScenarioShowcase({ domains, problems }: ScenarioShowcase
       <div className="mt-12 text-center">
         <Link
           href="/problems"
+          onClick={handleViewAllClick}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold text-blue-400 border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 hover:border-blue-500/50 transition-all"
         >
           전체 문제 라이브러리 탐색하기

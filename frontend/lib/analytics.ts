@@ -150,3 +150,116 @@ export const trackGuestConversionStart = (params: {
     problem_id: params.problemId || "",
   });
 };
+
+// ============================================
+// Landing Page CTA 트래킹 이벤트
+// ============================================
+
+/**
+ * 랜딩 페이지 CTA 클릭 이벤트
+ */
+export const trackLandingCTAClick = (params: {
+  location: "hero" | "footer" | "showcase" | "header";
+  ctaType: "start_challenge" | "ai_copilot" | "signup" | "browse" | "problem_card";
+  destination?: string;
+}) => {
+  sendGAEvent("landing_cta_click", {
+    location: params.location,
+    cta_type: params.ctaType,
+    destination: params.destination || "",
+  });
+};
+
+/**
+ * 시나리오 카드 클릭 이벤트
+ */
+export const trackScenarioCardClick = (params: {
+  problemSlug: string;
+  domain: string;
+  difficulty: string;
+}) => {
+  sendGAEvent("scenario_card_click", {
+    problem_slug: params.problemSlug,
+    domain: params.domain,
+    difficulty: params.difficulty,
+  });
+};
+
+/**
+ * 랜딩 페이지 섹션 노출 이벤트 (스크롤 추적용)
+ */
+export const trackLandingSectionView = (params: {
+  section: "hero" | "ai_teaser" | "proof_points" | "how_it_works" | "showcase" | "target_audience" | "footer_cta";
+}) => {
+  sendGAEvent("landing_section_view", {
+    section: params.section,
+  });
+};
+
+// ============================================
+// Guest AI Conversion 퍼널 트래킹 이벤트
+// ============================================
+
+/**
+ * 게스트 AI 채팅 시작 이벤트
+ */
+export const trackGuestAIChatStart = (params: {
+  problemId: string;
+  usageCount: number;
+}) => {
+  sendGAEvent("guest_ai_chat_start", {
+    problem_id: params.problemId,
+    usage_count: params.usageCount,
+  });
+};
+
+/**
+ * 게스트 AI 사용 제한 도달 이벤트
+ */
+export const trackGuestAILimitReached = (params: {
+  problemId: string;
+}) => {
+  sendGAEvent("guest_ai_limit_reached", {
+    problem_id: params.problemId,
+    limit: 3,
+  });
+};
+
+/**
+ * 게스트 AI 전환 버튼 클릭 이벤트
+ */
+export const trackGuestAIConversionClick = (params: {
+  problemId: string;
+  trigger: "blur_answer" | "limit_modal";
+}) => {
+  sendGAEvent("guest_ai_conversion_click", {
+    problem_id: params.problemId,
+    trigger: params.trigger,
+  });
+};
+
+/**
+ * AI 넛지 토스트 노출 이벤트
+ */
+export const trackAINudgeImpression = (params: {
+  problemId: string;
+  trigger: "wrong_answer" | "inactivity";
+}) => {
+  sendGAEvent("ai_nudge_impression", {
+    problem_id: params.problemId,
+    trigger: params.trigger,
+  });
+};
+
+/**
+ * AI 넛지 토스트 클릭 이벤트
+ */
+export const trackAINudgeClick = (params: {
+  problemId: string;
+  trigger: "wrong_answer" | "inactivity";
+}) => {
+  sendGAEvent("ai_nudge_click", {
+    problem_id: params.problemId,
+    trigger: params.trigger,
+  });
+};

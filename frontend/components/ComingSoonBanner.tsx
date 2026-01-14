@@ -1,8 +1,8 @@
-/** Coming Soon banner component - horizontal banner for problems list */
+/** Coming Soon banner component - Mission Control Dark Theme */
 
 "use client";
 
-import { Clock, Calendar, ChevronRight } from "lucide-react";
+import { Clock, Calendar, ChevronRight, Rocket } from "lucide-react";
 
 interface NextProblem {
   title: string;
@@ -25,12 +25,12 @@ const DOMAIN_ICONS: Record<string, string> = {
   content: "📝",
 };
 
-// 난이도 한글 레이블
-const DIFFICULTY_LABELS: Record<string, string> = {
-  "Very Easy": "아주쉬움",
-  Easy: "쉬움",
-  Medium: "보통",
-  Hard: "어려움",
+// Mission Control 스타일 난이도 설정
+const DIFFICULTY_CONFIG: Record<string, { color: string; label: string }> = {
+  "Very Easy": { color: "bg-sky-500/10 text-sky-400 border-sky-500/20", label: "입문" },
+  Easy: { color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", label: "쉬움" },
+  Medium: { color: "bg-amber-500/10 text-amber-400 border-amber-500/20", label: "보통" },
+  Hard: { color: "bg-rose-500/10 text-rose-400 border-rose-500/20", label: "어려움" },
 };
 
 // 날짜 포맷팅 함수
@@ -54,21 +54,35 @@ function getDaysUntil(dateString: string): number {
 
 export default function ComingSoonBanner({ nextProblem }: ComingSoonBannerProps) {
   const domainIcon = DOMAIN_ICONS[nextProblem.domain] || "📚";
-  const difficultyLabel = DIFFICULTY_LABELS[nextProblem.difficulty] || nextProblem.difficulty;
+  const difficultyConfig = DIFFICULTY_CONFIG[nextProblem.difficulty] || {
+    color: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+    label: nextProblem.difficulty,
+  };
   const daysUntil = getDaysUntil(nextProblem.published_at);
 
   return (
-    <div className="bg-[#f6f8fa]/80 dark:bg-[#161b22]/50 border border-[#d0d7de] dark:border-[#30363d] rounded-lg px-4 py-3 mb-4">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="relative overflow-hidden bg-gradient-to-r from-cyan-900/20 to-indigo-900/20 border border-cyan-500/20 rounded-xl px-5 py-4 mb-6">
+      {/* 배경 글로우 효과 */}
+      <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative flex items-center justify-between gap-4 flex-wrap">
         {/* Left: Coming Soon badge + Title */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <span className="flex-shrink-0 px-2.5 py-1 bg-[#58a6ff] text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-sm">
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          {/* 아이콘 */}
+          <div className="p-2 bg-cyan-500/20 rounded-lg flex-shrink-0">
+            <Rocket className="w-5 h-5 text-cyan-400" />
+          </div>
+
+          {/* Coming Soon 배지 */}
+          <span className="flex-shrink-0 px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-lg shadow-cyan-500/20">
             <Clock className="w-3.5 h-3.5" />
             COMING SOON
           </span>
+
+          {/* 문제 제목 */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm">{domainIcon}</span>
-            <span className="text-sm font-medium text-[#24292f] dark:text-[#c9d1d9] truncate">
+            <span className="text-base">{domainIcon}</span>
+            <span className="text-sm font-semibold text-slate-100 truncate">
               {nextProblem.title}
             </span>
           </div>
@@ -76,21 +90,27 @@ export default function ComingSoonBanner({ nextProblem }: ComingSoonBannerProps)
 
         {/* Right: Difficulty + Date + D-Day */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="px-2 py-0.5 bg-[#f6f8fa] dark:bg-[#21262d] text-[#57606a] dark:text-[#8b949e] text-xs font-medium rounded">
-            {difficultyLabel}
+          {/* 난이도 */}
+          <span className={`px-2.5 py-1 text-xs font-bold rounded-md border ${difficultyConfig.color}`}>
+            {difficultyConfig.label}
           </span>
-          <div className="flex items-center gap-1.5 text-[#57606a] dark:text-[#8b949e]">
+
+          {/* 공개일 */}
+          <div className="flex items-center gap-1.5 text-slate-400">
             <Calendar className="w-4 h-4" />
             <span className="text-sm font-medium">
               {formatDate(nextProblem.published_at)}
             </span>
           </div>
+
+          {/* D-Day 배지 */}
           {daysUntil > 0 && (
-            <span className="px-2 py-0.5 bg-[#ddf4ff] dark:bg-[#388bfd26] text-[#0969da] dark:text-[#58a6ff] text-xs font-bold rounded-full">
+            <span className="px-2.5 py-1 bg-cyan-500/20 text-cyan-400 text-xs font-bold rounded-full border border-cyan-500/30">
               D-{daysUntil}
             </span>
           )}
-          <ChevronRight className="w-4 h-4 text-[#8b949e]" />
+
+          <ChevronRight className="w-4 h-4 text-slate-500" />
         </div>
       </div>
     </div>
