@@ -39,6 +39,7 @@ export interface ProblemListItem {
   success_rate?: number | null;  // 0.0~1.0, null if < 5 submissions
   bugs_count?: number;  // 숨은 버그 수 (buggy_implementations 개수)
   published_at?: string;  // 공개 시점 (NEW 배지용)
+  user_status?: "solved" | "attempted" | "failed";  // 사용자 풀이 상태
 }
 
 export interface ProblemListResponse {
@@ -137,6 +138,8 @@ export interface ClientExecutionResult {
     execution_time?: number;
   }>;
   total_execution_time?: number;
+  /** M6-2: Golden 테스트 출력 (실패 시 에러 포함) */
+  golden_test_output?: string;
 }
 
 export interface SubmissionCreate {
