@@ -164,10 +164,20 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
           </p>
         )}
 
-        {/* Footer: 태그 + 메타 정보 */}
+        {/* Footer: 도메인 + 태그 + 메타 정보 */}
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-800">
-          {/* 태그 (border-only 스타일) */}
-          <div className="flex flex-wrap gap-1.5" role="list" aria-label="문제 태그">
+          {/* 도메인 + 태그 */}
+          <div className="flex flex-wrap items-center gap-1.5" role="list" aria-label="문제 태그">
+            {/* 도메인 표시 */}
+            <span className="text-[10px] text-slate-500 flex items-center gap-0.5 mr-0.5">
+              <span>{domain.icon}</span>
+              <span>{domain.label}</span>
+            </span>
+            {/* 구분선 */}
+            {problem.skills && problem.skills.length > 0 && (
+              <span className="w-px h-3 bg-slate-700" />
+            )}
+            {/* 태그 (border-only 스타일) */}
             {problem.skills && problem.skills.length > 0 && (() => {
               const tagModels = toTagViewModels(problem.skills);
               const { visible, hiddenCount } = sliceTags(tagModels, 2);
@@ -206,14 +216,6 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
               </div>
             )}
           </div>
-        </div>
-
-        {/* 도메인 표시 (좌측 하단) */}
-        <div className="absolute bottom-3 left-5">
-          <span className="text-[10px] text-slate-600 flex items-center gap-1">
-            <span>{domain.icon}</span>
-            <span>{domain.label}</span>
-          </span>
         </div>
       </div>
     </Link>
