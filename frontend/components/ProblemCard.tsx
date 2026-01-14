@@ -77,11 +77,11 @@ const DOMAIN_CONFIG: Record<string, { icon: string; label: string }> = {
 function StatusIcon({ status }: { status?: string }) {
   switch (status) {
     case "solved":
-      return <CheckCircle2 className="w-4 h-4 text-emerald-400" title="해결됨" />;
+      return <span title="해결됨"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></span>;
     case "attempted":
-      return <Clock className="w-4 h-4 text-amber-400" title="시도 중" />;
+      return <span title="시도 중"><Clock className="w-4 h-4 text-amber-400" /></span>;
     case "failed":
-      return <XCircle className="w-4 h-4 text-rose-400" title="실패" />;
+      return <span title="실패"><XCircle className="w-4 h-4 text-rose-400" /></span>;
     default:
       return null;
   }
