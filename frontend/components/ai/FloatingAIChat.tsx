@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { Bot, X, History, GripVertical } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
@@ -11,6 +11,12 @@ import type { PromptContext } from "@/lib/quickPrompts";
 
 // localStorage에 저장할 키
 const POSITION_STORAGE_KEY = "qa_arena_ai_button_position";
+const WIDTH_STORAGE_KEY = "qa_arena_ai_panel_width";
+
+// 패널 너비 제한
+const MIN_PANEL_WIDTH = 320;
+const MAX_PANEL_WIDTH = 800;
+const DEFAULT_PANEL_WIDTH = 384; // w-96
 
 interface FloatingAIChatProps {
   problemId: number;
@@ -43,18 +49,32 @@ export default function FloatingAIChat({
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [isDragging, setIsDragging] = useState(false);
 
-  // 컴포넌트 마운트 시 저장된 위치 복원
+  // 패널 너비 상태
+  const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartX = useRef(0);
+  const resizeStartWidth = useRef(0);
+
+  // 컴포넌트 마운트 시 저장된 위치 및 너비 복원
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(POSITION_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      const savedPosition = localStorage.getItem(POSITION_STORAGE_KEY);
+      if (savedPosition) {
+        const parsed = JSON.parse(savedPosition);
         if (typeof parsed.x === "number" && typeof parsed.y === "number") {
           setPosition(parsed);
         }
       }
+
+      const savedWidth = localStorage.getItem(WIDTH_STORAGE_KEY);
+      if (savedWidth) {
+        const width = parseInt(savedWidth, 10);
+        if (width >= MIN_PANEL_WIDTH && width <= MAX_PANEL_WIDTH) {
+          setPanelWidth(width);
+        }
+      }
     } catch {
-      // localStorage 접근 실패 시 기본 위치 사용
+      // localStorage 접근 실패 시 기본값 사용
     }
   }, []);
 
@@ -73,6 +93,48 @@ export default function FloatingAIChat({
       // localStorage 저장 실패 무시
     }
   };
+
+  // 리사이즈 핸들러
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    resizeStartX.current = e.clientX;
+    resizeStartWidth.current = panelWidth;
+  }, [panelWidth]);
+
+  const handleResizeMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return;
+
+    const delta = resizeStartX.current - e.clientX;
+    const newWidth = Math.min(
+      MAX_PANEL_WIDTH,
+      Math.max(MIN_PANEL_WIDTH, resizeStartWidth.current + delta)
+    );
+    setPanelWidth(newWidth);
+  }, [isResizing]);
+
+  const handleResizeEnd = useCallback(() => {
+    if (!isResizing) return;
+
+    setIsResizing(false);
+    try {
+      localStorage.setItem(WIDTH_STORAGE_KEY, String(panelWidth));
+    } catch {
+      // localStorage 저장 실패 무시
+    }
+  }, [isResizing, panelWidth]);
+
+  // 리사이즈 이벤트 리스너
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", handleResizeMove);
+      window.addEventListener("mouseup", handleResizeEnd);
+      return () => {
+        window.removeEventListener("mousemove", handleResizeMove);
+        window.removeEventListener("mouseup", handleResizeEnd);
+      };
+    }
+  }, [isResizing, handleResizeMove, handleResizeEnd]);
 
   // Handle Escape key to close
   useEffect(() => {
@@ -171,9 +233,35 @@ export default function FloatingAIChat({
               damping: 25,
               stiffness: 300,
             }}
-            className="fixed top-0 right-0 h-full w-96 max-w-[90vw] z-50
+            style={{ width: panelWidth }}
+            className="fixed top-0 right-0 h-full max-w-[90vw] z-50
                        bg-white dark:bg-neutral-900 shadow-2xl flex flex-col"
           >
+            {/* 리사이즈 핸들 */}
+            <div
+              onMouseDown={handleResizeStart}
+              className={`absolute -left-1 top-0 w-3 h-full cursor-ew-resize
+                         group transition-colors z-10
+                         ${isResizing ? "bg-purple-500/20" : ""}`}
+              title="드래그하여 너비 조절"
+            >
+              {/* 리사이즈 바 (시각적 표시) */}
+              <div className={`absolute left-1 top-0 w-1 h-full transition-colors
+                              ${isResizing
+                                ? "bg-purple-500"
+                                : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-purple-400 dark:group-hover:bg-purple-500"}`} />
+              {/* 가운데 그립 아이콘 */}
+              <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-3 h-12
+                              flex items-center justify-center rounded
+                              transition-opacity
+                              ${isResizing ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
+                <div className="flex flex-col gap-0.5">
+                  <div className="w-1 h-1 rounded-full bg-purple-500" />
+                  <div className="w-1 h-1 rounded-full bg-purple-500" />
+                  <div className="w-1 h-1 rounded-full bg-purple-500" />
+                </div>
+              </div>
+            </div>
             {/* Drawer Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-purple-600 dark:bg-purple-700">
               <div className="flex items-center gap-2 text-white">
