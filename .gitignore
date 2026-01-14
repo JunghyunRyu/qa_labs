@@ -101,3 +101,9 @@ docs/specs/milestones/
 
 nul.mcp.json
 reports/
+# MCP config
+.mcp.json
+
+# Temp files
+tmpclaude-*
+nul
