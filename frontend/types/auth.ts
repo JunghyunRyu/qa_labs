@@ -6,6 +6,8 @@ export interface User {
   github_username: string | null;
   terms_accepted_at: string | null;
   tutorial_completed_at: string | null;
+  solved_count?: number;  // 해결한 문제 수
+  token_balance?: number;  // 토큰 잔액
 }
 
 export interface AuthStatus {
