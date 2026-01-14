@@ -19,7 +19,7 @@ class AIChatRequest(BaseModel):
     problem_id: int
     submission_id: Optional[UUID] = None
     mode: AIChatMode = AIChatMode.COACH
-    message: str = Field(..., min_length=1, max_length=2000)
+    message: str = Field(..., min_length=1, max_length=10000)
     code_context: Optional[str] = None
     conversation_id: Optional[UUID] = None  # None for new conversation
 
