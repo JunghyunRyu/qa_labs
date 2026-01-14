@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { deleteMyAccount } from "@/lib/api/users";
-import { History, Bookmark, BarChart2, Trash2, LogOut } from "lucide-react";
+import { History, Bookmark, BarChart2, Trash2, LogOut, ChevronDown } from "lucide-react";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
@@ -60,7 +60,7 @@ export default function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 rounded-md p-1 hover:bg-[var(--card-background)] transition-colors"
+        className="flex items-center gap-2 rounded-md px-2 py-1 text-slate-200 hover:text-white hover:bg-slate-800 transition-colors"
       >
         {user.avatar_url ? (
           <img
@@ -69,31 +69,26 @@ export default function UserMenu() {
             className="w-8 h-8 rounded-full"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-medium">
+          <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm font-medium">
             {user.username.charAt(0).toUpperCase()}
           </div>
         )}
         <span className="text-sm font-medium hidden sm:block">{user.username}</span>
-        <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-[var(--card-background)] border border-[var(--card-border)] py-1 z-50">
-          <div className="px-4 py-2 border-b border-[var(--card-border)]">
-            <p className="text-sm font-medium">{user.username}</p>
-            <p className="text-xs text-[var(--muted)]">{user.email}</p>
+        <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-xl bg-slate-900 border border-slate-700 py-1 z-50">
+          <div className="px-4 py-2 border-b border-slate-700">
+            <p className="text-sm font-medium text-slate-100">{user.username}</p>
+            <p className="text-xs text-slate-400">{user.email}</p>
           </div>
           <Link
             href="/dashboard"
             onClick={() => setIsOpen(false)}
-            className="block px-4 py-2 text-sm hover:bg-[var(--background)] transition-colors"
+            className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
           >
             <span className="flex items-center space-x-2">
               <BarChart2 className="w-4 h-4" />
@@ -103,7 +98,7 @@ export default function UserMenu() {
           <Link
             href="/submissions"
             onClick={() => setIsOpen(false)}
-            className="block px-4 py-2 text-sm hover:bg-[var(--background)] transition-colors"
+            className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
           >
             <span className="flex items-center space-x-2">
               <History className="w-4 h-4" />
@@ -111,9 +106,9 @@ export default function UserMenu() {
             </span>
           </Link>
           <Link
-            href="/problems/bookmarked"
+            href="/problems?bookmarked=true"
             onClick={() => setIsOpen(false)}
-            className="block px-4 py-2 text-sm hover:bg-[var(--background)] transition-colors"
+            className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
           >
             <span className="flex items-center space-x-2">
               <Bookmark className="w-4 h-4" />
@@ -125,7 +120,7 @@ export default function UserMenu() {
               href={`https://github.com/${user.github_username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="block px-4 py-2 text-sm hover:bg-[var(--background)] transition-colors"
+              className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
             >
               <span className="flex items-center space-x-2">
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -137,11 +132,11 @@ export default function UserMenu() {
           )}
 
           {/* Account Deletion Section */}
-          <div className="border-t border-[var(--card-border)]">
+          <div className="border-t border-slate-700">
             {deleteStep === 0 ? (
               <button
                 onClick={handleDeleteAccount}
-                className="w-full text-left px-4 py-2 text-sm text-[var(--muted)] hover:text-red-500 hover:bg-[var(--background)] transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
               >
                 <span className="flex items-center space-x-2">
                   <Trash2 className="w-4 h-4" />
@@ -149,45 +144,45 @@ export default function UserMenu() {
                 </span>
               </button>
             ) : deleteStep === 1 ? (
-              <div className="px-4 py-3 bg-red-50 dark:bg-red-900/20">
-                <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+              <div className="px-4 py-3 bg-rose-900/20">
+                <p className="text-sm text-rose-400 mb-2">
                   정말 탈퇴하시겠습니까?
                 </p>
                 <div className="flex space-x-2">
                   <button
                     onClick={handleDeleteAccount}
-                    className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                    className="px-3 py-1 text-xs bg-rose-500 text-white rounded hover:bg-rose-600 transition-colors"
                   >
                     계속
                   </button>
                   <button
                     onClick={cancelDelete}
-                    className="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    className="px-3 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors"
                   >
                     취소
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="px-4 py-3 bg-red-100 dark:bg-red-900/40">
-                <p className="text-sm text-red-700 dark:text-red-300 font-medium mb-1">
+              <div className="px-4 py-3 bg-rose-900/40">
+                <p className="text-sm text-rose-300 font-medium mb-1">
                   모든 데이터가 삭제됩니다
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                <p className="text-xs text-rose-400 mb-2">
                   제출 기록, 북마크 등 모든 정보가 영구 삭제됩니다.
                 </p>
                 <div className="flex space-x-2">
                   <button
                     onClick={handleDeleteAccount}
                     disabled={isDeleting}
-                    className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-xs bg-rose-600 text-white rounded hover:bg-rose-700 transition-colors disabled:opacity-50"
                   >
                     {isDeleting ? "삭제 중..." : "삭제 확인"}
                   </button>
                   <button
                     onClick={cancelDelete}
                     disabled={isDeleting}
-                    className="px-3 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:opacity-50"
                   >
                     취소
                   </button>
@@ -201,7 +196,7 @@ export default function UserMenu() {
               await logout();
               setIsOpen(false);
             }}
-            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-[var(--background)] transition-colors"
+            className="w-full text-left px-4 py-2 text-sm text-rose-400 hover:bg-slate-800 transition-colors"
           >
             <span className="flex items-center space-x-2">
               <LogOut className="w-4 h-4" />
