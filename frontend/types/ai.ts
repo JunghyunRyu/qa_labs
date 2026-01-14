@@ -25,6 +25,7 @@ export interface AIMessage {
   role: "user" | "assistant";
   content: string;
   created_at: string;
+  isBlurred?: boolean; // 게스트 제한 초과 시 블러 처리
 }
 
 export interface AIConversation {

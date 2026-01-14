@@ -34,7 +34,7 @@ import AICoachPanel from "@/components/AICoachPanel";
 import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { trackCodeSubmit, trackProblemView, trackLocalTest } from "@/lib/analytics";
+import { trackCodeSubmit, trackProblemView, trackLocalTest, trackAINudgeImpression, trackAINudgeClick } from "@/lib/analytics";
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -78,6 +78,14 @@ export default function ProblemDetailPage() {
 
   // Honeypot for bot prevention (should always be empty)
   const [honeypot, setHoneypot] = useState("");
+
+  // AI 넛지 상태
+  const [showAINudge, setShowAINudge] = useState<{
+    type: "wrong_answer" | "inactivity";
+    message: string;
+  } | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -227,6 +235,84 @@ export default function ProblemDetailPage() {
     closeProblemPeek: () => setIsProblemPeekOpen(false),
     openProblemSearch,
   });
+
+  // AI 넛지: 오답 제출 시
+  const { isAIChatOpen } = useLayoutStore();
+  useEffect(() => {
+    // submission이 있고, 점수가 100 미만이며, AI 채팅이 열려있지 않을 때
+    if (submission && submission.score !== null && submission.score < 100 && !isAIChatOpen) {
+      // 3초 후 넛지 표시 (즉시 표시하면 거슬릴 수 있음)
+      const timer = setTimeout(() => {
+        setShowAINudge({
+          type: "wrong_answer",
+          message: submission.score === 0
+            ? "테스트가 통과하지 못했어요. AI 코치에게 도움을 받아볼까요?"
+            : `${submission.score}점이에요! AI 코치가 놓친 부분을 알려드릴게요.`,
+        });
+        trackAINudgeImpression({ problemId: String(problem?.id), trigger: "wrong_answer" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [submission, isAIChatOpen, problem?.id]);
+
+  // AI 넛지: 3분 비활성 시
+  useEffect(() => {
+    // 이미 AI 채팅이 열려있으면 비활성 타이머 불필요
+    if (isAIChatOpen) {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      return;
+    }
+
+    const resetInactivityTimer = () => {
+      lastActivityRef.current = Date.now();
+
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+
+      // 3분(180초) 후 넛지 표시
+      inactivityTimerRef.current = setTimeout(() => {
+        if (!isAIChatOpen && problem) {
+          setShowAINudge({
+            type: "inactivity",
+            message: "문제 풀이가 막히셨나요? AI 코치가 도움을 드릴 수 있어요.",
+          });
+          trackAINudgeImpression({ problemId: String(problem.id), trigger: "inactivity" });
+        }
+      }, 180000);
+    };
+
+    // 초기 타이머 설정
+    resetInactivityTimer();
+
+    // 활동 감지 이벤트
+    const handleActivity = () => resetInactivityTimer();
+
+    window.addEventListener("keydown", handleActivity);
+    window.addEventListener("mousemove", handleActivity);
+    window.addEventListener("click", handleActivity);
+
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("click", handleActivity);
+    };
+  }, [isAIChatOpen, problem]);
+
+  // 넛지 클릭 핸들러
+  const handleNudgeClick = useCallback(() => {
+    if (showAINudge && problem) {
+      trackAINudgeClick({ problemId: String(problem.id), trigger: showAINudge.type });
+      setIsAIChatOpen(true);
+      setAiMode("COACH");
+      setShowAINudge(null);
+    }
+  }, [showAINudge, problem, setIsAIChatOpen]);
 
   // Generate initial test template using the template generator
   const getInitialTemplate = (problem: Problem): string => {
@@ -662,6 +748,38 @@ export default function ProblemDetailPage() {
             }
           />
         </div>
+
+        {/* AI 넛지 토스트 */}
+        {showAINudge && (
+          <div className="fixed bottom-24 right-6 z-40 max-w-sm animate-in slide-in-from-right-5 fade-in duration-300">
+            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-purple-200 dark:border-purple-800 p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">💡</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-3">
+                    {showAINudge.message}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleNudgeClick}
+                      className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      AI 코치 열기
+                    </button>
+                    <button
+                      onClick={() => setShowAINudge(null)}
+                      className="px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Floating AI Chat */}
         <FloatingAIChat
