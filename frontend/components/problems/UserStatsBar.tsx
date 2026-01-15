@@ -63,7 +63,9 @@ export default function UserStatsBar({ totalProblems }: UserStatsBarProps) {
 
   // 로그인 사용자 통계
   const solvedCount = user?.solved_count || 0;
-  const tokenBalance = user?.token_balance || 0;
+  const monthlyTokens = user?.token_balance || 0;
+  const dailyBonus = user?.daily_bonus_remaining || 0;
+  const totalTokens = monthlyTokens + dailyBonus;
   const rank = getRank(solvedCount);
   const progressPercent = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
 
@@ -114,7 +116,12 @@ export default function UserStatsBar({ totalProblems }: UserStatsBarProps) {
           </div>
           <div>
             <p className="text-xs text-slate-500 mb-0.5">보유 토큰</p>
-            <p className="text-lg font-bold text-amber-400">{tokenBalance}</p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg font-bold text-amber-400">{totalTokens}</span>
+              <span className="text-xs text-slate-500">
+                ({monthlyTokens}<span className="text-amber-400/60">월</span> + {dailyBonus}<span className="text-sky-400/60">일</span>)
+              </span>
+            </div>
           </div>
         </div>
 

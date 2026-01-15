@@ -7,7 +7,8 @@ export interface User {
   terms_accepted_at: string | null;
   tutorial_completed_at: string | null;
   solved_count?: number;  // 해결한 문제 수
-  token_balance?: number;  // 토큰 잔액
+  token_balance?: number;  // 월간 토큰 잔여량
+  daily_bonus_remaining?: number;  // 일간 무료 토큰 잔여량
 }
 
 export interface AuthStatus {

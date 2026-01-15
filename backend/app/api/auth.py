@@ -373,22 +373,52 @@ async def logout(response: Response):
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(user: User = Depends(get_current_user)):
+async def get_me(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Get current authenticated user."""
+    # 사용자가 성공적으로 푼 고유 문제 수 조회
+    solved_count = db.query(func.count(func.distinct(Submission.problem_id))).filter(
+        Submission.user_id == user.id,
+        Submission.status == "SUCCESS"
+    ).scalar() or 0
+
+    # 토큰 정보 조회 (TokenService 활용)
+    token_service = TokenService(db)
+    token_status = token_service.get_token_status(user)
+
     return UserResponse(
         id=str(user.id),
         email=user.email,
         username=user.username,
         avatar_url=user.avatar_url,
         github_username=user.github_username,
-        terms_accepted_at=user.terms_accepted_at
+        terms_accepted_at=user.terms_accepted_at,
+        tutorial_completed_at=user.tutorial_completed_at,
+        solved_count=solved_count,
+        token_balance=token_status["tokens_remaining"],
+        daily_bonus_remaining=token_status["daily_bonus_remaining"]
     )
 
 
 @router.get("/status", response_model=AuthStatusResponse)
-async def get_auth_status(user: User = Depends(get_current_user_optional)):
+async def get_auth_status(
+    user: User = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
     """Check authentication status."""
     if user:
+        # 사용자가 성공적으로 푼 고유 문제 수 조회
+        solved_count = db.query(func.count(func.distinct(Submission.problem_id))).filter(
+            Submission.user_id == user.id,
+            Submission.status == "SUCCESS"
+        ).scalar() or 0
+
+        # 토큰 정보 조회 (TokenService 활용)
+        token_service = TokenService(db)
+        token_status = token_service.get_token_status(user)
+
         return AuthStatusResponse(
             authenticated=True,
             user=UserResponse(
@@ -398,7 +428,10 @@ async def get_auth_status(user: User = Depends(get_current_user_optional)):
                 avatar_url=user.avatar_url,
                 github_username=user.github_username,
                 terms_accepted_at=user.terms_accepted_at,
-                tutorial_completed_at=user.tutorial_completed_at
+                tutorial_completed_at=user.tutorial_completed_at,
+                solved_count=solved_count,
+                token_balance=token_status["tokens_remaining"],
+                daily_bonus_remaining=token_status["daily_bonus_remaining"]
             )
         )
     return AuthStatusResponse(authenticated=False, user=None)

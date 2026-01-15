@@ -14,6 +14,9 @@ class UserResponse(BaseModel):
     github_username: Optional[str] = None
     terms_accepted_at: Optional[datetime] = None
     tutorial_completed_at: Optional[datetime] = None
+    solved_count: int = 0
+    token_balance: int = 0  # 월간 토큰 잔여량 (token_balance - token_used)
+    daily_bonus_remaining: int = 0  # 일간 무료 토큰 잔여량
 
 
 class AuthStatusResponse(BaseModel):
