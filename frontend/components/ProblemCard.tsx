@@ -206,7 +206,7 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
           <div className="flex items-center gap-3 shrink-0">
             {successRate !== null && (
               <span className="text-[11px] text-slate-500" title="정답률">
-                {successRate}%
+                {Math.round(successRate)}%
               </span>
             )}
             {bugsCount > 0 && (

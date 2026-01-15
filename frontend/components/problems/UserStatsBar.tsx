@@ -69,68 +69,55 @@ export default function UserStatsBar({ totalProblems }: UserStatsBarProps) {
   const rank = getRank(solvedCount);
   const progressPercent = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
 
+  // 슬림한 한 줄 띠 형태
   return (
-    <div className="bg-slate-900/50 border border-slate-800 rounded-xl px-6 py-4 mb-6 backdrop-blur-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* 해결한 문제 */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <Target className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 mb-0.5">해결한 문제</p>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-white">{solvedCount}</span>
-                <span className="text-sm text-slate-500">/ {totalProblems}</span>
-              </div>
-            </div>
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg px-4 py-2.5 mb-4 backdrop-blur-sm">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        {/* 통계 아이템들 */}
+        <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+          {/* 해결한 문제 */}
+          <div
+            className="flex items-center gap-1.5 cursor-help"
+            title={`해결한 문제: ${solvedCount}개 / 전체 ${totalProblems}개`}
+          >
+            <Target className="w-4 h-4 text-emerald-400" />
+            <span className="font-semibold text-white">{solvedCount}</span>
+            <span className="text-slate-500">/ {totalProblems}</span>
+            <span className="text-slate-600 text-xs">({progressPercent}%)</span>
           </div>
-          {/* 진행률 바 */}
-          <div className="hidden sm:block w-32">
-            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <p className="text-[10px] text-slate-500 mt-1 text-right">{progressPercent}%</p>
-          </div>
-        </div>
 
-        {/* 나의 랭크 */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-purple-400" />
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 mb-0.5">나의 랭크</p>
-            <p className={`text-sm font-bold ${rank.color}`}>{rank.name}</p>
-          </div>
-        </div>
+          {/* 구분선 */}
+          <div className="hidden sm:block w-px h-4 bg-slate-700" />
 
-        {/* 보유 토큰 */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-            <Zap className="w-5 h-5 text-amber-400" />
+          {/* 나의 랭크 */}
+          <div
+            className="flex items-center gap-1.5 cursor-help"
+            title="나의 랭크"
+          >
+            <Trophy className="w-4 h-4 text-purple-400" />
+            <span className={`font-semibold ${rank.color}`}>{rank.name}</span>
           </div>
-          <div>
-            <p className="text-xs text-slate-500 mb-0.5">보유 토큰</p>
-            <div className="flex items-center gap-1.5">
-              <span className="text-lg font-bold text-amber-400">{totalTokens}</span>
-              <span className="text-xs text-slate-500">
-                ({monthlyTokens}<span className="text-amber-400/60">월</span> + {dailyBonus}<span className="text-sky-400/60">일</span>)
-              </span>
-            </div>
+
+          {/* 구분선 */}
+          <div className="hidden sm:block w-px h-4 bg-slate-700" />
+
+          {/* 보유 토큰 */}
+          <div
+            className="flex items-center gap-1.5 cursor-help"
+            title={`월간 토큰: ${monthlyTokens}개 / 일간 보너스: ${dailyBonus}개`}
+          >
+            <Zap className="w-4 h-4 text-amber-400" />
+            <span className="font-semibold text-amber-400">{totalTokens}</span>
           </div>
         </div>
 
         {/* 대시보드 링크 */}
         <Link
           href="/dashboard"
-          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-colors border border-slate-700"
+          className="hidden sm:flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 text-xs font-medium rounded-md transition-colors border border-slate-700"
         >
-          상세 통계 보기
+          상세 통계
+          <span className="text-slate-500">→</span>
         </Link>
       </div>
     </div>

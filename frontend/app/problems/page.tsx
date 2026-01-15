@@ -732,8 +732,8 @@ function ProblemsContent() {
           </div>
         )}
 
-        {/* Tutorial Banner (온보딩 섹션) */}
-        <SampleProblemsBanner />
+        {/* Tutorial Banner (온보딩 섹션) - 1문제 이상 푼 사용자에게는 숨김 */}
+        <SampleProblemsBanner forceHide={(user?.solved_count || 0) > 0} />
 
         {/* Coming Soon Banner */}
         {nextScheduled && <ComingSoonBanner nextProblem={nextScheduled} />}
