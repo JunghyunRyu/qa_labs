@@ -259,7 +259,7 @@ export default function DashboardPage() {
         {/* Header */}
         <header className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-100">
-            {user?.name || "사용자"}님의 미션 리포트
+            {user?.username || "사용자"}님의 미션 리포트
           </h1>
           <p className="mt-2 text-slate-400">
             지난 {timeRange === "7d" ? "7일" : timeRange === "30d" ? "30일" : timeRange === "90d" ? "90일" : "전체"} 간의 성장 기록입니다.
@@ -350,7 +350,7 @@ export default function DashboardPage() {
             <section className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
               {/* Section Header with Filters */}
               <div className="p-4 sm:p-6 border-b border-slate-800">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
                     <History className="w-5 h-5 text-slate-400" />
                     <h2 className="text-lg font-semibold text-slate-100">
