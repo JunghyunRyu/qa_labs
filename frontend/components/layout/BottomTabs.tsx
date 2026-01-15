@@ -347,6 +347,8 @@ function ResultTabContent({
   problem?: Problem;
   onTabChange?: (tab: TabId) => void;
 }) {
+  const { login } = useAuth();
+
   // Submitting / Pending / Running state
   if (isSubmitting || (submission && (submission.status === "PENDING" || submission.status === "RUNNING"))) {
     return (
