@@ -34,10 +34,15 @@ async def get_problems(
     search: Optional[str] = Query(None, description="Search in title, slug, or skills"),
     tags: Optional[str] = Query(None, description="Comma-separated skill tags to filter by"),
     sort: str = Query("recommended", description="Sort: recommended, newest, difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc"),
+    bookmarked: bool = Query(False, description="Filter to only bookmarked problems (requires authentication)"),
     db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
     """
     Get paginated and filtered list of problems.
+
+    Args:
+        bookmarked: If True, only return problems bookmarked by the current user (requires authentication)
 
     Returns:
         Dictionary with problems list, total count, and pagination info
@@ -45,7 +50,10 @@ async def get_problems(
     # Parse tags from comma-separated string
     tag_list = [t.strip() for t in tags.split(",")] if tags else None
 
-    logger.info(f"Fetching problems - page: {page}, page_size: {page_size}, difficulty: {difficulty}, domain: {domain}, search: {search}, tags: {tag_list}, sort: {sort}")
+    # Determine user_id for bookmark filter (only if authenticated and bookmarked=True)
+    user_id_for_bookmarks = current_user.id if (bookmarked and current_user) else None
+
+    logger.info(f"Fetching problems - page: {page}, page_size: {page_size}, difficulty: {difficulty}, domain: {domain}, search: {search}, tags: {tag_list}, sort: {sort}, bookmarked: {bookmarked}, user_id: {user_id_for_bookmarks}")
     service = ProblemService(db)
     problems, total, total_pages = service.get_problems(
         page=page,
@@ -55,6 +63,7 @@ async def get_problems(
         search=search,
         tags=tag_list,
         sort=sort,
+        user_id_for_bookmarks=user_id_for_bookmarks,
     )
     logger.info(f"Found {total} problems, returning page {page}/{total_pages}")
 

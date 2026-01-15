@@ -343,6 +343,8 @@ async function runMutationTest(
         score: 0,
         details: [],
         totalExecutionTime: totalTime,
+        // M6-2: Golden 테스트 실패 시 출력 포함 (에러 힌트용)
+        goldenTestOutput: goldenResult.output,
       };
       sendResult(id, true, result, totalTime);
       return;

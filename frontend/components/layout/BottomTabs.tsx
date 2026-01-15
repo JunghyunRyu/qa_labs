@@ -32,6 +32,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/AuthContext";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import FeedbackDisplay from "@/components/FeedbackDisplay";
 import { useLayoutStore } from "@/stores/layoutStore";
@@ -121,6 +122,8 @@ export default function BottomTabs({
   onLoadSubmission,
   sessionHistory = [],
 }: BottomTabsProps) {
+  const { login } = useAuth();
+
   // Internal state for uncontrolled mode
   const [internalActiveTab, setInternalActiveTab] = useState<TabId>("local");
   const [internalIsExpanded, setInternalIsExpanded] = useState(false);
@@ -475,6 +478,32 @@ function ResultTabContent({
         <p className="text-xs text-gray-500 text-center">
           로그 탭에서 상세 실패 내용을 확인할 수 있습니다.
         </p>
+
+        {/* 익명 사용자 로그인 유도 배너 */}
+        {!submission.user_id && (
+          <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200/50 dark:border-amber-700/50">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                <History className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm">
+                  실패도 성장의 일부입니다
+                </h4>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+                  로그인하면 실패 기록도 저장되어 어떤 실수를 자주 하는지 분석받을 수 있습니다.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => login("github")}
+              className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors text-sm font-medium"
+            >
+              <LogIn className="w-4 h-4" />
+              기록 시작하기
+            </button>
+          </div>
+        )}
       </div>
     );
   }

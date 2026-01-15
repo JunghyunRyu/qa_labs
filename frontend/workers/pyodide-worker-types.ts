@@ -175,4 +175,6 @@ export interface MutationTestResult {
     executionTime: number;
   }>;
   totalExecutionTime: number;
+  /** Golden 테스트 출력 (실패 시 에러 포함) - M6-2 */
+  goldenTestOutput?: string;
 }

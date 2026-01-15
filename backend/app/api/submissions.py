@@ -128,6 +128,14 @@ async def create_submission(
             "golden_code_passed": client_result.golden_code_passed,
             "total_execution_time_ms": client_result.total_execution_time,
         }
+
+        # M6-2: Golden 테스트 출력 저장 (에러 힌트용)
+        if client_result.golden_test_output:
+            execution_log["golden"] = {
+                "stderr": client_result.golden_test_output,
+                "stdout": client_result.golden_test_output,  # 에러 힌트 호환용
+            }
+
         if client_result.details:
             # 버그 설명을 가져오기 위해 mutant_id -> bug_description 매핑 생성
             bug_descriptions = {

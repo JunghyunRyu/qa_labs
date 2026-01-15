@@ -37,10 +37,10 @@ function AuthCallbackContent() {
           setStatus("terms");
         } else {
           setStatus("success");
-          // Redirect to home after a brief delay
+          // Redirect immediately for seamless UX
           setTimeout(() => {
             router.push("/");
-          }, 1500);
+          }, 500);
         }
       } catch (err) {
         setStatus("error");
@@ -56,9 +56,10 @@ function AuthCallbackContent() {
     try {
       await acceptTerms();
       setStatus("success");
+      // 신규 가입자는 문제 목록으로 바로 이동 (온보딩 유도)
       setTimeout(() => {
-        router.push("/");
-      }, 1500);
+        router.push("/problems?welcome=true");
+      }, 500);
     } catch (err) {
       setStatus("error");
       setErrorMessage("약관 동의 처리에 실패했습니다");
@@ -78,89 +79,87 @@ function AuthCallbackContent() {
     router.push("/");
   };
 
+  // Loading & Success state - same visual (seamless transition)
+  if (status === "loading" || status === "success") {
+    return (
+      <div className="flex flex-col items-center gap-6">
+        {/* Logo */}
+        <div className="font-bold text-2xl text-indigo-500 tracking-tight">
+          QA Arena
+        </div>
+
+        {/* Loading Spinner */}
+        <div className="w-10 h-10 border-4 border-slate-700 border-t-indigo-500 rounded-full animate-spin" />
+
+        {/* Status Message */}
+        <p className="text-sm text-slate-400 font-mono">
+          {status === "loading" ? "Authenticating..." : "Redirecting..."}
+        </p>
+      </div>
+    );
+  }
+
+  // Terms modal for new users
+  if (status === "terms") {
+    return (
+      <TermsModal
+        onAccept={handleAcceptTerms}
+        onDecline={handleDeclineTerms}
+        isLoading={isAcceptingTerms}
+      />
+    );
+  }
+
+  // Error state
   return (
-    <div className="text-center">
-      {status === "loading" && (
-        <>
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">인증 중...</h1>
-          <p className="text-gray-500 dark:text-gray-400">로그인을 완료하는 중입니다. 잠시만 기다려주세요.</p>
-        </>
-      )}
+    <div className="flex flex-col items-center gap-6">
+      {/* Error Icon */}
+      <div className="w-12 h-12 bg-rose-500/20 border border-rose-500/30 rounded-full flex items-center justify-center">
+        <svg
+          className="w-6 h-6 text-rose-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </div>
 
-      {status === "terms" && (
-        <TermsModal
-          onAccept={handleAcceptTerms}
-          onDecline={handleDeclineTerms}
-          isLoading={isAcceptingTerms}
-        />
-      )}
+      <div className="text-center">
+        <h1 className="text-lg font-semibold text-slate-100 mb-2">인증 실패</h1>
+        <p className="text-sm text-slate-400 mb-6">{errorMessage}</p>
+      </div>
 
-      {status === "success" && (
-        <>
-          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">로그인 성공!</h1>
-          <p className="text-gray-500 dark:text-gray-400">홈페이지로 이동 중...</p>
-        </>
-      )}
-
-      {status === "error" && (
-        <>
-          <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">인증 실패</h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">{errorMessage}</p>
-          <button
-            onClick={() => router.push("/")}
-            className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors font-medium"
-          >
-            홈으로 돌아가기
-          </button>
-        </>
-      )}
+      <button
+        onClick={() => router.push("/")}
+        className="px-5 py-2.5 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium border border-slate-700"
+      >
+        홈으로 돌아가기
+      </button>
     </div>
   );
 }
 
 function LoadingFallback() {
   return (
-    <div className="text-center">
-      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-      <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">로딩 중...</h1>
+    <div className="flex flex-col items-center gap-6">
+      <div className="font-bold text-2xl text-indigo-500 tracking-tight">
+        QA Arena
+      </div>
+      <div className="w-10 h-10 border-4 border-slate-700 border-t-indigo-500 rounded-full animate-spin" />
+      <p className="text-sm text-slate-400 font-mono">Loading...</p>
     </div>
   );
 }
 
 export default function AuthCallbackPage() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
       <Suspense fallback={<LoadingFallback />}>
         <AuthCallbackContent />
       </Suspense>

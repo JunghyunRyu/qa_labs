@@ -13,6 +13,7 @@ export interface GetProblemsParams {
   search?: string;
   tags?: string[];
   sort?: string;  // difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc
+  bookmarked?: boolean;  // 북마크한 문제만 필터링
 }
 
 /**
@@ -28,7 +29,7 @@ export async function getProblemsStats(): Promise<ProblemStatsResponse> {
 export async function getProblems(
   params: GetProblemsParams = {}
 ): Promise<ProblemListResponse> {
-  const { page = 1, pageSize = 10, difficulty, domain, search, tags, sort = "difficulty-asc" } = params;
+  const { page = 1, pageSize = 10, difficulty, domain, search, tags, sort = "difficulty-asc", bookmarked } = params;
 
   const queryParams = new URLSearchParams({
     page: page.toString(),
@@ -47,6 +48,9 @@ export async function getProblems(
   }
   if (tags && tags.length > 0) {
     queryParams.append("tags", tags.join(","));
+  }
+  if (bookmarked) {
+    queryParams.append("bookmarked", "true");
   }
 
   return get<ProblemListResponse>(`${PROBLEMS_ENDPOINT}?${queryParams.toString()}`);

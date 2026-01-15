@@ -531,6 +531,10 @@ export default function ProblemDetailPage() {
       // Run mutation test locally
       const testResult = await runMutationTest(code.trim(), problem.golden_code, buggyImpls);
 
+      // M6-2 Debug: Log goldenTestOutput
+      console.log('[M6-2 DEBUG] testResult:', testResult);
+      console.log('[M6-2 DEBUG] goldenTestOutput:', testResult.goldenTestOutput);
+
       // Convert to ClientExecutionResult format
       const clientResult: ClientExecutionResult = {
         golden_code_passed: testResult.goldenCodePassed,
@@ -544,7 +548,12 @@ export default function ProblemDetailPage() {
           execution_time: d.executionTime,
         })),
         total_execution_time: testResult.executionTime,
+        // M6-2: Golden 테스트 출력 (에러 힌트용)
+        golden_test_output: testResult.goldenTestOutput,
       };
+
+      // M6-2 Debug: Log clientResult before sending to API
+      console.log('[M6-2 DEBUG] clientResult to API:', JSON.stringify(clientResult, null, 2));
 
       // Submit with client results (server skips Celery)
       const newSubmission = await createSubmission({

@@ -52,6 +52,7 @@ class ProblemService:
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
         sort: str = "difficulty-asc",
+        user_id_for_bookmarks: Optional[int] = None,
     ) -> Tuple[List[ProblemListResponse], int, int]:
         """
         Get paginated and filtered list of problems.
@@ -64,6 +65,7 @@ class ProblemService:
             search: Search query for title, slug, or skills
             tags: Filter by skill tags (all tags must match)
             sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
+            user_id_for_bookmarks: If provided, only return problems bookmarked by this user
 
         Returns:
             Tuple of (list of problems, total count, total pages)
@@ -84,6 +86,7 @@ class ProblemService:
             search=search,
             tags=tags,
             sort=sort,
+            user_id_for_bookmarks=user_id_for_bookmarks,
         )
 
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0

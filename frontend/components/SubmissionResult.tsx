@@ -8,9 +8,12 @@ import TestResultsList from "./TestResultsList";
 import ErrorLogDisplay from "./ErrorLogDisplay";
 import { TestQualityPanel } from "./test-quality";
 import { parsePytestOutput } from "@/lib/pytestParser";
-import { AlertCircle, FileText, Sparkles, RefreshCw, ArrowRight, Lightbulb, Save, TrendingUp } from "lucide-react";
+import { sanitizeError } from "@/lib/errorSanitizer";
+import { SyntaxHintCard } from "./SyntaxHintCard";
+import { AlertCircle, FileText, Sparkles, RefreshCw, ArrowRight, Lightbulb, Save, TrendingUp, History, Target } from "lucide-react";
 import { Github } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/AuthContext";
 import type { QualityGrade, TestQualityAnalysis } from "@/types/test-quality";
 import { AIFeedbackTeaser } from "@/components/conversion";
 
@@ -21,6 +24,8 @@ interface SubmissionResultProps {
 }
 
 export default function SubmissionResult({ submission, onRetry, problemId }: SubmissionResultProps) {
+  const { login } = useAuth();
+
   // FAILURE 상태일 때 Golden Code 테스트 실패 정보 추출
   const getFailureInfo = () => {
     if (submission.status !== "FAILURE" || !submission.execution_log) return null;
@@ -51,7 +56,7 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
 
   return (
     <div className="space-y-6">
-      {/* 게스트 사용자 결과 저장 유도 배너 - SUCCESS 상태에서만 표시 */}
+      {/* 게스트 사용자 결과 저장 유도 배너 - SUCCESS 상태 */}
       {isGuest && submission.status === "SUCCESS" && (
         <div className="relative overflow-hidden rounded-xl border-2 border-purple-300/50 dark:border-purple-700/50 bg-gradient-to-r from-purple-50 via-white to-blue-50 dark:from-purple-950/30 dark:via-neutral-900 dark:to-blue-950/30 p-5">
           {/* 배경 장식 */}
@@ -74,13 +79,13 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
               </p>
             </div>
 
-            <a
-              href="/api/v1/auth/github/login"
+            <button
+              onClick={() => login("github")}
               className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors font-medium text-sm shadow-sm"
             >
               <Github className="w-4 h-4" />
               결과 저장하기
-            </a>
+            </button>
           </div>
 
           {/* 혜택 미리보기 */}
@@ -96,6 +101,55 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
             <span className="inline-flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-blue-500" />
               제출 이력 관리
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 게스트 사용자 로그인 유도 배너 - FAILURE 상태 */}
+      {isGuest && submission.status === "FAILURE" && (
+        <div className="relative overflow-hidden rounded-xl border-2 border-amber-300/50 dark:border-amber-700/50 bg-gradient-to-r from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-neutral-900 dark:to-orange-950/30 p-5">
+          {/* 배경 장식 */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/30 dark:bg-amber-800/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+              <History className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                실패도 성장의 일부입니다
+              </h4>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                로그인하면 <span className="font-medium text-amber-600 dark:text-amber-400">실패 기록도 저장</span>되어
+                <span className="font-medium text-amber-600 dark:text-amber-400"> 어떤 실수를 자주 하는지</span>
+                분석받을 수 있습니다.
+              </p>
+            </div>
+
+            <button
+              onClick={() => login("github")}
+              className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors font-medium text-sm shadow-sm"
+            >
+              <Github className="w-4 h-4" />
+              기록 시작하기
+            </button>
+          </div>
+
+          {/* 혜택 미리보기 */}
+          <div className="relative mt-4 pt-4 border-t border-amber-200/50 dark:border-amber-800/50 flex flex-wrap gap-4 text-xs text-neutral-500 dark:text-neutral-400">
+            <span className="inline-flex items-center gap-1.5">
+              <History className="w-3.5 h-3.5 text-amber-500" />
+              실패 패턴 분석
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5 text-orange-500" />
+              취약점 발견
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+              개선 추적
             </span>
           </div>
         </div>
@@ -173,6 +227,17 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
                 </div>
               </div>
             </div>
+
+            {/* 에러 힌트 카드 (M6-2) - stderr에서 인식된 에러가 있을 때 표시 */}
+            {failureInfo?.stderr && (() => {
+              const sanitized = sanitizeError(failureInfo.stderr);
+              return sanitized ? (
+                <SyntaxHintCard
+                  error={sanitized}
+                  originalStderr={failureInfo.stderr}
+                />
+              ) : null;
+            })()}
 
             {/* Test results breakdown */}
             {parsedGolden?.tests && parsedGolden.tests.length > 0 && (

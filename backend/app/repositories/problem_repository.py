@@ -8,6 +8,7 @@ from sqlalchemy import func, cast, Text, case, literal
 from app.models.problem import Problem
 from app.models.submission import Submission
 from app.models.buggy_implementation import BuggyImplementation
+from app.models.bookmarked_problem import BookmarkedProblem
 from app.schemas.problem import ProblemCreate
 
 class ProblemRepository:
@@ -26,6 +27,7 @@ class ProblemRepository:
         search: Optional[str] = None,
         tags: Optional[List[str]] = None,
         sort: str = "difficulty-asc",
+        user_id_for_bookmarks: Optional[int] = None,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """
         Get all problems with pagination, filtering, and sorting.
@@ -38,6 +40,7 @@ class ProblemRepository:
             search: Search query for title, slug, or skills
             tags: Filter by skill tags (all tags must match)
             sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
+            user_id_for_bookmarks: If provided, only return problems bookmarked by this user
 
         Returns:
             Tuple of (list of problem dicts with success_rate, total count)
@@ -84,6 +87,14 @@ class ProblemRepository:
 
         # Visibility filter: 공개된 문제만 목록에 표시 (is_visible=True AND published_at <= now())
         query = query.filter(Problem.is_visible == True, Problem.published_at <= datetime.now())
+
+        # Apply bookmark filter: only return problems bookmarked by the specified user
+        if user_id_for_bookmarks:
+            query = query.join(
+                BookmarkedProblem,
+                (BookmarkedProblem.problem_id == Problem.id) &
+                (BookmarkedProblem.user_id == user_id_for_bookmarks)
+            )
 
         # Apply difficulty filter
         if difficulty:

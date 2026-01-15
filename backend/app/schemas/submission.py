@@ -28,6 +28,8 @@ class ClientExecutionResult(BaseModel):
     score: int  # 0-100
     details: Optional[list[MutantDetail]] = None
     total_execution_time: Optional[float] = None  # milliseconds
+    # M6-2: Golden 테스트 출력 (실패 시 에러 포함)
+    golden_test_output: Optional[str] = None
 
 
 class SubmissionCreate(BaseModel):

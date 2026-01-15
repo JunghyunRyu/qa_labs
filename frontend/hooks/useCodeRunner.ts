@@ -27,6 +27,8 @@ interface TestRunResult {
   executionTime: number;
   /** 에러 메시지 (실패 시) */
   error?: string;
+  /** M6-2: Golden 테스트 출력 (실패 시 에러 포함) */
+  goldenTestOutput?: string;
 }
 
 // Hook 옵션
@@ -169,6 +171,10 @@ export function useCodeRunner(options: UseCodeRunnerOptions = {}): UseCodeRunner
           buggyImplementations
         );
 
+        // M6-2 Debug: Log result from pyodide
+        console.log('[M6-2 DEBUG] pyodide result:', result);
+        console.log('[M6-2 DEBUG] pyodide goldenTestOutput:', result.goldenTestOutput);
+
         const testRunResult: TestRunResult = {
           success: result.goldenCodePassed,
           score: result.score,
@@ -177,6 +183,8 @@ export function useCodeRunner(options: UseCodeRunnerOptions = {}): UseCodeRunner
           goldenCodePassed: result.goldenCodePassed,
           details: result.details,
           executionTime: result.totalExecutionTime,
+          // M6-2: Golden 테스트 출력 (에러 힌트용)
+          goldenTestOutput: result.goldenTestOutput,
         };
 
         setLastResult(testRunResult);

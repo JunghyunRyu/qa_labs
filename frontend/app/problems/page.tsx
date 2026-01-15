@@ -17,7 +17,7 @@ import UserStatsBar from "@/components/problems/UserStatsBar";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
-import { Search, X, Bookmark, ChevronDown, Tag, ArrowUpDown, Sparkles, Package } from "lucide-react";
+import { Search, X, ChevronDown, Tag, ArrowUpDown, Sparkles, Package, Star, Rocket, PartyPopper, Bookmark, LogIn } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
@@ -54,22 +54,22 @@ const DIFFICULTY_PILL_COLORS: Record<DifficultyFilter, { active: string; inactiv
   },
   "Very Easy": {
     active: "bg-sky-600 text-white",
-    inactive: "bg-slate-800 text-sky-400 hover:bg-sky-900/50",
+    inactive: "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300",
     dot: "bg-sky-400",
   },
   Easy: {
     active: "bg-emerald-600 text-white",
-    inactive: "bg-slate-800 text-emerald-400 hover:bg-emerald-900/50",
+    inactive: "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300",
     dot: "bg-emerald-400",
   },
   Medium: {
     active: "bg-amber-600 text-white",
-    inactive: "bg-slate-800 text-amber-400 hover:bg-amber-900/50",
+    inactive: "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300",
     dot: "bg-amber-400",
   },
   Hard: {
     active: "bg-rose-600 text-white",
-    inactive: "bg-slate-800 text-rose-400 hover:bg-rose-900/50",
+    inactive: "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300",
     dot: "bg-rose-400",
   },
 };
@@ -82,34 +82,34 @@ const DOMAIN_CHIP_COLORS: Record<DomainFilter, { active: string; inactive: strin
   },
   common: {
     active: "bg-slate-600 text-white border-slate-500",
-    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300",
   },
   fintech: {
     active: "bg-emerald-600 text-white border-emerald-500",
-    inactive: "bg-slate-800 text-emerald-400 border-slate-700 hover:bg-emerald-900/30",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300",
   },
   commerce: {
     active: "bg-amber-600 text-white border-amber-500",
-    inactive: "bg-slate-800 text-amber-400 border-slate-700 hover:bg-amber-900/30",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300",
   },
   saas: {
     active: "bg-blue-600 text-white border-blue-500",
-    inactive: "bg-slate-800 text-blue-400 border-slate-700 hover:bg-blue-900/30",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300",
   },
   platform: {
     active: "bg-purple-600 text-white border-purple-500",
-    inactive: "bg-slate-800 text-purple-400 border-slate-700 hover:bg-purple-900/30",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300",
   },
   content: {
     active: "bg-rose-600 text-white border-rose-500",
-    inactive: "bg-slate-800 text-rose-400 border-slate-700 hover:bg-rose-900/30",
+    inactive: "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-300",
   },
 };
 
 // useSearchParams를 사용하는 내부 컴포넌트
 function ProblemsContent() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, login } = useAuth();
   const searchParams = useSearchParams();
 
   // 로그인 사용자의 튜토리얼 완료 상태 동기화
@@ -155,15 +155,39 @@ function ProblemsContent() {
   const [sortOption, setSortOption] = useState<SortOption>("recommended"); // 기본값: 추천순
   const [showFilters, setShowFilters] = useState(false);
   const [showNewOnly, setShowNewOnly] = useState(false);
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [nextScheduled, setNextScheduled] = useState<NextScheduledProblem | null>(null);
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
+  const [showBookmarkLoginPrompt, setShowBookmarkLoginPrompt] = useState(false);
 
-  // URL 쿼리 파라미터에서 도메인 필터 읽기 (메인 페이지에서 도메인 클릭 시)
+  // URL 쿼리 파라미터에서 필터 읽기
   useEffect(() => {
     const domainParam = searchParams.get("domain");
     if (domainParam && Object.keys(DOMAIN_LABELS).includes(domainParam)) {
       setDomainFilter(domainParam as DomainFilter);
     }
-  }, [searchParams]);
+    // 북마크 필터 - 로그인 사용자만 적용
+    const bookmarkedParam = searchParams.get("bookmarked");
+    if (bookmarkedParam === "true") {
+      if (isAuthenticated) {
+        setShowBookmarkedOnly(true);
+        setShowBookmarkLoginPrompt(false);
+      } else {
+        // 비로그인 사용자는 로그인 유도 배너 표시
+        setShowBookmarkLoginPrompt(true);
+        setShowBookmarkedOnly(false);
+      }
+    }
+    // 신규 가입자 웰컴 배너
+    const welcomeParam = searchParams.get("welcome");
+    if (welcomeParam === "true") {
+      setShowWelcomeBanner(true);
+      // URL에서 welcome 파라미터 제거 (새로고침 시 다시 안 뜨게)
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("welcome");
+      router.replace(newUrl.pathname + newUrl.search, { scroll: false });
+    }
+  }, [searchParams, router, isAuthenticated]);
 
   // Fetch next scheduled problem for Coming Soon card
   useEffect(() => {
@@ -198,6 +222,7 @@ function ProblemsContent() {
         search: debouncedSearchQuery.trim() || undefined,
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         sort: sortOption,
+        bookmarked: showBookmarkedOnly || undefined,
       };
       const result = await getProblems(params);
       setData(result);
@@ -213,7 +238,7 @@ function ProblemsContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, difficultyFilter, domainFilter, debouncedSearchQuery, selectedTags, sortOption]);
+  }, [page, pageSize, difficultyFilter, domainFilter, debouncedSearchQuery, selectedTags, sortOption, showBookmarkedOnly]);
 
   useEffect(() => {
     fetchProblems();
@@ -266,6 +291,7 @@ function ProblemsContent() {
     setSelectedTags([]);
     setSortOption("recommended"); // 기본값: 추천
     setShowNewOnly(false);
+    setShowBookmarkedOnly(false);
   };
 
   // 기본값(Easy, recommended)과 다른 필터가 적용되었는지 확인
@@ -274,6 +300,7 @@ function ProblemsContent() {
     domainFilter !== "All" ||
     selectedTags.length > 0 ||
     showNewOnly ||
+    showBookmarkedOnly ||
     (sortOption !== "recommended" && sortOption !== "difficulty-asc");
 
   // ============================
@@ -373,17 +400,88 @@ function ProblemsContent() {
                   : `${data.total}개의 버그 탐지 미션이 당신을 기다립니다`}
               </p>
             </div>
-            {isAuthenticated && (
-              <Link
-                href="/problems/bookmarked"
-                className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-colors text-sm font-medium border border-amber-500/20"
-              >
-                <Bookmark className="w-4 h-4" />
-                북마크
-              </Link>
-            )}
           </div>
         </div>
+
+        {/* 신규 가입자 웰컴 배너 */}
+        {showWelcomeBanner && (
+          <div className="mb-6 bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 border border-indigo-500/30 rounded-xl p-6 relative overflow-hidden">
+            {/* 배경 장식 */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl" />
+
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center shrink-0">
+                  <PartyPopper className="w-6 h-6 text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">
+                    환영합니다! QA Arena에 오신 것을 축하해요 🎉
+                  </h3>
+                  <p className="text-slate-300 text-sm">
+                    버그 탐지 미션을 통해 테스트 코드 실력을 키워보세요.
+                    <span className="text-indigo-400 font-medium"> 입문 난이도</span>부터 시작하는 걸 추천드려요!
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href="/problems/problem-ve01"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium text-sm transition-colors"
+                >
+                  <Rocket className="w-4 h-4" />
+                  첫 미션 시작
+                </Link>
+                <button
+                  onClick={() => setShowWelcomeBanner(false)}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors"
+                  aria-label="닫기"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 비로그인 사용자 북마크 접근 시 로그인 유도 배너 */}
+        {showBookmarkLoginPrompt && (
+          <div className="mb-6 bg-gradient-to-r from-amber-600/20 via-yellow-600/20 to-orange-600/20 border border-amber-500/30 rounded-xl p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center shrink-0">
+                  <Bookmark className="w-6 h-6 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">
+                    북마크 기능을 사용하려면 로그인이 필요해요
+                  </h3>
+                  <p className="text-slate-300 text-sm">
+                    로그인하면 관심 있는 문제를 북마크하고, 나중에 빠르게 찾아볼 수 있어요.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => login("github")}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium text-sm transition-colors"
+                >
+                  <LogIn className="w-4 h-4" />
+                  로그인하기
+                </button>
+                <button
+                  onClick={() => setShowBookmarkLoginPrompt(false)}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors"
+                  aria-label="닫기"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* User Stats Bar */}
         <UserStatsBar totalProblems={data.total} />
@@ -481,6 +579,21 @@ function ProblemsContent() {
               NEW
             </button>
 
+            {/* 북마크 필터 - 로그인 사용자만 */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 ${
+                  showBookmarkedOnly
+                    ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
+                    : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300"
+                }`}
+              >
+                <Star className={`w-3 h-3 ${showBookmarkedOnly ? "fill-yellow-400" : ""}`} />
+                북마크
+              </button>
+            )}
+
             {/* 태그 필터 버튼 */}
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -563,6 +676,15 @@ function ProblemsContent() {
                 </button>
               </span>
             )}
+            {showBookmarkedOnly && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-500/10 text-yellow-400 rounded-full text-xs font-medium">
+                <Star className="w-3 h-3 fill-yellow-400" />
+                북마크
+                <button onClick={() => setShowBookmarkedOnly(false)} className="ml-1 hover:text-yellow-300">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
             {difficultyFilter !== "All" && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-800 text-slate-300 rounded-full text-xs font-medium">
                 {DIFFICULTY_LABELS[difficultyFilter]}
@@ -620,28 +742,50 @@ function ProblemsContent() {
             문제 카드 그리드 or 빈 상태
             ============================================ */}
         {sortedProblems.length === 0 ? (
-          // Empty State - 위트 있는 메시지
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-800 flex items-center justify-center">
-              <Package className="w-10 h-10 text-slate-600" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">
-              이런, 버그가 완벽하게 숨었네요
-            </h3>
-            <p className="text-slate-400 mb-6">
-              {hasActiveFilters
-                ? "다른 키워드나 필터로 검색해보세요."
-                : "등록된 문제가 없습니다."}
-            </p>
-            {hasActiveFilters && (
+          // Empty State
+          showBookmarkedOnly ? (
+            // 북마크 전용 빈 상태
+            <div className="bg-slate-900 border border-amber-500/20 rounded-xl p-12 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <Bookmark className="w-10 h-10 text-amber-500/50" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                아직 북마크한 문제가 없어요
+              </h3>
+              <p className="text-slate-400 mb-6">
+                관심 있는 문제를 북마크하면 여기서 빠르게 찾아볼 수 있어요.
+              </p>
               <button
-                onClick={clearFilters}
-                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors"
+                onClick={() => setShowBookmarkedOnly(false)}
+                className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors"
               >
-                필터 초기화
+                전체 문제 보기
               </button>
-            )}
-          </div>
+            </div>
+          ) : (
+            // 일반 빈 상태
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-800 flex items-center justify-center">
+                <Package className="w-10 h-10 text-slate-600" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                이런, 버그가 완벽하게 숨었네요
+              </h3>
+              <p className="text-slate-400 mb-6">
+                {hasActiveFilters
+                  ? "다른 키워드나 필터로 검색해보세요."
+                  : "등록된 문제가 없습니다."}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors"
+                >
+                  필터 초기화
+                </button>
+              )}
+            </div>
+          )
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">

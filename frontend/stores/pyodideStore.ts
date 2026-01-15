@@ -56,7 +56,8 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
     if (typeof window === "undefined") return null;
 
     try {
-      const worker = new Worker("/workers/pyodide.worker.js");
+      // M6-2: Using v2 worker file to bypass cache
+      const worker = new Worker("/workers/pyodide.worker.v2.js");
 
       worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
         const response = event.data;

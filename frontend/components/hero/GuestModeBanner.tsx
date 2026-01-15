@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function GuestModeBanner() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, login } = useAuth();
 
   // 로그인된 사용자에게는 환영 메시지 표시
   if (isAuthenticated) {
@@ -94,8 +94,8 @@ export default function GuestModeBanner() {
           >
             게스트로 시작하기
           </Link>
-          <Link
-            href="/api/v1/auth/github/login"
+          <button
+            onClick={() => login("github")}
             className="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ export default function GuestModeBanner() {
               />
             </svg>
             GitHub로 로그인
-          </Link>
+          </button>
         </div>
       </div>
     </section>
