@@ -19,15 +19,15 @@ export default function TimeRangeFilter({
   onChange,
 }: TimeRangeFilterProps) {
   return (
-    <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+    <div className="flex gap-1 p-1 bg-slate-800 rounded-lg">
       {ranges.map((range) => (
         <button
           key={range.value}
           onClick={() => onChange(range.value)}
           className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
             value === range.value
-              ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
-              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              ? "bg-slate-700 text-indigo-400 shadow-sm"
+              : "text-slate-400 hover:text-slate-200"
           }`}
         >
           {range.label}

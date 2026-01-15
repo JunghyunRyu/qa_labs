@@ -27,7 +27,7 @@ const homeNavItems = [
 // 앱(내부) 메뉴 - 기능 목적
 const appNavItems = [
   { label: "전체 문제", href: "/problems" },
-  { label: "학습 현황", href: "/dashboard" },
+  { label: "대시보드", href: "/dashboard" },
 ];
 
 export default function Header() {

@@ -33,27 +33,27 @@ const statusConfig: Record<
   SUCCESS: {
     icon: <CheckCircle className="w-4 h-4" />,
     label: "성공",
-    colorClass: "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40",
+    colorClass: "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20",
   },
   FAILURE: {
     icon: <XCircle className="w-4 h-4" />,
     label: "실패",
-    colorClass: "text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40",
+    colorClass: "text-rose-400 bg-rose-500/10 border border-rose-500/20",
   },
   ERROR: {
     icon: <AlertCircle className="w-4 h-4" />,
     label: "에러",
-    colorClass: "text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-900/40",
+    colorClass: "text-orange-400 bg-orange-500/10 border border-orange-500/20",
   },
   PENDING: {
     icon: <Clock className="w-4 h-4" />,
     label: "대기중",
-    colorClass: "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-700",
+    colorClass: "text-slate-400 bg-slate-500/10 border border-slate-500/20",
   },
   RUNNING: {
     icon: <Loader2 className="w-4 h-4 animate-spin" />,
     label: "실행중",
-    colorClass: "text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/40",
+    colorClass: "text-blue-400 bg-blue-500/10 border border-blue-500/20",
   },
 };
 
@@ -63,19 +63,19 @@ const difficultyConfig: Record<
 > = {
   "Very Easy": {
     label: "아주쉬움",
-    colorClass: "text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/40",
+    colorClass: "text-sky-300 bg-sky-500/10 border border-sky-500/20",
   },
   Easy: {
     label: "쉬움",
-    colorClass: "text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/40",
+    colorClass: "text-emerald-300 bg-emerald-500/10 border border-emerald-500/20",
   },
   Medium: {
     label: "보통",
-    colorClass: "text-yellow-700 bg-yellow-100 dark:text-yellow-300 dark:bg-yellow-900/40",
+    colorClass: "text-amber-300 bg-amber-500/10 border border-amber-500/20",
   },
   Hard: {
     label: "어려움",
-    colorClass: "text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/40",
+    colorClass: "text-rose-300 bg-rose-500/10 border border-rose-500/20",
   },
 };
 
@@ -106,7 +106,7 @@ function ResultBadge({ submission }: { submission: SubmissionListItem }) {
   // FAILURE (golden code 실패) - 테스트 실패
   if (status === "FAILURE") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20">
         <XCircle className="w-4 h-4" />
         테스트 실패
       </span>
@@ -116,21 +116,21 @@ function ResultBadge({ submission }: { submission: SubmissionListItem }) {
   // SUCCESS 상태에서 점수 기반으로 결과 표시
   if (score === 100) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
         <Trophy className="w-4 h-4" />
         통과
       </span>
     );
   } else if (score >= 70) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/40">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20">
         <Target className="w-4 h-4" />
         부분통과
       </span>
     );
   } else {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-700">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-slate-400 bg-slate-500/10 border border-slate-500/20">
         <XCircle className="w-4 h-4" />
         미달
       </span>
@@ -143,13 +143,13 @@ function ResultBadge({ submission }: { submission: SubmissionListItem }) {
  */
 function FeedbackIcon({ hasFeedback, submissionId, problemId }: { hasFeedback: boolean; submissionId: string; problemId: number }) {
   if (!hasFeedback) {
-    return <span className="text-gray-300 dark:text-gray-600">-</span>;
+    return <span className="text-slate-600">-</span>;
   }
 
   return (
     <Link
       href={`/problems/${problemId}?submission=${submissionId}`}
-      className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+      className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors"
       title="AI 피드백 보기"
     >
       <MessageSquare className="w-4 h-4" />
@@ -188,14 +188,14 @@ export default function SubmissionHistoryTable({
 }: SubmissionHistoryTableProps) {
   if (submissions.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-        <Clock className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
+      <div className="py-12 text-center">
+        <Clock className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+        <p className="text-slate-400 mb-4">
           아직 제출 기록이 없습니다.
         </p>
         <Link
           href="/problems"
-          className="inline-block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors"
         >
           문제 풀러 가기
         </Link>
@@ -204,45 +204,45 @@ export default function SubmissionHistoryTable({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <div className="mt-4">
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-900">
+          <thead className="bg-slate-800/50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                 문제
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                 난이도
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                 결과
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                 점수
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                 뮤턴트
               </th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">
                 AI
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                 제출일
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-slate-800">
             {submissions.map((submission) => (
               <tr
                 key={submission.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className="hover:bg-slate-800/50 transition-colors"
               >
                 <td className="px-4 py-4">
                   <Link
                     href={`/problems/${submission.problem_id}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center gap-1"
+                    className="text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 transition-colors"
                   >
                     {submission.problem_title}
                     <ExternalLink className="w-3 h-3" />
@@ -255,11 +255,11 @@ export default function SubmissionHistoryTable({
                   <ResultBadge submission={submission} />
                 </td>
                 <td className="px-4 py-4">
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  <span className="font-semibold text-slate-100">
                     {submission.score}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                <td className="px-4 py-4 text-sm text-slate-400">
                   {submission.killed_mutants !== null &&
                   submission.total_mutants !== null
                     ? `${submission.killed_mutants}/${submission.total_mutants}`
@@ -272,7 +272,7 @@ export default function SubmissionHistoryTable({
                     problemId={submission.problem_id}
                   />
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td className="px-4 py-4 text-sm text-slate-500">
                   {formatDate(submission.created_at)}
                 </td>
               </tr>
@@ -282,13 +282,13 @@ export default function SubmissionHistoryTable({
       </div>
 
       {/* Mobile cards */}
-      <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="md:hidden divide-y divide-slate-800">
         {submissions.map((submission) => (
-          <div key={submission.id} className="p-4 space-y-2">
+          <div key={submission.id} className="py-4 space-y-2">
             <div className="flex items-start justify-between gap-2">
               <Link
                 href={`/problems/${submission.problem_id}`}
-                className="text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center gap-1"
+                className="text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 transition-colors"
               >
                 {submission.problem_title}
                 <ExternalLink className="w-3 h-3" />
@@ -306,21 +306,21 @@ export default function SubmissionHistoryTable({
             </div>
             <div className="flex items-center gap-2 text-sm">
               <DifficultyBadge difficulty={submission.problem_difficulty} />
-              <span className="text-gray-500 dark:text-gray-400">|</span>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">
+              <span className="text-slate-600">|</span>
+              <span className="font-semibold text-slate-100">
                 {submission.score}점
               </span>
               {submission.killed_mutants !== null &&
                 submission.total_mutants !== null && (
                   <>
-                    <span className="text-gray-500 dark:text-gray-400">|</span>
-                    <span className="text-gray-600 dark:text-gray-400">
+                    <span className="text-slate-600">|</span>
+                    <span className="text-slate-400">
                       {submission.killed_mutants}/{submission.total_mutants}
                     </span>
                   </>
                 )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-slate-500">
               {formatDate(submission.created_at)}
             </p>
           </div>
@@ -329,8 +329,8 @@ export default function SubmissionHistoryTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
+          <p className="text-sm text-slate-500">
             총 {total}건 중 {(page - 1) * 10 + 1}-{Math.min(page * 10, total)}
           </p>
           <nav
@@ -340,17 +340,17 @@ export default function SubmissionHistoryTable({
             <button
               onClick={() => onPageChange(page - 1)}
               disabled={page === 1}
-              className="px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm bg-slate-800 text-slate-300 rounded hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               이전
             </button>
-            <span className="px-2 text-sm text-gray-700 dark:text-gray-300">
+            <span className="px-2 text-sm text-slate-400">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page === totalPages}
-              className="px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm bg-slate-800 text-slate-300 rounded hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               다음
             </button>

@@ -1,27 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import {
   BarChart3,
   TrendingUp,
-  Trophy,
   Target,
-  CheckCircle,
-  ArrowLeft,
-  AlertTriangle,
+  Trophy,
+  History,
+  Filter,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { getProgressSummary, getProgressTimeline } from "@/lib/api/progress";
+import { getMySubmissions } from "@/lib/api/users";
 import type {
   ProgressSummary,
   ProgressTimeline,
   TimeRange,
 } from "@/types/progress";
+import type {
+  UserSubmissionsResponse,
+  SubmissionFilters as FiltersType,
+} from "@/types/submission";
 import { isProgressEmpty } from "@/types/progress";
-import { ProgressSummaryCard } from "@/components/dashboard";
+import SubmissionFilters from "@/components/SubmissionFilters";
+import SubmissionHistoryTable from "@/components/SubmissionHistoryTable";
 
 // Dynamic imports for chart components to avoid SSR issues with recharts
 const ProgressTimelineChart = dynamic(
@@ -29,43 +33,69 @@ const ProgressTimelineChart = dynamic(
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
-const DifficultyBreakdownChart = dynamic(
-  () => import("@/components/dashboard/DifficultyBreakdownChart"),
+const SkillRadarChart = dynamic(
+  () => import("@/components/dashboard/SkillRadarChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
-const SkillBreakdownChart = dynamic(
-  () => import("@/components/dashboard/SkillBreakdownChart"),
-  { ssr: false, loading: () => <ChartSkeleton /> }
-);
+const PAGE_SIZE = 10;
 
-const RecentSubmissions = dynamic(
-  () => import("@/components/dashboard/RecentSubmissions"),
-  { ssr: false, loading: () => <ChartSkeleton /> }
-);
-
-const SolvedProblemsDonut = dynamic(
-  () => import("@/components/dashboard/SolvedProblemsDonut"),
-  { ssr: false, loading: () => <ChartSkeleton /> }
-);
+// Grade calculation based on average score
+function calculateGrade(avgScore: number): { label: string; color: string } {
+  if (avgScore >= 90) return { label: "Master", color: "text-amber-400" };
+  if (avgScore >= 80) return { label: "Expert", color: "text-purple-400" };
+  if (avgScore >= 70) return { label: "Senior", color: "text-blue-400" };
+  if (avgScore >= 50) return { label: "Junior", color: "text-emerald-400" };
+  return { label: "Rookie", color: "text-slate-400" };
+}
 
 function ChartSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
       <div className="animate-pulse">
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
-        <div className="h-[250px] bg-gray-100 dark:bg-gray-700 rounded"></div>
+        <div className="h-6 bg-slate-800 rounded w-1/4 mb-4"></div>
+        <div className="h-[250px] bg-slate-800 rounded"></div>
       </div>
     </div>
   );
 }
 
-function SummaryCardSkeleton() {
+function KPICardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+    <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
       <div className="animate-pulse">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-3"></div>
-        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+        <div className="h-4 bg-slate-800 rounded w-1/2 mb-3"></div>
+        <div className="h-8 bg-slate-800 rounded w-1/3"></div>
+      </div>
+    </div>
+  );
+}
+
+interface KPICardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: React.ReactNode;
+  iconBgColor?: string;
+  valueColor?: string;
+}
+
+function KPICard({ title, value, subtitle, icon, iconBgColor = "bg-slate-800", valueColor = "text-slate-100" }: KPICardProps) {
+  return (
+    <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 sm:p-5">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-slate-400 mb-1">{title}</p>
+          <p className={`text-2xl sm:text-3xl font-bold ${valueColor} truncate`}>
+            {value}
+          </p>
+          {subtitle && (
+            <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+          )}
+        </div>
+        <div className={`${iconBgColor} p-2 rounded-lg flex-shrink-0 ml-2`}>
+          {icon}
+        </div>
       </div>
     </div>
   );
@@ -74,35 +104,43 @@ function SummaryCardSkeleton() {
 function EmptyState() {
   return (
     <div className="text-center py-16">
-      <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
-        <BarChart3 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+      <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4">
+        <BarChart3 className="w-8 h-8 text-indigo-400" />
       </div>
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+      <h2 className="text-xl font-semibold text-slate-100 mb-2">
         아직 제출 기록이 없습니다
       </h2>
-      <p className="text-gray-500 dark:text-gray-400 mb-6">
+      <p className="text-slate-400 mb-6">
         첫 문제를 풀어보세요! 여러분의 성장 과정을 기록해 드립니다.
       </p>
-      <Link
+      <a
         href="/problems"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors"
       >
         문제 풀러 가기
-      </Link>
+      </a>
     </div>
   );
 }
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
+  // Progress data states
   const [summary, setSummary] = useState<ProgressSummary | null>(null);
   const [timeline, setTimeline] = useState<ProgressTimeline | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
   const [isLoadingTimeline, setIsLoadingTimeline] = useState(true);
   const [isEmpty, setIsEmpty] = useState(false);
+
+  // Submission states (Zone C)
+  const [submissions, setSubmissions] = useState<UserSubmissionsResponse | null>(null);
+  const [filters, setFilters] = useState<FiltersType>({});
+  const [submissionPage, setSubmissionPage] = useState(1);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
   // Redirect to login if not authenticated
@@ -157,11 +195,55 @@ export default function DashboardPage() {
     fetchTimeline();
   }, [isAuthenticated, timeRange, isEmpty]);
 
+  // Fetch submissions (Zone C)
+  const fetchSubmissions = useCallback(async () => {
+    if (!isAuthenticated) return;
+
+    setIsLoadingSubmissions(true);
+    try {
+      const data = await getMySubmissions(
+        submissionPage,
+        PAGE_SIZE,
+        filters.status,
+        filters.days
+      );
+      setSubmissions(data);
+    } catch (err) {
+      console.error("Failed to fetch submissions:", err);
+    } finally {
+      setIsLoadingSubmissions(false);
+    }
+  }, [isAuthenticated, submissionPage, filters]);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
+
+  // Handle filter change
+  const handleFiltersChange = (newFilters: FiltersType) => {
+    setFilters(newFilters);
+    setSubmissionPage(1);
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setSubmissionPage(newPage);
+  };
+
+  // Calculate derived values
+  const successRate = summary
+    ? summary.total_submissions > 0
+      ? (summary.success_submissions / summary.total_submissions) * 100
+      : 0
+    : 0;
+
+  const grade = calculateGrade(summary?.avg_score || 0);
+
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
   }
@@ -172,28 +254,21 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-950">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/problems"
-            className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            문제 목록으로
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            성장 대시보드
+        <header className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100">
+            {user?.name || "사용자"}님의 미션 리포트
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            여러분의 학습 진행 상황을 한눈에 확인하세요.
+          <p className="mt-2 text-slate-400">
+            지난 {timeRange === "7d" ? "7일" : timeRange === "30d" ? "30일" : timeRange === "90d" ? "90일" : "전체"} 간의 성장 기록입니다.
           </p>
-        </div>
+        </header>
 
         {/* Error State */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
+          <div className="mb-8 p-4 bg-rose-900/20 border border-rose-800 rounded-lg text-rose-400">
             {error}
           </div>
         )}
@@ -204,111 +279,113 @@ export default function DashboardPage() {
         {/* Dashboard Content */}
         {!isEmpty && (
           <>
-            {/* 베타 안내 배너 */}
-            <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                    학습용 지표 (베타)
-                  </p>
-                  <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                    점수와 통계는 학습 목적으로 제공됩니다. 일부 클라이언트 실행 결과는 서버 검증을 거칩니다.
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Zone A: KPI Cards */}
+            <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+              {isLoadingSummary ? (
+                <>
+                  <KPICardSkeleton />
+                  <KPICardSkeleton />
+                  <KPICardSkeleton />
+                  <KPICardSkeleton />
+                </>
+              ) : summary ? (
+                <>
+                  <KPICard
+                    title="총 미션 수행"
+                    value={summary.total_submissions}
+                    subtitle={`성공 ${summary.success_submissions}회`}
+                    icon={<BarChart3 className="w-5 h-5 text-blue-400" />}
+                    iconBgColor="bg-blue-500/10"
+                  />
+                  <KPICard
+                    title="성공률"
+                    value={`${successRate.toFixed(1)}%`}
+                    subtitle={`최근 10회 평균 ${summary.recent_avg_score.toFixed(0)}점`}
+                    icon={<TrendingUp className="w-5 h-5 text-emerald-400" />}
+                    iconBgColor="bg-emerald-500/10"
+                    valueColor="text-emerald-400"
+                  />
+                  <KPICard
+                    title="Bug Kill Ratio"
+                    value={summary.avg_kill_ratio.toFixed(2)}
+                    subtitle="평균 버그 탐지율"
+                    icon={<Target className="w-5 h-5 text-rose-400" />}
+                    iconBgColor="bg-rose-500/10"
+                    valueColor="text-rose-400"
+                  />
+                  <KPICard
+                    title="현재 등급"
+                    value={grade.label}
+                    subtitle={`평균 ${summary.avg_score.toFixed(0)}점`}
+                    icon={<Trophy className="w-5 h-5 text-amber-400" />}
+                    iconBgColor="bg-amber-500/10"
+                    valueColor={grade.color}
+                  />
+                </>
+              ) : null}
+            </section>
 
-            {/* Overview Section: Donut + Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
-              {/* Donut Chart - takes 1 column on lg */}
-              <div className="lg:col-span-1">
-                <SolvedProblemsDonut
-                  data={summary?.difficulty_stats || []}
-                  isLoading={isLoadingSummary}
+            {/* Zone B: Charts */}
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Timeline Chart - 2 columns */}
+              <div className="lg:col-span-2">
+                <ProgressTimelineChart
+                  data={timeline?.entries || []}
+                  range={timeRange}
+                  onRangeChange={setTimeRange}
+                  isLoading={isLoadingTimeline}
                 />
               </div>
 
-              {/* Summary Cards - takes 2 columns on lg, 2x2 grid */}
-              <div className="lg:col-span-2">
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {isLoadingSummary ? (
-                    <>
-                      <SummaryCardSkeleton />
-                      <SummaryCardSkeleton />
-                      <SummaryCardSkeleton />
-                      <SummaryCardSkeleton />
-                    </>
-                  ) : summary ? (
-                    <>
-                      <ProgressSummaryCard
-                        title="총 제출"
-                        value={summary.total_submissions}
-                        subtitle={`성공 ${summary.success_submissions}회`}
-                        icon={<BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />}
-                        iconBgColor="bg-blue-50 dark:bg-blue-900/20"
-                      />
-                      <ProgressSummaryCard
-                        title="평균 점수"
-                        value={summary.avg_score}
-                        subtitle={`최고 ${summary.best_score}점`}
-                        icon={<TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />}
-                        iconBgColor="bg-green-50 dark:bg-green-900/20"
-                        format="number"
-                      />
-                      <ProgressSummaryCard
-                        title="성공률"
-                        value={
-                          summary.total_submissions > 0
-                            ? (summary.success_submissions / summary.total_submissions) * 100
-                            : 0
-                        }
-                        subtitle={`최근 10회 평균 ${summary.recent_avg_score}점`}
-                        icon={<CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />}
-                        iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
-                        format="percent"
-                      />
-                      <ProgressSummaryCard
-                        title="평균 Kill Ratio"
-                        value={summary.avg_kill_ratio}
-                        subtitle="버그 탐지율"
-                        icon={<Target className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />}
-                        iconBgColor="bg-purple-50 dark:bg-purple-900/20"
-                        format="ratio"
-                      />
-                    </>
-                  ) : null}
+              {/* Skill Radar Chart - 1 column */}
+              <div className="lg:col-span-1">
+                <SkillRadarChart
+                  data={summary?.skill_stats || []}
+                  isLoading={isLoadingSummary}
+                />
+              </div>
+            </section>
+
+            {/* Zone C: Submission History */}
+            <section className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+              {/* Section Header with Filters */}
+              <div className="p-4 sm:p-6 border-b border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <History className="w-5 h-5 text-slate-400" />
+                    <h2 className="text-lg font-semibold text-slate-100">
+                      제출 기록
+                    </h2>
+                    {submissions && (
+                      <span className="text-sm text-slate-500">
+                        ({submissions.total}건)
+                      </span>
+                    )}
+                  </div>
+                  <SubmissionFilters
+                    filters={filters}
+                    onFiltersChange={handleFiltersChange}
+                  />
                 </div>
               </div>
-            </div>
 
-            {/* Charts Row 1: Timeline */}
-            <div className="mb-6">
-              <ProgressTimelineChart
-                data={timeline?.entries || []}
-                range={timeRange}
-                onRangeChange={setTimeRange}
-                isLoading={isLoadingTimeline}
-              />
-            </div>
-
-            {/* Charts Row 2: Difficulty + Skill */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <DifficultyBreakdownChart
-                data={summary?.difficulty_stats || []}
-                isLoading={isLoadingSummary}
-              />
-              <SkillBreakdownChart
-                data={summary?.skill_stats || []}
-                isLoading={isLoadingSummary}
-              />
-            </div>
-
-            {/* Recent Submissions */}
-            <div className="mt-6">
-              <RecentSubmissions limit={5} />
-            </div>
-
+              {/* Submission Table */}
+              <div className="p-4 sm:p-6 pt-0 sm:pt-0">
+                {isLoadingSubmissions ? (
+                  <div className="py-12 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                  </div>
+                ) : submissions ? (
+                  <SubmissionHistoryTable
+                    submissions={submissions.submissions}
+                    page={submissions.page}
+                    totalPages={submissions.total_pages}
+                    total={submissions.total}
+                    onPageChange={handlePageChange}
+                  />
+                ) : null}
+              </div>
+            </section>
           </>
         )}
       </div>
