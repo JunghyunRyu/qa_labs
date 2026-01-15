@@ -105,7 +105,7 @@ export default function SkillRadarChart({
               }}
               itemStyle={{ color: "#e2e8f0" }}
               labelStyle={{ color: "#94a3b8", marginBottom: "4px" }}
-              formatter={(value: number) => [`${value.toFixed(1)}점`, "평균 점수"]}
+              formatter={(value) => [`${(value ?? 0).toFixed(1)}점`, "평균 점수"]}
               labelFormatter={(_, payload) => {
                 const item = payload?.[0]?.payload;
                 return item?.fullName || "";

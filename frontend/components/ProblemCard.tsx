@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import type { ProblemListItem } from "@/types/problem";
-import { Bug, Sparkles, CheckCircle2, XCircle, Clock, ThumbsUp, Flame } from "lucide-react";
+import { Bug, Sparkles, CheckCircle2, XCircle, Clock, ThumbsUp, Flame, Target } from "lucide-react";
 import BookmarkButton from "./BookmarkButton";
 import { toTagViewModels, sliceTags } from "@/lib/tagDefinitions";
 
@@ -164,55 +164,58 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
           </p>
         )}
 
-        {/* Footer: 도메인 + 태그 + 메타 정보 */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-800">
-          {/* 도메인 + 태그 */}
-          <div className="flex flex-wrap items-center gap-1.5" role="list" aria-label="문제 태그">
-            {/* 도메인 표시 */}
-            <span className="text-[10px] text-slate-500 flex items-center gap-0.5 mr-0.5">
+        {/* Footer: Left for Context, Right for Metrics */}
+        <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-800/50">
+          {/* [LEFT] Domain & Tags Group */}
+          <div className="flex items-center gap-2 overflow-hidden min-w-0" role="list" aria-label="문제 태그">
+            {/* 도메인 아이콘 + 이름 */}
+            <div className="flex items-center gap-1 text-slate-400 text-[11px] font-medium shrink-0">
               <span>{domain.icon}</span>
               <span>{domain.label}</span>
-            </span>
+            </div>
             {/* 구분선 */}
             {problem.skills && problem.skills.length > 0 && (
-              <span className="w-px h-3 bg-slate-700" />
+              <span className="text-slate-700 shrink-0">|</span>
             )}
-            {/* 태그 (border-only 스타일) */}
+            {/* 태그들 (truncate 처리) */}
             {problem.skills && problem.skills.length > 0 && (() => {
               const tagModels = toTagViewModels(problem.skills);
               const { visible, hiddenCount } = sliceTags(tagModels, 2);
               return (
-                <>
+                <div className="flex items-center gap-1.5 truncate">
                   {visible.map((tag) => (
                     <span
                       key={tag.slug}
-                      className="px-2 py-0.5 text-[11px] text-slate-500 border border-slate-700 rounded"
+                      className="px-1.5 py-0.5 text-[10px] text-slate-500 bg-slate-800 rounded shrink-0"
                       role="listitem"
                     >
                       {tag.labelKo}
                     </span>
                   ))}
                   {hiddenCount > 0 && (
-                    <span className="px-1.5 py-0.5 text-[11px] text-slate-600">
+                    <span className="text-[10px] text-slate-600 shrink-0">
                       +{hiddenCount}
                     </span>
                   )}
-                </>
+                </div>
               );
             })()}
           </div>
 
-          {/* 메타 정보: 버그 수 또는 정답률 */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* [RIGHT] Metrics Group - 정답률 & 버그 수 */}
+          <div className="flex items-center gap-3 shrink-0 pl-2">
+            {/* 정답률 (Emerald - 긍정적 신호) */}
             {successRate !== null && (
-              <span className="text-[11px] text-slate-500" title="정답률">
-                {Math.round(successRate)}%
-              </span>
+              <div className="flex items-center gap-1 text-emerald-400/80" title="정답률">
+                <Target className="w-3.5 h-3.5" />
+                <span className="font-mono text-[11px]">{Math.round(successRate)}%</span>
+              </div>
             )}
+            {/* 버그 수 (Rose - 잡아야 할 적) */}
             {bugsCount > 0 && (
-              <div className="flex items-center gap-1 text-[11px] text-rose-400" title={`숨은 버그 ${bugsCount}개`}>
+              <div className="flex items-center gap-1 text-rose-400/80" title={`숨은 버그 ${bugsCount}개`}>
                 <Bug className="w-3.5 h-3.5" />
-                <span>{bugsCount}</span>
+                <span className="font-mono text-[11px]">{bugsCount}</span>
               </div>
             )}
           </div>

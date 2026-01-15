@@ -4,7 +4,7 @@
 
 "use client";
 
-import type { SubmissionStatus, SubmissionFilters as FiltersType } from "@/types/submission";
+import type { ResultFilter, SubmissionFilters as FiltersType } from "@/types/submission";
 import { Filter, X } from "lucide-react";
 
 interface SubmissionFiltersProps {
@@ -12,11 +12,13 @@ interface SubmissionFiltersProps {
   onFiltersChange: (filters: FiltersType) => void;
 }
 
-const statusOptions: { value: SubmissionStatus | ""; label: string }[] = [
-  { value: "", label: "전체 상태" },
-  { value: "SUCCESS", label: "성공" },
-  { value: "FAILURE", label: "실패" },
-  { value: "ERROR", label: "에러" },
+const resultOptions: { value: ResultFilter | ""; label: string }[] = [
+  { value: "", label: "전체 결과" },
+  { value: "pass", label: "통과" },
+  { value: "partial", label: "부분통과" },
+  { value: "fail", label: "미달" },
+  { value: "test_fail", label: "테스트 실패" },
+  { value: "error", label: "에러" },
 ];
 
 const daysOptions: { value: number | undefined; label: string }[] = [
@@ -29,12 +31,12 @@ export default function SubmissionFilters({
   filters,
   onFiltersChange,
 }: SubmissionFiltersProps) {
-  const hasActiveFilters = filters.status || filters.days;
+  const hasActiveFilters = filters.result || filters.days;
 
-  const handleStatusChange = (value: string) => {
+  const handleResultChange = (value: string) => {
     onFiltersChange({
       ...filters,
-      status: value ? (value as SubmissionStatus) : undefined,
+      result: value ? (value as ResultFilter) : undefined,
     });
   };
 
@@ -56,13 +58,13 @@ export default function SubmissionFilters({
         <span className="text-sm font-medium hidden sm:inline">필터</span>
       </div>
 
-      {/* Status filter */}
+      {/* Result filter */}
       <select
-        value={filters.status || ""}
-        onChange={(e) => handleStatusChange(e.target.value)}
+        value={filters.result || ""}
+        onChange={(e) => handleResultChange(e.target.value)}
         className="px-3 py-1.5 text-sm bg-slate-800 text-slate-200 rounded-lg border border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
       >
-        {statusOptions.map((option) => (
+        {resultOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
@@ -96,11 +98,11 @@ export default function SubmissionFilters({
       {/* Active filters badges */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-1.5 ml-2">
-          {filters.status && (
+          {filters.result && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded text-xs">
-              {statusOptions.find((o) => o.value === filters.status)?.label}
+              {resultOptions.find((o) => o.value === filters.result)?.label}
               <button
-                onClick={() => onFiltersChange({ ...filters, status: undefined })}
+                onClick={() => onFiltersChange({ ...filters, result: undefined })}
                 className="hover:text-indigo-100"
               >
                 <X className="w-3 h-3" />

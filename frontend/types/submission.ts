@@ -6,6 +6,16 @@ export type SubmissionStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILURE" | "
 export type Difficulty = "Very Easy" | "Easy" | "Medium" | "Hard";
 
 /**
+ * Result filter type - matches table display.
+ * - pass: SUCCESS with score=100
+ * - partial: SUCCESS with 70<=score<100
+ * - fail: SUCCESS with score<70
+ * - test_fail: FAILURE status
+ * - error: ERROR status
+ */
+export type ResultFilter = "pass" | "partial" | "fail" | "test_fail" | "error";
+
+/**
  * Submission list item with problem info.
  */
 export interface SubmissionListItem {
@@ -66,6 +76,6 @@ export interface UserStatisticsResponse {
  * Filter options for submissions list.
  */
 export interface SubmissionFilters {
-  status?: SubmissionStatus;
+  result?: ResultFilter;
   days?: number; // 7, 30, or undefined for all
 }
