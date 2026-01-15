@@ -19,19 +19,39 @@ export default function TokenBalance({ className = "" }: TokenBalanceProps) {
   const [tokenStatus, setTokenStatus] = useState<TokenStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchTokenStatus = async () => {
+    try {
+      const status = await getTokenStatus();
+      setTokenStatus(status);
+    } catch (error) {
+      console.error("Failed to fetch token status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTokenStatus = async () => {
-      try {
-        const status = await getTokenStatus();
-        setTokenStatus(status);
-      } catch (error) {
-        console.error("Failed to fetch token status:", error);
-      } finally {
-        setIsLoading(false);
+    fetchTokenStatus();
+
+    // 탭이 다시 활성화될 때 갱신
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchTokenStatus();
       }
     };
 
-    fetchTokenStatus();
+    // 토큰 사용 후 즉시 갱신 (커스텀 이벤트)
+    const handleTokenUpdate = () => {
+      fetchTokenStatus();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("token-updated", handleTokenUpdate);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("token-updated", handleTokenUpdate);
+    };
   }, []);
 
   if (isLoading) {

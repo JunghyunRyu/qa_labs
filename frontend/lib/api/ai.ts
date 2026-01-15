@@ -18,7 +18,14 @@ const AI_ENDPOINT = "/v1/ai";
 export async function sendAIMessage(
   request: AIChatRequest
 ): Promise<AIChatResponse> {
-  return post<AIChatResponse>(`${AI_ENDPOINT}/chat`, request);
+  const response = await post<AIChatResponse>(`${AI_ENDPOINT}/chat`, request);
+
+  // 토큰 사용 후 헤더 토큰 표시 갱신
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("token-updated"));
+  }
+
+  return response;
 }
 
 /**
