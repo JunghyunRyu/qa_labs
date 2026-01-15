@@ -2,16 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN rm -rf /var/lib/apt/lists/* && \
-    apt-get clean && \
-    apt-get update --fix-missing && \
-    apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements and install Python dependencies
+# psycopg2-binary doesn't need build tools
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
