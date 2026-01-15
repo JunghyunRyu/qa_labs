@@ -63,7 +63,7 @@ class SubmissionRepository:
         user_id: UUID,
         page: int = 1,
         page_size: int = 10,
-        status: Optional[str] = None,
+        result: Optional[str] = None,
         days: Optional[int] = None,
     ) -> Tuple[List[Submission], int]:
         """
@@ -73,17 +73,48 @@ class SubmissionRepository:
             user_id: User ID
             page: Page number (1-indexed)
             page_size: Number of items per page
-            status: Filter by status (PENDING, RUNNING, SUCCESS, FAILURE, ERROR)
+            result: Filter by result type:
+                - pass: SUCCESS with score=100
+                - partial: SUCCESS with 70<=score<100
+                - fail: SUCCESS with score<70
+                - test_fail: FAILURE status
+                - error: ERROR status
             days: Filter by recent N days (e.g., 7, 30)
 
         Returns:
             Tuple of (submissions list, total count)
         """
+        from sqlalchemy import and_
+
         query = self.db.query(Submission).filter(Submission.user_id == user_id)
 
-        # Apply status filter
-        if status:
-            query = query.filter(Submission.status == status)
+        # Apply result filter (matches table display)
+        if result:
+            if result == "pass":
+                # 통과: SUCCESS with score=100
+                query = query.filter(
+                    and_(Submission.status == "SUCCESS", Submission.score == 100)
+                )
+            elif result == "partial":
+                # 부분통과: SUCCESS with 70<=score<100
+                query = query.filter(
+                    and_(
+                        Submission.status == "SUCCESS",
+                        Submission.score >= 70,
+                        Submission.score < 100
+                    )
+                )
+            elif result == "fail":
+                # 미달: SUCCESS with score<70
+                query = query.filter(
+                    and_(Submission.status == "SUCCESS", Submission.score < 70)
+                )
+            elif result == "test_fail":
+                # 테스트 실패: FAILURE status
+                query = query.filter(Submission.status == "FAILURE")
+            elif result == "error":
+                # 에러: ERROR status
+                query = query.filter(Submission.status == "ERROR")
 
         # Apply days filter
         if days:

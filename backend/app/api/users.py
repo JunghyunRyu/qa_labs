@@ -27,9 +27,9 @@ router = APIRouter()
 async def get_my_submissions(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(10, ge=1, le=100, description="Number of items per page"),
-    status: Optional[str] = Query(
+    result: Optional[str] = Query(
         None,
-        description="Filter by status: PENDING, RUNNING, SUCCESS, FAILURE, ERROR"
+        description="Filter by result: pass (100점), partial (70-99점), fail (<70점), test_fail (FAILURE), error (ERROR)"
     ),
     days: Optional[int] = Query(
         None,
@@ -44,20 +44,20 @@ async def get_my_submissions(
     Args:
         page: Page number
         page_size: Number of items per page
-        status: Optional status filter
+        result: Optional result filter (pass, partial, fail, test_fail, error)
         days: Optional filter for recent N days
 
     Returns:
         Paginated list of submissions with problem info
     """
-    logger.info(f"Fetching submissions for user {current_user.id}, page={page}, status={status}, days={days}")
+    logger.info(f"Fetching submissions for user {current_user.id}, page={page}, result={result}, days={days}")
 
     repo = SubmissionRepository(db)
     submissions, total = repo.get_by_user_id(
         user_id=current_user.id,
         page=page,
         page_size=page_size,
-        status=status,
+        result=result,
         days=days,
     )
 

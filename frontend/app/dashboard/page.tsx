@@ -204,7 +204,7 @@ export default function DashboardPage() {
       const data = await getMySubmissions(
         submissionPage,
         PAGE_SIZE,
-        filters.status,
+        filters.result,
         filters.days
       );
       setSubmissions(data);
