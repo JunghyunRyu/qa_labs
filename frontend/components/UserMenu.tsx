@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { deleteMyAccount } from "@/lib/api/users";
-import { History, Bookmark, BarChart2, Trash2, LogOut, ChevronDown } from "lucide-react";
+import { Bookmark, BarChart2, Trash2, LogOut, ChevronDown } from "lucide-react";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
@@ -92,17 +92,7 @@ export default function UserMenu() {
           >
             <span className="flex items-center space-x-2">
               <BarChart2 className="w-4 h-4" />
-              <span>학습 현황</span>
-            </span>
-          </Link>
-          <Link
-            href="/submissions"
-            onClick={() => setIsOpen(false)}
-            className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            <span className="flex items-center space-x-2">
-              <History className="w-4 h-4" />
-              <span>내 제출 기록</span>
+              <span>대시보드</span>
             </span>
           </Link>
           <Link
