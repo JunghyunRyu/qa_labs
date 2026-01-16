@@ -53,7 +53,7 @@ function DifficultyDots({ level }: { level: number }) {
   );
 }
 
-const categoryLabels: { [key: string]: string } = {
+const domainLabels: { [key: string]: string } = {
   common: "공통",
   fintech: "핀테크",
   commerce: "커머스",
@@ -77,9 +77,11 @@ export default async function Image({ params }: { params: { id: string } }) {
 
   const title = problem?.title || "QA Challenge";
   const difficulty = problem?.difficulty || "Medium";
-  const category = problem?.category || "common";
+  const domain = problem?.domain || "common";
   const difficultyLevel = difficultyLevels[difficulty] || 3;
-  const categoryLabel = categoryLabels[category] || category;
+  const domainLabel = domainLabels[domain] || domain;
+  const bugsCount = problem?.buggy_implementations?.length || 0;
+  const skills: string[] = problem?.skills?.slice(0, 3) || [];
 
   return new ImageResponse(
     (
@@ -162,21 +164,55 @@ export default async function Image({ params }: { params: { id: string } }) {
                 fontWeight: "bold",
               }}
             >
-              {categoryLabel}
+              {domainLabel}
             </span>
           </div>
         </div>
 
-        {/* CTA */}
-        <div
-          style={{
-            marginTop: "50px",
-            fontSize: "24px",
-            color: "#38bdf8",
-          }}
-        >
-          숨은 버그를 찾아낼 수 있나요?
-        </div>
+        {/* Bug Count */}
+        {bugsCount > 0 && (
+          <div
+            style={{
+              marginTop: "40px",
+              fontSize: "28px",
+              color: "#fbbf24",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <span>🐛</span>
+            <span>{bugsCount}개의 숨은 버그</span>
+          </div>
+        )}
+
+        {/* Skills Tags */}
+        {skills.length > 0 && (
+          <div
+            style={{
+              marginTop: "24px",
+              display: "flex",
+              gap: "12px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            {skills.map((skill: string, index: number) => (
+              <span
+                key={index}
+                style={{
+                  fontSize: "20px",
+                  color: "#94a3b8",
+                  background: "#334155",
+                  padding: "6px 16px",
+                  borderRadius: "16px",
+                }}
+              >
+                #{skill}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Footer */}
         <div
