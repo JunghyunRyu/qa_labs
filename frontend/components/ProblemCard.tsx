@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import type { ProblemListItem } from "@/types/problem";
-import { Bug, Sparkles, CheckCircle2, XCircle, Clock, ThumbsUp, Flame, Target } from "lucide-react";
+import { Bug, Sparkles, CheckCircle2, Clock, ThumbsUp, Flame, Target } from "lucide-react";
 import BookmarkButton from "./BookmarkButton";
 import { toTagViewModels, sliceTags } from "@/lib/tagDefinitions";
 
@@ -73,18 +73,39 @@ const DOMAIN_CONFIG: Record<string, { icon: string; label: string }> = {
   content: { icon: "📝", label: "컨텐츠" },
 };
 
-// 상태 아이콘 컴포넌트
-function StatusIcon({ status }: { status?: string }) {
-  switch (status) {
-    case "solved":
-      return <span title="해결됨"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></span>;
-    case "attempted":
-      return <span title="시도 중"><Clock className="w-4 h-4 text-amber-400" /></span>;
-    case "failed":
-      return <span title="실패"><XCircle className="w-4 h-4 text-rose-400" /></span>;
-    default:
-      return null;
+// 점수 뱃지 컴포넌트 (신호등 시스템)
+function ScoreBadge({ score }: { score?: number | null }) {
+  if (score === null || score === undefined) {
+    return null; // 미시도
   }
+
+  if (score === 100) {
+    // Perfect (졸업)
+    return (
+      <span
+        className="flex items-center gap-1 px-2 py-0.5 text-xs font-bold
+                   bg-emerald-950/50 text-emerald-400 rounded-full
+                   border border-emerald-500/30"
+        title="Perfect!"
+      >
+        <CheckCircle2 className="w-3 h-3" />
+        Perfect
+      </span>
+    );
+  }
+
+  // Imperfect (재도전 요망)
+  return (
+    <span
+      className="flex items-center gap-1 px-2 py-0.5 text-xs font-bold
+                 bg-orange-950/50 text-orange-400 rounded-full
+                 border border-orange-500/50 animate-pulse"
+      title="더 높은 점수를 노려보세요!"
+    >
+      <Clock className="w-3 h-3" />
+      {score}점
+    </span>
+  );
 }
 
 export default function ProblemCard({ problem }: ProblemCardProps) {
@@ -97,13 +118,26 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
   const difficulty = difficultyConfig[problem.difficulty];
   const domain = DOMAIN_CONFIG[problem.domain || "common"] || DOMAIN_CONFIG.common;
   const bugsCount = problem.bugs_count ?? 0;
-  const isNew = isNewProblem(problem.published_at);
+  // NEW 뱃지: 7일 이내 공개 + 안 푼 문제만 표시 (이미 풀었으면 '새로운 문제'가 아님)
+  const isNew = isNewProblem(problem.published_at) && (problem.user_best_score === null || problem.user_best_score === undefined);
 
   // 정답률 계산 (임시 - 실제 데이터가 있으면 사용)
   const successRate = problem.success_rate ?? null;
 
   // 추천 배지 결정 (Easy/Medium 문제에 표시)
   const recommendBadge = getRecommendBadge(problem.difficulty, successRate);
+
+  // 사용자 점수 기반 상태 판별 (신호등 시스템)
+  const userScore = problem.user_best_score;
+  const isPerfect = userScore === 100;
+  const isImperfect = userScore !== null && userScore !== undefined && userScore < 100;
+
+  // 카드 스타일 결정
+  const cardStyles = isPerfect
+    ? "border-emerald-500/30 opacity-60 hover:opacity-100 hover:border-emerald-500/50"
+    : isImperfect
+      ? "border-orange-500/50 shadow-[0_0_15px_-5px_rgba(249,115,22,0.3)] hover:border-orange-400/60"
+      : "border-slate-800 hover:border-indigo-500/30";
 
   return (
     <Link
@@ -112,7 +146,7 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
       aria-label={`${displayTitle} 문제 보기`}
       tabIndex={0}
     >
-      <div className="relative bg-slate-900 border border-slate-800 rounded-xl p-5 h-full flex flex-col min-h-[200px] transition-all duration-200 hover:bg-slate-800 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-500/30 cursor-pointer">
+      <div className={`relative bg-slate-900 border rounded-xl p-5 h-full flex flex-col min-h-[200px] transition-all duration-200 hover:bg-slate-800 hover:shadow-lg hover:shadow-indigo-500/10 cursor-pointer ${cardStyles}`}>
 
         {/* NEW 배지 - 우측 상단 */}
         {isNew && (
@@ -145,9 +179,9 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
             )}
           </div>
 
-          {/* 상태 아이콘 + 북마크 */}
+          {/* 점수 뱃지 + 북마크 */}
           <div className="flex items-center gap-2">
-            <StatusIcon status={problem.user_status} />
+            <ScoreBadge score={problem.user_best_score} />
             <BookmarkButton problemId={problem.id} size="sm" />
           </div>
         </div>

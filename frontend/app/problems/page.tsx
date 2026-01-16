@@ -19,7 +19,7 @@ import { WeekendChallengeBanner } from "@/components/WeekendChallengeBanner";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
-import { Search, X, ChevronDown, Tag, ArrowUpDown, Sparkles, Package, Star, Rocket, PartyPopper, Bookmark, LogIn } from "lucide-react";
+import { Search, X, ChevronDown, Tag, ArrowUpDown, Sparkles, Package, Star, Rocket, PartyPopper, Bookmark, LogIn, EyeOff } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
 
@@ -158,6 +158,7 @@ function ProblemsContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [showNewOnly, setShowNewOnly] = useState(false);
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
+  const [showUnsolvedOnly, setShowUnsolvedOnly] = useState(false); // 안 푼 문제만 보기
   const [nextScheduled, setNextScheduled] = useState<NextScheduledProblem | null>(null);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [showBookmarkLoginPrompt, setShowBookmarkLoginPrompt] = useState(false);
@@ -274,14 +275,23 @@ function ProblemsContent() {
     return diffDays >= 0 && diffDays <= 7;
   }, []);
 
-  // 서버에서 정렬된 문제 목록 (정렬은 서버에서 처리, NEW 필터는 클라이언트에서)
+  // 서버에서 정렬된 문제 목록 (정렬은 서버에서 처리, NEW/안푼문제 필터는 클라이언트에서)
   const sortedProblems = useMemo(() => {
     if (!data) return [];
+    let problems = data.problems;
+
+    // NEW 필터
     if (showNewOnly) {
-      return data.problems.filter((p) => isNewProblem(p.published_at));
+      problems = problems.filter((p) => isNewProblem(p.published_at));
     }
-    return data.problems;
-  }, [data, showNewOnly, isNewProblem]);
+
+    // 안 푼 문제만 필터 (user_best_score가 null인 문제만)
+    if (showUnsolvedOnly) {
+      problems = problems.filter((p) => p.user_best_score === null || p.user_best_score === undefined);
+    }
+
+    return problems;
+  }, [data, showNewOnly, showUnsolvedOnly, isNewProblem]);
 
   // 사용 가능한 모든 태그 추출
   const availableTags = useMemo((): TagViewModel[] => {
@@ -308,6 +318,7 @@ function ProblemsContent() {
     setSortOption("recommended"); // 기본값: 추천
     setShowNewOnly(false);
     setShowBookmarkedOnly(false);
+    setShowUnsolvedOnly(false);
   };
 
   // 기본값(Easy, recommended)과 다른 필터가 적용되었는지 확인
@@ -317,6 +328,7 @@ function ProblemsContent() {
     selectedTags.length > 0 ||
     showNewOnly ||
     showBookmarkedOnly ||
+    showUnsolvedOnly ||
     (sortOption !== "recommended" && sortOption !== "difficulty-asc");
 
   // ============================
@@ -618,6 +630,21 @@ function ProblemsContent() {
               </button>
             )}
 
+            {/* 안 푼 문제만 필터 - 로그인 사용자만 */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setShowUnsolvedOnly(!showUnsolvedOnly)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 ${
+                  showUnsolvedOnly
+                    ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/50"
+                    : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300"
+                }`}
+              >
+                <EyeOff className="w-3 h-3" />
+                안 푼 문제
+              </button>
+            )}
+
             {/* 태그 필터 버튼 */}
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -705,6 +732,15 @@ function ProblemsContent() {
                 <Star className="w-3 h-3 fill-yellow-400" />
                 북마크
                 <button onClick={() => setShowBookmarkedOnly(false)} className="ml-1 hover:text-yellow-300">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {showUnsolvedOnly && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-full text-xs font-medium">
+                <EyeOff className="w-3 h-3" />
+                안 푼 문제
+                <button onClick={() => setShowUnsolvedOnly(false)} className="ml-1 hover:text-indigo-300">
                   <X className="w-3 h-3" />
                 </button>
               </span>
