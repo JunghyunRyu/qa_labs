@@ -3,6 +3,8 @@
  * 주말 랭킹 챌린지 배너 - 금요일 15:00 ~ 일요일 23:59 (KST) 동안 표시
  *
  * M6-4: 주말 트래픽 -70% 급감 완화를 위한 게이미피케이션 요소
+ *
+ * 디자인: 다크모드 최적화 - 어두운 골드 톤 + 빛나는 테두리
  */
 
 "use client";
@@ -60,89 +62,79 @@ export function WeekendChallengeBanner({ className }: WeekendChallengeBannerProp
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border-2 border-amber-300/50
-                  dark:border-amber-700/50 bg-gradient-to-r from-amber-50 via-orange-50
-                  to-yellow-50 dark:from-amber-950/30 dark:via-orange-950/30
-                  dark:to-yellow-950/30 p-5 ${className}`}
+      className={`relative overflow-hidden rounded-xl border border-yellow-500/30
+                  bg-gradient-to-r from-yellow-900/30 via-amber-900/20 to-slate-900
+                  h-full ${className}`}
     >
-      {/* 배경 장식 */}
+      {/* 배경 Glow 효과 */}
       <div
-        className="absolute top-0 right-0 w-32 h-32 bg-amber-200/30
-                   dark:bg-amber-800/20 rounded-full blur-2xl
-                   -translate-y-1/2 translate-x-1/2"
+        className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10
+                   rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
       />
 
-      {/* 닫기 버튼 */}
-      <button
-        onClick={handleDismiss}
-        className="absolute top-3 right-3 p-1 text-amber-600/50
-                   hover:text-amber-600 dark:text-amber-400/50
-                   dark:hover:text-amber-400 transition-colors"
-        aria-label="배너 닫기"
-      >
-        <X className="w-4 h-4" />
-      </button>
-
-      <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div
-          className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100
-                     dark:bg-amber-900/50 flex items-center justify-center"
+      <div className="relative px-4 py-3 h-full flex flex-col">
+        {/* 닫기 버튼 */}
+        <button
+          onClick={handleDismiss}
+          className="absolute top-2 right-2 p-1 text-yellow-500/40
+                     hover:text-yellow-400 transition-colors z-10"
+          aria-label="배너 닫기"
         >
-          <Trophy className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-        </div>
+          <X className="w-4 h-4" />
+        </button>
 
-        <div className="flex-1 min-w-0">
-          <h4
-            className="text-base font-semibold text-neutral-900
-                       dark:text-neutral-100 mb-1 flex items-center gap-2"
+        {/* 메인 컨텐츠 */}
+        <div className="flex items-center gap-3 flex-1">
+          {/* 아이콘 */}
+          <div
+            className="shrink-0 w-10 h-10 rounded-lg bg-yellow-500/10
+                       flex items-center justify-center"
           >
-            주말 랭킹 챌린지
-            <span
-              className="px-2 py-0.5 text-xs bg-amber-200 dark:bg-amber-800
-                         text-amber-800 dark:text-amber-200 rounded-full"
-            >
-              진행중
-            </span>
-          </h4>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            이번 주말 최고 점수에 도전하세요!{" "}
-            <span className="font-medium text-amber-600 dark:text-amber-400">
-              Hard 문제
-            </span>
-            로 실력을 증명해보세요.
-          </p>
+            <Trophy className="w-5 h-5 text-yellow-500" />
+          </div>
+
+          {/* 텍스트 */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-xs mb-0.5">
+              <span className="font-semibold text-yellow-500">주말 랭킹 챌린지</span>
+              <span
+                className="px-1.5 py-0.5 text-[10px] bg-yellow-500/20
+                           text-yellow-400 rounded font-bold"
+              >
+                진행중
+              </span>
+            </div>
+            <p className="text-sm text-slate-300 truncate">
+              <span className="font-bold text-yellow-400">Hard</span> 문제로 실력을 증명하세요
+            </p>
+          </div>
+
+          {/* CTA 버튼 */}
+          <Link
+            href="/problems?difficulty=hard"
+            className="shrink-0 flex items-center gap-1.5 px-4 py-2
+                       bg-yellow-500 hover:bg-yellow-400 text-slate-950
+                       font-bold rounded-lg text-sm transition-colors"
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span className="hidden sm:inline">도전하기</span>
+          </Link>
         </div>
 
-        <Link
-          href="/problems?difficulty=hard"
-          className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5
-                     bg-amber-600 dark:bg-amber-500 text-white rounded-lg
-                     hover:bg-amber-700 dark:hover:bg-amber-600
-                     transition-colors font-medium text-sm shadow-sm"
-        >
-          <TrendingUp className="w-4 h-4" />
-          도전하기
-        </Link>
-      </div>
-
-      {/* 미니 랭킹 (하드코딩 - 향후 API 연동) */}
-      <div
-        className="relative mt-4 pt-4 border-t border-amber-200/50
-                   dark:border-amber-800/50"
-      >
-        <p className="text-xs text-amber-700 dark:text-amber-300 mb-2 font-medium">
-          이번 주말 Top 3
-        </p>
-        <div className="flex flex-wrap gap-3 text-xs text-neutral-600 dark:text-neutral-400">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="text-amber-500">🥇</span> user1*** (950점)
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="text-neutral-400">🥈</span> dev2*** (920점)
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="text-amber-700">🥉</span> test*** (890점)
-          </span>
+        {/* 미니 랭킹 (컴팩트) */}
+        <div className="mt-2 pt-2 border-t border-yellow-500/10">
+          <div className="flex items-center gap-4 text-xs text-slate-400">
+            <span className="text-yellow-500/70 font-medium">이번 주말 Top 3</span>
+            <span className="inline-flex items-center gap-1">
+              <span>🥇</span> user1*** (950점)
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1">
+              <span>🥈</span> dev2*** (920점)
+            </span>
+            <span className="hidden md:inline-flex items-center gap-1">
+              <span>🥉</span> test*** (890점)
+            </span>
+          </div>
         </div>
       </div>
     </div>

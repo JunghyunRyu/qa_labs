@@ -94,7 +94,7 @@ export default function DailyBountyBanner() {
   // 로딩 스켈레톤 (Slim Ribbon)
   if (loading) {
     return (
-      <div className="mb-6 bg-gradient-to-r from-amber-900/20 to-slate-900 border border-amber-500/20 rounded-xl px-4 py-3 animate-pulse">
+      <div className="h-full bg-gradient-to-r from-amber-900/20 to-slate-900 border border-amber-500/20 rounded-xl px-4 py-3 animate-pulse">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-amber-500/10 rounded-lg" />
@@ -130,7 +130,7 @@ export default function DailyBountyBanner() {
   // ============================================
   return (
     <div
-      className={`mb-6 relative overflow-hidden rounded-xl border transition-all ${
+      className={`relative overflow-hidden rounded-xl border transition-all h-full ${
         is_completed
           ? "bg-gradient-to-r from-emerald-900/20 to-slate-900 border-emerald-500/30"
           : "bg-gradient-to-r from-amber-900/20 to-slate-900 border-amber-500/20"

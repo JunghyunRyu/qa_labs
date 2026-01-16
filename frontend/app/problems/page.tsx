@@ -488,8 +488,13 @@ function ProblemsContent() {
         {/* User Stats Bar */}
         <UserStatsBar totalProblems={data.total} />
 
-        {/* Daily Bounty Banner - 오늘의 미션 */}
-        <DailyBountyBanner />
+        {/* ============================================
+            Hero Section: Daily Bounty + Weekend Challenge (좌우 분할)
+            ============================================ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <DailyBountyBanner />
+          <WeekendChallengeBanner />
+        </div>
 
         {/* ============================================
             Sticky Control Bar (검색 + 필터) - 2줄 압축 레이아웃
@@ -739,9 +744,6 @@ function ProblemsContent() {
 
         {/* Tutorial Banner (온보딩 섹션) - 1문제 이상 푼 사용자에게는 숨김 */}
         <SampleProblemsBanner forceHide={(user?.solved_count || 0) > 0} />
-
-        {/* Weekend Challenge Banner (금요일 15:00 ~ 일요일 23:59) */}
-        <WeekendChallengeBanner className="mb-4" />
 
         {/* Coming Soon Banner */}
         {nextScheduled && <ComingSoonBanner nextProblem={nextScheduled} />}
