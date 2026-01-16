@@ -705,7 +705,7 @@ export default function ProblemDetailPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="h-screen flex items-center justify-center">
         <Loading />
       </div>
     );
@@ -732,13 +732,10 @@ export default function ProblemDetailPage() {
     return null;
   }
 
-  // Desktop layout - Resizable split panel
+  // Desktop layout - Resizable split panel (IDE 몰입 모드: 전체 화면)
   if (isDesktop) {
-    // Focus mode uses smaller header (h-8 = 2rem vs h-14 = 3.5rem)
-    const headerHeight = isFocusMode ? "2rem" : "3.5rem";
-
     return (
-      <div className="flex flex-col" style={{ height: `calc(100vh - ${headerHeight})` }}>
+      <div className="flex flex-col h-screen">
         {/* Honeypot - hidden input for bot prevention */}
         <input
           type="text"
@@ -858,9 +855,9 @@ export default function ProblemDetailPage() {
     );
   }
 
-  // Mobile/Tablet layout - Tab-based
+  // Mobile/Tablet layout - Tab-based (IDE 몰입 모드: 전체 화면)
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-screen">
       {/* Honeypot - hidden input for bot prevention */}
       <input
         type="text"

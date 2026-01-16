@@ -192,11 +192,16 @@ export default function CodeEditorPanel({
   }, [isDragging, isBottomCollapsed]);
 
   // Auto-expand when running starts (unless user manually collapsed)
+  // 🚨 DX 개선: 실행 버튼 클릭 시 결과 패널을 얼굴 앞에 들이밀기
   useEffect(() => {
     if (isRunning && !userHasManuallyCollapsed) {
       setIsBottomCollapsed(false);
+      // 패널 높이도 확장 (결과를 바로 볼 수 있도록)
+      if (bottomPanelHeight < BOTTOM_PANEL_EXPANDED) {
+        setBottomPanelHeight(BOTTOM_PANEL_EXPANDED);
+      }
     }
-  }, [isRunning, userHasManuallyCollapsed]);
+  }, [isRunning, userHasManuallyCollapsed, bottomPanelHeight, setBottomPanelHeight]);
 
   // Auto-switch to appropriate tab when testing/submitting starts
   useEffect(() => {

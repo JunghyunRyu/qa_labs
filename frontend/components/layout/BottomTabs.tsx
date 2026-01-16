@@ -164,24 +164,24 @@ export default function BottomTabs({
   const hasSubmissionError = submissionError || (submission && submission.status === "ERROR");
   const hasSubmissionContent = isJudging || hasSubmissionResult || hasSubmissionError;
 
-  // Get result tab indicator
+  // Get result tab indicator (🟡 실행중 / 🟢 성공 / 🔴 실패)
   const getResultIndicator = () => {
     if (isJudging) {
-      return <span className="ml-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />;
+      return <span className="ml-1.5 w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse shadow-sm shadow-yellow-400/50" />;
     }
     if (submission?.status === "SUCCESS") {
-      return <span className="ml-1 w-2 h-2 bg-green-500 rounded-full" />;
+      return <span className="ml-1.5 w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm shadow-green-500/50" />;
     }
     if (submission?.status === "FAILURE" || submission?.status === "ERROR" || submissionError) {
-      return <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" />;
+      return <span className="ml-1.5 w-2.5 h-2.5 bg-red-500 rounded-full shadow-sm shadow-red-500/50" />;
     }
     return null;
   };
 
-  // Get logs tab indicator
+  // Get logs tab indicator (에러 시 🔴 / 로그 있음 ⚪)
   const getLogsIndicator = () => {
     if (hasSubmissionError) {
-      return <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" />;
+      return <span className="ml-1.5 w-2.5 h-2.5 bg-red-500 rounded-full shadow-sm shadow-red-500/50" />;
     }
     // Check if there's any log content
     const hasLogs = !!(
@@ -191,7 +191,7 @@ export default function BottomTabs({
       localTestResult?.output
     );
     if (hasLogs) {
-      return <span className="ml-1 w-2 h-2 bg-gray-400 rounded-full" />;
+      return <span className="ml-1.5 w-2.5 h-2.5 bg-slate-400 rounded-full" />;
     }
     return null;
   };
@@ -214,19 +214,19 @@ export default function BottomTabs({
           >
             {tab.icon}
             <span className="hidden xl:inline">{tab.label}</span>
-            {/* Indicator dots */}
+            {/* Indicator dots: 🟡 실행중 / 🟢 성공 / 🔴 실패 */}
             {tab.id === "local" && isLocalTesting && (
-              <span className="ml-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              <span className="ml-1.5 w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse shadow-sm shadow-yellow-400/50" />
             )}
             {tab.id === "local" && !isLocalTesting && localTestResult && (
-              <span className={`ml-1 w-2 h-2 rounded-full ${
+              <span className={`ml-1.5 w-2.5 h-2.5 rounded-full shadow-sm ${
                 localTestResult.failed === 0 && localTestResult.errors === 0
-                  ? "bg-green-500"
-                  : "bg-amber-500"
+                  ? "bg-green-500 shadow-green-500/50"
+                  : "bg-red-500 shadow-red-500/50"
               }`} />
             )}
             {tab.id === "local" && !isLocalTesting && localTestError && (
-              <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" />
+              <span className="ml-1.5 w-2.5 h-2.5 bg-red-500 rounded-full shadow-sm shadow-red-500/50" />
             )}
             {tab.id === "result" && getResultIndicator()}
             {tab.id === "logs" && getLogsIndicator()}
