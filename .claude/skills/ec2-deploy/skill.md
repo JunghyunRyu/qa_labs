@@ -6,14 +6,57 @@ description: EC2 배포 전체 워크플로우를 자동화합니다 (체크 →
 
 QA Labs 프로젝트를 EC2에 안전하게 배포하는 전체 워크플로우를 자동화합니다.
 
+## Agent 연동
+
+> **이 Skill은 SRE/DevOps Agent와 함께 실행됩니다.**
+
+배포 작업 시 `Task` 도구를 사용하여 SRE/DevOps Agent를 호출하세요:
+```
+subagent_type: "SRE/DevOps Agent"
+prompt: "EC2 배포 진행 - [작업 내용]"
+```
+
+Agent가 제공하는 핵심 지식:
+- 502 에러 방지를 위한 nginx 재시작 규칙
+- Docker 빌드 네트워크 문제 해결
+- 트러블슈팅 가이드
+
+---
+
 ## Skill 연동
 
-이 Skill은 다음 Skill들과 연동하여 안전한 배포를 보장합니다:
+이 Skill은 다음 Skill/Agent들과 연동하여 안전한 배포를 보장합니다:
 
-| Skill | 역할 | 호출 시점 |
-|-------|------|-----------|
+| Skill/Agent | 역할 | 호출 시점 |
+|-------------|------|-----------|
+| **`SRE/DevOps Agent`** | 배포 실행 및 트러블슈팅 | 전체 배포 과정 |
 | **`/code-review`** | 대규모 변경사항 리뷰 | Step 3 (100줄 이상 변경 시) |
 | **`/docker-debug`** | 배포 실패 진단 | Step 7 (헬스체크 실패 시) |
+
+---
+
+## 핵심 배포 규칙
+
+### 반드시 지켜야 할 규칙
+
+1. **backend/frontend 재빌드 시 nginx 반드시 포함**
+   ```bash
+   # 올바른 명령어
+   docker compose -f docker-compose.prod.yml up -d --build backend frontend nginx
+
+   # 잘못된 명령어 (502 에러 발생!)
+   docker compose -f docker-compose.prod.yml up -d --build backend frontend
+   ```
+
+2. **Docker 빌드 실패 시 network=host 사용**
+   ```bash
+   docker build --network=host -t qa_labs-backend -f backend/Dockerfile backend/
+   docker build --network=host -t qa_labs-frontend -f frontend/Dockerfile frontend/
+   ```
+
+3. **타입 에러 발생 시 배포 중단**
+   - 메인 에이전트에 코드 수정 요청
+   - 수정 후 다시 배포 진행
 
 ---
 
@@ -102,22 +145,33 @@ echo "롤백 포인트: $PREV_COMMIT"
 
 ### Step 6: EC2 배포
 AWS SSM send-command를 통해 EC2에 배포 명령을 전송합니다:
+
+> **중요**: `backend frontend nginx`를 함께 재시작해야 502 에러가 발생하지 않습니다!
+
 ```bash
 # 롤백 포인트 저장 + 배포 명령 전송
 COMMAND_ID=$(aws ssm send-command \
   --instance-ids "i-05b23ecec2bdcd44a" \
   --document-name "AWS-RunShellScript" \
-  --parameters 'commands=["cd /home/ssm-user/qa_labs && git rev-parse HEAD > .rollback_point && git switch main && git pull origin main && docker compose -f docker-compose.prod.yml --env-file .env up -d --build && docker ps"]' \
+  --parameters 'commands=["cd /home/ssm-user/qa_labs && git rev-parse HEAD > .rollback_point && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build backend frontend nginx && docker compose -f docker-compose.prod.yml ps"]' \
   --query 'Command.CommandId' --output text)
 
 echo "Command ID: $COMMAND_ID"
 
-# 30초 대기 후 결과 확인
-sleep 30
+# 60초 대기 후 결과 확인 (빌드 시간 고려)
+sleep 60
 aws ssm get-command-invocation \
   --command-id "$COMMAND_ID" \
   --instance-id "i-05b23ecec2bdcd44a" \
   --query '[Status, StandardOutputContent, StandardErrorContent]'
+```
+
+**빌드 실패 시 대안** (네트워크 문제):
+```bash
+# EC2에서 직접 실행
+docker build --network=host -t qa_labs-backend -f backend/Dockerfile backend/
+docker build --network=host -t qa_labs-frontend -f frontend/Dockerfile frontend/
+docker compose -f docker-compose.prod.yml up -d backend frontend nginx
 ```
 
 ---
