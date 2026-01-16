@@ -12,6 +12,8 @@ import {
   Filter,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { getUserRank } from "@/lib/rank";
+import RankBadge from "@/components/RankBadge";
 import { getProgressSummary, getProgressTimeline } from "@/lib/api/progress";
 import { getMySubmissions } from "@/lib/api/users";
 import type {
@@ -39,15 +41,6 @@ const SkillRadarChart = dynamic(
 );
 
 const PAGE_SIZE = 10;
-
-// Grade calculation based on average score
-function calculateGrade(avgScore: number): { label: string; color: string } {
-  if (avgScore >= 90) return { label: "Master", color: "text-amber-400" };
-  if (avgScore >= 80) return { label: "Expert", color: "text-purple-400" };
-  if (avgScore >= 70) return { label: "Senior", color: "text-blue-400" };
-  if (avgScore >= 50) return { label: "Junior", color: "text-emerald-400" };
-  return { label: "Rookie", color: "text-slate-400" };
-}
 
 function ChartSkeleton() {
   return (
@@ -237,7 +230,9 @@ export default function DashboardPage() {
       : 0
     : 0;
 
-  const grade = calculateGrade(summary?.avg_score || 0);
+  // Use SDET Career Path rank system
+  const solvedCount = user?.solved_count || 0;
+  const rankResult = getUserRank(solvedCount, successRate);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -314,12 +309,16 @@ export default function DashboardPage() {
                     valueColor="text-rose-400"
                   />
                   <KPICard
-                    title="현재 등급"
-                    value={grade.label}
-                    subtitle={`평균 ${summary.avg_score.toFixed(0)}점`}
+                    title="현재 랭크"
+                    value={`${rankResult.current.icon} ${rankResult.current.name}`}
+                    subtitle={
+                      rankResult.isMaxRank
+                        ? "🎉 최고 랭크 달성!"
+                        : `다음 랭크까지 ${rankResult.solvedToNext}문제`
+                    }
                     icon={<Trophy className="w-5 h-5 text-amber-400" />}
                     iconBgColor="bg-amber-500/10"
-                    valueColor={grade.color}
+                    valueColor={rankResult.current.color}
                   />
                 </>
               ) : null}

@@ -3,28 +3,16 @@
 /**
  * UserStatsBar Component
  *
- * 문제 목록 상단에 표시되는 사용자 통계 바
+ * 문제 목록 상단에 표시되는 사용자 통계 바 (Mission Control)
  * - 해결한 문제 수 (진행률 바 포함)
- * - 나의 랭크
+ * - 나의 랭크 (클릭 시 가이드 팝오버)
  * - 보유 토큰
  */
 
 import { useAuth } from "@/lib/auth/AuthContext";
-import { Trophy, Zap, Target } from "lucide-react";
+import { Zap, Target } from "lucide-react";
 import Link from "next/link";
-
-// 랭크 정의
-const RANKS = [
-  { min: 0, max: 2, name: "Rookie", color: "text-slate-400" },
-  { min: 3, max: 9, name: "Junior SDET", color: "text-emerald-400" },
-  { min: 10, max: 19, name: "SDET", color: "text-blue-400" },
-  { min: 20, max: 34, name: "Senior SDET", color: "text-purple-400" },
-  { min: 35, max: Infinity, name: "QA Master", color: "text-amber-400" },
-];
-
-function getRank(solvedCount: number) {
-  return RANKS.find((r) => solvedCount >= r.min && solvedCount <= r.max) || RANKS[0];
-}
+import RankBadge from "@/components/RankBadge";
 
 interface UserStatsBarProps {
   totalProblems: number;
@@ -66,7 +54,6 @@ export default function UserStatsBar({ totalProblems }: UserStatsBarProps) {
   const monthlyTokens = user?.token_balance || 0;
   const dailyBonus = user?.daily_bonus_remaining || 0;
   const totalTokens = monthlyTokens + dailyBonus;
-  const rank = getRank(solvedCount);
   const progressPercent = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
 
   // 슬림한 한 줄 띠 형태
@@ -89,14 +76,12 @@ export default function UserStatsBar({ totalProblems }: UserStatsBarProps) {
           {/* 구분선 */}
           <div className="hidden sm:block w-px h-4 bg-slate-700" />
 
-          {/* 나의 랭크 */}
-          <div
-            className="flex items-center gap-1.5 cursor-help"
-            title="나의 랭크"
-          >
-            <Trophy className="w-4 h-4 text-purple-400" />
-            <span className={`font-semibold ${rank.color}`}>{rank.name}</span>
-          </div>
+          {/* 나의 랭크 (클릭 가능한 RankBadge) */}
+          <RankBadge
+            solvedCount={solvedCount}
+            showProgress={true}
+            showNextHint={true}
+          />
 
           {/* 구분선 */}
           <div className="hidden sm:block w-px h-4 bg-slate-700" />
