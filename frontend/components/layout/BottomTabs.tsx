@@ -36,6 +36,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import FeedbackDisplay from "@/components/FeedbackDisplay";
+import MissedBugAccordion from "@/components/MissedBugAccordion";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { getMySubmissions } from "@/lib/api/users";
 import { applyTemplate } from "@/lib/promptTemplates";
@@ -624,6 +625,7 @@ function ResultTabContent({
         missedBugs={missedBugs}
         type={type}
         onTabChange={onTabChange}
+        problem={problem}
       />
     );
   }
@@ -708,6 +710,7 @@ function SuccessResultContent({
   missedBugs,
   type,
   onTabChange,
+  problem,
 }: {
   submission: Submission;
   killRatio: number;
@@ -715,6 +718,7 @@ function SuccessResultContent({
   missedBugs: Array<{ id: number; description: string; testOutput?: string }>;
   type: "excellent" | "good" | "moderate" | "needs_improvement";
   onTabChange?: (tab: TabId) => void;
+  problem?: Problem;
 }) {
   // 현재 경로 (로그인 redirect용)
   const pathname = usePathname();
@@ -966,31 +970,12 @@ function SuccessResultContent({
         </div>
       )}
 
-      {/* Missed Bugs Section */}
+      {/* Missed Bugs Section - Accordion UI */}
       {missedBugs.length > 0 ? (
-        <div className="rounded-lg border border-orange-800/50 bg-orange-900/20">
-          {/* Header */}
-          <div className="px-3 py-2 border-b border-orange-800/50">
-            <div className="flex items-center gap-2 text-orange-300">
-              <Search className="w-4 h-4" />
-              <span className="font-medium text-sm">놓친 버그 ({missedBugs.length}개)</span>
-            </div>
-          </div>
-
-          {/* Bug List */}
-          <div className="divide-y divide-orange-800/50">
-            {missedBugs.map((bug) => (
-              <div key={bug.id} className="px-3 py-2">
-                <div className="flex items-start gap-2">
-                  <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-orange-200 flex-1">
-                    {bug.description}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <MissedBugAccordion
+          bugs={missedBugs}
+          buggyImplementations={problem?.buggy_implementations}
+        />
       ) : type === "excellent" ? (
         <div className="p-3 rounded-lg bg-green-900/20 text-green-300">
           <div className="flex items-start gap-2">
