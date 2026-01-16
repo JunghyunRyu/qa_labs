@@ -73,7 +73,7 @@ export function WeekendChallengeBanner({ className }: WeekendChallengeBannerProp
                    rounded-full blur-3xl -translate-y-1/2 -translate-x-1/4"
       />
 
-      <div className="relative px-4 py-3 h-full flex flex-col">
+      <div className="relative px-4 py-3 h-full flex items-center">
         {/* 닫기 버튼 */}
         <button
           onClick={handleDismiss}
@@ -84,59 +84,40 @@ export function WeekendChallengeBanner({ className }: WeekendChallengeBannerProp
           <X className="w-4 h-4" />
         </button>
 
-        {/* 메인 컨텐츠 */}
-        <div className="flex items-center gap-3 flex-1">
-          {/* 아이콘 */}
-          <div
-            className="shrink-0 w-10 h-10 rounded-lg bg-yellow-500/10
-                       flex items-center justify-center"
-          >
-            <Trophy className="w-5 h-5 text-yellow-500" />
-          </div>
-
-          {/* 텍스트 */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 text-xs mb-0.5">
-              <span className="font-semibold text-yellow-500">주말 랭킹 챌린지</span>
-              <span
-                className="px-1.5 py-0.5 text-[10px] bg-yellow-500/20
-                           text-yellow-400 rounded font-bold"
-              >
-                진행중
-              </span>
-            </div>
-            <p className="text-sm text-slate-300 truncate">
-              <span className="font-bold text-yellow-400">Hard</span> 문제로 실력을 증명하세요
-            </p>
-          </div>
-
-          {/* CTA 버튼 */}
-          <Link
-            href="/problems?difficulty=hard"
-            className="shrink-0 flex items-center gap-1.5 px-4 py-2
-                       bg-yellow-500 hover:bg-yellow-400 text-slate-950
-                       font-bold rounded-lg text-sm transition-colors"
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span className="hidden sm:inline">도전하기</span>
-          </Link>
+        {/* 아이콘 */}
+        <div
+          className="shrink-0 w-10 h-10 rounded-lg bg-yellow-500/10
+                     flex items-center justify-center mr-3"
+        >
+          <Trophy className="w-5 h-5 text-yellow-500" />
         </div>
 
-        {/* 미니 랭킹 (컴팩트) */}
-        <div className="mt-2 pt-2 border-t border-yellow-500/10">
-          <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span className="text-yellow-500/70 font-medium">이번 주말 Top 3</span>
-            <span className="inline-flex items-center gap-1">
-              <span>🥇</span> user1*** (950점)
-            </span>
-            <span className="hidden sm:inline-flex items-center gap-1">
-              <span>🥈</span> dev2*** (920점)
-            </span>
-            <span className="hidden md:inline-flex items-center gap-1">
-              <span>🥉</span> test*** (890점)
+        {/* 텍스트 */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 text-xs mb-0.5">
+            <span className="font-semibold text-yellow-500">주말 랭킹 챌린지</span>
+            <span
+              className="px-1.5 py-0.5 text-[10px] bg-yellow-500/20
+                         text-yellow-400 rounded font-bold"
+            >
+              진행중
             </span>
           </div>
+          <p className="text-sm text-slate-300 truncate">
+            <span className="font-bold text-yellow-400">Hard</span> 문제로 실력을 증명하세요
+          </p>
         </div>
+
+        {/* CTA 버튼 */}
+        <Link
+          href="/problems?difficulty=hard"
+          className="shrink-0 flex items-center gap-1.5 px-4 py-2
+                     bg-yellow-500 hover:bg-yellow-400 text-slate-950
+                     font-bold rounded-lg text-sm transition-colors ml-3"
+        >
+          <TrendingUp className="w-4 h-4" />
+          <span className="hidden sm:inline">도전하기</span>
+        </Link>
       </div>
     </div>
   );
