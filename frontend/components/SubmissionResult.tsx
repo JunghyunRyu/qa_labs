@@ -14,8 +14,10 @@ import { AlertCircle, FileText, Sparkles, RefreshCw, ArrowRight, Lightbulb, Save
 import { Github } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { useLayoutStore } from "@/stores/layoutStore";
 import type { QualityGrade, TestQualityAnalysis } from "@/types/test-quality";
 import { AIFeedbackTeaser } from "@/components/conversion";
+import { trackAIAskFromError } from "@/lib/analytics";
 
 interface SubmissionResultProps {
   submission: Submission;
@@ -25,6 +27,7 @@ interface SubmissionResultProps {
 
 export default function SubmissionResult({ submission, onRetry, problemId }: SubmissionResultProps) {
   const { login } = useAuth();
+  const { openAIChatWithPrefill } = useLayoutStore();
 
   // FAILURE 상태일 때 Golden Code 테스트 실패 정보 추출
   const getFailureInfo = () => {
@@ -228,6 +231,29 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
               </div>
             </div>
 
+            {/* M6-3: AI 질문하기 버튼 */}
+            <button
+              onClick={() => {
+                const errorContext = `테스트 실행 결과:\n${failureInfo?.stderr || "테스트가 정답 코드를 통과하지 못했습니다."}`;
+                trackAIAskFromError({
+                  problemId: problemId || "",
+                  errorType: failureInfo?.stderr?.match(/(\w+Error)/)?.[1] || "TestFailure",
+                  submissionStatus: "FAILURE",
+                });
+                openAIChatWithPrefill(errorContext);
+              }}
+              className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600
+                         text-white rounded-lg font-medium
+                         animate-gentle-pulse hover:animate-none hover:from-purple-700 hover:to-blue-700
+                         transition-all duration-200 shadow-lg shadow-purple-500/25"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                <span>이 에러의 원인을 AI에게 물어보세요</span>
+                <span className="text-purple-200 text-sm">(1토큰)</span>
+              </div>
+            </button>
+
             {/* 에러 힌트 카드 (M6-2) - stderr에서 인식된 에러가 있을 때 표시 */}
             {failureInfo?.stderr && (() => {
               const sanitized = sanitizeError(failureInfo.stderr);
@@ -283,6 +309,32 @@ export default function SubmissionResult({ submission, onRetry, problemId }: Sub
             <h4 className="text-lg font-semibold text-red-800 dark:text-red-200">채점 에러</h4>
           </div>
           <ErrorLogDisplay executionLog={submission.execution_log} />
+
+          {/* M6-3: AI 질문하기 버튼 (ERROR) */}
+          <button
+            onClick={() => {
+              const errorMessage = (submission.execution_log as any)?.error_message ||
+                                  (submission.execution_log as any)?.stderr ||
+                                  "채점 중 에러가 발생했습니다.";
+              const errorContext = `채점 에러:\n${errorMessage}`;
+              trackAIAskFromError({
+                problemId: problemId || "",
+                errorType: errorMessage.match(/(\w+Error)/)?.[1] || "SystemError",
+                submissionStatus: "ERROR",
+              });
+              openAIChatWithPrefill(errorContext);
+            }}
+            className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600
+                       text-white rounded-lg font-medium
+                       animate-gentle-pulse hover:animate-none hover:from-purple-700 hover:to-blue-700
+                       transition-all duration-200 shadow-lg shadow-purple-500/25"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              <span>이 에러의 원인을 AI에게 물어보세요</span>
+              <span className="text-purple-200 text-sm">(1토큰)</span>
+            </div>
+          </button>
         </div>
       )}
 

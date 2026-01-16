@@ -7,7 +7,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Sparkles, Check } from "lucide-react";
+import { Sparkles, Check, Square } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { applyTemplate } from "@/lib/promptTemplates";
 import ReactMarkdown from "react-markdown";
@@ -35,25 +35,28 @@ export default function TestPointItem({ content, className = "" }: TestPointItem
 
   return (
     <div className={`group flex items-start gap-2 ${className}`}>
-      {/* 테스트 포인트 내용 - 인라인 마크다운 렌더링 */}
-      <div className="flex-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed [&>p]:inline [&>p]:m-0">
+      {/* 체크박스 아이콘 - 체크리스트 스타일 */}
+      <Square className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+
+      {/* 테스트 포인트 내용 - 다크모드 텍스트 */}
+      <div className="flex-1 text-sm text-slate-300 leading-relaxed [&>p]:inline [&>p]:m-0">
         <ReactMarkdown
           components={{
             // 인라인 코드
             code: ({ children }) => (
-              <code className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded text-xs font-mono">
+              <code className="px-1 py-0.5 bg-slate-700 text-slate-200 rounded text-xs font-mono">
                 {children}
               </code>
             ),
             // 볼드
             strong: ({ children }) => (
-              <strong className="font-semibold text-gray-900 dark:text-gray-100">
+              <strong className="font-semibold text-slate-100">
                 {children}
               </strong>
             ),
             // 이탤릭
             em: ({ children }) => (
-              <em className="italic">{children}</em>
+              <em className="italic text-slate-300">{children}</em>
             ),
             // 문단을 인라인으로
             p: ({ children }) => <span>{children}</span>,

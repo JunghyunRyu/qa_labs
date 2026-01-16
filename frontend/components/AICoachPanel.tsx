@@ -261,13 +261,13 @@ export default function AICoachPanel({
 
   return (
     <div
-      className={`flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden ${className}`}
+      className={`flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700 bg-slate-800">
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-          <span className="font-medium text-neutral-900 dark:text-neutral-100">
+          <Bot className="w-5 h-5 text-purple-400" />
+          <span className="font-medium text-slate-100">
             AI 도우미
           </span>
         </div>
@@ -277,8 +277,8 @@ export default function AICoachPanel({
             onClick={() => onModeChange(isOff ? "COACH" : "OFF")}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
               isOff
-                ? "bg-neutral-300 dark:bg-neutral-600"
-                : "bg-purple-600 dark:bg-purple-700"
+                ? "bg-slate-600"
+                : "bg-purple-600"
             }`}
           >
             <span
@@ -287,15 +287,15 @@ export default function AICoachPanel({
               }`}
             />
           </button>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          <span className="text-xs text-slate-400">
             {isOff ? "OFF" : "ON"}
           </span>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
+              className="p-1 hover:bg-slate-700 rounded"
             >
-              <X className="w-4 h-4 text-neutral-500" />
+              <X className="w-4 h-4 text-slate-400" />
             </button>
           )}
         </div>
@@ -304,15 +304,15 @@ export default function AICoachPanel({
       {/* Content Area */}
       {isOff ? (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
-            <Bot className="w-6 h-6 text-neutral-400" />
+          <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mb-3">
+            <Bot className="w-6 h-6 text-slate-400" />
           </div>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="text-sm text-slate-400">
             AI 도우미가 꺼져 있습니다
           </p>
           <button
             onClick={() => onModeChange("COACH")}
-            className="mt-3 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+            className="mt-3 text-sm text-purple-400 hover:text-purple-300"
           >
             켜기
           </button>
@@ -321,7 +321,7 @@ export default function AICoachPanel({
         <>
           {/* Conversation History Selector - 회원만 */}
           {isAuthenticated && (
-            <div className="px-3 py-2 border-b border-neutral-200 dark:border-neutral-700">
+            <div className="px-3 py-2 border-b border-slate-700">
               <AIConversationHistory
                 problemId={problemId}
                 currentConversationId={conversationId}
@@ -334,13 +334,13 @@ export default function AICoachPanel({
           {/* 메시지가 없을 때: Conversation Starters */}
           {messages.length === 0 && !isLoading && !isLoadingHistory ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6">
-              <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
-                <Bot className="w-7 h-7 text-purple-500 dark:text-purple-400" />
+              <div className="w-14 h-14 rounded-full bg-purple-900/30 flex items-center justify-center mb-4">
+                <Bot className="w-7 h-7 text-purple-400" />
               </div>
-              <p className="text-neutral-600 dark:text-neutral-300 font-medium mb-2">
+              <p className="text-slate-300 font-medium mb-2">
                 무엇을 도와드릴까요?
               </p>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5 text-center">
+              <p className="text-sm text-slate-400 mb-5 text-center">
                 아래 버튼을 클릭하거나 직접 질문해보세요
               </p>
 
@@ -348,21 +348,21 @@ export default function AICoachPanel({
               <div className="flex flex-wrap gap-2 justify-center max-w-xs">
                 <button
                   onClick={() => handleSendMessage("이 문제를 어떻게 접근해야 할까요?")}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-full border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-full border border-purple-800 text-purple-300 hover:bg-purple-950/30 transition-colors"
                 >
                   <Lightbulb className="w-4 h-4" />
                   힌트 주세요
                 </button>
                 <button
                   onClick={() => handleSendMessage("내 코드에서 버그를 찾아줘")}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-full border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-full border border-purple-800 text-purple-300 hover:bg-purple-950/30 transition-colors"
                 >
                   <Search className="w-4 h-4" />
                   버그 찾기
                 </button>
                 <button
                   onClick={() => handleSendMessage("이 문제의 핵심 개념이 뭐야?")}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-full border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-full border border-purple-800 text-purple-300 hover:bg-purple-950/30 transition-colors"
                 >
                   <FileText className="w-4 h-4" />
                   핵심 개념
@@ -371,7 +371,7 @@ export default function AICoachPanel({
 
               {/* 게스트 남은 횟수 표시 */}
               {!isAuthenticated && (
-                <p className="mt-4 text-xs text-neutral-400 dark:text-neutral-500">
+                <p className="mt-4 text-xs text-slate-500">
                   무료 체험: {Math.max(0, GUEST_FREE_LIMIT - guestUsageCount)}회 남음
                 </p>
               )}
@@ -383,14 +383,14 @@ export default function AICoachPanel({
 
           {/* Error Message */}
           {error && (
-            <div className="px-4 py-2 bg-red-50/80 dark:bg-red-950/20 border-t border-red-200/60 dark:border-red-800/50">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className="px-4 py-2 bg-red-950/20 border-t border-red-800/50">
+              <p className="text-sm text-red-400">{error}</p>
             </div>
           )}
 
           {/* Save Policy Notice / 게스트 남은 횟수 */}
-          <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700">
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
+          <div className="px-4 py-2 bg-slate-800 border-t border-slate-700">
+            <p className="text-xs text-slate-400 text-center">
               {isAuthenticated
                 ? "대화 기록이 자동 저장됩니다"
                 : `무료 체험: ${Math.max(0, GUEST_FREE_LIMIT - guestUsageCount)}회 남음`}
@@ -417,11 +417,11 @@ export default function AICoachPanel({
 
           {/* 게스트 제한 시 입력창 위에 오버레이 */}
           {isGuestLimitReached && (
-            <div className="px-4 py-3 bg-purple-50 dark:bg-purple-950/30 border-t border-purple-200 dark:border-purple-800">
+            <div className="px-4 py-3 bg-purple-950/30 border-t border-purple-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  <span className="text-sm text-purple-700 dark:text-purple-300">
+                  <Lock className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm text-purple-300">
                     무료 체험이 끝났습니다
                   </span>
                 </div>
@@ -443,15 +443,15 @@ export default function AICoachPanel({
       {/* Guest Limit Modal (블러 답변 후) */}
       {showGuestLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 max-w-sm mx-4 shadow-xl">
+          <div className="bg-slate-800 rounded-xl p-6 max-w-sm mx-4 shadow-xl border border-slate-700">
             <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
-                <Sparkles className="w-7 h-7 text-purple-500" />
+              <div className="w-14 h-14 rounded-full bg-purple-900/30 flex items-center justify-center mb-4">
+                <Sparkles className="w-7 h-7 text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+              <h3 className="text-lg font-semibold text-slate-100 mb-2">
                 AI 코치가 마음에 드셨나요?
               </h3>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6">
+              <p className="text-sm text-slate-400 mb-6">
                 가입하면 더 많은 AI 코칭을 받을 수 있어요.<br />
                 무료 플랜으로 시작해보세요!
               </p>
@@ -467,7 +467,7 @@ export default function AICoachPanel({
               </button>
               <button
                 onClick={() => setShowGuestLimitModal(false)}
-                className="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="text-sm text-slate-500 hover:text-slate-300"
               >
                 나중에 하기
               </button>

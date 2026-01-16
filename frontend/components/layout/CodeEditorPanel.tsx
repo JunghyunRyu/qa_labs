@@ -423,9 +423,12 @@ export default function CodeEditorPanel({
                 data-testid="btn-submit"
                 onClick={onSubmit}
                 disabled={isSubmitting || isLocalTesting || !code.trim()}
-                className="px-2 xl:px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
+                className={`px-2 xl:px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-                           font-medium flex items-center gap-1.5 xl:gap-2 text-sm"
+                           font-medium flex items-center gap-1.5 xl:gap-2 text-sm
+                           ${localTestResult && localTestResult.failed === 0 && localTestResult.errors === 0
+                             ? "animate-pulse ring-2 ring-sky-400 ring-offset-2 ring-offset-slate-900"
+                             : ""}`}
                 aria-describedby="submit-tooltip"
               >
                 {isSubmitting ? (
@@ -463,6 +466,13 @@ export default function CodeEditorPanel({
           ref={editorContainerRef}
           data-testid="code-editor-area"
           className="flex-1 min-h-0 overflow-hidden"
+          onClick={() => {
+            // Collapse bottom panel when clicking on editor area (VS Code style)
+            if (!isBottomCollapsed) {
+              setIsBottomCollapsed(true);
+              setUserHasManuallyCollapsed(true);
+            }
+          }}
         >
           <CodeEditor
             value={code}

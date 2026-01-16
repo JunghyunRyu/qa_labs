@@ -80,7 +80,7 @@ export default function AIMessageInput({
   const canSend = message.trim().length > 0 && !isDisabled;
 
   return (
-    <div className="flex items-end gap-2 p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <div className="flex items-end gap-2 p-3 border-t border-slate-700 bg-slate-900">
       <textarea
         ref={textareaRef}
         value={message}
@@ -94,8 +94,8 @@ export default function AIMessageInput({
           focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent
           ${
             isDisabled
-              ? "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
-              : "bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700"
+              ? "bg-slate-800 text-slate-400 cursor-not-allowed border-slate-700"
+              : "bg-slate-800 text-slate-100 border-slate-700"
           }`}
         style={{ maxHeight: "120px" }}
       />
@@ -106,7 +106,7 @@ export default function AIMessageInput({
           ${
             canSend
               ? "bg-sky-500 hover:bg-sky-600 text-white"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+              : "bg-slate-700 text-slate-400 cursor-not-allowed"
           }`}
       >
         {loading ? (

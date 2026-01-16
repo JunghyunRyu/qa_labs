@@ -35,10 +35,10 @@ import remarkBreaks from "remark-breaks";
 
 // Difficulty color mapping
 const difficultyColors: Record<string, string> = {
-  "Very Easy": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  "Easy": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-  "Medium": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-  "Hard": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  "Very Easy": "bg-blue-900/30 text-blue-300",
+  "Easy": "bg-green-900/30 text-green-300",
+  "Medium": "bg-yellow-900/30 text-yellow-300",
+  "Hard": "bg-red-900/30 text-red-300",
 };
 
 interface ProblemPanelProps {
@@ -136,38 +136,38 @@ function getSummary(problem: Problem): string {
 function getSectionConfig(type: ParsedSection['type']) {
   switch (type) {
     case 'overview':
-      return { icon: Info, iconColor: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-50 dark:bg-blue-900/20' };
+      return { icon: Info, iconColor: 'text-blue-400', bgColor: 'bg-blue-900/20' };
     case 'function':
-      return { icon: Code2, iconColor: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-50 dark:bg-purple-900/20' };
+      return { icon: Code2, iconColor: 'text-purple-400', bgColor: 'bg-purple-900/20' };
     case 'examples':
-      return { icon: CheckCircle, iconColor: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-50 dark:bg-green-900/20' };
+      return { icon: CheckCircle, iconColor: 'text-green-400', bgColor: 'bg-green-900/20' };
     case 'exceptions':
-      return { icon: XCircle, iconColor: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-50 dark:bg-red-900/20' };
+      return { icon: XCircle, iconColor: 'text-red-400', bgColor: 'bg-red-900/20' };
     case 'hints':
-      return { icon: Lightbulb, iconColor: 'text-yellow-600 dark:text-yellow-400', bgColor: 'bg-yellow-50 dark:bg-yellow-900/20' };
+      return { icon: Lightbulb, iconColor: 'text-yellow-400', bgColor: 'bg-yellow-900/20' };
     case 'strategy':
-      return { icon: Target, iconColor: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-50 dark:bg-emerald-900/20' };
+      return { icon: Target, iconColor: 'text-emerald-400', bgColor: 'bg-emerald-900/20' };
     case 'task':
-      return { icon: Target, iconColor: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-50 dark:bg-indigo-900/20' };
+      return { icon: Target, iconColor: 'text-indigo-400', bgColor: 'bg-indigo-900/20' };
     case 'constraints':
-      return { icon: AlertTriangle, iconColor: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-50 dark:bg-orange-900/20' };
+      return { icon: AlertTriangle, iconColor: 'text-orange-400', bgColor: 'bg-orange-900/20' };
     case 'io':
-      return { icon: Code2, iconColor: 'text-cyan-600 dark:text-cyan-400', bgColor: 'bg-cyan-50 dark:bg-cyan-900/20' };
+      return { icon: Code2, iconColor: 'text-cyan-400', bgColor: 'bg-cyan-900/20' };
     default:
-      return { icon: FileText, iconColor: 'text-gray-600 dark:text-gray-400', bgColor: 'bg-gray-50 dark:bg-gray-800' };
+      return { icon: FileText, iconColor: 'text-slate-400', bgColor: 'bg-slate-800' };
   }
 }
 
 // Markdown content renderer
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300">
+    <div className="prose prose-sm max-w-none text-slate-300">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
           h2: () => null,
           h3: ({ children }) => (
-            <h3 className="text-sm font-semibold mt-3 mb-1.5 text-gray-800 dark:text-gray-200">
+            <h3 className="text-sm font-semibold mt-3 mb-1.5 text-slate-200">
               {children}
             </h3>
           ),
@@ -182,17 +182,17 @@ function MarkdownContent({ content }: { content: string }) {
             </ol>
           ),
           li: ({ children }) => (
-            <li className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm [&>p]:inline [&>p]:mb-0">
+            <li className="text-slate-300 leading-relaxed text-sm [&>p]:inline [&>p]:mb-0">
               {children}
             </li>
           ),
           p: ({ children }) => (
-            <p className="mb-1.5 leading-relaxed text-gray-700 dark:text-gray-300 text-sm last:mb-0">
+            <p className="mb-1.5 leading-relaxed text-slate-300 text-sm last:mb-0">
               {children}
             </p>
           ),
           strong: ({ children }) => (
-            <strong className="font-semibold text-gray-900 dark:text-gray-100">{children}</strong>
+            <strong className="font-semibold text-slate-100">{children}</strong>
           ),
           code: ({ children, className, ...props }) => {
             const match = /language-(\w+)/.exec(className || '');
@@ -201,15 +201,15 @@ function MarkdownContent({ content }: { content: string }) {
             if (className) {
               const codeText = String(children).replace(/\n$/, '');
               return (
-                <div className="my-2 bg-gray-900 rounded-lg overflow-hidden border border-gray-700 group">
-                  <div className="flex items-center justify-between bg-gray-800 px-3 py-1.5 border-b border-gray-700">
-                    <span className="text-xs text-gray-400 font-mono uppercase">
+                <div className="my-2 bg-slate-950 rounded-lg overflow-hidden border border-slate-700 group">
+                  <div className="flex items-center justify-between bg-slate-800 px-3 py-1.5 border-b border-slate-700">
+                    <span className="text-xs text-slate-400 font-mono uppercase">
                       {language || 'code'}
                     </span>
                     <CopyButton text={codeText} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="p-3 overflow-x-auto">
-                    <pre className="text-xs text-gray-100 font-mono leading-relaxed">
+                    <pre className="text-xs text-slate-100 font-mono leading-relaxed">
                       <code {...props} className={className}>{children}</code>
                     </pre>
                   </div>
@@ -217,7 +217,7 @@ function MarkdownContent({ content }: { content: string }) {
               );
             }
             return (
-              <code className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded text-xs font-mono" {...props}>
+              <code className="px-1 py-0.5 bg-slate-700 text-slate-200 rounded text-xs font-mono" {...props}>
                 {children}
               </code>
             );
@@ -348,23 +348,23 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
     return (
       <div
         data-testid="problem-panel-collapsed"
-        className="h-full bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-2"
+        className="h-full bg-slate-900 border-r border-slate-700 flex flex-col items-center py-2"
       >
         <button
           data-testid="btn-expand-problem"
           onClick={toggleProblemPanel}
-          className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700
-                     bg-white dark:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-600
+          className="p-1.5 rounded-lg hover:bg-slate-700
+                     bg-slate-800 shadow-sm border border-slate-600
                      transition-colors group"
           aria-label="문제 패널 펼치기"
           title="문제 패널 펼치기 (Ctrl+B)"
         >
-          <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-sky-600 dark:group-hover:text-sky-400" />
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-400" />
         </button>
 
         <div className="mt-3 flex flex-col items-center gap-1">
-          <FileText className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 writing-mode-vertical whitespace-nowrap">
+          <FileText className="w-4 h-4 text-slate-500" />
+          <span className="text-[10px] text-slate-500 writing-mode-vertical whitespace-nowrap">
             문제
           </span>
         </div>
@@ -376,16 +376,16 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   return (
     <div
       data-testid="problem-panel"
-      className="h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-hidden"
+      className="h-full flex flex-col bg-slate-900 border-r border-slate-700 overflow-hidden"
     >
       {/* ===== STICKY AREA ===== */}
-      <div className="flex-shrink-0 sticky top-0 z-10 bg-white dark:bg-gray-900">
+      <div className="flex-shrink-0 sticky top-0 z-10 bg-slate-900">
         {/* Header with Back Link */}
-        <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-3 py-2 border-b border-slate-700">
           <div className="flex items-center justify-between mb-1">
             <Link
               href="/problems"
-              className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-sky-400 transition-colors"
             >
               <ArrowLeft className="w-3 h-3" />
               <span>문제 목록</span>
@@ -393,23 +393,23 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             <button
               data-testid="btn-collapse-problem"
               onClick={toggleProblemPanel}
-              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-1 rounded hover:bg-slate-800 transition-colors"
               aria-label="문제 패널 접기"
               title="문제 패널 접기 (Ctrl+B)"
             >
-              <ChevronLeft className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <ChevronLeft className="w-4 h-4 text-slate-400" />
             </button>
           </div>
           <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-base font-bold text-gray-900 dark:text-white truncate flex-1">
+            <h1 className="text-base font-bold text-white truncate flex-1">
               {problem.title}
             </h1>
             <button
               onClick={toggleProblemSearch}
               className={`p-1 rounded transition-colors ${
                 isProblemSearchOpen
-                  ? "bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400"
-                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  ? "bg-sky-900/30 text-sky-400"
+                  : "text-slate-400 hover:text-slate-300 hover:bg-slate-800"
               }`}
               aria-label="문제 내 검색"
               title="문제 내 검색 (Ctrl+F)"
@@ -448,13 +448,13 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
         )}
 
         {/* "전체 문제" 버튼 - 핵심 테스트 포인트 영역 대체 (M5-4: ref for text selection) */}
-        <div ref={testPointsRef} className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div ref={testPointsRef} className="px-3 py-2 border-b border-slate-700">
           <button
             onClick={toggleProblemPeek}
             className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                       bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400
-                       hover:bg-sky-100 dark:hover:bg-sky-900/30
-                       border border-sky-200 dark:border-sky-700"
+                       bg-sky-900/20 text-sky-400
+                       hover:bg-sky-900/30
+                       border border-sky-700"
             title="전체 문제 보기 (Alt+P)"
           >
             <BookOpen className="w-4 h-4" />
@@ -466,17 +466,14 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
 
       {/* ===== SCROLLABLE ACCORDION AREA ===== */}
       <div ref={contentRef} className="flex-1 min-h-0 overflow-y-auto">
-        {/* 핵심 테스트 포인트 - summary 표시 */}
+        {/* 핵심 테스트 포인트 - 체크리스트 스타일 */}
         {summary && (
           <div className="p-3 pb-0">
-            <div className="bg-sky-50 dark:bg-sky-900/20 rounded-lg p-2.5 border border-sky-200 dark:border-sky-700">
-              <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed
-                              [&_strong]:text-gray-800 [&_strong]:dark:text-gray-200 [&_strong]:font-semibold
-                              [&_p]:mb-1.5 [&_p]:last:mb-0">
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                  {summary.replace(/\s*•\s*/g, '\n• ')}
-                </ReactMarkdown>
-              </div>
+            <div className="bg-sky-900/20 rounded-lg p-2.5 border border-sky-700">
+              <TestPointsList
+                content={summary.replace(/\s*•\s*/g, '\n• ')}
+                className="text-xs text-slate-400 [&_strong]:text-slate-200 [&_strong]:font-semibold"
+              />
             </div>
           </div>
         )}
@@ -487,8 +484,8 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
         </div>
 
         {/* Standard Library Notice - 힌트 하단 */}
-        <div className="mx-3 mt-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700">
-          <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+        <div className="mx-3 mt-2 px-3 py-2 bg-amber-900/20 rounded-lg border border-amber-700">
+          <p className="text-xs text-amber-300 flex items-center gap-1.5">
             <Info className="w-3 h-3 flex-shrink-0" />
             <span>이 환경에서는 Python 표준 라이브러리만 사용할 수 있습니다.</span>
           </p>

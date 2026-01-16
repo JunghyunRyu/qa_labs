@@ -56,8 +56,8 @@ export default function TokenExhaustedModal({
 
         {/* Icon */}
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-            <Coins className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+          <div className="w-16 h-16 rounded-full bg-amber-900/30 flex items-center justify-center">
+            <Coins className="w-8 h-8 text-amber-400" />
           </div>
         </div>
 

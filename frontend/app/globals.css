@@ -277,6 +277,33 @@ body {
 }
 
 /* ========================================
+   Dark Scrollbar Styling - 전역 다크 스크롤바
+   ======================================== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a; /* bg-slate-900 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155; /* bg-slate-700 */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569; /* bg-slate-600 */
+}
+
+/* Firefox 스크롤바 스타일링 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0f172a;
+}
+
+/* ========================================
    Floating Animation - AI Hero Section
    ======================================== */
 @keyframes float {
@@ -287,4 +314,22 @@ body {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* ========================================
+   Gentle Pulse Animation - M6-3 AI 질문 버튼
+   ======================================== */
+@keyframes gentle-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+  }
+  50% {
+    opacity: 0.95;
+    box-shadow: 0 0 0 8px rgba(147, 51, 234, 0);
+  }
+}
+
+.animate-gentle-pulse {
+  animation: gentle-pulse 2s ease-in-out infinite;
 }

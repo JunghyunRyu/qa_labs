@@ -235,7 +235,7 @@ export default function FloatingAIChat({
             }}
             style={{ width: panelWidth }}
             className="fixed top-0 right-0 h-full max-w-[90vw] z-50
-                       bg-white dark:bg-neutral-900 shadow-2xl flex flex-col"
+                       bg-slate-900 shadow-2xl flex flex-col"
           >
             {/* 리사이즈 핸들 */}
             <div
@@ -249,7 +249,7 @@ export default function FloatingAIChat({
               <div className={`absolute left-1 top-0 w-1 h-full transition-colors
                               ${isResizing
                                 ? "bg-purple-500"
-                                : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-purple-400 dark:group-hover:bg-purple-500"}`} />
+                                : "bg-slate-700 group-hover:bg-purple-500"}`} />
               {/* 가운데 그립 아이콘 */}
               <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-3 h-12
                               flex items-center justify-center rounded
@@ -263,7 +263,7 @@ export default function FloatingAIChat({
               </div>
             </div>
             {/* Drawer Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-purple-600 dark:bg-purple-700">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700 bg-purple-700">
               <div className="flex items-center gap-2 text-white">
                 {savedFeedback ? (
                   <>

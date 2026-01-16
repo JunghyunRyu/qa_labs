@@ -21,7 +21,7 @@ import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
-import { GuestConversionBanner } from "@/components/conversion";
+import { GuestConversionBanner, ConversionModal, useGuestConversion } from "@/components/conversion";
 import MobileNotice from "@/components/MobileNotice";
 import { generateTestTemplate, generateFallbackTemplate } from "@/lib/templateGenerator";
 import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
@@ -34,7 +34,7 @@ import AICoachPanel from "@/components/AICoachPanel";
 import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { trackCodeSubmit, trackProblemView, trackLocalTest, trackAINudgeImpression, trackAINudgeClick } from "@/lib/analytics";
+import { trackCodeSubmit, trackProblemView, trackLocalTest, trackAINudgeImpression, trackAINudgeClick, trackConversionModalTrigger } from "@/lib/analytics";
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -78,6 +78,11 @@ export default function ProblemDetailPage() {
 
   // Honeypot for bot prevention (should always be empty)
   const [honeypot, setHoneypot] = useState("");
+
+  // M6-1: 회원 전환 모달 상태
+  const [showConversionModal, setShowConversionModal] = useState(false);
+  const conversionModalTriggeredRef = useRef(false); // Strict Mode 이중 실행 방지
+  const { incrementSubmissionCount } = useGuestConversion();
 
   // AI 넛지 상태
   const [showAINudge, setShowAINudge] = useState<{
@@ -576,6 +581,20 @@ export default function ProblemDetailPage() {
         isClientSide: true,
       });
 
+      // M6-1: 비회원 제출 시 모달 트리거 (ref로 이중 실행 방지)
+      if (!isAuthenticated && !conversionModalTriggeredRef.current) {
+        const count = incrementSubmissionCount();
+        if (count >= 2) {
+          conversionModalTriggeredRef.current = true;
+          trackConversionModalTrigger({
+            trigger: "submission_count",
+            problemId: problem.slug,
+            submissionCount: count,
+          });
+          setShowConversionModal(true);
+        }
+      }
+
       return newSubmission;
     }
 
@@ -596,8 +615,22 @@ export default function ProblemDetailPage() {
       isClientSide: false,
     });
 
+    // M6-1: 비회원 제출 시 모달 트리거 (ref로 이중 실행 방지)
+    if (!isAuthenticated && !conversionModalTriggeredRef.current) {
+      const count = incrementSubmissionCount();
+      if (count >= 2) {
+        conversionModalTriggeredRef.current = true;
+        trackConversionModalTrigger({
+          trigger: "submission_count",
+          problemId: problem.slug,
+          submissionCount: count,
+        });
+        setShowConversionModal(true);
+      }
+    }
+
     return newSubmission;
-  }, [problem, code, isPyodideReady, runMutationTest, honeypot]);
+  }, [problem, code, isPyodideReady, runMutationTest, honeypot, isAuthenticated, incrementSubmissionCount]);
 
   // useSubmit hook with debounce
   const { submit: handleSubmit, isSubmitting: submitting } = useSubmit(doSubmit, {
@@ -758,16 +791,16 @@ export default function ProblemDetailPage() {
           />
         </div>
 
-        {/* AI 넛지 토스트 */}
+        {/* AI 넛지 토스트 - 다크모드 */}
         {showAINudge && (
           <div className="fixed bottom-24 right-6 z-40 max-w-sm animate-in slide-in-from-right-5 fade-in duration-300">
-            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-purple-200 dark:border-purple-800 p-4">
+            <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 p-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center flex-shrink-0">
                   <span className="text-xl">💡</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-3">
+                  <p className="text-sm text-slate-300 mb-3">
                     {showAINudge.message}
                   </p>
                   <div className="flex items-center gap-2">
@@ -779,7 +812,7 @@ export default function ProblemDetailPage() {
                     </button>
                     <button
                       onClick={() => setShowAINudge(null)}
-                      className="px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                      className="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200"
                     >
                       닫기
                     </button>
@@ -813,6 +846,13 @@ export default function ProblemDetailPage() {
         <ScoringMethodDrawer
           isOpen={isScoringDrawerOpen}
           onClose={() => setIsScoringDrawerOpen(false)}
+        />
+
+        {/* M6-1: 회원 전환 모달 (Desktop) */}
+        <ConversionModal
+          isOpen={showConversionModal}
+          onClose={() => setShowConversionModal(false)}
+          feature="history"
         />
       </div>
     );
@@ -913,6 +953,13 @@ export default function ProblemDetailPage() {
 
       {/* Mobile Notice - PC 권장 안내 */}
       <MobileNotice />
+
+      {/* M6-1: 회원 전환 모달 */}
+      <ConversionModal
+        isOpen={showConversionModal}
+        onClose={() => setShowConversionModal(false)}
+        feature="history"
+      />
     </div>
   );
 }

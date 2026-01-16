@@ -20,7 +20,7 @@ export default function AIMessage({ message }: AIMessageProps) {
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
           isUser
             ? "bg-sky-500 text-white"
-            : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+            : "bg-slate-700 text-slate-300"
         }`}
       >
         {isUser ? (
@@ -35,13 +35,13 @@ export default function AIMessage({ message }: AIMessageProps) {
         className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
           isUser
             ? "bg-sky-500 text-white rounded-tr-sm"
-            : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-sm"
+            : "bg-slate-800 text-slate-100 rounded-tl-sm"
         }`}
       >
         {isUser ? (
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         ) : (
-          <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+          <div className="text-sm prose prose-sm prose-invert max-w-none">
             <ReactMarkdown
               components={{
                 p: ({ children }) => (
@@ -64,13 +64,13 @@ export default function AIMessage({ message }: AIMessageProps) {
                   const isBlock = className?.includes("language-");
                   if (isBlock) {
                     return (
-                      <pre className="bg-gray-900 text-gray-100 rounded-lg p-3 overflow-x-auto my-2 text-xs">
+                      <pre className="bg-slate-950 text-slate-100 rounded-lg p-3 overflow-x-auto my-2 text-xs">
                         <code>{children}</code>
                       </pre>
                     );
                   }
                   return (
-                    <code className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
+                    <code className="px-1.5 py-0.5 bg-slate-700 rounded text-xs font-mono">
                       {children}
                     </code>
                   );

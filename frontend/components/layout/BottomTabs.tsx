@@ -134,6 +134,11 @@ export default function BottomTabs({
   const isExpanded = controlledIsExpanded ?? internalIsExpanded;
 
   const handleTabChange = (tab: TabId) => {
+    // Auto-expand panel when clicking a tab while collapsed
+    if (isCollapsed && onCollapseToggle) {
+      onCollapseToggle();
+    }
+
     if (onTabChange) {
       onTabChange(tab);
     } else {
@@ -192,9 +197,9 @@ export default function BottomTabs({
   };
 
   return (
-    <div className={`flex flex-col bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 ${className}`}>
+    <div className={`flex flex-col bg-slate-900 border-t border-slate-700 ${className}`}>
       {/* Tab Headers */}
-      <div className="flex-shrink-0 flex border-b border-gray-200 dark:border-gray-700">
+      <div className="flex-shrink-0 flex border-b border-slate-700">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -203,8 +208,8 @@ export default function BottomTabs({
             title={tab.label}
             className={`flex items-center gap-1 xl:gap-1.5 px-2 xl:px-4 py-2 text-sm font-medium transition-colors
               ${activeTab === tab.id
-                ? "text-sky-600 dark:text-sky-400 border-b-2 border-sky-500 -mb-px bg-sky-50 dark:bg-sky-900/20"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                ? "text-sky-400 border-b-2 border-sky-500 -mb-px bg-sky-900/20"
+                : "text-slate-400 hover:text-slate-300 hover:bg-slate-800"
               }`}
           >
             {tab.icon}
@@ -232,7 +237,7 @@ export default function BottomTabs({
         <button
           data-testid="btn-toggle-bottom-panel"
           onClick={onCollapseToggle ?? handleExpandToggle}
-          className="ml-auto px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          className="ml-auto px-3 py-2 text-slate-400 hover:text-slate-300 transition-colors"
           title={isCollapsed ? "패널 펼치기" : "패널 접기"}
         >
           {isCollapsed ? (
@@ -256,14 +261,16 @@ export default function BottomTabs({
                 error={localTestError ?? null}
                 progressMessage={localTestProgress}
                 onRetry={onLocalTestRetry}
+                onSubmit={onSubmitRetry}
+                isSubmitting={isSubmitting}
               />
             ) : (
-              <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
+              <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-slate-500">
                 <div className="text-center">
                   <FlaskConical className="w-10 h-10 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">로컬 테스트 결과 없음</p>
-                  <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
-                    <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
+                  <p className="text-xs mt-1 text-slate-600">
+                    <kbd className="px-1 py-0.5 bg-slate-700 rounded text-xs font-mono">
                       Shift+Enter
                     </kbd>
                     {" 또는 '로컬 테스트' 버튼을 클릭하세요"}
@@ -287,12 +294,12 @@ export default function BottomTabs({
                 onTabChange={handleTabChange}
               />
             ) : (
-              <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
+              <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-slate-500">
                 <div className="text-center">
                   <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">채점 결과 없음</p>
-                  <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
-                    <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">
+                  <p className="text-xs mt-1 text-slate-600">
+                    <kbd className="px-1 py-0.5 bg-slate-700 rounded text-xs font-mono">
                       Ctrl+Enter
                     </kbd>
                     {" 또는 '채점하기' 버튼을 클릭하세요"}
@@ -358,21 +365,21 @@ function ResultTabContent({
         <div className="flex items-center gap-3">
           <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
           <div>
-            <p className="font-medium text-blue-700 dark:text-blue-300">
+            <p className="font-medium text-blue-300">
               채점 중...
             </p>
             {submission?.progress && (
               <div className="mt-2 space-y-1">
-                <p className="text-sm text-blue-600 dark:text-blue-400">
+                <p className="text-sm text-blue-400">
                   {submission.progress.message}
                 </p>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-slate-700 rounded-full h-2">
                   <div
                     className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${submission.progress.percent}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-slate-500">
                   {submission.progress.percent}% 완료
                 </p>
               </div>
@@ -390,10 +397,10 @@ function ResultTabContent({
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium text-red-700 dark:text-red-300">
+            <p className="font-medium text-red-300">
               제출 에러
             </p>
-            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            <p className="text-sm text-red-400 mt-1">
               {submissionError}
             </p>
             {onRetry && (
@@ -412,21 +419,47 @@ function ResultTabContent({
 
   // Execution Error state
   if (submission?.status === "ERROR") {
+    const { openAIChatWithPrefill } = useLayoutStore.getState();
+
+    const handleAskAIForError = () => {
+      const errorMessage = (submission.execution_log as any)?.error_message ||
+                          (submission.execution_log as any)?.stderr ||
+                          "채점 중 에러가 발생했습니다.";
+      const errorContext = `채점 에러:\n${errorMessage}`;
+      openAIChatWithPrefill(errorContext);
+    };
+
     return (
       <div className="p-4">
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium text-orange-700 dark:text-orange-300">
+            <p className="font-medium text-orange-300">
               채점 오류
             </p>
-            <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">
+            <p className="text-sm text-orange-400 mt-1">
               채점 중 오류가 발생했습니다. 로그 탭에서 상세 내용을 확인하세요.
             </p>
+
+            {/* M6-3: AI 질문하기 버튼 */}
+            <button
+              onClick={handleAskAIForError}
+              className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600
+                         text-white rounded-lg font-medium
+                         animate-gentle-pulse hover:animate-none hover:from-purple-700 hover:to-blue-700
+                         transition-all duration-200 shadow-lg shadow-purple-500/25"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                <span>이 에러의 원인을 AI에게 물어보세요</span>
+                <span className="text-purple-200 text-sm">(1토큰)</span>
+              </div>
+            </button>
+
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="mt-3 px-3 py-1.5 text-sm bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors"
+                className="mt-3 w-full px-3 py-1.5 text-sm bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors"
               >
                 다시 제출하기
               </button>
@@ -439,15 +472,23 @@ function ResultTabContent({
 
   // Failure state (test failed on golden code)
   if (submission?.status === "FAILURE") {
+    const { openAIChatWithPrefill } = useLayoutStore.getState();
+
+    const handleAskAIForFailure = () => {
+      const stderr = (submission.execution_log as any)?.golden?.stderr || "";
+      const errorContext = `테스트 실행 결과:\n${stderr || "테스트가 정답 코드를 통과하지 못했습니다."}`;
+      openAIChatWithPrefill(errorContext);
+    };
+
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-start gap-3">
           <XCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium text-amber-700 dark:text-amber-300">
+            <p className="font-medium text-amber-300">
               테스트 실패
             </p>
-            <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
+            <p className="text-sm text-amber-400 mt-1">
               작성하신 테스트 코드가 정상 구현에서 실패했습니다.
               테스트 케이스를 다시 확인해주세요.
             </p>
@@ -455,12 +496,12 @@ function ResultTabContent({
         </div>
 
         {/* 수정 가이드 */}
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div className="p-3 bg-blue-900/20 rounded-lg">
           <div className="flex items-start gap-2">
-            <Lightbulb className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <Lightbulb className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">어떻게 수정할까요?</p>
-              <ul className="text-blue-700 dark:text-blue-400 space-y-0.5 list-disc list-inside text-xs">
+              <p className="font-medium text-blue-300 mb-1">어떻게 수정할까요?</p>
+              <ul className="text-blue-400 space-y-0.5 list-disc list-inside text-xs">
                 <li>테스트가 <strong>정상 동작하는 코드</strong>를 통과해야 합니다</li>
                 <li>assert 문의 기대값이 올바른지 확인하세요</li>
                 <li>함수 이름, 파라미터가 문제 설명과 일치하는지 확인하세요</li>
@@ -468,6 +509,21 @@ function ResultTabContent({
             </div>
           </div>
         </div>
+
+        {/* M6-3: AI 질문하기 버튼 */}
+        <button
+          onClick={handleAskAIForFailure}
+          className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600
+                     text-white rounded-lg font-medium
+                     animate-gentle-pulse hover:animate-none hover:from-purple-700 hover:to-blue-700
+                     transition-all duration-200 shadow-lg shadow-purple-500/25"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Sparkles className="w-5 h-5" />
+            <span>이 에러의 원인을 AI에게 물어보세요</span>
+            <span className="text-purple-200 text-sm">(1토큰)</span>
+          </div>
+        </button>
 
         {/* CTA 버튼 */}
         {onRetry && (
@@ -479,29 +535,29 @@ function ResultTabContent({
           </button>
         )}
 
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-slate-500 text-center">
           로그 탭에서 상세 실패 내용을 확인할 수 있습니다.
         </p>
 
         {/* 익명 사용자 로그인 유도 배너 */}
         {!submission.user_id && (
-          <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-xl border border-amber-200/50 dark:border-amber-700/50">
+          <div className="mt-4 p-4 bg-gradient-to-r from-amber-950/30 to-orange-950/30 rounded-xl border border-amber-700/50">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
-                <History className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-900/50 flex items-center justify-center">
+                <History className="w-5 h-5 text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm">
+                <h4 className="font-semibold text-neutral-100 text-sm">
                   실패도 성장의 일부입니다
                 </h4>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+                <p className="text-xs text-neutral-400 mt-1">
                   로그인하면 실패 기록도 저장되어 어떤 실수를 자주 하는지 분석받을 수 있습니다.
                 </p>
               </div>
             </div>
             <button
               onClick={() => login("github")}
-              className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors text-sm font-medium"
+              className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-700 text-slate-100 rounded-lg hover:bg-slate-600 transition-colors text-sm font-medium"
             >
               <LogIn className="w-4 h-4" />
               기록 시작하기
@@ -635,7 +691,7 @@ function VerificationBadge({ submission }: { submission: Submission }) {
   // 기본: 클라이언트 실행 (비회원 또는 미검증 상태)
   return (
     <span
-      className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded"
+      className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-slate-800 text-slate-400 rounded"
       title="브라우저에서 실행된 결과입니다"
     >
       <Shield className="w-3 h-3" />
@@ -660,6 +716,9 @@ function SuccessResultContent({
   type: "excellent" | "good" | "moderate" | "needs_improvement";
   onTabChange?: (tab: TabId) => void;
 }) {
+  // 현재 경로 (로그인 redirect용)
+  const pathname = usePathname();
+
   // 접이식 상태 관리
   const [showKilledBugs, setShowKilledBugs] = useState(false);
   const [showQualityDetails, setShowQualityDetails] = useState(false);
@@ -768,18 +827,18 @@ function SuccessResultContent({
               submission.score >= 50 ? "text-yellow-500" : "text-red-500"
             }`} />
             <div className="flex items-baseline gap-0.5">
-              <span className="text-3xl font-bold text-gray-900 dark:text-white">
+              <span className="text-3xl font-bold text-white">
                 {submission.score}
               </span>
-              <span className="text-sm text-gray-500">점</span>
+              <span className="text-sm text-slate-500">점</span>
             </div>
             {/* 품질 등급 배지 */}
             {submission.test_quality_grade && (
               <span className={`ml-1 text-xs px-1.5 py-0.5 rounded font-medium ${
-                submission.test_quality_grade === "A" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
-                submission.test_quality_grade === "B" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                submission.test_quality_grade === "C" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                submission.test_quality_grade === "A" ? "bg-blue-900/30 text-blue-400" :
+                submission.test_quality_grade === "B" ? "bg-green-900/30 text-green-400" :
+                submission.test_quality_grade === "C" ? "bg-yellow-900/30 text-yellow-400" :
+                "bg-slate-800 text-slate-400"
               }`}>
                 {submission.test_quality_grade}
               </span>
@@ -790,10 +849,10 @@ function SuccessResultContent({
             <div className="mt-1">
               <button
                 onClick={() => setShowQualityDetails(!showQualityDetails)}
-                className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-300 transition-colors"
               >
                 <span>버그탐지 {submission.execution_log.score_breakdown.mutation_score}점</span>
-                <span className="text-green-600 dark:text-green-400 font-medium">
+                <span className="text-green-400 font-medium">
                   +{submission.execution_log.score_breakdown.quality_bonus}점 품질보너스
                 </span>
                 {showQualityDetails ? (
@@ -804,11 +863,11 @@ function SuccessResultContent({
               </button>
               {/* 품질 보너스 상세 (펼침 시) */}
               {showQualityDetails && qualityAnalysis && (
-                <div className="mt-2 p-2 rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-xs">
-                  <div className="font-medium text-green-700 dark:text-green-300 mb-1.5">
+                <div className="mt-2 p-2 rounded bg-green-900/20 border border-green-800/50 text-xs">
+                  <div className="font-medium text-green-300 mb-1.5">
                     인정된 테스트 기법:
                   </div>
-                  <div className="space-y-1 text-green-600 dark:text-green-400">
+                  <div className="space-y-1 text-green-400">
                     {qualityAnalysis.value_types && qualityAnalysis.value_types.length > 0 && (
                       <div className="flex items-start gap-1">
                         <span className="text-green-500">•</span>
@@ -838,13 +897,13 @@ function SuccessResultContent({
         {submission.total_mutants && submission.total_mutants > 0 && (
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <Target className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400" title="테스트가 버그를 발견한 비율">
+              <Target className="w-4 h-4 text-slate-500" />
+              <span className="text-sm text-slate-400" title="테스트가 버그를 발견한 비율">
                 버그 탐지율
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+              <div className="flex-1 bg-slate-700 rounded-full h-2.5">
                 <div
                   className={`h-2.5 rounded-full ${
                     killRatio >= 80 ? "bg-green-500" :
@@ -853,11 +912,11 @@ function SuccessResultContent({
                   style={{ width: `${killRatio}%` }}
                 />
               </div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[3rem] text-right">
+              <span className="text-sm font-medium text-slate-300 min-w-[3rem] text-right">
                 {killRatio.toFixed(0)}%
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               {submission.killed_mutants}/{submission.total_mutants}개 버그 발견
             </p>
           </div>
@@ -875,10 +934,10 @@ function SuccessResultContent({
 
       {/* Killed Bugs Section (접이식) */}
       {killedBugs.length > 0 && (
-        <div className="rounded-lg border border-green-200 dark:border-green-800/50 bg-green-50 dark:bg-green-900/20">
+        <div className="rounded-lg border border-green-800/50 bg-green-900/20">
           <button
             onClick={() => setShowKilledBugs(!showKilledBugs)}
-            className="w-full px-3 py-2 flex items-center justify-between text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors rounded-lg"
+            className="w-full px-3 py-2 flex items-center justify-between text-green-300 hover:bg-green-800/30 transition-colors rounded-lg"
           >
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4" />
@@ -891,12 +950,12 @@ function SuccessResultContent({
             )}
           </button>
           {showKilledBugs && (
-            <div className="divide-y divide-green-200 dark:divide-green-800/50 border-t border-green-200 dark:border-green-800/50">
+            <div className="divide-y divide-green-800/50 border-t border-green-800/50">
               {killedBugs.map((bug) => (
                 <div key={bug.id} className="px-3 py-2">
                   <div className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-green-800 dark:text-green-200 flex-1">
+                    <span className="text-sm text-green-200 flex-1">
                       {bug.description}
                     </span>
                   </div>
@@ -909,22 +968,22 @@ function SuccessResultContent({
 
       {/* Missed Bugs Section */}
       {missedBugs.length > 0 ? (
-        <div className="rounded-lg border border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-900/20">
+        <div className="rounded-lg border border-orange-800/50 bg-orange-900/20">
           {/* Header */}
-          <div className="px-3 py-2 border-b border-orange-200 dark:border-orange-800/50">
-            <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
+          <div className="px-3 py-2 border-b border-orange-800/50">
+            <div className="flex items-center gap-2 text-orange-300">
               <Search className="w-4 h-4" />
               <span className="font-medium text-sm">놓친 버그 ({missedBugs.length}개)</span>
             </div>
           </div>
 
           {/* Bug List */}
-          <div className="divide-y divide-orange-200 dark:divide-orange-800/50">
+          <div className="divide-y divide-orange-800/50">
             {missedBugs.map((bug) => (
               <div key={bug.id} className="px-3 py-2">
                 <div className="flex items-start gap-2">
                   <ChevronRight className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-orange-800 dark:text-orange-200 flex-1">
+                  <span className="text-sm text-orange-200 flex-1">
                     {bug.description}
                   </span>
                 </div>
@@ -933,7 +992,7 @@ function SuccessResultContent({
           </div>
         </div>
       ) : type === "excellent" ? (
-        <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300">
+        <div className="p-3 rounded-lg bg-green-900/20 text-green-300">
           <div className="flex items-start gap-2">
             <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <p className="text-sm font-medium">{getSummaryMessage()}</p>
@@ -941,9 +1000,9 @@ function SuccessResultContent({
         </div>
       ) : (
         <div className={`p-3 rounded-lg text-sm ${
-          type === "good" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" :
-          type === "moderate" ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300" :
-          "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300"
+          type === "good" ? "bg-blue-900/20 text-blue-300" :
+          type === "moderate" ? "bg-yellow-900/20 text-yellow-300" :
+          "bg-orange-900/20 text-orange-300"
         }`}>
           <div className="flex items-start gap-2">
             <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -955,8 +1014,8 @@ function SuccessResultContent({
       {/* Hints/Recommendations Section */}
       {/* 버그 탐지율이 낮을 때 기본 힌트 표시 */}
       {recommendations.length > 0 && type !== "excellent" && (
-        <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50">
-          <div className="flex items-start gap-2 text-blue-700 dark:text-blue-300">
+        <div className="p-3 rounded-lg bg-blue-900/20 border border-blue-800/50">
+          <div className="flex items-start gap-2 text-blue-300">
             <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <span className="font-medium text-sm">개선 힌트</span>
@@ -975,12 +1034,12 @@ function SuccessResultContent({
 
       {/* 100점이어도 품질 등급이 A가 아니면 품질 개선 제안 표시 */}
       {type === "excellent" && qualityGrade !== "A" && qualityAnalysis?.scoring_breakdown && (
-        <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/50">
-          <div className="flex items-start gap-2 text-purple-700 dark:text-purple-300">
+        <div className="p-3 rounded-lg bg-purple-900/20 border border-purple-800/50">
+          <div className="flex items-start gap-2 text-purple-300">
             <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <span className="font-medium text-sm">더 나은 테스트를 위한 제안</span>
-              <p className="text-xs mt-1 text-purple-600 dark:text-purple-400">
+              <p className="text-xs mt-1 text-purple-400">
                 현재 테스트 품질: {qualityGrade}등급 ({qualityScore.toFixed(0)}점)
                 {nextGradeInfo && (
                   <span className="ml-1">
@@ -1018,9 +1077,9 @@ function SuccessResultContent({
         // 회원이고 AI 피드백이 있는 경우
         if (isLoggedIn && feedbackJson) {
           return (
-            <div className="rounded-lg border border-purple-200 dark:border-purple-800/50 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-              <div className="px-3 py-2 border-b border-purple-200 dark:border-purple-800/50">
-                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+            <div className="rounded-lg border border-purple-800/50 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
+              <div className="px-3 py-2 border-b border-purple-800/50">
+                <div className="flex items-center gap-2 text-purple-300">
                   <Sparkles className="w-4 h-4" />
                   <span className="font-medium text-sm">AI 피드백</span>
                 </div>
@@ -1035,19 +1094,19 @@ function SuccessResultContent({
         // 회원이지만 AI 피드백이 아직 없는 경우 (생성 중)
         if (isLoggedIn && !feedbackJson) {
           return (
-            <div className="rounded-lg border border-purple-200 dark:border-purple-800/50 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-              <div className="px-3 py-2 border-b border-purple-200 dark:border-purple-800/50">
-                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+            <div className="rounded-lg border border-purple-800/50 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
+              <div className="px-3 py-2 border-b border-purple-800/50">
+                <div className="flex items-center gap-2 text-purple-300">
                   <Sparkles className="w-4 h-4" />
                   <span className="font-medium text-sm">AI 피드백</span>
                 </div>
               </div>
               <div className="p-4 text-center">
                 <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-500 mb-2" />
-                <p className="text-sm text-purple-600 dark:text-purple-400">
+                <p className="text-sm text-purple-400">
                   AI가 피드백을 생성하고 있습니다...
                 </p>
-                <p className="text-xs text-purple-500 dark:text-purple-500 mt-1">
+                <p className="text-xs text-purple-500 mt-1">
                   잠시 후 새로고침해 주세요
                 </p>
               </div>
@@ -1057,23 +1116,23 @@ function SuccessResultContent({
 
         // 비회원인 경우 - 로그인 유도
         return (
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="rounded-lg border border-slate-700 bg-slate-800/50">
+            <div className="px-3 py-2 border-b border-slate-700">
+              <div className="flex items-center gap-2 text-slate-400">
                 <Sparkles className="w-4 h-4" />
                 <span className="font-medium text-sm">AI 피드백</span>
               </div>
             </div>
             <div className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-5 h-5 text-purple-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                  <p className="text-sm text-slate-300 mb-2">
                     로그인하면 AI가 작성한 상세 피드백을 받을 수 있어요!
                   </p>
-                  <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1 mb-3">
+                  <ul className="text-xs text-slate-400 space-y-1 mb-3">
                     <li className="flex items-center gap-1">
                       <Check className="w-3 h-3 text-green-500" />
                       <span>잘한 점 분석</span>
@@ -1090,8 +1149,8 @@ function SuccessResultContent({
                   <Link
                     href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
-                               bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
-                               hover:bg-purple-200 dark:hover:bg-purple-900/50
+                               bg-purple-900/30 text-purple-300
+                               hover:bg-purple-900/50
                                rounded-lg transition-colors"
                   >
                     <LogIn className="w-3.5 h-3.5" />
@@ -1159,8 +1218,8 @@ function ResultCTAButtons({
       <button
         onClick={handleViewLogs}
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium
-                   bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
-                   hover:bg-gray-200 dark:hover:bg-gray-700
+                   bg-slate-800 text-slate-300
+                   hover:bg-slate-700
                    rounded-lg transition-colors"
       >
         <Terminal className="w-4 h-4" />
@@ -1169,8 +1228,8 @@ function ResultCTAButtons({
       <button
         onClick={handleAskAI}
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium
-                   bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
-                   hover:bg-purple-200 dark:hover:bg-purple-900/50
+                   bg-purple-900/30 text-purple-300
+                   hover:bg-purple-900/50
                    rounded-lg transition-colors"
       >
         <Bot className="w-4 h-4" />
@@ -1179,8 +1238,8 @@ function ResultCTAButtons({
       <Link
         href="/problems"
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium
-                   bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
-                   hover:bg-gray-200 dark:hover:bg-gray-700
+                   bg-slate-800 text-slate-300
+                   hover:bg-slate-700
                    rounded-lg transition-colors"
       >
         <ArrowRight className="w-4 h-4" />
@@ -1300,11 +1359,11 @@ function LogsTabContent({
 
   if (!hasContent) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
+      <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-slate-500">
         <div className="text-center">
           <ScrollText className="w-10 h-10 mx-auto mb-2 opacity-50" />
           <p className="text-sm">로그 없음</p>
-          <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
+          <p className="text-xs mt-1 text-slate-600">
             테스트 실행 또는 채점 후 상세 로그가 여기에 표시됩니다
           </p>
         </div>
@@ -1315,22 +1374,22 @@ function LogsTabContent({
   return (
     <div className="p-3 space-y-2">
       {/* Summary Section */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="border border-slate-700 rounded-lg overflow-hidden">
         <div
           role="button"
           tabIndex={0}
           onClick={() => setIsSummaryOpen(!isSummaryOpen)}
           onKeyDown={(e) => e.key === "Enter" && setIsSummaryOpen(!isSummaryOpen)}
-          className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between px-3 py-2 bg-slate-800 hover:bg-slate-750 transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <ChevronRight className={`w-4 h-4 transition-transform ${isSummaryOpen ? "rotate-90" : ""}`} />
             <Clock className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">요약</span>
+            <span className="text-sm font-medium text-slate-300">요약</span>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); handleCopySummary(); }}
-            className="flex items-center gap-1 px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-700 rounded transition-colors"
+            className="flex items-center gap-1 px-2 py-0.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-700 rounded transition-colors"
             title="요약 복사"
           >
             {summaryCopied ? (
@@ -1341,14 +1400,14 @@ function LogsTabContent({
           </button>
         </div>
         {isSummaryOpen && (
-          <div className="p-3 bg-white dark:bg-gray-900 text-sm">
+          <div className="p-3 bg-slate-900 text-sm">
             <div className="space-y-1">
               {summaryText.split("\n").map((line, idx) => {
                 const [label, value] = line.split(": ");
                 return (
                   <div key={idx} className="flex">
-                    <span className="text-gray-500 dark:text-gray-400 w-24 flex-shrink-0">{label}:</span>
-                    <span className="text-gray-900 dark:text-gray-100">{value}</span>
+                    <span className="text-slate-400 w-24 flex-shrink-0">{label}:</span>
+                    <span className="text-slate-100">{value}</span>
                   </div>
                 );
               })}
@@ -1359,22 +1418,22 @@ function LogsTabContent({
 
       {/* Test Output Section (pytest stdout) */}
       {pytestOutput && (
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <div className="border border-slate-700 rounded-lg overflow-hidden">
           <div
             role="button"
             tabIndex={0}
             onClick={() => setIsTestOutputOpen(!isTestOutputOpen)}
             onKeyDown={(e) => e.key === "Enter" && setIsTestOutputOpen(!isTestOutputOpen)}
-            className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between px-3 py-2 bg-slate-800 hover:bg-slate-750 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <ChevronRight className={`w-4 h-4 transition-transform ${isTestOutputOpen ? "rotate-90" : ""}`} />
               <Terminal className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">테스트 출력</span>
+              <span className="text-sm font-medium text-slate-300">테스트 출력</span>
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); handleCopyTestOutput(); }}
-              className="flex items-center gap-1 px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-700 rounded transition-colors"
+              className="flex items-center gap-1 px-2 py-0.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-700 rounded transition-colors"
               title="테스트 출력 복사"
             >
               {testOutputCopied ? (
@@ -1385,7 +1444,7 @@ function LogsTabContent({
             </button>
           </div>
           {isTestOutputOpen && (
-            <pre className="p-3 bg-gray-900 text-gray-100 text-xs font-mono overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+            <pre className="p-3 bg-slate-950 text-slate-100 text-xs font-mono overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
               {pytestOutput}
             </pre>
           )}
@@ -1394,25 +1453,25 @@ function LogsTabContent({
 
       {/* Raw Data Section (JSON) */}
       {rawJson && (
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <div className="border border-slate-700 rounded-lg overflow-hidden">
           <div
             role="button"
             tabIndex={0}
             onClick={() => setIsRawLogOpen(!isRawLogOpen)}
             onKeyDown={(e) => e.key === "Enter" && setIsRawLogOpen(!isRawLogOpen)}
-            className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between px-3 py-2 bg-slate-800 hover:bg-slate-750 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <ChevronRight className={`w-4 h-4 transition-transform ${isRawLogOpen ? "rotate-90" : ""}`} />
               <Code className="w-4 h-4 text-orange-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">원시 데이터 (JSON)</span>
+              <span className="text-sm font-medium text-slate-300">원시 데이터 (JSON)</span>
               {!isRawLogOpen && (
-                <span className="text-xs text-gray-400 dark:text-gray-500">클릭하여 펼치기</span>
+                <span className="text-xs text-slate-500">클릭하여 펼치기</span>
               )}
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); handleCopyRaw(); }}
-              className="flex items-center gap-1 px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-700 rounded transition-colors"
+              className="flex items-center gap-1 px-2 py-0.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-700 rounded transition-colors"
               title="원시 데이터 복사"
             >
               {rawCopied ? (
@@ -1423,7 +1482,7 @@ function LogsTabContent({
             </button>
           </div>
           {isRawLogOpen && (
-            <pre className="p-3 bg-gray-900 text-gray-100 text-xs font-mono overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+            <pre className="p-3 bg-slate-950 text-slate-100 text-xs font-mono overflow-x-auto max-h-[200px] overflow-y-auto whitespace-pre-wrap">
               {rawJson}
             </pre>
           )}
@@ -1556,21 +1615,21 @@ function HistoryTabContent({
     switch (status) {
       case "SUCCESS":
         return (
-          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-900/30 text-green-300 rounded">
             <CheckCircle className="w-3 h-3" />
             성공
           </span>
         );
       case "FAILURE":
         return (
-          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-900/30 text-amber-300 rounded">
             <XCircle className="w-3 h-3" />
             실패
           </span>
         );
       case "ERROR":
         return (
-          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-red-900/30 text-red-300 rounded">
             <AlertTriangle className="w-3 h-3" />
             에러
           </span>
@@ -1578,7 +1637,7 @@ function HistoryTabContent({
       case "PENDING":
       case "RUNNING":
         return (
-          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+          <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-900/30 text-blue-300 rounded">
             <Loader2 className="w-3 h-3 animate-spin" />
             진행중
           </span>
@@ -1600,11 +1659,11 @@ function HistoryTabContent({
   // Empty state
   if (allSubmissions.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-gray-400 dark:text-gray-500">
+      <div className="flex items-center justify-center h-full min-h-[120px] p-4 text-slate-500">
         <div className="text-center">
           <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
           <p className="text-sm">제출 히스토리 없음</p>
-          <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">
+          <p className="text-xs mt-1 text-slate-600">
             채점 후 제출 기록이 여기에 표시됩니다
           </p>
         </div>
@@ -1631,11 +1690,11 @@ function HistoryTabContent({
             tabIndex={0}
             onClick={() => handleItemClick(item)}
             onKeyDown={(e) => e.key === "Enter" && handleItemClick(item)}
-            className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+            className="p-3 border border-slate-700 rounded-lg hover:bg-slate-800 cursor-pointer transition-colors"
           >
             {/* Top row: time and status */}
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-sm text-slate-400">
                 <Clock className="w-3.5 h-3.5" />
                 {formatRelativeTime(item.created_at)}
               </div>
@@ -1650,13 +1709,13 @@ function HistoryTabContent({
                   item.score >= 70 ? "text-blue-500" :
                   item.score >= 50 ? "text-yellow-500" : "text-red-500"
                 }`} />
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-white">
                   {item.score}점
                 </span>
               </div>
 
               {killRatio !== null && (
-                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1.5 text-slate-400">
                   <Target className="w-4 h-4" />
                   <span>
                     {item.killed_mutants}/{item.total_mutants} ({killRatio}%)

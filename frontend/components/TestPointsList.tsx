@@ -6,6 +6,7 @@
 "use client";
 
 import React from "react";
+import { Square } from "lucide-react";
 import TestPointItem from "./TestPointItem";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -22,7 +23,7 @@ interface TestPointsListProps {
  */
 export default function TestPointsList({ content, className = "" }: TestPointsListProps) {
   return (
-    <div className={`prose prose-sm max-w-none text-gray-700 dark:text-gray-300 ${className}`}>
+    <div className={`prose prose-sm prose-invert max-w-none text-slate-300 ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
@@ -34,7 +35,7 @@ export default function TestPointsList({ content, className = "" }: TestPointsLi
           ),
           // 순서 리스트
           ol: ({ children }) => (
-            <ol className="list-decimal list-inside space-y-1 my-1.5 ml-1 text-sm">
+            <ol className="list-decimal list-inside space-y-1 my-1.5 ml-1 text-sm text-slate-300">
               {children}
             </ol>
           ),
@@ -51,10 +52,10 @@ export default function TestPointsList({ content, className = "" }: TestPointsLi
               );
             }
 
-            // fallback: 일반 렌더링
+            // fallback: 체크리스트 스타일
             return (
-              <li className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm flex items-start gap-1">
-                <span className="text-gray-400">•</span>
+              <li className="text-slate-300 leading-relaxed text-sm flex items-start gap-2">
+                <Square className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                 <span className="[&>p]:inline [&>p]:mb-0">{children}</span>
               </li>
             );
@@ -75,16 +76,13 @@ export default function TestPointsList({ content, className = "" }: TestPointsLi
                 return (
                   <div className="mb-1.5">
                     {headerPart && (
-                      <p className="leading-relaxed text-gray-700 dark:text-gray-300 text-sm font-medium mb-1">
+                      <p className="leading-relaxed text-slate-200 text-sm font-medium mb-1">
                         {headerPart}
                       </p>
                     )}
-                    <div className="space-y-0.5 ml-2">
+                    <div className="space-y-1.5 ml-1">
                       {bulletParts.map((point, idx) => (
-                        <div key={idx} className="flex items-start gap-1">
-                          <span className="text-gray-400 flex-shrink-0">•</span>
-                          <TestPointItem content={point} className="flex-1" />
-                        </div>
+                        <TestPointItem key={idx} content={point} />
                       ))}
                     </div>
                   </div>
@@ -94,20 +92,20 @@ export default function TestPointsList({ content, className = "" }: TestPointsLi
 
             // 불릿이 없는 일반 문단
             return (
-              <p className="mb-1.5 leading-relaxed text-gray-700 dark:text-gray-300 text-sm last:mb-0">
+              <p className="mb-1.5 leading-relaxed text-slate-300 text-sm last:mb-0">
                 {children}
               </p>
             );
           },
           // 강조
           strong: ({ children }) => (
-            <strong className="font-semibold text-gray-900 dark:text-gray-100">
+            <strong className="font-semibold text-slate-100">
               {children}
             </strong>
           ),
           // 인라인 코드
           code: ({ children }) => (
-            <code className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded text-xs font-mono">
+            <code className="px-1 py-0.5 bg-slate-700 text-slate-200 rounded text-xs font-mono">
               {children}
             </code>
           ),
@@ -115,7 +113,7 @@ export default function TestPointsList({ content, className = "" }: TestPointsLi
           h1: () => null,
           h2: () => null,
           h3: ({ children }) => (
-            <h3 className="text-sm font-semibold mt-2 mb-1 text-gray-800 dark:text-gray-200">
+            <h3 className="text-sm font-semibold mt-2 mb-1 text-slate-200">
               {children}
             </h3>
           ),

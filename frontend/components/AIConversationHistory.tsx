@@ -89,18 +89,18 @@ export default function AIConversationHistory({
       {/* Dropdown Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-sm bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-750 transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <MessageSquare className="w-4 h-4 text-gray-400 shrink-0" />
-          <span className="truncate text-gray-700 dark:text-gray-300">
+          <MessageSquare className="w-4 h-4 text-slate-400 shrink-0" />
+          <span className="truncate text-slate-300">
             {currentConversationId
               ? currentConversation?.preview || "현재 대화"
               : "새 대화"}
           </span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${
+          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -108,11 +108,11 @@ export default function AIConversationHistory({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50 overflow-hidden">
           {/* New Conversation Button */}
           <button
             onClick={handleNewConversation}
-            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 border-b border-gray-200 dark:border-gray-700"
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-sky-400 hover:bg-sky-900/20 border-b border-slate-700"
           >
             <Plus className="w-4 h-4" />
             <span>새 대화 시작</span>
@@ -122,14 +122,14 @@ export default function AIConversationHistory({
           <div className="max-h-48 overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
               </div>
             ) : error ? (
-              <div className="px-3 py-4 text-sm text-center text-red-500">
+              <div className="px-3 py-4 text-sm text-center text-red-400">
                 {error}
               </div>
             ) : conversations.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-center text-gray-500 dark:text-gray-400">
+              <div className="px-3 py-4 text-sm text-center text-slate-400">
                 이전 대화가 없습니다
               </div>
             ) : (
@@ -137,16 +137,16 @@ export default function AIConversationHistory({
                 <button
                   key={conversation.id}
                   onClick={() => handleSelect(conversation.id)}
-                  className={`w-full flex flex-col items-start px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors ${
+                  className={`w-full flex flex-col items-start px-3 py-2.5 text-left hover:bg-slate-750 transition-colors ${
                     conversation.id === currentConversationId
-                      ? "bg-sky-50 dark:bg-sky-900/20"
+                      ? "bg-sky-900/20"
                       : ""
                   }`}
                 >
-                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate w-full">
+                  <span className="text-sm text-slate-300 truncate w-full">
                     {conversation.preview || "대화"}
                   </span>
-                  <span className="text-xs text-gray-400 mt-0.5">
+                  <span className="text-xs text-slate-400 mt-0.5">
                     {formatDate(conversation.updated_at)}
                     {conversation.message_count > 0 && (
                       <span className="ml-2">
