@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Optional, List, Tuple, Union, Dict, Any
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import func, cast, Text, case, literal
 
@@ -28,6 +29,7 @@ class ProblemRepository:
         tags: Optional[List[str]] = None,
         sort: str = "difficulty-asc",
         user_id_for_bookmarks: Optional[int] = None,
+        user_id: Optional[UUID] = None,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """
         Get all problems with pagination, filtering, and sorting.
@@ -41,9 +43,10 @@ class ProblemRepository:
             tags: Filter by skill tags (all tags must match)
             sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
             user_id_for_bookmarks: If provided, only return problems bookmarked by this user
+            user_id: If provided, include user's best score per problem
 
         Returns:
-            Tuple of (list of problem dicts with success_rate, total count)
+            Tuple of (list of problem dicts with success_rate and user_best_score, total count)
         """
         # Subquery: 문제별 제출 통계
         stats_subquery = (
@@ -66,6 +69,19 @@ class ProblemRepository:
             .subquery()
         )
 
+        # Subquery: 사용자별 문제당 최고 점수 (로그인 사용자만)
+        user_score_subquery = None
+        if user_id:
+            user_score_subquery = (
+                self.db.query(
+                    Submission.problem_id,
+                    func.max(Submission.score).label("best_score"),
+                )
+                .filter(Submission.user_id == user_id)
+                .group_by(Submission.problem_id)
+                .subquery()
+            )
+
         # 정답률 계산 (제출 5건 이상일 때만)
         success_rate_expr = case(
             (stats_subquery.c.submission_count >= 5,
@@ -73,17 +89,32 @@ class ProblemRepository:
             else_=None
         ).label("success_rate")
 
-        # 메인 쿼리: Problem + 통계 + 버그 수 LEFT JOIN
-        query = (
-            self.db.query(
-                Problem,
-                func.coalesce(stats_subquery.c.submission_count, 0).label("submission_count"),
-                success_rate_expr,
-                func.coalesce(bugs_subquery.c.bugs_count, 0).label("bugs_count"),
+        # 메인 쿼리: Problem + 통계 + 버그 수 + 사용자 점수 LEFT JOIN
+        if user_score_subquery is not None:
+            query = (
+                self.db.query(
+                    Problem,
+                    func.coalesce(stats_subquery.c.submission_count, 0).label("submission_count"),
+                    success_rate_expr,
+                    func.coalesce(bugs_subquery.c.bugs_count, 0).label("bugs_count"),
+                    user_score_subquery.c.best_score.label("user_best_score"),
+                )
+                .outerjoin(stats_subquery, Problem.id == stats_subquery.c.problem_id)
+                .outerjoin(bugs_subquery, Problem.id == bugs_subquery.c.problem_id)
+                .outerjoin(user_score_subquery, Problem.id == user_score_subquery.c.problem_id)
             )
-            .outerjoin(stats_subquery, Problem.id == stats_subquery.c.problem_id)
-            .outerjoin(bugs_subquery, Problem.id == bugs_subquery.c.problem_id)
-        )
+        else:
+            query = (
+                self.db.query(
+                    Problem,
+                    func.coalesce(stats_subquery.c.submission_count, 0).label("submission_count"),
+                    success_rate_expr,
+                    func.coalesce(bugs_subquery.c.bugs_count, 0).label("bugs_count"),
+                    literal(None).label("user_best_score"),
+                )
+                .outerjoin(stats_subquery, Problem.id == stats_subquery.c.problem_id)
+                .outerjoin(bugs_subquery, Problem.id == bugs_subquery.c.problem_id)
+            )
 
         # Visibility filter: 공개된 문제만 목록에 표시 (is_visible=True AND published_at <= now())
         query = query.filter(Problem.is_visible == True, Problem.published_at <= datetime.now())
@@ -189,7 +220,12 @@ class ProblemRepository:
 
         # Convert to list of dicts
         problems_with_stats = []
-        for problem, submission_count, success_rate, bugs_count in results:
+        for problem, submission_count, success_rate, bugs_count, user_best_score in results:
+            # user_status 계산: 100점 = solved, 1-99점 = attempted, None = 미시도
+            user_status = None
+            if user_best_score is not None:
+                user_status = "solved" if user_best_score == 100 else "attempted"
+
             problem_dict = {
                 "id": problem.id,
                 "slug": problem.slug,
@@ -203,6 +239,8 @@ class ProblemRepository:
                 "success_rate": float(success_rate) if success_rate is not None else None,
                 "bugs_count": bugs_count,
                 "published_at": problem.published_at,
+                "user_status": user_status,
+                "user_best_score": int(user_best_score) if user_best_score is not None else None,
             }
             problems_with_stats.append(problem_dict)
 

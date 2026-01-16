@@ -1,6 +1,7 @@
 """Problem service."""
 
 from typing import Optional, Tuple, List
+from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -53,6 +54,7 @@ class ProblemService:
         tags: Optional[List[str]] = None,
         sort: str = "difficulty-asc",
         user_id_for_bookmarks: Optional[int] = None,
+        user_id: Optional[UUID] = None,
     ) -> Tuple[List[ProblemListResponse], int, int]:
         """
         Get paginated and filtered list of problems.
@@ -66,6 +68,7 @@ class ProblemService:
             tags: Filter by skill tags (all tags must match)
             sort: Sort option (difficulty-asc, difficulty-desc, success-rate-desc, success-rate-asc)
             user_id_for_bookmarks: If provided, only return problems bookmarked by this user
+            user_id: If provided, include user's best score per problem
 
         Returns:
             Tuple of (list of problems, total count, total pages)
@@ -87,11 +90,12 @@ class ProblemService:
             tags=tags,
             sort=sort,
             user_id_for_bookmarks=user_id_for_bookmarks,
+            user_id=user_id,
         )
 
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
 
-        # Repository now returns dicts with success_rate and bugs_count
+        # Repository now returns dicts with success_rate, bugs_count, user_status, user_best_score
         problem_list = [
             ProblemListResponse(
                 id=p["id"],
@@ -106,6 +110,8 @@ class ProblemService:
                 success_rate=p["success_rate"],
                 bugs_count=p.get("bugs_count", 0),
                 published_at=p.get("published_at"),
+                user_status=p.get("user_status"),
+                user_best_score=p.get("user_best_score"),
             )
             for p in problems
         ]

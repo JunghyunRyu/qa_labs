@@ -168,6 +168,20 @@ function ProblemsContent() {
     if (domainParam && Object.keys(DOMAIN_LABELS).includes(domainParam)) {
       setDomainFilter(domainParam as DomainFilter);
     }
+    // 난이도 필터 (URL: lowercase → State: Title Case)
+    const difficultyParam = searchParams.get("difficulty");
+    if (difficultyParam) {
+      const difficultyMap: Record<string, DifficultyFilter> = {
+        "very-easy": "Very Easy",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+      };
+      const mappedDifficulty = difficultyMap[difficultyParam.toLowerCase()];
+      if (mappedDifficulty) {
+        setDifficultyFilter(mappedDifficulty);
+      }
+    }
     // 북마크 필터 - 로그인 사용자만 적용
     const bookmarkedParam = searchParams.get("bookmarked");
     if (bookmarkedParam === "true") {

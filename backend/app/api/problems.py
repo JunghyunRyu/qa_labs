@@ -53,7 +53,10 @@ async def get_problems(
     # Determine user_id for bookmark filter (only if authenticated and bookmarked=True)
     user_id_for_bookmarks = current_user.id if (bookmarked and current_user) else None
 
-    logger.info(f"Fetching problems - page: {page}, page_size: {page_size}, difficulty: {difficulty}, domain: {domain}, search: {search}, tags: {tag_list}, sort: {sort}, bookmarked: {bookmarked}, user_id: {user_id_for_bookmarks}")
+    # Get current user's ID for personalized best scores
+    user_id = current_user.id if current_user else None
+
+    logger.info(f"Fetching problems - page: {page}, page_size: {page_size}, difficulty: {difficulty}, domain: {domain}, search: {search}, tags: {tag_list}, sort: {sort}, bookmarked: {bookmarked}, user_id: {user_id}")
     service = ProblemService(db)
     problems, total, total_pages = service.get_problems(
         page=page,
@@ -64,6 +67,7 @@ async def get_problems(
         tags=tag_list,
         sort=sort,
         user_id_for_bookmarks=user_id_for_bookmarks,
+        user_id=user_id,
     )
     logger.info(f"Found {total} problems, returning page {page}/{total_pages}")
 

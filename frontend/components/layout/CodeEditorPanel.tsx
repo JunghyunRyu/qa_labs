@@ -13,6 +13,8 @@ import {
   CloudOff,
   Bug,
   CheckCircle2,
+  Check,
+  Circle,
 } from "lucide-react";
 import CodeEditor from "@/components/CodeEditor";
 import BottomTabs, { type TabId } from "@/components/layout/BottomTabs";
@@ -295,7 +297,7 @@ export default function CodeEditorPanel({
   // Current bottom panel height based on collapse state
   const currentBottomHeight = isBottomCollapsed ? BOTTOM_PANEL_COLLAPSED : bottomPanelHeight;
 
-  // Save status indicator render
+  // Save status indicator render (with text - for other areas)
   const renderSaveStatus = () => {
     switch (saveStatus) {
       case "saving":
@@ -318,6 +320,31 @@ export default function CodeEditorPanel({
           <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400" title={lastSavedAt ? `저장됨 ${formatTimeAgo(lastSavedAt)}` : "저장됨"}>
             <Cloud className="w-3 h-3" />
             <span className="hidden sm:inline">저장됨</span>
+          </span>
+        );
+    }
+  };
+
+  // Save status icon only (for compact tab header)
+  const renderSaveStatusIcon = () => {
+    switch (saveStatus) {
+      case "saving":
+        return (
+          <span title="저장 중...">
+            <Loader2 className="w-2.5 h-2.5 ml-1 text-amber-400 animate-spin" />
+          </span>
+        );
+      case "modified":
+        return (
+          <span title="수정됨 (저장 필요)">
+            <Circle className="w-2 h-2 ml-1 text-white fill-white" />
+          </span>
+        );
+      case "saved":
+      default:
+        return (
+          <span title={lastSavedAt ? `저장됨 ${formatTimeAgo(lastSavedAt)}` : "저장됨"}>
+            <Check className="w-3 h-3 ml-1 text-slate-500" />
           </span>
         );
     }
@@ -349,59 +376,54 @@ export default function CodeEditorPanel({
 
       {/* ===== 상단 영역: 에디터 ===== */}
       <div className="flex-1 min-h-0 flex flex-col">
-        {/* Header */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
-          {/* Left: Title area - flexible, can shrink */}
-          <div className="min-w-0 flex-1 flex items-center gap-2">
-            <Code2 className="w-5 h-5 text-purple-500 shrink-0" />
-            <h2 className="font-semibold text-gray-900 dark:text-white truncate">
-              테스트 코드 작성
-            </h2>
-            <span className="shrink-0 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
-              Python
-            </span>
-            {/* Save status indicator */}
-            <div className="hidden sm:flex items-center gap-1 ml-2">
-              {renderSaveStatus()}
+        {/* Header - VS Code 스타일 슬림 헤더 (h-12 = 48px) */}
+        <div className="flex-shrink-0 px-2 h-12 border-b border-slate-700 bg-slate-950 flex items-center gap-2">
+          {/* Left: File tab style - 에디터와 연결된 탭 */}
+          <div className="min-w-0 flex-1 flex items-center gap-1.5">
+            {/* File tab - VS Code 스타일 (에디터 배경과 동일, 위로 연결) */}
+            <div className="flex items-center gap-1.5 h-12 px-3 bg-slate-900 border-t border-x border-slate-700 rounded-t -mb-px text-sm">
+              <Code2 className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+              <span className="text-slate-200 font-medium">test_solution.py</span>
+              {/* Save status - 아이콘만 (텍스트 제거) */}
+              {renderSaveStatusIcon()}
             </div>
           </div>
 
-          {/* Right: Buttons - responsive, show icon only on narrow screens */}
-          <div className="shrink-0 flex items-center gap-1.5 xl:gap-2">
+          {/* Right: Buttons - compact VS Code 스타일 */}
+          <div className="shrink-0 flex items-center gap-1">
             {/* Reset Button */}
             {onReset && (
               <button
                 data-testid="btn-reset"
                 onClick={onReset}
-                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200
-                           hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded transition-colors"
                 title="새로 시작 (템플릿으로 초기화)"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
             )}
 
-            {/* Local Test Button - 문법 검사 + Golden Code 통과 확인 */}
+            {/* Local Test Button - compact */}
             {onLocalTest && (
               <div className="relative group/test">
                 <button
                   data-testid="btn-local-test"
                   onClick={onLocalTest}
                   disabled={isLocalTesting || isSubmitting || !code.trim()}
-                  className="px-2 xl:px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600
+                  className="h-7 px-2 xl:px-3 bg-emerald-600 text-white rounded hover:bg-emerald-500
                              disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-                             font-medium flex items-center gap-1.5 xl:gap-2 text-sm"
+                             font-medium flex items-center gap-1 xl:gap-1.5 text-xs"
                   aria-describedby="local-test-tooltip"
                 >
                   {isLocalTesting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="hidden xl:inline">검증 중...</span>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span className="hidden xl:inline">검증 중</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span className="hidden xl:inline">테스트 실행</span>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span className="hidden xl:inline">실행</span>
                     </>
                   )}
                 </button>
@@ -422,29 +444,29 @@ export default function CodeEditorPanel({
               </div>
             )}
 
-            {/* Submit Button - Buggy Code(Mutants)와 대결 */}
+            {/* Submit Button - compact */}
             <div className="relative group/submit">
               <button
                 data-testid="btn-submit"
                 onClick={onSubmit}
                 disabled={isSubmitting || isLocalTesting || !code.trim()}
-                className={`px-2 xl:px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600
+                className={`h-7 px-2 xl:px-3 bg-sky-600 text-white rounded hover:bg-sky-500
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-                           font-medium flex items-center gap-1.5 xl:gap-2 text-sm
+                           font-medium flex items-center gap-1 xl:gap-1.5 text-xs
                            ${localTestResult && localTestResult.failed === 0 && localTestResult.errors === 0
-                             ? "animate-pulse ring-2 ring-sky-400 ring-offset-2 ring-offset-slate-900"
+                             ? "animate-pulse ring-2 ring-sky-400 ring-offset-1 ring-offset-slate-900"
                              : ""}`}
                 aria-describedby="submit-tooltip"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="hidden xl:inline">채점 중...</span>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="hidden xl:inline">채점 중</span>
                   </>
                 ) : (
                   <>
-                    <Bug className="w-4 h-4" />
-                    <span className="hidden xl:inline">채점하기</span>
+                    <Bug className="w-3.5 h-3.5" />
+                    <span className="hidden xl:inline">채점</span>
                   </>
                 )}
               </button>
@@ -471,8 +493,26 @@ export default function CodeEditorPanel({
           ref={editorContainerRef}
           data-testid="code-editor-area"
           className="flex-1 min-h-0 overflow-hidden"
-          onClick={() => {
-            // Collapse bottom panel when clicking on editor area (VS Code style)
+          onMouseDown={(e) => {
+            // 스크롤바/미니맵 클릭은 무시 (Monaco 에디터 관련 요소 체크)
+            const target = e.target as HTMLElement;
+            const isScrollbarOrOverlay =
+              target.closest('.scrollbar') ||
+              target.closest('.slider') ||
+              target.closest('.monaco-scrollable-element > .scrollbar') ||
+              target.closest('.minimap') ||
+              target.closest('.decorationsOverviewRuler') ||
+              target.closest('.monaco-editor-overlaymessage') ||
+              target.classList.contains('scrollbar') ||
+              target.classList.contains('slider');
+
+            // 클릭 위치가 오른쪽 가장자리 20px 이내면 스크롤바로 간주
+            const rect = e.currentTarget.getBoundingClientRect();
+            const isNearRightEdge = e.clientX > rect.right - 20;
+
+            if (isScrollbarOrOverlay || isNearRightEdge) return;
+
+            // 에디터 본문 클릭 시 패널 접기 (VS Code style)
             if (!isBottomCollapsed) {
               setIsBottomCollapsed(true);
               setUserHasManuallyCollapsed(true);

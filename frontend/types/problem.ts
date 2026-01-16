@@ -39,7 +39,8 @@ export interface ProblemListItem {
   success_rate?: number | null;  // 0.0~1.0, null if < 5 submissions
   bugs_count?: number;  // 숨은 버그 수 (buggy_implementations 개수)
   published_at?: string;  // 공개 시점 (NEW 배지용)
-  user_status?: "solved" | "attempted" | "failed";  // 사용자 풀이 상태
+  user_status?: "solved" | "attempted" | null;  // 사용자 풀이 상태 (100점=solved, 1-99점=attempted, null=미시도)
+  user_best_score?: number | null;  // 사용자 최고 점수 (0-100, null=미시도)
 }
 
 export interface ProblemListResponse {

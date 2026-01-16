@@ -50,6 +50,9 @@ class ProblemListResponse(BaseModel):
     success_rate: Optional[float] = None  # 0.0~1.0, None if < 5 submissions
     bugs_count: int = 0  # 숨은 버그 수 (buggy_implementations 개수)
     published_at: Optional[datetime] = None  # 공개 시점 (NEW 배지용)
+    # 사용자별 풀이 상태 (로그인 시에만 제공)
+    user_status: Optional[str] = None  # "solved" | "attempted" | None
+    user_best_score: Optional[int] = None  # 0-100, None if never attempted
 
     model_config = {"from_attributes": True}
 
