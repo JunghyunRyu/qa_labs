@@ -32,6 +32,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import LocalTestResultPanel from "@/components/LocalTestResultPanel";
 import FeedbackDisplay from "@/components/FeedbackDisplay";
@@ -348,6 +349,7 @@ function ResultTabContent({
   onTabChange?: (tab: TabId) => void;
 }) {
   const { login } = useAuth();
+  const pathname = usePathname();
 
   // Submitting / Pending / Running state
   if (isSubmitting || (submission && (submission.status === "PENDING" || submission.status === "RUNNING"))) {
@@ -1086,7 +1088,7 @@ function SuccessResultContent({
                     </li>
                   </ul>
                   <Link
-                    href="/auth/login"
+                    href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
                                bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
                                hover:bg-purple-200 dark:hover:bg-purple-900/50

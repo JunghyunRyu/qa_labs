@@ -10,6 +10,7 @@
  */
 
 import { useAuth } from "@/lib/auth/AuthContext";
+import { usePathname } from "next/navigation";
 import { Zap, Target } from "lucide-react";
 import Link from "next/link";
 import RankBadge from "@/components/RankBadge";
@@ -20,9 +21,12 @@ interface UserStatsBarProps {
 
 export default function UserStatsBar({ totalProblems }: UserStatsBarProps) {
   const { isAuthenticated, user } = useAuth();
+  const pathname = usePathname();
 
   // 비로그인 사용자는 강조된 CTA 표시
   if (!isAuthenticated) {
+    const loginUrl = `/auth/login?redirect=${encodeURIComponent(pathname)}`;
+
     return (
       <div className="relative overflow-hidden bg-gradient-to-r from-indigo-950/50 to-slate-900/50 border border-indigo-500/30 rounded-xl px-6 py-4 mb-6 backdrop-blur-sm shadow-lg shadow-indigo-500/5">
         {/* 배경 글로우 */}
@@ -39,7 +43,7 @@ export default function UserStatsBar({ totalProblems }: UserStatsBarProps) {
             </div>
           </div>
           <Link
-            href="/auth/login"
+            href={loginUrl}
             className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40"
           >
             시작하기

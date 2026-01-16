@@ -37,9 +37,11 @@ function AuthCallbackContent() {
           setStatus("terms");
         } else {
           setStatus("success");
-          // Redirect immediately for seamless UX
+          // 저장된 redirect URL로 이동 (없으면 메인)
+          const savedRedirect = sessionStorage.getItem("auth_redirect") || "/";
+          sessionStorage.removeItem("auth_redirect");
           setTimeout(() => {
-            router.push("/");
+            router.push(savedRedirect);
           }, 500);
         }
       } catch (err) {

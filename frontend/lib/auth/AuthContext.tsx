@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (provider?: OAuthProvider) => void;
+  login: (provider?: OAuthProvider, redirectUrl?: string) => void;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   acceptTerms: () => Promise<void>;
@@ -39,7 +39,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = useCallback((provider: OAuthProvider = "github") => {
+  const login = useCallback((provider: OAuthProvider = "github", redirectUrl?: string) => {
+    // 로그인 후 돌아갈 URL 저장
+    if (redirectUrl) {
+      sessionStorage.setItem("auth_redirect", redirectUrl);
+    }
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
     window.location.href = `${apiBaseUrl}/v1/auth/${provider}/login`;
   }, []);

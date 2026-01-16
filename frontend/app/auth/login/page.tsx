@@ -69,7 +69,7 @@ function LoginContent() {
       {/* Login Buttons */}
       <div className="space-y-3">
         <button
-          onClick={() => login("github")}
+          onClick={() => login("github", redirectUrl)}
           className="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3
                      bg-gray-900 dark:bg-white text-white dark:text-gray-900
                      rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100
@@ -81,7 +81,7 @@ function LoginContent() {
           GitHub으로 로그인
         </button>
         <button
-          onClick={() => login("google")}
+          onClick={() => login("google", redirectUrl)}
           className="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3
                      bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200
                      border border-gray-300 dark:border-gray-600
