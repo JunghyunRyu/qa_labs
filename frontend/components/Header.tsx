@@ -16,6 +16,7 @@ import { Maximize2, Minimize2, ArrowRight } from "lucide-react";
 import LoginButton from "./LoginButton";
 import UserMenu from "./UserMenu";
 import TokenBalance from "./TokenBalance";
+import RankBadge from "./RankBadge";
 
 // 홈(Landing) 메뉴 - 마케팅/소개 목적
 const homeNavItems = [
@@ -31,7 +32,7 @@ const appNavItems = [
 ];
 
 export default function Header() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const { isFocusMode, toggleFocusMode } = useLayoutStore();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -201,6 +202,15 @@ export default function Header() {
 
           {/* Token Balance */}
           {mounted && !isLoading && isAuthenticated && <TokenBalance />}
+
+          {/* Rank Badge (compact) - 프로필 옆 명찰 */}
+          {mounted && !isLoading && isAuthenticated && user && (
+            <RankBadge
+              solvedCount={user.solved_count || 0}
+              compact
+              className="hidden sm:flex"
+            />
+          )}
 
           {/* Auth Section */}
           {mounted && !isLoading && (
