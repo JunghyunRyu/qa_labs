@@ -49,6 +49,11 @@ class User(Base):
     # Onboarding tutorial
     tutorial_completed_at = Column(DateTime(timezone=True), nullable=True)  # 튜토리얼 완료 시점
 
+    # Daily Bounty streak
+    bounty_streak = Column(Integer, default=0, nullable=False)  # 현재 연속 완료 일수
+    bounty_streak_updated_at = Column(DateTime(timezone=True), nullable=True)  # 마지막 스트릭 업데이트
+    last_bounty_completed_at = Column(DateTime(timezone=True), nullable=True)  # 마지막 완료 시점
+
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"
 

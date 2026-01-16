@@ -14,6 +14,7 @@ import ProblemCard from "@/components/ProblemCard";
 import ComingSoonBanner from "@/components/ComingSoonBanner";
 import SampleProblemsBanner from "@/components/SampleProblemsBanner";
 import UserStatsBar from "@/components/problems/UserStatsBar";
+import DailyBountyBanner from "@/components/DailyBountyBanner";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
@@ -485,6 +486,9 @@ function ProblemsContent() {
 
         {/* User Stats Bar */}
         <UserStatsBar totalProblems={data.total} />
+
+        {/* Daily Bounty Banner - 오늘의 미션 */}
+        <DailyBountyBanner />
 
         {/* ============================================
             Sticky Control Bar (검색 + 필터) - 2줄 압축 레이아웃

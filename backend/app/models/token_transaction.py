@@ -41,6 +41,10 @@ class ActionType(str, Enum):
     MONTHLY_RESET = "monthly_reset"  # 월간 리셋 지급
     ADMIN_ADJUSTMENT = "admin_adjustment"  # 관리자 조정
 
+    # Daily Bounty
+    DAILY_BOUNTY_SOLVE = "daily_bounty_solve"    # 일일 현상금 해결 (+5)
+    DAILY_BOUNTY_STREAK = "daily_bounty_streak"  # 3일 연속 보너스 (+50)
+
     # 기타
     EXPIRED = "expired"              # 만료 차감
 

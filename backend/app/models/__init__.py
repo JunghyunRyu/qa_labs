@@ -12,6 +12,7 @@ from app.models.hint_view import HintView
 from app.models.token_transaction import TokenTransaction, ActionType, SourceType
 from app.models.feedback import Feedback, FeedbackType, FeedbackStatus
 from app.models.withdrawal_log import WithdrawalLog
+from app.models.daily_bounty import DailyBounty, DailyBountyCompletion
 
 __all__ = [
     "Base",
@@ -32,4 +33,6 @@ __all__ = [
     "FeedbackType",
     "FeedbackStatus",
     "WithdrawalLog",
+    "DailyBounty",
+    "DailyBountyCompletion",
 ]

@@ -19,6 +19,7 @@ from app.repositories.problem_repository import ProblemRepository
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
 from app.services.test_quality_analyzer import TestQualityAnalyzer, calculate_quality_bonus
 from app.services.verification_service import VerificationService
+from app.services.daily_bounty_service import get_daily_bounty_service
 from app.workers.tasks import process_submission_task, generate_feedback_task, verify_submission_task
 from app.middleware.request_context import get_request_id
 
@@ -293,6 +294,31 @@ async def create_submission(
                     f"[AI_FEEDBACK_QUEUE_ERROR] submission_id={submission.id} "
                     f"error_type={type(e).__name__} error_message={str(e)}",
                     exc_info=True
+                )
+
+        # Daily Bounty 보상 체크 (회원 + SUCCESS)
+        daily_bounty_result = None
+        if user_id and submission_status == "SUCCESS":
+            try:
+                bounty_service = get_daily_bounty_service(db)
+                granted, details = bounty_service.check_and_grant_reward(
+                    user=current_user,
+                    problem_id=submission_data.problem_id,
+                    submission_id=submission.id,
+                )
+                if granted:
+                    daily_bounty_result = details
+                    logger.info(
+                        f"[DAILY_BOUNTY_GRANTED] submission_id={submission.id} "
+                        f"user_id={user_id} streak={details.get('streak')} "
+                        f"rewards={details.get('rewards_granted')}"
+                    )
+            except Exception as dbe:
+                # Daily Bounty 처리 실패해도 채점 결과는 반환
+                logger.error(
+                    f"[DAILY_BOUNTY_ERROR] submission_id={submission.id} "
+                    f"error={type(dbe).__name__}: {str(dbe)}",
+                    exc_info=True,
                 )
 
         return submission
