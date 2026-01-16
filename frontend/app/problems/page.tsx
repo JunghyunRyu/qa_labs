@@ -15,6 +15,7 @@ import ComingSoonBanner from "@/components/ComingSoonBanner";
 import SampleProblemsBanner from "@/components/SampleProblemsBanner";
 import UserStatsBar from "@/components/problems/UserStatsBar";
 import DailyBountyBanner from "@/components/DailyBountyBanner";
+import { WeekendChallengeBanner } from "@/components/WeekendChallengeBanner";
 import { ProblemCardSkeletonGrid } from "@/components/ProblemCardSkeleton";
 import PyodidePreloader from "@/components/PyodidePreloader";
 import Link from "next/link";
@@ -738,6 +739,9 @@ function ProblemsContent() {
 
         {/* Tutorial Banner (온보딩 섹션) - 1문제 이상 푼 사용자에게는 숨김 */}
         <SampleProblemsBanner forceHide={(user?.solved_count || 0) > 0} />
+
+        {/* Weekend Challenge Banner (금요일 15:00 ~ 일요일 23:59) */}
+        <WeekendChallengeBanner className="mb-4" />
 
         {/* Coming Soon Banner */}
         {nextScheduled && <ComingSoonBanner nextProblem={nextScheduled} />}
