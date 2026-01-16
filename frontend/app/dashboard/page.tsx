@@ -71,15 +71,16 @@ interface KPICardProps {
   icon: React.ReactNode;
   iconBgColor?: string;
   valueColor?: string;
+  smallValue?: boolean;  // 긴 텍스트용 작은 폰트
 }
 
-function KPICard({ title, value, subtitle, icon, iconBgColor = "bg-slate-800", valueColor = "text-slate-100" }: KPICardProps) {
+function KPICard({ title, value, subtitle, icon, iconBgColor = "bg-slate-800", valueColor = "text-slate-100", smallValue = false }: KPICardProps) {
   return (
     <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 sm:p-5">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-sm text-slate-400 mb-1">{title}</p>
-          <p className={`text-2xl sm:text-3xl font-bold ${valueColor} truncate`}>
+          <p className={`${smallValue ? "text-lg sm:text-xl" : "text-2xl sm:text-3xl"} font-bold ${valueColor}`}>
             {value}
           </p>
           {subtitle && (
@@ -319,6 +320,7 @@ export default function DashboardPage() {
                     icon={<Trophy className="w-5 h-5 text-amber-400" />}
                     iconBgColor="bg-amber-500/10"
                     valueColor={rankResult.current.color}
+                    smallValue
                   />
                 </>
               ) : null}
