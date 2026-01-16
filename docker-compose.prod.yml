@@ -271,40 +271,16 @@ services:
           memory: 512M
           cpus: "0.5"
 
-  nginx:
-    image: nginx:alpine
-    container_name: qa_arena_nginx_prod
-    ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
-      - "${NGINX_HTTPS_PORT:-443}:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - nginx_logs:/var/log/nginx
-      - ./nginx/webroot:/var/www/certbot:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      - backend
-      - frontend
-    networks:
-      - qa_arena_frontend
-    restart: unless-stopped
-    # 보안 옵션
-    security_opt:
-      - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-          cpus: "0.5"
+  # nginx 서비스 제거됨 (2026-01-16)
+  # Ubuntu 호스트의 nginx가 리버스 프록시 역할 수행
+  # Docker nginx는 DNS 해석 문제로 불필요하게 재시작되어 제거
 
 volumes:
   postgres_data:
     driver: local
   redis_data:
     driver: local
-  nginx_logs:
-    driver: local
+  # nginx_logs 제거됨 (Docker nginx 서비스 제거로 불필요)
 
 networks:
   # 내부 서비스 네트워크 (DB, Redis, Worker)

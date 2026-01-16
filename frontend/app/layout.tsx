@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import LayoutWrapper from "@/components/LayoutWrapper";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
+// [DEBUG] GA 비활성화 - 악성 리다이렉트 원인 테스트 (2026-01-17)
+// import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -69,7 +70,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <GoogleAnalytics />
+        {/* [DEBUG] GA 비활성화 - 악성 리다이렉트 원인 테스트 */}
+        {/* <GoogleAnalytics /> */}
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
