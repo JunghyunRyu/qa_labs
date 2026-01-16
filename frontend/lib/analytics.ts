@@ -83,6 +83,22 @@ export const trackLocalTest = (params: {
 // ============================================
 
 /**
+ * M6-1: 회원 전환 모달 트리거 이벤트
+ * 비회원이 2회 이상 제출 시 모달 표시할 때 호출
+ */
+export const trackConversionModalTrigger = (params: {
+  trigger: "submission_count" | "deep_feedback";
+  problemId: string;
+  submissionCount: number;
+}) => {
+  sendGAEvent("conversion_modal_trigger", {
+    trigger: params.trigger,
+    problem_id: params.problemId,
+    submission_count: params.submissionCount,
+  });
+};
+
+/**
  * 게스트 배너 노출 이벤트
  */
 export const trackGuestBannerImpression = (params: {
@@ -261,5 +277,20 @@ export const trackAINudgeClick = (params: {
   sendGAEvent("ai_nudge_click", {
     problem_id: params.problemId,
     trigger: params.trigger,
+  });
+};
+
+/**
+ * M6-3: 에러 화면에서 AI 질문 버튼 클릭 이벤트
+ */
+export const trackAIAskFromError = (params: {
+  problemId: string;
+  errorType: string;
+  submissionStatus: "FAILURE" | "ERROR";
+}) => {
+  sendGAEvent("ai_ask_from_error", {
+    problem_id: params.problemId,
+    error_type: params.errorType,
+    submission_status: params.submissionStatus,
   });
 };

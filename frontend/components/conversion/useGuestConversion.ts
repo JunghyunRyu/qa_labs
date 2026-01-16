@@ -18,6 +18,7 @@ const STORAGE_KEYS = {
   GUEST_SCORE: "qa_guest_score",
   GUEST_PROBLEM_ID: "qa_guest_problem_id",
   PENDING_MERGE: "qa_pending_merge",
+  SUBMISSION_COUNT: "qa_guest_submission_count",
 } as const;
 
 interface GuestData {
@@ -44,6 +45,12 @@ interface UseGuestConversionReturn {
   hasPendingMerge: boolean;
   /** 하이드레이션 완료 여부 */
   isHydrated: boolean;
+  /** 제출 횟수 증가 (M6-1) */
+  incrementSubmissionCount: () => number;
+  /** 회원 전환 모달 표시 여부 (M6-1) */
+  shouldShowConversionModal: () => boolean;
+  /** 제출 횟수 리셋 - 로그인 후 호출 (M6-1) */
+  resetSubmissionCount: () => void;
 }
 
 export function useGuestConversion(): UseGuestConversionReturn {
@@ -131,6 +138,45 @@ export function useGuestConversion(): UseGuestConversionReturn {
     }
   }, []);
 
+  // M6-1: 제출 횟수 증가 (비회원 제출 시 호출)
+  const incrementSubmissionCount = useCallback((): number => {
+    if (typeof window === "undefined") return 0;
+
+    try {
+      const current = parseInt(localStorage.getItem(STORAGE_KEYS.SUBMISSION_COUNT) || "0", 10);
+      const newCount = current + 1;
+      localStorage.setItem(STORAGE_KEYS.SUBMISSION_COUNT, newCount.toString());
+      return newCount;
+    } catch (error) {
+      console.warn("[useGuestConversion] Failed to increment submission count:", error);
+      return 0;
+    }
+  }, []);
+
+  // M6-1: 회원 전환 모달 표시 여부 (2회 이상 제출 시 true)
+  const shouldShowConversionModal = useCallback((): boolean => {
+    if (typeof window === "undefined") return false;
+
+    try {
+      const count = parseInt(localStorage.getItem(STORAGE_KEYS.SUBMISSION_COUNT) || "0", 10);
+      return count >= 2;
+    } catch (error) {
+      console.warn("[useGuestConversion] Failed to check submission count:", error);
+      return false;
+    }
+  }, []);
+
+  // M6-1: 제출 횟수 리셋 (로그인 후 호출)
+  const resetSubmissionCount = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      localStorage.removeItem(STORAGE_KEYS.SUBMISSION_COUNT);
+    } catch (error) {
+      console.warn("[useGuestConversion] Failed to reset submission count:", error);
+    }
+  }, []);
+
   return {
     guestCode,
     guestScore,
@@ -140,6 +186,9 @@ export function useGuestConversion(): UseGuestConversionReturn {
     setPendingMerge,
     hasPendingMerge,
     isHydrated,
+    incrementSubmissionCount,
+    shouldShowConversionModal,
+    resetSubmissionCount,
   };
 }
 
