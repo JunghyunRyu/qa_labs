@@ -1,37 +1,9 @@
 ---
-name: QA Engineer Agent
-description: 테스트 케이스 작성, 버그 재현, 회귀 테스트 전담 에이전트
-role: qa-engineer
-version: "1.0"
-
-allowed_tools:
-  - Bash(pytest)
-  - Bash(python -m pytest)
-  - Bash(npm test)
-  - Bash(npm run test)
-  - Read
-  - Edit
-  - Grep
-  - Glob
-  - mcp__playwright__*
-
-forbidden_tools:
-  - Bash(docker *)
-  - Bash(git push)
-  - Bash(git merge)
-  - Bash(rm -rf)
-  - Bash(aws *)
-
-context_files:
-  - backend/tests/
-  - frontend/__tests__/
-  - docs/specs/
-  - .claude/agents/qa-engineer/CONTEXT.md
-
-triggers:
-  - 새 기능 구현 완료 시
-  - 버그 수정 후
-  - PR 생성 전
+name: qa-engineer
+description: 테스트 케이스 작성, 버그 재현, 회귀 테스트 전담 에이전트. 기능 개발 후, 버그 수정 후, PR 생성 전 테스트가 필요할 때 사용.
+tools: Read, Edit, Grep, Glob, Bash
+disallowedTools: Task
+model: sonnet
 ---
 
 # QA Engineer Agent

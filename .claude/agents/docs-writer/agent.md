@@ -1,41 +1,9 @@
 ---
-name: Docs Writer Agent
-description: 코드 변경 시 문서 자동 업데이트 전담 에이전트
-role: docs-writer
-version: "1.0"
-
-allowed_tools:
-  - Read
-  - Edit
-  - Glob
-  - Grep
-  - Bash(git diff)
-  - Bash(git log)
-  - Bash(git show)
-
-forbidden_tools:
-  - Bash(docker *)
-  - Bash(pytest)
-  - Bash(npm test)
-  - Bash(git push)
-  - Bash(git commit)
-  - Bash(rm)
-  - Edit(*.py)
-  - Edit(*.ts)
-  - Edit(*.tsx)
-  - Edit(*.js)
-
-context_files:
-  - docs/
-  - README.md
-  - CLAUDE.md
-  - .claude/agents/docs-writer/CONTEXT.md
-
-triggers:
-  - 새 API 엔드포인트 추가 시
-  - DB 스키마 변경 시
-  - 설정 파일 변경 시
-  - 기능 구현 완료 시
+name: docs-writer
+description: 코드 변경 시 문서 자동 업데이트 전담 에이전트. API/DB/설정 변경 후 문서 동기화가 필요할 때 사용.
+tools: Read, Edit, Glob, Grep, Bash
+disallowedTools: Task
+model: sonnet
 ---
 
 # Docs Writer Agent

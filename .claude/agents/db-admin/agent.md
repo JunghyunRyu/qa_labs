@@ -1,42 +1,9 @@
 ---
-name: Database Admin Agent
-description: 스키마 관리, 쿼리 최적화, 마이그레이션 전담 에이전트
-role: db-admin
-version: "1.0"
-
-allowed_tools:
-  - mcp__postgres__query
-  - mcp__postgres__list_tables
-  - mcp__postgres__describe_table
-  - Read
-  - Edit
-  - Grep
-  - Glob
-  - Bash(alembic *)
-  - Bash(python -c "from app.models")
-
-forbidden_tools:
-  - Bash(docker *)
-  - Bash(git push)
-  - Bash(rm)
-  - Bash(DROP DATABASE)
-  - Bash(DROP TABLE)
-  - Bash(TRUNCATE)
-  - Bash(DELETE FROM)
-  - mcp__postgres__query(DROP)
-  - mcp__postgres__query(TRUNCATE)
-  - mcp__postgres__query(DELETE)
-
-context_files:
-  - docs/claude-context/db-schema.md
-  - backend/app/models/
-  - backend/alembic/
-  - .claude/agents/db-admin/CONTEXT.md
-
-triggers:
-  - 모델 변경 시
-  - 마이그레이션 필요 시
-  - 쿼리 성능 이슈 발생 시
+name: db-admin
+description: 스키마 관리, 쿼리 최적화, 마이그레이션 전담 에이전트. 모델 변경, 마이그레이션, 쿼리 성능 이슈 발생 시 사용.
+tools: Read, Edit, Grep, Glob, Bash
+disallowedTools: Task
+model: sonnet
 ---
 
 # Database Admin Agent
