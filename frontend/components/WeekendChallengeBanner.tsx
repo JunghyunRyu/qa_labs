@@ -63,13 +63,14 @@ export function WeekendChallengeBanner({ className }: WeekendChallengeBannerProp
   return (
     <div
       className={`relative overflow-hidden rounded-xl border border-yellow-500/30
-                  bg-gradient-to-r from-yellow-900/30 via-amber-900/20 to-slate-900
+                  bg-gradient-to-br from-yellow-900/20 via-slate-950 to-slate-950
+                  shadow-[0_0_15px_-3px_rgba(234,179,8,0.15)]
                   h-full ${className}`}
     >
-      {/* 배경 Glow 효과 */}
+      {/* 배경 Glow 효과 - 좌상단에서 금빛 퍼짐 */}
       <div
-        className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10
-                   rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
+        className="absolute top-0 left-0 w-40 h-40 bg-yellow-500/10
+                   rounded-full blur-3xl -translate-y-1/2 -translate-x-1/4"
       />
 
       <div className="relative px-4 py-3 h-full flex flex-col">
