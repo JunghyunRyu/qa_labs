@@ -38,8 +38,7 @@ Parameters:
     **3단계: EC2 배포 (SSM)**
     - AWS SSM send-command로 EC2에 배포 명령 전송
     - Instance ID: i-05b23ecec2bdcd44a
-    - 명령: git pull && docker compose up -d --build backend frontend nginx
-    - 중요: backend/frontend 재빌드 시 nginx 반드시 포함!
+    - 명령: git pull && docker compose up -d --build backend frontend
 
     **4단계: 헬스체크**
     - 컨테이너 상태 확인 (docker compose ps)
@@ -52,9 +51,8 @@ Parameters:
     - 롤백 포인트 (필요시)
 
     ### 핵심 규칙
-    1. backend/frontend 재빌드 시 nginx도 반드시 재시작 (502 에러 방지)
-    2. Docker 빌드 실패 시 --network=host 옵션 사용
-    3. 타입 에러 발생 시 배포 중단하고 메인 에이전트에 알림
+    1. Docker 빌드 실패 시 --network=host 옵션 사용
+    2. 타입 에러 발생 시 배포 중단하고 메인 에이전트에 알림
 ```
 
 위 Task 호출 후, Agent가 배포를 완료하면 결과를 사용자에게 보고합니다.
@@ -77,22 +75,13 @@ Parameters:
 
 ### 반드시 지켜야 할 규칙
 
-1. **backend/frontend 재빌드 시 nginx 반드시 포함**
-   ```bash
-   # 올바른 명령어
-   docker compose -f docker-compose.prod.yml up -d --build backend frontend nginx
-
-   # 잘못된 명령어 (502 에러 발생!)
-   docker compose -f docker-compose.prod.yml up -d --build backend frontend
-   ```
-
-2. **Docker 빌드 실패 시 network=host 사용**
+1. **Docker 빌드 실패 시 network=host 사용**
    ```bash
    docker build --network=host -t qa_labs-backend -f backend/Dockerfile backend/
    docker build --network=host -t qa_labs-frontend -f frontend/Dockerfile frontend/
    ```
 
-3. **타입 에러 발생 시 배포 중단**
+2. **타입 에러 발생 시 배포 중단**
    - 메인 에이전트에 코드 수정 요청
    - 수정 후 다시 배포 진행
 
@@ -184,14 +173,12 @@ echo "롤백 포인트: $PREV_COMMIT"
 ### Step 6: EC2 배포
 AWS SSM send-command를 통해 EC2에 배포 명령을 전송합니다:
 
-> **중요**: `backend frontend nginx`를 함께 재시작해야 502 에러가 발생하지 않습니다!
-
 ```bash
 # 롤백 포인트 저장 + 배포 명령 전송
 COMMAND_ID=$(aws ssm send-command \
   --instance-ids "i-05b23ecec2bdcd44a" \
   --document-name "AWS-RunShellScript" \
-  --parameters 'commands=["cd /home/ssm-user/qa_labs && git rev-parse HEAD > .rollback_point && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build backend frontend nginx && docker compose -f docker-compose.prod.yml ps"]' \
+  --parameters 'commands=["export HOME=/home/ssm-user && cd /home/ssm-user/qa_labs && git rev-parse HEAD > .rollback_point && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build backend frontend && docker compose -f docker-compose.prod.yml ps"]' \
   --query 'Command.CommandId' --output text)
 
 echo "Command ID: $COMMAND_ID"
@@ -209,7 +196,7 @@ aws ssm get-command-invocation \
 # EC2에서 직접 실행
 docker build --network=host -t qa_labs-backend -f backend/Dockerfile backend/
 docker build --network=host -t qa_labs-frontend -f frontend/Dockerfile frontend/
-docker compose -f docker-compose.prod.yml up -d backend frontend nginx
+docker compose -f docker-compose.prod.yml up -d backend frontend
 ```
 
 ---

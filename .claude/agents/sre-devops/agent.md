@@ -48,12 +48,12 @@ model: sonnet
 ### Docker 서비스
 | 서비스 | 포트 | 역할 |
 |--------|------|------|
-| nginx | 80/443 | 리버스 프록시 |
 | frontend | 3000 | Next.js |
 | backend | 8001→8000 | FastAPI |
 | postgres | 5432 | DB |
 | redis | 6379 | Celery Broker |
 | celery_worker | - | 비동기 작업 |
+| worker_monitor | - | Worker 모니터링 |
 
 ---
 
@@ -66,13 +66,14 @@ model: sonnet
 docker compose -f docker-compose.prod.yml ps
 
 # 2. 코드 업데이트
+export HOME=/home/ssm-user
 git pull origin main
 
 # 3. DB 마이그레이션 (필요시)
 docker compose -f docker-compose.prod.yml exec -T backend alembic upgrade head
 
-# 4. 서비스 재빌드 및 재시작 (nginx 반드시 포함!)
-docker compose -f docker-compose.prod.yml up -d --build backend frontend nginx
+# 4. 서비스 재빌드 및 재시작
+docker compose -f docker-compose.prod.yml up -d --build backend frontend
 
 # 5. 헬스체크
 curl -s http://localhost:8001/health
@@ -81,25 +82,18 @@ curl -s http://localhost:3000
 
 ### 중요 규칙
 
-1. **backend/frontend 재빌드 시 nginx도 반드시 재시작**
-   - Docker 내부 DNS 캐싱으로 인해 502 에러 발생 방지
-
-2. **빌드 실패 시 --network=host 옵션 사용**
+1. **빌드 실패 시 --network=host 옵션 사용**
    - EC2 Docker 네트워크 문제 우회
 
-3. **타입 에러 발생 시 메인 에이전트에 알림**
+2. **타입 에러 발생 시 메인 에이전트에 알림**
    - 코드 수정은 SRE 담당 아님
+
+3. **SSM 환경에서 HOME 변수 설정 필요**
+   - `export HOME=/home/ssm-user` 먼저 실행
 
 ---
 
 ## 트러블슈팅 가이드
-
-### 502 Bad Gateway
-```bash
-# 원인: nginx가 새 컨테이너 IP를 못 찾음
-# 해결:
-docker compose -f docker-compose.prod.yml restart nginx
-```
 
 ### Docker 빌드 apt-get 실패
 ```bash
@@ -150,11 +144,11 @@ aws ssm get-command-invocation \
 git checkout HEAD~1
 
 # 2. 서비스 재빌드
-docker compose -f docker-compose.prod.yml up -d --build backend frontend nginx
+docker compose -f docker-compose.prod.yml up -d --build backend frontend
 
 # 3. 확인 후 문제 없으면 새 브랜치로 수정 진행
 ```
 
 ---
 
-*최종 업데이트: 2026-01-16*
+*최종 업데이트: 2026-01-18*
