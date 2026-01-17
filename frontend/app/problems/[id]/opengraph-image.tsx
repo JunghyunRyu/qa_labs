@@ -62,13 +62,14 @@ const domainLabels: { [key: string]: string } = {
   content: "콘텐츠",
 };
 
-export default async function Image({ params }: { params: { id: string } }) {
+export default async function Image({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   let problem = null;
 
   // 폰트와 문제 데이터를 병렬로 로드
   const [notoSansKR, problemData] = await Promise.all([
     loadGoogleFont("Noto+Sans+KR", 700),
-    fetch(`${API_URL}/v1/problems/${params.id}`)
+    fetch(`${API_URL}/v1/problems/${id}`, { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null),
   ]);
