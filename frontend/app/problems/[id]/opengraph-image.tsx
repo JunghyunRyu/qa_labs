@@ -1,16 +1,17 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "QA Arena - 버그 찾기 챌린지";
+export const alt = "QA Arena Problem";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// 서버 사이드: INTERNAL_API_URL (컨테이너 간 통신), 클라이언트: NEXT_PUBLIC_API_URL
 const API_URL =
   process.env.INTERNAL_API_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:8000/api";
 
-// Google Fonts 로드
+// Google Fonts에서 Noto Sans KR 폰트 로드 (한글 지원)
 async function loadGoogleFont(font: string, weight: number) {
   const url = `https://fonts.googleapis.com/css2?family=${font}:wght@${weight}&display=swap`;
   const css = await (await fetch(url)).text();
@@ -24,16 +25,33 @@ async function loadGoogleFont(font: string, weight: number) {
   return null;
 }
 
-// 난이도별 설정 (색상, 라벨, 글로우)
-const difficultyConfig: {
-  [key: string]: { label: string; color: string; glow: string; level: number };
-} = {
-  "Very Easy": { label: "입문", color: "#06b6d4", glow: "rgba(6,182,212,0.4)", level: 1 },
-  Easy: { label: "EASY", color: "#10b981", glow: "rgba(16,185,129,0.4)", level: 2 },
-  Medium: { label: "MEDIUM", color: "#f59e0b", glow: "rgba(245,158,11,0.4)", level: 3 },
-  Hard: { label: "HARD", color: "#ef4444", glow: "rgba(239,68,68,0.5)", level: 4 },
-  "Very Hard": { label: "EXTREME", color: "#dc2626", glow: "rgba(220,38,38,0.5)", level: 5 },
+// 난이도별 채워진 원 개수 (5점 만점)
+const difficultyLevels: { [key: string]: number } = {
+  "Very Easy": 1,
+  Easy: 2,
+  Medium: 3,
+  Hard: 4,
+  "Very Hard": 5,
 };
+
+// CSS 기반 난이도 표시 컴포넌트
+function DifficultyDots({ level }: { level: number }) {
+  return (
+    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          style={{
+            width: "20px",
+            height: "20px",
+            borderRadius: "50%",
+            background: i <= level ? "#fbbf24" : "#475569",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 const domainLabels: { [key: string]: string } = {
   common: "공통",
@@ -46,7 +64,9 @@ const domainLabels: { [key: string]: string } = {
 
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  let problem = null;
 
+  // 폰트와 문제 데이터를 병렬로 로드
   const [notoSansKR, problemData] = await Promise.all([
     loadGoogleFont("Noto+Sans+KR", 700),
     fetch(`${API_URL}/v1/problems/${id}`, { cache: "no-store" })
@@ -54,13 +74,15 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       .catch(() => null),
   ]);
 
-  const problem = problemData;
+  problem = problemData;
+
   const title = problem?.title || "QA Challenge";
   const difficulty = problem?.difficulty || "Medium";
   const domain = problem?.domain || "common";
-  const config = difficultyConfig[difficulty] || difficultyConfig["Medium"];
+  const difficultyLevel = difficultyLevels[difficulty] || 3;
   const domainLabel = domainLabels[domain] || domain;
   const bugsCount = problem?.buggy_implementations?.length || 0;
+  const skills: string[] = problem?.skills?.slice(0, 3) || [];
 
   return new ImageResponse(
     (
@@ -69,258 +91,143 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           width: "100%",
           height: "100%",
           display: "flex",
-          background: "#0a0a0f",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+          color: "white",
           fontFamily: '"Noto Sans KR", sans-serif',
-          position: "relative",
-          overflow: "hidden",
+          padding: "40px",
         }}
       >
-        {/* 배경: 코드 패턴 (희미하게) */}
+        {/* Header */}
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            opacity: 0.06,
-            fontSize: "14px",
-            color: "#ffffff",
-            lineHeight: 1.8,
-            padding: "20px",
-            fontFamily: "monospace",
-          }}
-        >
-          {`def test_bug_detection():\n    assert find_bugs(code) > 0\n    for bug in hidden_bugs:\n        assert detector.catch(bug)\n\nclass BugHunter:\n    def __init__(self):\n        self.score = 0\n    \n    def hunt(self, target):\n        if self.detect(target):\n            self.score += 100\n            return True\n        return False\n\n@pytest.fixture\ndef setup_test_env():\n    return TestEnvironment()\n\ndef test_boundary_values():\n    # Edge case testing\n    assert validate(0) == True\n    assert validate(-1) == False`}
-        </div>
-
-        {/* 글로우 효과들 */}
-        <div
-          style={{
-            position: "absolute",
-            top: "-100px",
-            right: "-100px",
-            width: "500px",
-            height: "500px",
-            background: `radial-gradient(circle, ${config.glow} 0%, transparent 70%)`,
-            borderRadius: "50%",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-150px",
-            left: "-100px",
-            width: "400px",
-            height: "400px",
-            background: "radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%)",
-            borderRadius: "50%",
-          }}
-        />
-
-        {/* 좌측: 텍스트 영역 */}
-        <div
-          style={{
-            flex: 1,
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            padding: "60px",
-            paddingRight: "40px",
-            position: "relative",
-            zIndex: 10,
-          }}
-        >
-          {/* 상단: 난이도 뱃지 + 도메인 */}
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-            <div
-              style={{
-                background: config.color,
-                color: "#000",
-                padding: "8px 20px",
-                borderRadius: "6px",
-                fontSize: "22px",
-                fontWeight: "bold",
-                letterSpacing: "2px",
-              }}
-            >
-              {config.label}
-            </div>
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <span style={{ color: "#475569" }}>#</span>
-              {domainLabel}
-            </div>
-          </div>
-
-          {/* 메인 제목 */}
-          <div
-            style={{
-              fontSize: title.length > 25 ? "44px" : "52px",
-              fontWeight: "bold",
-              color: "#ffffff",
-              lineHeight: 1.3,
-              marginBottom: "28px",
-              maxWidth: "650px",
-            }}
-          >
-            {title}
-          </div>
-
-          {/* 도발 문구 */}
-          <div
-            style={{
-              fontSize: "24px",
-              color: "#94a3b8",
-              marginBottom: "32px",
-            }}
-          >
-            이 코드에 숨겨진 버그를 찾을 수 있나요?
-          </div>
-
-          {/* CTA 버튼 스타일 */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-              padding: "14px 28px",
-              borderRadius: "12px",
-              fontSize: "22px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-          >
-            지금 도전하기 →
-          </div>
-
-          {/* 푸터 */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "30px",
-              left: "60px",
-              fontSize: "18px",
-              color: "#475569",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <span style={{ fontSize: "20px" }}>🎮</span>
-            <span>qa-arena.qalabs.kr</span>
-          </div>
-        </div>
-
-        {/* 우측: 버그 카운트 비주얼 */}
-        <div
-          style={{
-            width: "380px",
-            display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            zIndex: 10,
+            gap: "12px",
+            marginBottom: "40px",
           }}
         >
-          {/* 버그 타겟 원 */}
           <div
             style={{
-              width: "280px",
-              height: "280px",
-              borderRadius: "50%",
-              border: `4px solid ${config.color}`,
+              fontSize: "32px",
+              color: "#38bdf8",
+              fontWeight: "bold",
+            }}
+          >
+            QA Arena Challenge
+          </div>
+        </div>
+
+        {/* Title */}
+        <div
+          style={{
+            fontSize: "56px",
+            fontWeight: "bold",
+            marginBottom: "40px",
+            textAlign: "center",
+            lineHeight: 1.2,
+            maxWidth: "1000px",
+          }}
+        >
+          {title}
+        </div>
+
+        {/* Difficulty & Category */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "40px",
+            fontSize: "28px",
+            color: "#94a3b8",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span>난이도:</span>
+            <DifficultyDots level={difficultyLevel} />
+          </div>
+          <div
+            style={{
+              width: "2px",
+              height: "24px",
+              background: "#475569",
+            }}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span
+              style={{
+                background: "#38bdf8",
+                color: "#0f172a",
+                padding: "4px 16px",
+                borderRadius: "20px",
+                fontWeight: "bold",
+              }}
+            >
+              {domainLabel}
+            </span>
+          </div>
+        </div>
+
+        {/* Bug Count */}
+        {bugsCount > 0 && (
+          <div
+            style={{
+              marginTop: "40px",
+              fontSize: "28px",
+              color: "#fbbf24",
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
-              background: "rgba(0,0,0,0.5)",
-              boxShadow: `0 0 60px ${config.glow}, inset 0 0 60px rgba(0,0,0,0.5)`,
+              gap: "10px",
             }}
           >
-            {/* 타겟 링 */}
-            <div
-              style={{
-                position: "absolute",
-                width: "240px",
-                height: "240px",
-                borderRadius: "50%",
-                border: `2px solid ${config.color}40`,
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                width: "200px",
-                height: "200px",
-                borderRadius: "50%",
-                border: `2px solid ${config.color}30`,
-              }}
-            />
-
-            {/* 경고 아이콘 */}
-            <div style={{ fontSize: "48px", marginBottom: "8px" }}>⚠️</div>
-
-            {/* BUG 텍스트 */}
-            <div
-              style={{
-                fontSize: "28px",
-                fontWeight: "bold",
-                color: config.color,
-                letterSpacing: "4px",
-              }}
-            >
-              BUG
-            </div>
-
-            {/* 숫자 */}
-            <div
-              style={{
-                fontSize: "80px",
-                fontWeight: "bold",
-                color: "#ffffff",
-                lineHeight: 1,
-              }}
-            >
-              {bugsCount || "?"}
-            </div>
-
-            {/* 발견 텍스트 */}
-            <div
-              style={{
-                fontSize: "18px",
-                color: "#94a3b8",
-                marginTop: "4px",
-              }}
-            >
-              개를 찾아보세요
-            </div>
+            <span>🐛</span>
+            <span>{bugsCount}개의 숨은 버그</span>
           </div>
+        )}
 
-          {/* 난이도 인디케이터 */}
+        {/* Skills Tags */}
+        {skills.length > 0 && (
           <div
             style={{
-              display: "flex",
-              gap: "8px",
               marginTop: "24px",
+              display: "flex",
+              gap: "12px",
+              flexWrap: "wrap",
+              justifyContent: "center",
             }}
           >
-            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 1 <= config.level ? config.color : "#334155" }} />
-            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 2 <= config.level ? config.color : "#334155" }} />
-            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 3 <= config.level ? config.color : "#334155" }} />
-            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 4 <= config.level ? config.color : "#334155" }} />
-            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 5 <= config.level ? config.color : "#334155" }} />
+            {skills.map((skill: string, index: number) => (
+              <span
+                key={index}
+                style={{
+                  fontSize: "20px",
+                  color: "#94a3b8",
+                  background: "#334155",
+                  padding: "6px 16px",
+                  borderRadius: "16px",
+                }}
+              >
+                #{skill}
+              </span>
+            ))}
           </div>
+        )}
+
+        {/* Footer */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "30px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "18px",
+            color: "#64748b",
+          }}
+        >
+          <span>qa-arena.qalabs.kr</span>
         </div>
       </div>
     ),
