@@ -25,33 +25,14 @@ async function loadGoogleFont(font: string, weight: number) {
   return null;
 }
 
-// 난이도별 채워진 원 개수 (5점 만점)
-const difficultyLevels: { [key: string]: number } = {
-  "Very Easy": 1,
-  Easy: 2,
-  Medium: 3,
-  Hard: 4,
-  "Very Hard": 5,
+// 난이도별 색상 및 레벨
+const difficultyConfig: { [key: string]: { level: number; color: string; glow: string } } = {
+  "Very Easy": { level: 1, color: "#22c55e", glow: "rgba(34, 197, 94, 0.3)" },
+  Easy: { level: 2, color: "#84cc16", glow: "rgba(132, 204, 22, 0.3)" },
+  Medium: { level: 3, color: "#eab308", glow: "rgba(234, 179, 8, 0.3)" },
+  Hard: { level: 4, color: "#f97316", glow: "rgba(249, 115, 22, 0.3)" },
+  "Very Hard": { level: 5, color: "#ef4444", glow: "rgba(239, 68, 68, 0.3)" },
 };
-
-// CSS 기반 난이도 표시 컴포넌트
-function DifficultyDots({ level }: { level: number }) {
-  return (
-    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          style={{
-            width: "20px",
-            height: "20px",
-            borderRadius: "50%",
-            background: i <= level ? "#fbbf24" : "#475569",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
 
 const domainLabels: { [key: string]: string } = {
   common: "공통",
@@ -79,7 +60,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const title = problem?.title || "QA Challenge";
   const difficulty = problem?.difficulty || "Medium";
   const domain = problem?.domain || "common";
-  const difficultyLevel = difficultyLevels[difficulty] || 3;
+  const config = difficultyConfig[difficulty] || difficultyConfig["Medium"];
   const domainLabel = domainLabels[domain] || domain;
   const bugsCount = problem?.buggy_implementations?.length || 0;
   const skills: string[] = problem?.skills?.slice(0, 3) || [];
@@ -91,143 +72,242 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-          color: "white",
+          background: "#0a0f1a",
           fontFamily: '"Noto Sans KR", sans-serif',
-          padding: "40px",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        {/* Header */}
+        {/* 배경 그라디언트 */}
         <div
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `radial-gradient(ellipse at 30% 20%, ${config.glow} 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(56, 189, 248, 0.15) 0%, transparent 50%)`,
+          }}
+        />
+
+        {/* 왼쪽 영역 - 버그 카운트 */}
+        <div
+          style={{
+            width: "320px",
+            height: "100%",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            gap: "12px",
-            marginBottom: "40px",
+            justifyContent: "center",
+            borderRight: "1px solid rgba(255,255,255,0.1)",
+            position: "relative",
           }}
         >
           <div
             style={{
-              fontSize: "32px",
-              color: "#38bdf8",
+              fontSize: "24px",
+              color: "#64748b",
+              marginBottom: "16px",
+              letterSpacing: "4px",
+            }}
+          >
+            TARGET
+          </div>
+          <div
+            style={{
+              width: "160px",
+              height: "160px",
+              borderRadius: "50%",
+              background: `linear-gradient(135deg, ${config.color}22, ${config.color}44)`,
+              border: `4px solid ${config.color}`,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: `0 0 60px ${config.glow}`,
+            }}
+          >
+            <div style={{ fontSize: "20px", color: "#94a3b8" }}>🐛 BUGS</div>
+            <div
+              style={{
+                fontSize: "72px",
+                fontWeight: "bold",
+                color: config.color,
+                lineHeight: 1,
+              }}
+            >
+              {bugsCount}
+            </div>
+          </div>
+          <div
+            style={{
+              marginTop: "24px",
+              fontSize: "18px",
+              color: config.color,
               fontWeight: "bold",
             }}
           >
-            QA Arena Challenge
+            {difficulty}
           </div>
         </div>
 
-        {/* Title */}
+        {/* 오른쪽 영역 - 문제 정보 */}
         <div
           style={{
-            fontSize: "56px",
-            fontWeight: "bold",
-            marginBottom: "40px",
-            textAlign: "center",
-            lineHeight: 1.2,
-            maxWidth: "1000px",
-          }}
-        >
-          {title}
-        </div>
-
-        {/* Difficulty & Category */}
-        <div
-          style={{
+            flex: 1,
             display: "flex",
-            alignItems: "center",
-            gap: "40px",
-            fontSize: "28px",
-            color: "#94a3b8",
+            flexDirection: "column",
+            justifyContent: "center",
+            padding: "60px",
+            position: "relative",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span>난이도:</span>
-            <DifficultyDots level={difficultyLevel} />
-          </div>
+          {/* 헤더 */}
           <div
             style={{
-              width: "2px",
-              height: "24px",
-              background: "#475569",
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              marginBottom: "32px",
             }}
-          />
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
+          >
+            <div
+              style={{
+                fontSize: "20px",
+                color: "#38bdf8",
+                fontWeight: "bold",
+                letterSpacing: "2px",
+              }}
+            >
+              QA ARENA
+            </div>
+            <div
               style={{
                 background: "#38bdf8",
-                color: "#0f172a",
-                padding: "4px 16px",
+                color: "#0a0f1a",
+                padding: "6px 16px",
                 borderRadius: "20px",
+                fontSize: "16px",
                 fontWeight: "bold",
               }}
             >
               {domainLabel}
-            </span>
+            </div>
           </div>
-        </div>
 
-        {/* Bug Count */}
-        {bugsCount > 0 && (
+          {/* 제목 */}
           <div
             style={{
-              marginTop: "40px",
-              fontSize: "28px",
-              color: "#fbbf24",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
+              fontSize: "52px",
+              fontWeight: "bold",
+              color: "white",
+              lineHeight: 1.2,
+              marginBottom: "32px",
+              maxWidth: "700px",
             }}
           >
-            <span>🐛</span>
-            <span>{bugsCount}개의 숨은 버그</span>
+            {title}
           </div>
-        )}
 
-        {/* Skills Tags */}
-        {skills.length > 0 && (
-          <div
-            style={{
-              marginTop: "24px",
-              display: "flex",
-              gap: "12px",
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            {skills.map((skill: string, index: number) => (
+          {/* 난이도 바 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+            <div
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: config.level >= 1 ? config.color : "#334155",
+              }}
+            />
+            <div
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: config.level >= 2 ? config.color : "#334155",
+              }}
+            />
+            <div
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: config.level >= 3 ? config.color : "#334155",
+              }}
+            />
+            <div
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: config.level >= 4 ? config.color : "#334155",
+              }}
+            />
+            <div
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: config.level >= 5 ? config.color : "#334155",
+              }}
+            />
+          </div>
+
+          {/* 스킬 태그 */}
+          {skills.length > 0 && (
+            <div style={{ display: "flex", gap: "12px" }}>
               <span
-                key={index}
                 style={{
-                  fontSize: "20px",
+                  fontSize: "18px",
                   color: "#94a3b8",
-                  background: "#334155",
-                  padding: "6px 16px",
-                  borderRadius: "16px",
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
                 }}
               >
-                #{skill}
+                #{skills[0] || ""}
               </span>
-            ))}
-          </div>
-        )}
+              {skills[1] && (
+                <span
+                  style={{
+                    fontSize: "18px",
+                    color: "#94a3b8",
+                    background: "rgba(255,255,255,0.1)",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                  }}
+                >
+                  #{skills[1]}
+                </span>
+              )}
+              {skills[2] && (
+                <span
+                  style={{
+                    fontSize: "18px",
+                    color: "#94a3b8",
+                    background: "rgba(255,255,255,0.1)",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                  }}
+                >
+                  #{skills[2]}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
-        {/* Footer */}
+        {/* 푸터 */}
         <div
           style={{
             position: "absolute",
-            bottom: "30px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            fontSize: "18px",
-            color: "#64748b",
+            bottom: "24px",
+            right: "40px",
+            fontSize: "16px",
+            color: "#475569",
           }}
         >
-          <span>qa-arena.qalabs.kr</span>
+          qa-arena.qalabs.kr
         </div>
       </div>
     ),
