@@ -6,20 +6,58 @@ description: EC2 배포 전체 워크플로우를 자동화합니다 (체크 →
 
 QA Labs 프로젝트를 EC2에 안전하게 배포하는 전체 워크플로우를 자동화합니다.
 
-## Agent 연동
+---
 
-> **이 Skill은 SRE/DevOps Agent와 함께 실행됩니다.**
+## 🚨 필수 첫 단계: SRE/DevOps Agent 자동 호출
 
-배포 작업 시 `Task` 도구를 사용하여 SRE/DevOps Agent를 호출하세요:
+> **CRITICAL**: 이 Skill 실행 시 반드시 아래 Task를 **즉시** 호출해야 합니다.
+
+**지금 바로 Task 도구를 실행하세요:**
+
 ```
-subagent_type: "SRE/DevOps Agent"
-prompt: "EC2 배포 진행 - [작업 내용]"
+Tool: Task
+Parameters:
+  subagent_type: "sre-devops"
+  description: "EC2 배포 실행"
+  prompt: |
+    ## EC2 배포 작업 요청
+
+    QA Labs 프로젝트를 EC2에 배포합니다. 아래 단계를 순서대로 실행하세요.
+
+    ### 배포 단계
+
+    **1단계: 사전 체크**
+    - git status로 현재 상태 확인
+    - git fetch origin && git status로 원격과 비교
+    - 커밋되지 않은 변경사항 확인
+
+    **2단계: 보안 스캔**
+    - git diff에서 password, secret, api_key, token 검색
+    - .env 파일 변경 여부 확인
+
+    **3단계: EC2 배포 (SSM)**
+    - AWS SSM send-command로 EC2에 배포 명령 전송
+    - Instance ID: i-05b23ecec2bdcd44a
+    - 명령: git pull && docker compose up -d --build backend frontend nginx
+    - 중요: backend/frontend 재빌드 시 nginx 반드시 포함!
+
+    **4단계: 헬스체크**
+    - 컨테이너 상태 확인 (docker compose ps)
+    - API 헬스체크 (curl localhost:8001/health)
+    - 에러 로그 확인
+
+    **5단계: 결과 보고**
+    - 성공/실패 여부
+    - 컨테이너 상태
+    - 롤백 포인트 (필요시)
+
+    ### 핵심 규칙
+    1. backend/frontend 재빌드 시 nginx도 반드시 재시작 (502 에러 방지)
+    2. Docker 빌드 실패 시 --network=host 옵션 사용
+    3. 타입 에러 발생 시 배포 중단하고 메인 에이전트에 알림
 ```
 
-Agent가 제공하는 핵심 지식:
-- 502 에러 방지를 위한 nginx 재시작 규칙
-- Docker 빌드 네트워크 문제 해결
-- 트러블슈팅 가이드
+위 Task 호출 후, Agent가 배포를 완료하면 결과를 사용자에게 보고합니다.
 
 ---
 
@@ -29,9 +67,9 @@ Agent가 제공하는 핵심 지식:
 
 | Skill/Agent | 역할 | 호출 시점 |
 |-------------|------|-----------|
-| **`SRE/DevOps Agent`** | 배포 실행 및 트러블슈팅 | 전체 배포 과정 |
-| **`/code-review`** | 대규모 변경사항 리뷰 | Step 3 (100줄 이상 변경 시) |
-| **`/docker-debug`** | 배포 실패 진단 | Step 7 (헬스체크 실패 시) |
+| **`sre-devops`** | 배포 실행 및 트러블슈팅 | **자동 호출** (필수 첫 단계) |
+| **`/code-review`** | 대규모 변경사항 리뷰 | 100줄 이상 변경 시 |
+| **`/docker-debug`** | 배포 실패 진단 | 헬스체크 실패 시 |
 
 ---
 
