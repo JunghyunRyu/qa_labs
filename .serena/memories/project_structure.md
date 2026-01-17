@@ -29,6 +29,7 @@ backend/
 │   │   ├── admin.py         # Admin API
 │   │   ├── ai.py            # AI 관련 API
 │   │   ├── auth.py          # 인증 API (OAuth)
+│   │   ├── daily_bounty.py  # 일일 현상금 API (신규)
 │   │   ├── feedback.py      # 피드백 API
 │   │   ├── health.py        # 헬스체크 API
 │   │   ├── plans.py         # 요금제 API
@@ -52,21 +53,13 @@ backend/
 ├── alembic/                # 데이터베이스 마이그레이션
 ├── logs/                   # 로그 파일
 ├── generated_problems/     # 생성된 문제 저장
+├── scripts/                # 운영 스크립트 (daily_report.py 등)
 ├── requirements.txt        # Python 의존성
 ├── alembic.ini            # Alembic 설정
 ├── Dockerfile             # Backend Docker 이미지
 ├── .env                   # 환경 변수 (gitignore)
 └── .env.example           # 환경 변수 예시
 ```
-
-### Backend 주요 파일
-- `app/main.py`: FastAPI 앱 진입점, 전역 예외 핸들러, CORS 설정
-- `app/api/*.py`: API 엔드포인트 정의
-- `app/core/config.py`: 환경 변수 및 설정 관리
-- `app/models/`: SQLAlchemy ORM 모델
-- `app/schemas/`: API 요청/응답 스키마
-- `app/services/`: 비즈니스 로직 (채점, 피드백 생성 등)
-- `app/workers/`: Celery 비동기 작업 (코드 실행, 채점)
 
 ## Frontend 구조
 
@@ -77,12 +70,28 @@ frontend/
 │   ├── page.tsx           # 홈 페이지
 │   └── ...                # 기타 페이지
 ├── components/            # React 컴포넌트
+│   ├── ai/                # AI 관련 컴포넌트
+│   ├── conversion/        # 게스트 전환 관련 (M6)
+│   ├── dashboard/         # 대시보드 컴포넌트
+│   ├── hero/              # 히어로 섹션
+│   ├── home/              # 홈 페이지 컴포넌트
+│   ├── how-it-works/      # 사용 방법 섹션
+│   ├── landing/           # 랜딩 페이지
+│   ├── layout/            # 레이아웃 컴포넌트
+│   ├── pricing/           # 가격 정책
+│   ├── problems/          # 문제 관련
+│   ├── showcase/          # 쇼케이스
+│   ├── test-quality/      # 테스트 품질
+│   ├── tutorial/          # 튜토리얼
+│   └── ui/                # 공통 UI 컴포넌트
 ├── hooks/                 # Custom React Hooks
-├── stores/                # 상태 관리 (Zustand 등)
+├── stores/                # 상태 관리 (Zustand)
 ├── lib/                   # 유틸리티 함수
 ├── utils/                 # 유틸리티 함수
 ├── types/                 # TypeScript 타입 정의
-├── workers/               # Web Workers
+├── workers/               # Web Workers (Pyodide)
+│   ├── pyodide.worker.ts
+│   └── pyodide-worker-types.ts
 ├── e2e/                   # Playwright E2E 테스트
 ├── public/                # 정적 파일
 ├── __mocks__/            # Jest 모의 객체
@@ -97,56 +106,13 @@ frontend/
 └── Dockerfile            # Frontend Docker 이미지
 ```
 
-### Frontend 주요 파일
-- `app/`: Next.js 14+ App Router 기반 페이지
-- `components/`: 재사용 가능한 React 컴포넌트
-- `hooks/`: Custom React Hooks
-- `stores/`: 전역 상태 관리
-- `lib/`: API 클라이언트, 유틸리티 함수
-- `types/`: TypeScript 타입 및 인터페이스
-- `e2e/`: Playwright 기반 E2E 테스트
-
-## Judge 구조
-
-```
-judge/
-├── Dockerfile            # Judge 컨테이너 이미지
-├── conftest.py          # 보안 제한 설정 (pytest)
-└── samples/             # 샘플 테스트 파일
-```
-
-### Judge 특징
-- Docker-in-Docker로 실행
-- celery_worker 컨테이너가 judge 컨테이너 생성
-- 샌드박스 환경에서 사용자 코드 실행
-- `/tmp/qa_arena_judge` 공유 볼륨 사용
-
-## Nginx 구조
-
-```
-nginx/
-├── nginx.conf           # Nginx 메인 설정
-└── conf.d/              # 추가 설정 파일
-```
-
-## Scripts 구조
-
-```
-scripts/
-├── backup_db.sh         # DB 백업 (Linux/Mac)
-├── restore_db.sh        # DB 복구 (Linux/Mac)
-├── backup_db.ps1        # DB 백업 (Windows)
-├── restore_db.ps1       # DB 복구 (Windows)
-├── deploy_ec2.sh        # EC2 배포 스크립트
-├── ec2_setup.sh         # EC2 초기 설정
-├── setup_ssl.sh         # SSL 인증서 설정
-├── check_ec2_backend_status.ps1  # EC2 상태 확인
-├── diagnose_502_error.ps1        # 502 에러 진단
-├── restart_ec2_services.ps1      # EC2 서비스 재시작
-├── generate-oss-licenses.js      # OSS 라이선스 생성
-├── qa-arena.service              # systemd 서비스 파일
-└── verify_pipeline_api.py        # 파이프라인 검증
-```
+### 주요 컴포넌트 (신규/업데이트)
+- `DailyBountyBanner.tsx`: 일일 현상금 배너
+- `WeekendChallengeBanner.tsx`: 주말 챌린지 배너
+- `MissedBugAccordion.tsx`: 놓친 버그 아코디언 UI
+- `RankBadge.tsx`: SDET Career Path 랭크 뱃지
+- `PyodidePreloader.tsx`: Pyodide 사전 로딩
+- `LocalTestResultPanel.tsx`: 클라이언트 사이드 테스트 결과
 
 ## Docs 구조
 
@@ -160,6 +126,7 @@ docs/
 │   ├── ERROR_HANDLING.md    # 에러 처리 가이드
 │   ├── deployment.md        # 배포 가이드
 │   ├── operations.md        # 운영 가이드
+│   ├── monitoring-setup.md  # 모니터링 설정 (신규)
 │   ├── git-workflow.md      # Git 워크플로우
 │   ├── backup_restore.md    # 백업/복구 가이드
 │   ├── SUBMISSION_STATUS_FLOW.md  # 제출 상태 흐름
@@ -167,15 +134,18 @@ docs/
 │   ├── test-quality-system.md     # 테스트 품질 시스템
 │   ├── test-quality-milestones.md # 테스트 품질 마일스톤
 │   ├── token-policy.md      # 토큰 정책
+│   ├── user-conversion-onboarding.md  # 사용자 전환 온보딩 (신규)
 │   └── milestones/          # 마일스톤별 스펙
+├── claude-context/          # Claude AI 컨텍스트
+│   ├── api-reference.md     # API 참조
+│   ├── db-schema.md         # DB 스키마
+│   └── infrastructure.md    # 인프라 정보
 ├── issues/                  # 이슈 및 기능 요청
-│   ├── pricing-system/      # 가격 시스템 관련
-│   ├── improve-ui/          # UI 개선 관련
-│   └── resolved/            # 해결된 이슈
 ├── plans/                   # 개발 계획
 ├── assets/                  # 문서 자산 (이미지 등)
 ├── data/                    # 데이터 파일
-└── velog/                   # 블로그 포스트
+└── troubleshooting/         # 트러블슈팅 가이드
+    └── local-dev-setup.md   # 로컬 개발 환경
 ```
 
 ## Claude Code 구조
@@ -205,13 +175,6 @@ docs/
 └── settings.local.json      # 로컬 설정 (gitignore)
 ```
 
-### Agent 호출 방식
-Task 도구로 subagent_type 지정:
-- "QA Engineer Agent" - 테스트 케이스 작성, 버그 재현, 회귀 테스트
-- "Database Admin Agent" - 스키마 관리, 쿼리 최적화, 마이그레이션
-- "Docs Writer Agent" - 코드 변경 시 문서 자동 업데이트
-- "SRE/DevOps Agent" - 인프라 관리, 배포 자동화, 모니터링
-
 ## Docker Compose 서비스
 
 ### 개발 환경 (docker-compose.yml)
@@ -221,6 +184,11 @@ Task 도구로 subagent_type 지정:
 - `celery_worker`: Celery Worker
 
 ### 프로덕션 환경 (docker-compose.prod.yml)
-- 동일한 서비스 + nginx
-- 최적화된 설정
-- SSL/TLS 지원
+- `postgres`: PostgreSQL 15
+- `redis`: Redis 7
+- `backend`: FastAPI 서버
+- `celery_worker`: Celery Worker
+- `frontend`: Next.js 서버
+- `docker-socket-proxy`: Docker 소켓 프록시
+- `worker_monitor`: 워커 상태 모니터링
+- ~~nginx~~: 제거됨 (외부 Nginx 사용)

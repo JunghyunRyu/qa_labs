@@ -1,6 +1,6 @@
 # QA Labs (QA Arena) 개발 가이드
 
-> **최종 업데이트**: 2026-01-14
+> **최종 업데이트**: 2026-01-18
 > **도메인**: https://qa-arena.qalabs.kr
 
 ---
@@ -44,7 +44,8 @@
 - **문제 풀이**: pytest 테스트 코드 작성 → 뮤턴트 탐지
 - **클라이언트 채점**: Pyodide (WebAssembly Python)로 브라우저에서 실행
 - **서버 채점**: Celery Worker (Fallback용)
-- **AI 기능**: AI 코치, 힌트, 피드백 (토큰 기반)
+- **AI 기능**: AI 코치, 힌트, 피드백, Why Failed 힌트 (토큰 기반)
+- **게이미피케이션**: SDET Career Path 랭크, Daily Bounty, Weekend Challenge
 
 ### 토큰 정책 요약
 | 기능 | 토큰 비용 |
@@ -62,7 +63,7 @@
 
 | 레이어 | 기술 |
 |--------|------|
-| Frontend | Next.js 14, TypeScript, Monaco Editor, Pyodide |
+| Frontend | Next.js 16, React 19, TypeScript, Monaco Editor, Pyodide |
 | Backend | FastAPI, Python 3.11+, SQLAlchemy |
 | Auth | GitHub/Google OAuth, JWT |
 | AI/LLM | OpenAI GPT-5.2 (피드백/문제생성), GPT-4o-mini (AI Coach) |
@@ -279,6 +280,8 @@ test: 테스트 추가/수정
 | 배포 가이드 | `docs/specs/deployment.md` | 배포 절차 |
 | 에러 처리 | `docs/specs/ERROR_HANDLING.md` | 에러 코드 규격 |
 | 백업/복구 | `docs/specs/backup_restore.md` | DB 백업 절차 |
+| 모니터링 설정 | `docs/specs/monitoring-setup.md` | Sentry, GA4, Discord 연동 |
+| 사용자 전환 | `docs/specs/user-conversion-onboarding.md` | Guest → 회원 전환 |
 | **로컬 트러블슈팅** | `docs/troubleshooting/local-dev-setup.md` | 로컬 환경 문제 해결 |
 
 ---
@@ -310,6 +313,11 @@ Serena의 read_memory 도구 사용:
 
 | 날짜 | 변경 내용 |
 |------|----------|
+| 2026-01-18 | Next.js 16, React 19 버전 업데이트 반영 |
+| 2026-01-18 | M6 마일스톤 완료: Guest AI Conversion, 주말 챌린지, 일일 현상금 |
+| 2026-01-18 | SDET Career Path 랭크 시스템 추가 |
+| 2026-01-18 | 모니터링/사용자전환 문서 참조 추가 |
+| 2026-01-18 | Serena 메모리 전체 동기화 |
 | 2026-01-14 | 기술 스택에 AI/LLM (GPT-5.2, GPT-4o-mini), Monitoring (Sentry, GA4) 추가 |
 | 2026-01-14 | 로컬 환경 트러블슈팅 가이드 추가 (`docs/troubleshooting/local-dev-setup.md`) |
 | 2026-01-10 | Agent 시스템 추가 (QA Engineer, DB Admin, Docs Writer, SRE/DevOps) |
