@@ -8,11 +8,23 @@ import HeroCTA from "@/components/landing/HeroCTA";
 import FooterCTA from "@/components/landing/FooterCTA";
 
 export const metadata: Metadata = {
-  title: "QA Arena - 버그 탐지율 챌린지",
-  description: "테스트 코드로 숨은 버그를 찾아내세요. 실전 시나리오와 AI 피드백으로 QA 역량을 성장시키는 트레이닝 플랫폼 by QaLabs",
+  title: "QA Arena - QA 엔지니어 코딩테스트 & 버그 찾기 연습",
+  description:
+    "pytest와 Python으로 실전 QA 코딩테스트를 준비하세요. 뮤테이션 테스트 기반 버그 찾기 연습, AI 피드백으로 테스트 자동화 역량 향상. QA 포트폴리오 준비에 최적화된 무료 플랫폼.",
+  keywords: [
+    "QA 코딩테스트",
+    "QA 엔지니어",
+    "버그 찾기 연습",
+    "pytest",
+    "뮤테이션 테스트",
+    "QA 포트폴리오",
+    "테스트 자동화",
+    "SDET",
+  ],
   openGraph: {
-    title: "QA Arena - 버그 탐지율 챌린지",
-    description: "테스트 코드로 숨은 버그를 찾아내세요. AI 피드백으로 QA 역량을 성장시키는 트레이닝 플랫폼",
+    title: "QA Arena - QA 엔지니어 코딩테스트 & 버그 찾기 연습",
+    description:
+      "pytest로 숨겨진 버그를 찾아내세요. AI 피드백과 함께 QA 역량을 성장시키는 실전 트레이닝 플랫폼.",
   },
 };
 

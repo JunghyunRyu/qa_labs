@@ -35,26 +35,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${problem.title} | QA Arena`;
+  // SEO 최적화: 난이도와 도메인을 활용한 키워드 타겟팅
+  const difficultyKr: Record<string, string> = {
+    "Very Easy": "입문",
+    Easy: "초급",
+    Medium: "중급",
+    Hard: "고급",
+  };
+  const difficultyLabel = difficultyKr[problem.difficulty] || problem.difficulty;
+  const domainLabel = problem.domain || "일반";
+
+  const title = `${problem.title} - ${difficultyLabel} QA 버그 찾기 | QA Arena`;
   const description =
     problem.short_description ||
-    `[${problem.difficulty}] ${problem.domain || "일반"} 시나리오 기반 QA 챌린지입니다. 테스트 코드를 작성하여 숨겨진 버그를 찾아내고, AI 피드백으로 테스트 역량을 성장시키세요. QA Arena에서 도전하세요!`;
+    `[${difficultyLabel}] ${domainLabel} 시나리오 pytest 버그 찾기 문제. 테스트 코드로 숨겨진 버그를 찾고 AI 피드백으로 QA 역량을 키우세요. QA 코딩테스트 연습에 최적화.`;
 
   return {
     title,
     description,
+    keywords: [
+      `${problem.title}`,
+      `QA ${difficultyLabel} 문제`,
+      `${domainLabel} 버그 찾기`,
+      "pytest 연습",
+      "QA 코딩테스트",
+    ],
     alternates: {
       canonical: `/problems/${id}`,
     },
     openGraph: {
-      title: `도전: ${problem.title}`,
+      title: `${problem.title} - QA 버그 찾기 연습`,
       description,
       type: "article",
       url: `https://qa-arena.qalabs.kr/problems/${id}`,
     },
     twitter: {
       card: "summary_large_image",
-      title: `도전: ${problem.title}`,
+      title: `${problem.title} | QA Arena`,
       description,
     },
   };
