@@ -197,12 +197,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               fontSize: "22px",
               fontWeight: "bold",
               color: "#fff",
-              width: "fit-content",
             }}
           >
-            <span>🎯</span>
-            <span>지금 도전하기</span>
-            <span style={{ marginLeft: "4px" }}>→</span>
+            지금 도전하기 →
           </div>
 
           {/* 푸터 */}
@@ -318,18 +315,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               marginTop: "24px",
             }}
           >
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: "50%",
-                  background: i <= config.level ? config.color : "#334155",
-                  boxShadow: i <= config.level ? `0 0 10px ${config.color}` : "none",
-                }}
-              />
-            ))}
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 1 <= config.level ? config.color : "#334155" }} />
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 2 <= config.level ? config.color : "#334155" }} />
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 3 <= config.level ? config.color : "#334155" }} />
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 4 <= config.level ? config.color : "#334155" }} />
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: 5 <= config.level ? config.color : "#334155" }} />
           </div>
         </div>
       </div>
