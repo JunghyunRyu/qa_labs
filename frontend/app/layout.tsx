@@ -4,6 +4,11 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import {
+  WebsiteJsonLd,
+  OrganizationJsonLd,
+  EducationalPlatformJsonLd,
+} from "@/components/seo/WebsiteJsonLd";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -82,6 +87,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <WebsiteJsonLd />
+        <OrganizationJsonLd />
+        <EducationalPlatformJsonLd />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

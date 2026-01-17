@@ -22,6 +22,7 @@ import Link from "next/link";
 import { Search, X, ChevronDown, Tag, ArrowUpDown, Sparkles, Package, Star, Rocket, PartyPopper, Bookmark, LogIn, EyeOff } from "lucide-react";
 import { toTagViewModels, type TagViewModel } from "@/lib/tagDefinitions";
 import { useAuth } from "@/lib/auth/AuthContext";
+import ProblemsListJsonLd from "@/components/seo/ProblemsListJsonLd";
 
 type DifficultyFilter = "All" | "Very Easy" | "Easy" | "Medium" | "Hard";
 type DomainFilter = "All" | "common" | "fintech" | "commerce" | "saas" | "platform" | "content";
@@ -895,6 +896,17 @@ function ProblemsContent() {
         {/* Tutorial Modals */}
         {showModal && <TutorialWelcomeModal onStart={startTutorial} onSkip={closeModal} />}
         {showTutorial && <TutorialFullScreen onClose={closeTutorial} onComplete={completeTutorial} />}
+
+        {/* JSON-LD Structured Data for SEO */}
+        <ProblemsListJsonLd
+          problems={data.problems.map((p) => ({
+            slug: p.slug,
+            title: p.title,
+            difficulty: p.difficulty,
+            domain: p.domain,
+          }))}
+          totalCount={data.total}
+        />
       </div>
     </div>
   );
