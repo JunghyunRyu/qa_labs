@@ -131,7 +131,7 @@ function createOgImageJsx(problem: Problem) {
                       type: "div",
                       props: {
                         style: { display: "flex", fontSize: "20px", color: "#94a3b8" },
-                        children: "🐛 BUGS",
+                        children: "BUGS",
                       },
                     },
                     {
@@ -334,12 +334,22 @@ async function main() {
   const outputDir = join(process.cwd(), "public", "og");
   await mkdir(outputDir, { recursive: true });
 
-  // 문제 목록 가져오기
+  // 문제 목록 가져오기 (페이지네이션 처리)
   console.log("📋 문제 목록 가져오는 중...");
-  const response = await fetch(`${API_URL}/v1/problems?limit=200`);
-  const data = await response.json();
-  const problems: Problem[] = data.problems || [];
-  console.log(`✅ ${problems.length}개 문제 발견\n`);
+  const problems: Problem[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const response = await fetch(`${API_URL}/v1/problems?page=${page}&page_size=50`);
+    const data = await response.json();
+    problems.push(...(data.problems || []));
+    totalPages = data.total_pages || 1;
+    console.log(`  페이지 ${page}/${totalPages} 로드 (${data.problems?.length || 0}개)`);
+    page++;
+  } while (page <= totalPages);
+
+  console.log(`✅ 총 ${problems.length}개 문제 발견\n`);
 
   // 각 문제에 대해 OG 이미지 생성
   let success = 0;
