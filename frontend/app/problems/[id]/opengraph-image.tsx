@@ -106,6 +106,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         >
           <div
             style={{
+              display: "flex",
               fontSize: "24px",
               color: "#64748b",
               marginBottom: "16px",
@@ -128,9 +129,10 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               boxShadow: `0 0 60px ${config.glow}`,
             }}
           >
-            <div style={{ fontSize: "20px", color: "#94a3b8" }}>🐛 BUGS</div>
+            <div style={{ display: "flex", fontSize: "20px", color: "#94a3b8" }}>🐛 BUGS</div>
             <div
               style={{
+                display: "flex",
                 fontSize: "72px",
                 fontWeight: "bold",
                 color: config.color,
@@ -142,6 +144,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
           <div
             style={{
+              display: "flex",
               marginTop: "24px",
               fontSize: "18px",
               color: config.color,
@@ -174,6 +177,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           >
             <div
               style={{
+                display: "flex",
                 fontSize: "20px",
                 color: "#38bdf8",
                 fontWeight: "bold",
@@ -184,6 +188,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             </div>
             <div
               style={{
+                display: "flex",
                 background: "#38bdf8",
                 color: "#0a0f1a",
                 padding: "6px 16px",
@@ -199,6 +204,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           {/* 제목 */}
           <div
             style={{
+              display: "flex",
               fontSize: "52px",
               fontWeight: "bold",
               color: "white",
@@ -301,6 +307,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         {/* 푸터 */}
         <div
           style={{
+            display: "flex",
             position: "absolute",
             bottom: "24px",
             right: "40px",
