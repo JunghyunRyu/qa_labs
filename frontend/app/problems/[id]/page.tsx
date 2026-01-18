@@ -48,6 +48,8 @@ export default function ProblemDetailPage() {
     toggleProblemPanel,
     toggleAIChat,
     setIsAIChatOpen,
+    isAIChatOpen,
+    aiDrawerWidth,
     isFocusMode,
     toggleFocusMode,
     isProblemPeekOpen,
@@ -242,7 +244,6 @@ export default function ProblemDetailPage() {
   });
 
   // AI 넛지: 오답 제출 시
-  const { isAIChatOpen } = useLayoutStore();
   useEffect(() => {
     // submission이 있고, 점수가 100 미만이며, AI 채팅이 열려있지 않을 때
     if (submission && submission.score !== null && submission.score < 100 && !isAIChatOpen) {
@@ -661,6 +662,16 @@ export default function ProblemDetailPage() {
     }
   }, [setIsAIChatOpen]);
 
+  // P2: AI 코드를 에디터에 삽입하는 핸들러
+  const handleInsertToEditor = useCallback((codeToInsert: string) => {
+    // 현재 코드 끝에 새 코드 추가 (새 줄 구분)
+    setCode((prevCode) => {
+      const trimmedPrev = prevCode.trimEnd();
+      const separator = trimmedPrev ? "\n\n" : "";
+      return trimmedPrev + separator + codeToInsert;
+    });
+  }, []);
+
   // M5-3: AI 빠른 질문용 컨텍스트 생성
   const promptContext: PromptContext = useMemo(() => {
     if (!problem) return {};
@@ -771,7 +782,10 @@ export default function ProblemDetailPage() {
         />
 
         {/* Main content - Split panel (Breadcrumb integrated into ProblemPanel) */}
-        <div className="flex-1 min-h-0">
+        <div
+          className="flex-1 min-h-0 transition-all duration-300 ease-out"
+          style={{ marginRight: isAIChatOpen ? aiDrawerWidth : 0 }}
+        >
           <ResizableSplitPanel
             leftPanel={<ProblemPanel problem={problem} />}
             rightPanel={
@@ -835,7 +849,7 @@ export default function ProblemDetailPage() {
           </div>
         )}
 
-        {/* Floating AI Chat */}
+        {/* Floating AI Chat - Push Layout (에디터를 밀어냄) */}
         <FloatingAIChat
           problemId={problem?.id ?? 0}
           codeContext={code}
@@ -845,6 +859,8 @@ export default function ProblemDetailPage() {
           savedFeedbackScore={savedFeedbackScore}
           onClearSavedFeedback={handleClearSavedFeedback}
           promptContext={promptContext}
+          layoutMode="push"
+          onInsertCode={handleInsertToEditor}
         />
 
         {/* Problem Peek Overlay (Alt+P) */}

@@ -8,11 +8,13 @@ import type { AIMessage as AIMessageType } from "@/types/ai";
 interface AIConversationListProps {
   messages: AIMessageType[];
   loading?: boolean;
+  onInsertCode?: (code: string) => void;
 }
 
 export default function AIConversationList({
   messages,
   loading = false,
+  onInsertCode,
 }: AIConversationListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -46,7 +48,11 @@ export default function AIConversationList({
       className="flex-1 overflow-y-auto p-4 space-y-4"
     >
       {messages.map((message) => (
-        <AIMessage key={message.id} message={message} />
+        <AIMessage
+          key={message.id}
+          message={message}
+          onInsertCode={onInsertCode}
+        />
       ))}
 
       {/* Loading indicator */}

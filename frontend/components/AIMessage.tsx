@@ -2,13 +2,15 @@
 
 import ReactMarkdown from "react-markdown";
 import { Bot, User } from "lucide-react";
+import AICodeBlock from "@/components/ai/AICodeBlock";
 import type { AIMessage as AIMessageType } from "@/types/ai";
 
 interface AIMessageProps {
   message: AIMessageType;
+  onInsertCode?: (code: string) => void;
 }
 
-export default function AIMessage({ message }: AIMessageProps) {
+export default function AIMessage({ message, onInsertCode }: AIMessageProps) {
   const isUser = message.role === "user";
 
   return (
@@ -62,11 +64,17 @@ export default function AIMessage({ message }: AIMessageProps) {
                 ),
                 code: ({ children, className }) => {
                   const isBlock = className?.includes("language-");
+                  const codeString = String(children).replace(/\n$/, "");
+
                   if (isBlock) {
+                    // 언어 추출 (language-python -> python)
+                    const language = className?.replace("language-", "") || "python";
                     return (
-                      <pre className="bg-slate-950 text-slate-100 rounded-lg p-3 overflow-x-auto my-2 text-xs">
-                        <code>{children}</code>
-                      </pre>
+                      <AICodeBlock
+                        code={codeString}
+                        language={language}
+                        onInsertToEditor={onInsertCode}
+                      />
                     );
                   }
                   return (

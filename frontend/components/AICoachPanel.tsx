@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Bot, X, Sparkles, Lightbulb, Search, FileText, Lock } from "lucide-react";
 import { ConversionModal } from "@/components/conversion";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -11,7 +11,7 @@ import AIConversationList from "./AIConversationList";
 import AIMessageInput from "./AIMessageInput";
 import AIConversationHistory from "./AIConversationHistory";
 import TokenExhaustedModal from "./TokenExhaustedModal";
-import QuickPromptBar from "./ai/QuickPromptBar";
+import QuickPromptBar, { QuickPromptBarScrollable } from "./ai/QuickPromptBar";
 import type { AIMessage, AIChatMode } from "@/types/ai";
 import type { PromptContext } from "@/lib/quickPrompts";
 import {
@@ -32,6 +32,7 @@ interface AICoachPanelProps {
   onClose?: () => void;
   className?: string;
   promptContext?: PromptContext; // M5-3: 빠른 질문용 컨텍스트
+  onInsertCode?: (code: string) => void; // P2: 에디터에 코드 삽입
 }
 
 export default function AICoachPanel({
@@ -42,9 +43,15 @@ export default function AICoachPanel({
   onClose,
   className = "",
   promptContext,
+  onInsertCode,
 }: AICoachPanelProps) {
   const { user, isAuthenticated, login } = useAuth();
-  const { aiChatPrefillMessage, setAIChatPrefillMessage } = useLayoutStore();
+  const {
+    aiChatPrefillMessage,
+    setAIChatPrefillMessage,
+    aiChatContextReference,
+    setAIChatContextReference,
+  } = useLayoutStore();
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,12 +100,20 @@ export default function AICoachPanel({
   // 게스트 제한 도달 여부
   const isGuestLimitReached = !isAuthenticated && guestUsageCount >= GUEST_FREE_LIMIT;
 
-  // Reset conversation when problem changes
+  // Track previous problemId to detect actual changes (not just mounts)
+  const prevProblemIdRef = useRef<number | null>(null);
+
+  // Reset conversation when problem changes (but not on initial mount)
   useEffect(() => {
-    setMessages([]);
-    setConversationId(null);
-    setError(null);
-  }, [problemId]);
+    // Only reset if problemId actually changed (not on initial mount)
+    if (prevProblemIdRef.current !== null && prevProblemIdRef.current !== problemId) {
+      setMessages([]);
+      setConversationId(null);
+      setError(null);
+      setAIChatContextReference(null); // 문제 변경 시 참조도 초기화
+    }
+    prevProblemIdRef.current = problemId;
+  }, [problemId, setAIChatContextReference]);
 
   // Load a previous conversation
   const handleSelectConversation = useCallback(async (selectedConversationId: string | null) => {
@@ -136,7 +151,8 @@ export default function AICoachPanel({
     setMessages([]);
     setConversationId(null);
     setError(null);
-  }, []);
+    setAIChatContextReference(null); // 새 대화 시 참조 초기화
+  }, [setAIChatContextReference]);
 
   const handleSendMessage = useCallback(
     async (content: string) => {
@@ -331,6 +347,25 @@ export default function AICoachPanel({
             </div>
           )}
 
+          {/* 참조된 문맥 표시 (Context Reference Card) - M5-2 */}
+          {aiChatContextReference && (
+            <div className="mx-3 mt-3 bg-indigo-900/30 border-l-4 border-indigo-500 p-3 rounded-r relative">
+              <button
+                onClick={() => setAIChatContextReference(null)}
+                className="absolute top-2 right-2 p-0.5 hover:bg-indigo-800/50 rounded text-indigo-400 hover:text-indigo-300"
+                aria-label="참조 닫기"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-xs font-bold text-indigo-400 block mb-1">
+                📑 참조된 테스트 포인트
+              </span>
+              <p className="text-sm text-slate-300 pr-6 leading-relaxed">
+                &ldquo;{aiChatContextReference}&rdquo;
+              </p>
+            </div>
+          )}
+
           {/* 메시지가 없을 때: Conversation Starters */}
           {messages.length === 0 && !isLoading && !isLoadingHistory ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -378,7 +413,11 @@ export default function AICoachPanel({
             </div>
           ) : (
             /* 메시지가 있을 때: 대화 목록 */
-            <AIConversationList messages={messages} loading={isLoading || isLoadingHistory} />
+            <AIConversationList
+              messages={messages}
+              loading={isLoading || isLoadingHistory}
+              onInsertCode={onInsertCode}
+            />
           )}
 
           {/* Error Message */}
@@ -397,9 +436,9 @@ export default function AICoachPanel({
             </p>
           </div>
 
-          {/* Quick Prompts (M5-3) */}
+          {/* Quick Prompts (M5-3) - 대화 중일 때 컴팩트 스크롤 형태 */}
           {promptContext && messages.length > 0 && (
-            <QuickPromptBar
+            <QuickPromptBarScrollable
               context={promptContext}
               onSelectPrompt={handleSendMessage}
               disabled={isLoading || isGuestLimitReached}

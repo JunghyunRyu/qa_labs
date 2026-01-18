@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Bot, X, History, GripVertical } from "lucide-react";
-import { useLayoutStore } from "@/stores/layoutStore";
+import { useLayoutStore, AI_DRAWER_MIN, AI_DRAWER_MAX } from "@/stores/layoutStore";
 import AICoachPanel from "@/components/AICoachPanel";
 import SavedFeedbackDisplay, { type SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import type { AIChatMode } from "@/types/ai";
@@ -11,12 +11,6 @@ import type { PromptContext } from "@/lib/quickPrompts";
 
 // localStorage에 저장할 키
 const POSITION_STORAGE_KEY = "qa_arena_ai_button_position";
-const WIDTH_STORAGE_KEY = "qa_arena_ai_panel_width";
-
-// 패널 너비 제한
-const MIN_PANEL_WIDTH = 320;
-const MAX_PANEL_WIDTH = 800;
-const DEFAULT_PANEL_WIDTH = 384; // w-96
 
 interface FloatingAIChatProps {
   problemId: number;
@@ -26,7 +20,9 @@ interface FloatingAIChatProps {
   savedFeedback?: SavedFeedback | null;
   savedFeedbackScore?: number;
   onClearSavedFeedback?: () => void;
-  promptContext?: PromptContext; // M5-3: 빠른 질문용 컨텍스트
+  promptContext?: PromptContext;
+  layoutMode?: "overlay" | "push"; // Push: 에디터를 밀어냄, Overlay: 덮음
+  onInsertCode?: (code: string) => void; // P2: 코드 삽입 콜백
 }
 
 // 기본 위치 (우하단)
@@ -41,21 +37,27 @@ export default function FloatingAIChat({
   savedFeedbackScore,
   onClearSavedFeedback,
   promptContext,
+  layoutMode = "push", // 기본값: push 레이아웃
+  onInsertCode,
 }: FloatingAIChatProps) {
-  const { isAIChatOpen, toggleAIChat, setIsAIChatOpen } = useLayoutStore();
+  const {
+    isAIChatOpen,
+    setIsAIChatOpen,
+    aiDrawerWidth,
+    setAIDrawerWidth
+  } = useLayoutStore();
   const constraintsRef = useRef<HTMLDivElement>(null);
 
   // 드래그 위치 상태 (localStorage에서 복원)
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [isDragging, setIsDragging] = useState(false);
 
-  // 패널 너비 상태
-  const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL_WIDTH);
+  // 리사이즈 상태
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartX = useRef(0);
   const resizeStartWidth = useRef(0);
 
-  // 컴포넌트 마운트 시 저장된 위치 및 너비 복원
+  // 컴포넌트 마운트 시 저장된 위치 복원
   useEffect(() => {
     try {
       const savedPosition = localStorage.getItem(POSITION_STORAGE_KEY);
@@ -63,14 +65,6 @@ export default function FloatingAIChat({
         const parsed = JSON.parse(savedPosition);
         if (typeof parsed.x === "number" && typeof parsed.y === "number") {
           setPosition(parsed);
-        }
-      }
-
-      const savedWidth = localStorage.getItem(WIDTH_STORAGE_KEY);
-      if (savedWidth) {
-        const width = parseInt(savedWidth, 10);
-        if (width >= MIN_PANEL_WIDTH && width <= MAX_PANEL_WIDTH) {
-          setPanelWidth(width);
         }
       }
     } catch {
@@ -99,30 +93,24 @@ export default function FloatingAIChat({
     e.preventDefault();
     setIsResizing(true);
     resizeStartX.current = e.clientX;
-    resizeStartWidth.current = panelWidth;
-  }, [panelWidth]);
+    resizeStartWidth.current = aiDrawerWidth;
+  }, [aiDrawerWidth]);
 
   const handleResizeMove = useCallback((e: MouseEvent) => {
     if (!isResizing) return;
 
     const delta = resizeStartX.current - e.clientX;
     const newWidth = Math.min(
-      MAX_PANEL_WIDTH,
-      Math.max(MIN_PANEL_WIDTH, resizeStartWidth.current + delta)
+      AI_DRAWER_MAX,
+      Math.max(AI_DRAWER_MIN, resizeStartWidth.current + delta)
     );
-    setPanelWidth(newWidth);
-  }, [isResizing]);
+    setAIDrawerWidth(newWidth);
+  }, [isResizing, setAIDrawerWidth]);
 
   const handleResizeEnd = useCallback(() => {
     if (!isResizing) return;
-
     setIsResizing(false);
-    try {
-      localStorage.setItem(WIDTH_STORAGE_KEY, String(panelWidth));
-    } catch {
-      // localStorage 저장 실패 무시
-    }
-  }, [isResizing, panelWidth]);
+  }, [isResizing]);
 
   // 리사이즈 이벤트 리스너
   useEffect(() => {
@@ -161,6 +149,8 @@ export default function FloatingAIChat({
       onModeChange("COACH");
     }
   };
+
+  const isPushMode = layoutMode === "push";
 
   return (
     <>
@@ -207,9 +197,9 @@ export default function FloatingAIChat({
         )}
       </AnimatePresence>
 
-      {/* Backdrop */}
+      {/* Backdrop - overlay 모드에서만 표시 */}
       <AnimatePresence>
-        {isAIChatOpen && (
+        {isAIChatOpen && !isPushMode && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -233,9 +223,10 @@ export default function FloatingAIChat({
               damping: 25,
               stiffness: 300,
             }}
-            style={{ width: panelWidth }}
-            className="fixed top-0 right-0 h-full max-w-[90vw] z-50
-                       bg-slate-900 shadow-2xl flex flex-col"
+            style={{ width: aiDrawerWidth }}
+            className={`fixed top-0 right-0 h-full max-w-[90vw] z-50
+                       bg-slate-900 shadow-2xl flex flex-col
+                       ${isPushMode ? "border-l border-slate-700" : ""}`}
           >
             {/* 리사이즈 핸들 */}
             <div
@@ -314,6 +305,7 @@ export default function FloatingAIChat({
                   onModeChange={onModeChange}
                   className="h-full border-0 rounded-none"
                   promptContext={promptContext}
+                  onInsertCode={onInsertCode}
                 />
               )}
             </div>

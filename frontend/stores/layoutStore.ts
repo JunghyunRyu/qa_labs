@@ -10,12 +10,19 @@ export const BOTTOM_PANEL_MAX = 500;
 export const BOTTOM_PANEL_DEFAULT = 250;
 export const BOTTOM_PANEL_EXPANDED = 300; // Height when auto-expanding for results
 
+// AI Drawer sizing constants
+export const AI_DRAWER_MIN = 320;
+export const AI_DRAWER_MAX = 800;
+export const AI_DRAWER_DEFAULT = 384;
+
 interface LayoutState {
   // Panel state
   panelWidth: number; // Left panel width percentage (22-55)
   isProblemCollapsed: boolean;
   isAIChatOpen: boolean;
+  aiDrawerWidth: number; // AI drawer width in pixels (320-800)
   aiChatPrefillMessage: string | null; // M5-2: AI로 보내기 기능용
+  aiChatContextReference: string | null; // 참조된 문맥 (인용 카드용)
 
   // Bottom panel state
   bottomPanelHeight: number; // Bottom panel height in pixels
@@ -45,8 +52,10 @@ interface LayoutState {
   setIsProblemCollapsed: (collapsed: boolean) => void;
   toggleAIChat: () => void;
   setIsAIChatOpen: (open: boolean) => void;
+  setAIDrawerWidth: (width: number) => void;
   setAIChatPrefillMessage: (message: string | null) => void;
-  openAIChatWithPrefill: (message: string) => void; // M5-2: Open AI chat with prefilled message
+  setAIChatContextReference: (reference: string | null) => void;
+  openAIChatWithPrefill: (message: string, contextReference?: string) => void; // M5-2: Open AI chat with prefilled message
   setBottomPanelHeight: (height: number) => void;
   setEditorFontSize: (size: number) => void;
   setActiveTab: (tab: "problem" | "code" | "ai") => void;
@@ -67,7 +76,9 @@ const DEFAULT_STATE = {
   panelWidth: 35, // 35% problem / 65% code
   isProblemCollapsed: false,
   isAIChatOpen: false,
+  aiDrawerWidth: AI_DRAWER_DEFAULT,
   aiChatPrefillMessage: null as string | null,
+  aiChatContextReference: null as string | null,
   bottomPanelHeight: BOTTOM_PANEL_DEFAULT,
   isFocusMode: false,
   isProblemPeekOpen: false,
@@ -112,12 +123,25 @@ export const useLayoutStore = create<LayoutState>()(
         set({ isAIChatOpen: open });
       },
 
+      setAIDrawerWidth: (width: number) => {
+        const clampedWidth = Math.min(AI_DRAWER_MAX, Math.max(AI_DRAWER_MIN, width));
+        set({ aiDrawerWidth: clampedWidth });
+      },
+
       setAIChatPrefillMessage: (message: string | null) => {
         set({ aiChatPrefillMessage: message });
       },
 
-      openAIChatWithPrefill: (message: string) => {
-        set({ aiChatPrefillMessage: message, isAIChatOpen: true });
+      setAIChatContextReference: (reference: string | null) => {
+        set({ aiChatContextReference: reference });
+      },
+
+      openAIChatWithPrefill: (message: string, contextReference?: string) => {
+        set({
+          aiChatPrefillMessage: message,
+          aiChatContextReference: contextReference || null,
+          isAIChatOpen: true,
+        });
       },
 
       setBottomPanelHeight: (height: number) => {
@@ -211,6 +235,7 @@ export const useLayoutStore = create<LayoutState>()(
         // Persist panel sizes
         panelWidth: state.panelWidth,
         bottomPanelHeight: state.bottomPanelHeight,
+        aiDrawerWidth: state.aiDrawerWidth,
         // Persist UI state
         isProblemCollapsed: state.isProblemCollapsed,
         editorFontSize: state.editorFontSize,
