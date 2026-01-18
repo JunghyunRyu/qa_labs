@@ -31,8 +31,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       }
     }
 
-    // 정적 이미지 반환
-    return new Response(imageBuffer, {
+    // 정적 이미지 반환 (Buffer를 Uint8Array로 변환)
+    return new Response(new Uint8Array(imageBuffer), {
       headers: {
         "Content-Type": "image/png",
         "Cache-Control": "public, max-age=31536000, immutable",
