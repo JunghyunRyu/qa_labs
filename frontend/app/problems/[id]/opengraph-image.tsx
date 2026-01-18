@@ -5,11 +5,11 @@ export const alt = "QA Arena Problem";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// 서버 사이드: INTERNAL_API_URL (컨테이너 간 통신), 클라이언트: NEXT_PUBLIC_API_URL
+// Edge Runtime은 Docker 내부 네트워크에 접근 불가 - 공개 URL 사용 필수
+// OG_API_URL > 공개 도메인 > localhost 순으로 fallback
 const API_URL =
-  process.env.INTERNAL_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:8000/api";
+  process.env.OG_API_URL ||
+  "https://qa-arena.qalabs.kr/api";
 
 // Google Fonts에서 Noto Sans KR 폰트 로드 (한글 지원)
 async function loadGoogleFont(font: string, weight: number) {
