@@ -10,7 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "generate-og": "tsx scripts/generate-og-images.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -38,11 +39,14 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sharp": "^0.31.1",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "next": "^16.0.3",
+    "satori": "^0.19.1",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
