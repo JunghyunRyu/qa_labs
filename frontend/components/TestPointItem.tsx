@@ -2,12 +2,15 @@
  * TestPointItem - 테스트 포인트 항목 (M5-2)
  * 각 테스트 포인트 옆에 "AI로 보내기" 버튼 표시
  * 인라인 마크다운(코드, 볼드 등) 지원
+ *
+ * UX 개선 (Flying Element + 발견성 강화)
  */
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Sparkles, Check, Square } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { applyTemplate } from "@/lib/promptTemplates";
 import ReactMarkdown from "react-markdown";
@@ -20,21 +23,30 @@ interface TestPointItemProps {
 export default function TestPointItem({ content, className = "" }: TestPointItemProps) {
   const { openAIChatWithPrefill } = useLayoutStore();
   const [isSent, setIsSent] = useState(false);
+  const [isFlying, setIsFlying] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleSendToAI = useCallback(() => {
-    // 프롬프트 템플릿 적용
-    const prompt = applyTemplate("testPointExplain", { content });
+    // Flying 애니메이션 시작
+    setIsFlying(true);
 
-    // AI 채팅 열고 메시지 prefill
-    openAIChatWithPrefill(prompt);
+    // 애니메이션 후 AI 채팅 열기
+    setTimeout(() => {
+      // 프롬프트 템플릿 적용
+      const prompt = applyTemplate("testPointExplain", { content });
 
-    // 전송 피드백 표시
-    setIsSent(true);
-    setTimeout(() => setIsSent(false), 2000);
+      // AI 채팅 열고 메시지 prefill + 원문 컨텍스트 전달
+      openAIChatWithPrefill(prompt, content);
+
+      // 전송 피드백 표시
+      setIsSent(true);
+      setIsFlying(false);
+      setTimeout(() => setIsSent(false), 2000);
+    }, 400); // Flying 애니메이션 시간
   }, [content, openAIChatWithPrefill]);
 
   return (
-    <div className={`group flex items-start gap-2 ${className}`}>
+    <div className={`group flex items-start gap-2 relative ${className}`}>
       {/* 체크박스 아이콘 - 체크리스트 스타일 */}
       <Square className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
 
@@ -66,25 +78,52 @@ export default function TestPointItem({ content, className = "" }: TestPointItem
         </ReactMarkdown>
       </div>
 
-      {/* AI로 보내기 버튼 - hover 시 표시 */}
+      {/* AI로 보내기 버튼 - 발견성 개선: 은은한 펄스 효과 + hover 시 강조 */}
       <button
+        ref={buttonRef}
         onClick={handleSendToAI}
+        disabled={isFlying}
         className={`
-          flex-shrink-0 p-1 rounded transition-all duration-200
+          flex-shrink-0 p-1.5 rounded-md transition-all duration-200 relative
           ${isSent
-            ? "opacity-100 bg-green-100 dark:bg-green-900/30"
-            : "opacity-0 group-hover:opacity-100 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+            ? "opacity-100 bg-green-500/20 ring-1 ring-green-500/50"
+            : isFlying
+            ? "opacity-100 bg-purple-500/30"
+            : "opacity-40 group-hover:opacity-100 hover:bg-purple-500/20 hover:ring-1 hover:ring-purple-500/50"
           }
         `}
-        title="AI에게 질문하기"
+        title="✨ AI에게 질문하기"
         aria-label={`"${content}" 테스트 포인트에 대해 AI에게 질문하기`}
       >
         {isSent ? (
-          <Check className="w-4 h-4 text-green-500" />
+          <Check className="w-4 h-4 text-green-400" />
         ) : (
-          <Sparkles className="w-4 h-4 text-purple-500" />
+          <Sparkles className={`w-4 h-4 text-purple-400 ${!isFlying && "group-hover:animate-pulse"}`} />
         )}
       </button>
+
+      {/* Flying Element 애니메이션 */}
+      <AnimatePresence>
+        {isFlying && (
+          <motion.div
+            initial={{ opacity: 1, scale: 1, x: 0 }}
+            animate={{
+              opacity: [1, 1, 0],
+              scale: [1, 0.8, 0.5],
+              x: [0, 100, 200],
+              y: [0, -20, -10],
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="absolute right-0 top-0 pointer-events-none z-50"
+          >
+            <div className="flex items-center gap-1 px-2 py-1 bg-purple-600 text-white text-xs rounded-full shadow-lg">
+              <Sparkles className="w-3 h-3" />
+              <span>AI</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

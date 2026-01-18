@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   FileText,
   AlertTriangle,
   CheckCircle,
@@ -20,6 +21,7 @@ import {
   Code2,
   BookOpen,
   Search,
+  Sparkles,
 } from "lucide-react";
 import { Problem } from "@/types/problem";
 import TagChips from "@/components/TagChips";
@@ -132,29 +134,29 @@ function getSummary(problem: Problem): string {
   return extractSummary(problem.description_md);
 }
 
-// Section config for icons and colors
+// Section config for icons and colors - unified slate/purple theme
 function getSectionConfig(type: ParsedSection['type']) {
   switch (type) {
     case 'overview':
-      return { icon: Info, iconColor: 'text-blue-400', bgColor: 'bg-blue-900/20' };
+      return { icon: Info, iconColor: 'text-slate-400', bgColor: 'bg-slate-800/50' };
     case 'function':
       return { icon: Code2, iconColor: 'text-purple-400', bgColor: 'bg-purple-900/20' };
     case 'examples':
-      return { icon: CheckCircle, iconColor: 'text-green-400', bgColor: 'bg-green-900/20' };
+      return { icon: CheckCircle, iconColor: 'text-slate-400', bgColor: 'bg-slate-800/50' };
     case 'exceptions':
-      return { icon: XCircle, iconColor: 'text-red-400', bgColor: 'bg-red-900/20' };
+      return { icon: XCircle, iconColor: 'text-slate-400', bgColor: 'bg-slate-800/50' };
     case 'hints':
-      return { icon: Lightbulb, iconColor: 'text-yellow-400', bgColor: 'bg-yellow-900/20' };
+      return { icon: Lightbulb, iconColor: 'text-purple-400', bgColor: 'bg-purple-900/20' };
     case 'strategy':
-      return { icon: Target, iconColor: 'text-emerald-400', bgColor: 'bg-emerald-900/20' };
+      return { icon: Target, iconColor: 'text-purple-400', bgColor: 'bg-purple-900/20' };
     case 'task':
-      return { icon: Target, iconColor: 'text-indigo-400', bgColor: 'bg-indigo-900/20' };
+      return { icon: Target, iconColor: 'text-slate-400', bgColor: 'bg-slate-800/50' };
     case 'constraints':
-      return { icon: AlertTriangle, iconColor: 'text-orange-400', bgColor: 'bg-orange-900/20' };
+      return { icon: AlertTriangle, iconColor: 'text-slate-400', bgColor: 'bg-slate-800/50' };
     case 'io':
-      return { icon: Code2, iconColor: 'text-cyan-400', bgColor: 'bg-cyan-900/20' };
+      return { icon: Code2, iconColor: 'text-slate-400', bgColor: 'bg-slate-800/50' };
     default:
-      return { icon: FileText, iconColor: 'text-slate-400', bgColor: 'bg-slate-800' };
+      return { icon: FileText, iconColor: 'text-slate-400', bgColor: 'bg-slate-800/50' };
   }
 }
 
@@ -235,6 +237,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
     isProblemCollapsed,
     toggleProblemPanel,
     toggleProblemPeek,
+    isProblemPeekOpen: isExpandedMode,  // 확장 모드 상태
     isProblemSearchOpen,
     closeProblemSearch,
     toggleProblemSearch,
@@ -447,80 +450,186 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
           />
         )}
 
-        {/* "전체 문제" 버튼 - 핵심 테스트 포인트 영역 대체 (M5-4: ref for text selection) */}
+        {/* 확장 모드 토글 버튼 */}
         <div ref={testPointsRef} className="px-3 py-2 border-b border-slate-700">
           <button
             onClick={toggleProblemPeek}
-            className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                       bg-sky-900/20 text-sky-400
-                       hover:bg-sky-900/30
-                       border border-sky-700"
-            title="전체 문제 보기 (Alt+P)"
+            className={`w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+              isExpandedMode
+                ? "bg-purple-900/30 text-purple-400 border-purple-700 hover:bg-purple-900/40"
+                : "bg-sky-900/20 text-sky-400 border-sky-700 hover:bg-sky-900/30"
+            }`}
+            title={isExpandedMode ? "문제 접기 (Alt+P)" : "전체 문제 보기 (Alt+P)"}
           >
-            <BookOpen className="w-4 h-4" />
-            전체 문제 보기
+            {isExpandedMode ? (
+              <>
+                <ChevronUp className="w-4 h-4" />
+                문제 접기
+              </>
+            ) : (
+              <>
+                <BookOpen className="w-4 h-4" />
+                전체 문제 보기
+              </>
+            )}
           </button>
         </div>
 
       </div>
 
-      {/* ===== SCROLLABLE ACCORDION AREA ===== */}
+      {/* ===== SCROLLABLE CONTENT AREA ===== */}
       <div ref={contentRef} className="flex-1 min-h-0 overflow-y-auto">
-        {/* 핵심 테스트 포인트 - 체크리스트 스타일 */}
-        {summary && (
-          <div className="p-3 pb-0">
-            <div className="bg-sky-900/20 rounded-lg p-2.5 border border-sky-700">
-              <TestPointsList
-                content={summary.replace(/\s*•\s*/g, '\n• ')}
-                className="text-xs text-slate-400 [&_strong]:text-slate-200 [&_strong]:font-semibold"
-              />
+        {isExpandedMode ? (
+          /* ===== 확장 모드: 전체 문제 설명 ===== */
+          <div className="p-4 space-y-4">
+            {/* 1. 문제 설명 (시나리오) - 가장 먼저 */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Info className="w-5 h-5 text-sky-400" />
+                문제 설명
+              </h2>
+              <div className="prose prose-sm max-w-none text-slate-300 leading-relaxed">
+                <MarkdownContent content={problem.description_md} />
+              </div>
+            </div>
+
+            {/* 2. 함수 시그니처 */}
+            {problem.function_signature && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  함수 시그니처
+                </h3>
+                <div className="relative group">
+                  <pre className="p-3 bg-slate-950 rounded-lg border border-purple-700/50 text-sm font-mono text-purple-300 overflow-x-auto">
+                    {problem.function_signature}
+                  </pre>
+                  <CopyButton
+                    text={problem.function_signature}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 3. 핵심 테스트 포인트 */}
+            {summary && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Target className="w-4 h-4 text-sky-400" />
+                  핵심 테스트 포인트
+                </h3>
+                <div className="bg-sky-900/20 rounded-lg p-3 border border-sky-700">
+                  <TestPointsList
+                    content={summary.replace(/\s*•\s*/g, '\n• ')}
+                    className="text-sm text-slate-300 [&_strong]:text-slate-100 [&_strong]:font-semibold"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* AI Hint Panel */}
+            <HintPanel problemId={problem.id} />
+
+            {/* 테스트 전략 아코디언 */}
+            {accordionSections.length > 0 && (
+              <div className="space-y-2">
+                {accordionSections.map((section, index) => {
+                  const config = getSectionConfig(section.type);
+                  const Icon = config.icon;
+                  const sectionId = `section-${section.type}-${index}`;
+
+                  const accordionType = (
+                    ['examples', 'hints', 'exceptions', 'function', 'strategy'].includes(section.type)
+                      ? section.type
+                      : 'other'
+                  ) as AccordionSectionType;
+
+                  return (
+                    <Accordion
+                      key={index}
+                      title={section.title}
+                      icon={Icon}
+                      iconColor={config.iconColor}
+                      bgColor={config.bgColor}
+                      sectionId={sectionId}
+                      isOpen={isAccordionOpen(sectionId, accordionType)}
+                      onToggle={() => handleAccordionToggle(sectionId, accordionType)}
+                    >
+                      <MarkdownContent content={section.content} />
+                    </Accordion>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Standard Library Notice */}
+            <div className="px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700">
+              <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                <Info className="w-3 h-3 flex-shrink-0" />
+                <span>이 환경에서는 Python 표준 라이브러리만 사용할 수 있습니다.</span>
+              </p>
             </div>
           </div>
-        )}
+        ) : (
+          /* ===== 기본 모드: 요약 표시 ===== */
+          <>
+            {/* 핵심 테스트 포인트 - 체크리스트 스타일 */}
+            {summary && (
+              <div className="p-3 pb-0">
+                <div className="bg-sky-900/20 rounded-lg p-2.5 border border-sky-700">
+                  <TestPointsList
+                    content={summary.replace(/\s*•\s*/g, '\n• ')}
+                    className="text-xs text-slate-400 [&_strong]:text-slate-200 [&_strong]:font-semibold"
+                  />
+                </div>
+              </div>
+            )}
 
-        {/* M5-5: AI Hint Panel */}
-        <div className="p-3 pb-0">
-          <HintPanel problemId={problem.id} />
-        </div>
+            {/* M5-5: AI Hint Panel */}
+            <div className="p-3 pb-0">
+              <HintPanel problemId={problem.id} />
+            </div>
 
-        {/* Standard Library Notice - 힌트 하단 */}
-        <div className="mx-3 mt-2 px-3 py-2 bg-amber-900/20 rounded-lg border border-amber-700">
-          <p className="text-xs text-amber-300 flex items-center gap-1.5">
-            <Info className="w-3 h-3 flex-shrink-0" />
-            <span>이 환경에서는 Python 표준 라이브러리만 사용할 수 있습니다.</span>
-          </p>
-        </div>
+            {/* Standard Library Notice - 힌트 하단 */}
+            <div className="mx-3 mt-2 px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700">
+              <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                <Info className="w-3 h-3 flex-shrink-0" />
+                <span>이 환경에서는 Python 표준 라이브러리만 사용할 수 있습니다.</span>
+              </p>
+            </div>
 
-        {accordionSections.length > 0 && (
-          <div className="p-3 space-y-2">
-            {accordionSections.map((section, index) => {
-              const config = getSectionConfig(section.type);
-              const Icon = config.icon;
-              const sectionId = `section-${section.type}-${index}`;
+            {accordionSections.length > 0 && (
+              <div className="p-3 space-y-2">
+                {accordionSections.map((section, index) => {
+                  const config = getSectionConfig(section.type);
+                  const Icon = config.icon;
+                  const sectionId = `section-${section.type}-${index}`;
 
-              // Map section type to accordion section type for store lookup
-              const accordionType = (
-                ['examples', 'hints', 'exceptions', 'function', 'strategy'].includes(section.type)
-                  ? section.type
-                  : 'other'
-              ) as AccordionSectionType;
+                  const accordionType = (
+                    ['examples', 'hints', 'exceptions', 'function', 'strategy'].includes(section.type)
+                      ? section.type
+                      : 'other'
+                  ) as AccordionSectionType;
 
-              return (
-                <Accordion
-                  key={index}
-                  title={section.title}
-                  icon={Icon}
-                  iconColor={config.iconColor}
-                  bgColor={config.bgColor}
-                  sectionId={sectionId}
-                  isOpen={isAccordionOpen(sectionId, accordionType)}
-                  onToggle={() => handleAccordionToggle(sectionId, accordionType)}
-                >
-                  <MarkdownContent content={section.content} />
-                </Accordion>
-              );
-            })}
-          </div>
+                  return (
+                    <Accordion
+                      key={index}
+                      title={section.title}
+                      icon={Icon}
+                      iconColor={config.iconColor}
+                      bgColor={config.bgColor}
+                      sectionId={sectionId}
+                      isOpen={isAccordionOpen(sectionId, accordionType)}
+                      onToggle={() => handleAccordionToggle(sectionId, accordionType)}
+                    >
+                      <MarkdownContent content={section.content} />
+                    </Accordion>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
 

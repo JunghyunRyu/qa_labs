@@ -17,7 +17,7 @@ import type { Problem, Submission, ClientExecutionResult } from "@/types/problem
 import type { AIChatMode } from "@/types/ai";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 import type { PromptContext } from "@/lib/quickPrompts";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Sparkles } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
@@ -28,7 +28,7 @@ import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
 import ProblemPanel from "@/components/layout/ProblemPanel";
 import CodeEditorPanel from "@/components/layout/CodeEditorPanel";
 import MobileTabLayout from "@/components/layout/MobileTabLayout";
-import ProblemPeekOverlay from "@/components/layout/ProblemPeekOverlay";
+// ProblemPeekOverlay 제거됨 - 사이드바 확장 모드로 대체
 import FloatingAIChat from "@/components/ai/FloatingAIChat";
 import AICoachPanel from "@/components/AICoachPanel";
 import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
@@ -823,7 +823,7 @@ export default function ProblemDetailPage() {
             <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 p-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">💡</span>
+                  <Sparkles className="w-5 h-5 text-purple-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-slate-300 mb-3">
@@ -863,12 +863,7 @@ export default function ProblemDetailPage() {
           onInsertCode={handleInsertToEditor}
         />
 
-        {/* Problem Peek Overlay (Alt+P) */}
-        <ProblemPeekOverlay
-          problem={problem}
-          isOpen={isProblemPeekOpen}
-          onClose={() => setIsProblemPeekOpen(false)}
-        />
+        {/* Problem Peek Overlay 제거됨 - 사이드바 확장 모드로 대체 (Alt+P) */}
 
         {/* Scoring Method Drawer */}
         <ScoringMethodDrawer

@@ -10,6 +10,12 @@ export const BOTTOM_PANEL_MAX = 500;
 export const BOTTOM_PANEL_DEFAULT = 250;
 export const BOTTOM_PANEL_EXPANDED = 300; // Height when auto-expanding for results
 
+// Problem panel width constants
+export const PANEL_WIDTH_NORMAL = 35;    // 35% - 기본 사이드바 너비
+export const PANEL_WIDTH_EXPANDED = 50;  // 50% - 확장 모드 사이드바 너비
+export const PANEL_WIDTH_MIN = 22;
+export const PANEL_WIDTH_MAX = 55;
+
 // AI Drawer sizing constants
 export const AI_DRAWER_MIN = 320;
 export const AI_DRAWER_MAX = 800;
@@ -29,7 +35,8 @@ interface LayoutState {
 
   // Focus mode (minimizes header, collapses problem panel)
   isFocusMode: boolean;
-  isProblemPeekOpen: boolean;
+  isProblemPeekOpen: boolean;  // 확장 모드 (사이드바 확장)
+  panelWidthBeforeExpand: number;  // 확장 전 패널 너비 저장
 
   // Problem search state (session-only)
   isProblemSearchOpen: boolean;
@@ -73,7 +80,7 @@ interface LayoutState {
 }
 
 const DEFAULT_STATE = {
-  panelWidth: 35, // 35% problem / 65% code
+  panelWidth: PANEL_WIDTH_NORMAL, // 35% problem / 65% code
   isProblemCollapsed: false,
   isAIChatOpen: false,
   aiDrawerWidth: AI_DRAWER_DEFAULT,
@@ -81,7 +88,8 @@ const DEFAULT_STATE = {
   aiChatContextReference: null as string | null,
   bottomPanelHeight: BOTTOM_PANEL_DEFAULT,
   isFocusMode: false,
-  isProblemPeekOpen: false,
+  isProblemPeekOpen: false,  // 확장 모드
+  panelWidthBeforeExpand: PANEL_WIDTH_NORMAL,
   isProblemSearchOpen: false,
   editorFocusRequested: false,
   editorFontSize: 14,
@@ -103,7 +111,7 @@ export const useLayoutStore = create<LayoutState>()(
 
       setPanelWidth: (width: number) => {
         // Clamp between 22-55% (problem panel takes 22-55%, code takes 45-78%)
-        const clampedWidth = Math.min(55, Math.max(22, width));
+        const clampedWidth = Math.min(PANEL_WIDTH_MAX, Math.max(PANEL_WIDTH_MIN, width));
         set({ panelWidth: clampedWidth });
       },
 
@@ -181,11 +189,43 @@ export const useLayoutStore = create<LayoutState>()(
       },
 
       toggleProblemPeek: () => {
-        set((state) => ({ isProblemPeekOpen: !state.isProblemPeekOpen }));
+        set((state) => {
+          const newExpanded = !state.isProblemPeekOpen;
+          if (newExpanded) {
+            // 확장 모드로 진입: 현재 너비 저장하고 확장
+            return {
+              isProblemPeekOpen: true,
+              panelWidthBeforeExpand: state.panelWidth,
+              panelWidth: PANEL_WIDTH_EXPANDED,
+              // 확장 시 문제 패널이 접혀있으면 펼치기
+              isProblemCollapsed: false,
+            };
+          } else {
+            // 확장 모드 종료: 이전 너비로 복원
+            return {
+              isProblemPeekOpen: false,
+              panelWidth: state.panelWidthBeforeExpand,
+            };
+          }
+        });
       },
 
       setIsProblemPeekOpen: (open: boolean) => {
-        set({ isProblemPeekOpen: open });
+        set((state) => {
+          if (open) {
+            return {
+              isProblemPeekOpen: true,
+              panelWidthBeforeExpand: state.panelWidth,
+              panelWidth: PANEL_WIDTH_EXPANDED,
+              isProblemCollapsed: false,
+            };
+          } else {
+            return {
+              isProblemPeekOpen: false,
+              panelWidth: state.panelWidthBeforeExpand,
+            };
+          }
+        });
       },
 
       openProblemSearch: () => {
