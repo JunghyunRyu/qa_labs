@@ -1,15 +1,16 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+// Node.js Runtime 사용 (Edge Runtime은 한글 폰트 처리에서 불안정)
+export const runtime = "nodejs";
 export const alt = "QA Arena Problem";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Edge Runtime은 Docker 내부 네트워크에 접근 불가 - 공개 URL 사용 필수
-// OG_API_URL > 공개 도메인 > localhost 순으로 fallback
+// Node.js Runtime: Docker 내부 네트워크 또는 공개 URL 사용 가능
 const API_URL =
-  process.env.OG_API_URL ||
-  "https://qa-arena.qalabs.kr/api";
+  process.env.INTERNAL_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000/api";
 
 // Google Fonts에서 Noto Sans KR 폰트 로드 (한글 지원)
 async function loadGoogleFont(font: string, weight: number) {
