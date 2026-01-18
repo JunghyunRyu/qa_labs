@@ -38,7 +38,8 @@ interface Problem {
   difficulty: string;
   domain: string;
   skills: string[];
-  buggy_implementations: { id: number }[];
+  bugs_count: number;  // API returns this directly
+  buggy_implementations?: { id: number }[];  // Optional, only in detail endpoint
 }
 
 async function loadFont(): Promise<ArrayBuffer> {
@@ -53,7 +54,7 @@ async function loadFont(): Promise<ArrayBuffer> {
 function createOgImageJsx(problem: Problem) {
   const config = difficultyConfig[problem.difficulty] || difficultyConfig["Medium"];
   const domainLabel = domainLabels[problem.domain] || problem.domain;
-  const bugsCount = problem.buggy_implementations?.length || 0;
+  const bugsCount = problem.bugs_count || problem.buggy_implementations?.length || 0;
   const skills = problem.skills?.slice(0, 3) || [];
 
   return {
