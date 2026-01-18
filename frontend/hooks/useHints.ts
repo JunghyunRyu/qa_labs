@@ -193,28 +193,28 @@ export function useHints({ problemId, autoFetch = true }: UseHintsOptions): UseH
 }
 
 /**
- * 힌트 레벨별 라벨과 아이콘
+ * 힌트 레벨별 라벨과 아이콘 (Lucide 아이콘 이름)
  */
 export const HINT_LEVELS = [
   {
     level: 1,
     label: "기본 힌트",
     description: "테스트 방향성",
-    icon: "💡",
+    iconName: "lightbulb" as const,
     penalty: 0,
   },
   {
     level: 2,
     label: "중간 힌트",
     description: "구체적 접근법",
-    icon: "📝",
+    iconName: "compass" as const,
     penalty: 10,
   },
   {
     level: 3,
     label: "강한 힌트",
     description: "코드 예시",
-    icon: "🔍",
+    iconName: "code" as const,
     penalty: 20,
   },
 ];
