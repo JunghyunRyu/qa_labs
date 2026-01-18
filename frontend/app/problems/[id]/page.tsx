@@ -699,8 +699,23 @@ export default function ProblemDetailPage() {
       }
     }
 
+    // 로컬 테스트 로그 (Pyodide 실행 결과)
+    const logParts: string[] = [];
+
+    if (localTestResult?.output) {
+      logParts.push(localTestResult.output);
+    }
+
+    if (localTestError) {
+      logParts.push(`[Error] ${localTestError}`);
+    }
+
+    if (logParts.length > 0) {
+      ctx.logs = logParts.join('\n\n');
+    }
+
     return ctx;
-  }, [problem, submission, code, savedFeedback]);
+  }, [problem, submission, code, savedFeedback, localTestResult, localTestError]);
 
   // Loading state
   if (loading) {
