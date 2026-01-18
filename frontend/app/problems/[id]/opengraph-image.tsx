@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 // Node.js Runtime 사용 (Edge Runtime은 한글 폰트 처리에서 불안정)
 export const runtime = "nodejs";
@@ -12,18 +14,25 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:8000/api";
 
-// Google Fonts에서 Noto Sans KR 폰트 로드 (한글 지원)
-async function loadGoogleFont(font: string, weight: number) {
-  const url = `https://fonts.googleapis.com/css2?family=${font}:wght@${weight}&display=swap`;
-  const css = await (await fetch(url)).text();
-  const resource = css.match(
-    /src: url\((.+)\) format\('(opentype|truetype)'\)/
-  );
-  if (resource) {
-    const fontData = await fetch(resource[1]);
-    return fontData.arrayBuffer();
+// 로컬 폰트 캐시 (서버 시작 후 첫 요청에서 로드, 이후 재사용)
+let fontCache: ArrayBuffer | null = null;
+
+async function loadLocalFont(): Promise<ArrayBuffer | null> {
+  if (fontCache) return fontCache;
+
+  try {
+    // Next.js에서 public 폴더 경로
+    const fontPath = join(process.cwd(), "public", "fonts", "NotoSansKR-Bold.ttf");
+    const fontBuffer = await readFile(fontPath);
+    fontCache = fontBuffer.buffer.slice(
+      fontBuffer.byteOffset,
+      fontBuffer.byteOffset + fontBuffer.byteLength
+    );
+    return fontCache;
+  } catch (error) {
+    console.error("Failed to load local font:", error);
+    return null;
   }
-  return null;
 }
 
 // 난이도별 색상 및 레벨
@@ -48,9 +57,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const { id } = await params;
   let problem = null;
 
-  // 폰트와 문제 데이터를 병렬로 로드
+  // 폰트와 문제 데이터를 병렬로 로드 (폰트는 캐시됨)
   const [notoSansKR, problemData] = await Promise.all([
-    loadGoogleFont("Noto+Sans+KR", 700),
+    loadLocalFont(),
     fetch(`${API_URL}/v1/problems/${id}`, { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null),
