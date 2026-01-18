@@ -1,0 +1,188 @@
+# Problem Curator Agent Context
+
+> 뮤테이션 테스트 문제 품질 관리를 위한 축소 컨텍스트
+
+---
+
+## 프로젝트 개요
+
+**QA Labs (QA Arena)**: 뮤테이션 테스트 기반 코딩 테스트 플랫폼
+
+### 핵심 개념
+
+1. **뮤테이션 테스트**: 버그가 있는 코드(mutant)를 테스트로 탐지하는 방식
+2. **Golden Code**: 올바른 구현 (테스트가 통과해야 함)
+3. **Buggy Implementation**: 버그가 있는 구현 (테스트가 실패해야 함)
+4. **채점**: golden 통과 + buggy 최대한 많이 실패 = 높은 점수
+
+---
+
+## 문제 파일 구조
+
+### 위치
+```
+backend/generated_problems/
+├── FT-E01.json    # fintech Easy
+├── M01.json       # Medium
+├── H01.json       # Hard
+└── ...
+```
+
+### JSON 스키마
+```json
+{
+  "title": "문제 제목",
+  "function_signature": "def func_name(...) -> ...",
+  "golden_code": "올바른 구현 코드",
+  "buggy_implementations": [
+    {
+      "bug_description": "버그 설명 (테스트 기법 명시)",
+      "buggy_code": "버그 있는 코드",
+      "weight": 1-5  // 난이도/중요도 가중치
+    }
+  ],
+  "description_md": "마크다운 형식 문제 설명",
+  "initial_test_template": "초기 테스트 템플릿",
+  "tags": ["태그1", "태그2"],
+  "difficulty": "Easy|Medium|Hard",
+  "domain": "fintech|commerce|platform|saas|common",
+  "problem_id": "문제 ID (선택)",
+  "summary": "요약 (자동 생성됨)",
+  "short_description": "짧은 설명"
+}
+```
+
+---
+
+## 난이도 정의
+
+### Easy
+- **대상**: 주니어 QA, 테스트 입문자
+- **테스트 기법**: 경계값 분석, 동등 분할, 기본 예외 처리
+- **복잡도**: 단일 함수, 1-2개 조건
+- **뮤턴트 특성**: 명확한 버그, 단일 원인
+
+### Medium
+- **대상**: 미드레벨 QA, 1-3년차
+- **테스트 기법**: + 파라미터화, Mock/Stub, 조합 테스트
+- **복잡도**: 다중 조건, 상태 관리, 외부 의존성
+- **뮤턴트 특성**: 조합 버그, 상태 의존 버그
+
+### Hard
+- **대상**: 시니어 QA, 3년차+
+- **테스트 기법**: + 상태 기반, 비결정성 모킹, 부수효과 검증
+- **복잡도**: 다층 규칙, 상태 머신, 숨겨진 상태
+- **뮤턴트 특성**: 미묘한 버그, 상태 누출, 규칙 조합 오류
+
+---
+
+## 테스트 기법 용어
+
+| 기법 | 설명 | 난이도 |
+|------|------|--------|
+| Boundary Value Analysis | 경계값 분석 (0, 1, N-1, N, N+1) | Easy |
+| Equivalence Partitioning | 동등 분할 (유효/무효 클래스) | Easy |
+| Error Handling | 예외 처리 검증 | Easy |
+| Decision Table | 조건 조합 테스트 | Medium |
+| State Transition | 상태 전이 테스트 | Medium |
+| Mock/Stub | 의존성 대체 | Medium |
+| Parameterized Testing | 파라미터화 테스트 | Medium |
+| State-based Testing | 상태 기반 테스트 | Hard |
+| Non-deterministic Testing | 비결정적 요소 테스트 | Hard |
+| Side-effect Verification | 부수효과 검증 | Hard |
+
+---
+
+## 도메인별 핵심 포인트
+
+### fintech
+- **서비스 예**: 토스, 카카오뱅크, 네이버페이
+- **위험**: 자금 손실, 규제 위반, 정산 오류
+- **키워드**: 원 단위, 소수점 처리, 한도, 수수료
+
+### commerce
+- **서비스 예**: 쿠팡, 마켓컬리, 네이버 스마트스토어
+- **위험**: 매출 손실, 재고 오류, 배송 지연
+- **키워드**: 할인, 쿠폰, 배송비, 장바구니
+
+### platform
+- **서비스 예**: AWS, GitHub, Slack
+- **위험**: 인증 실패, 권한 오류, 서비스 장애
+- **키워드**: 토큰, 권한, API, 비결정적
+
+### saas
+- **서비스 예**: Notion, Figma, Salesforce
+- **위험**: 데이터 손실, 협업 오류, 구독 정산
+- **키워드**: 멀티테넌시, 입력 검증, 유효성
+
+### common
+- **특성**: 언어/프레임워크 공통 패턴
+- **위험**: 런타임 오류, 성능 저하
+- **키워드**: 타입, 순회, 참조, 기본기
+
+---
+
+## description_md 필수 섹션
+
+### Easy
+1. 비즈니스 시나리오 (친절한 설명)
+2. 버그 발생 시 위험성 (표)
+3. 함수 명세 (시그니처, 동작 규칙, 예외)
+4. 테스트 전략 (힌트 풍부)
+5. 수험자 안내
+
+### Medium
+1. 비즈니스 시나리오 (실무 중심)
+2. 버그 발생 시 위험성 (표)
+3. 함수 명세 (상세)
+4. 테스트 전략 (핵심 포인트만)
+5. 수험자 안내
+
+### Hard
+1. 비즈니스 시나리오 (복잡한 규칙 포함)
+2. 버그 발생 시 위험성 (표, 상세)
+3. 함수 명세 (다이어그램, 규칙 계층)
+4. 시니어 레벨 테스트 전략 (코드 예시)
+5. 주요 테스트 케이스 분류 (표)
+
+---
+
+## 관련 파일 위치
+
+| 용도 | 경로 |
+|------|------|
+| 문제 파일 | `backend/generated_problems/*.json` |
+| 난이도 템플릿 | `.claude/agents/problem-curator/templates/` |
+| 가이드라인 | `.claude/agents/problem-curator/guidelines/` |
+| 문제 로딩 스크립트 | `backend/scripts/load_generated_problems.py` |
+
+---
+
+## 품질 체크리스트
+
+### 시나리오 품질
+- [ ] 구체적인 서비스/상황 언급
+- [ ] 실제 발생 가능한 버그 시나리오
+- [ ] 비즈니스 임팩트 명확 (금액, 고객, 규제)
+
+### 뮤턴트 품질
+- [ ] golden과 명확히 구분되는 버그
+- [ ] 테스트 기법으로 탐지 가능
+- [ ] weight 합리적 배분
+
+### 난이도 적절성
+- [ ] 테스트 기법 수준 일치
+- [ ] 복잡도 적절
+- [ ] 풀이 시간 예상치 합리적
+
+---
+
+## 제한 사항
+
+- 이 컨텍스트 외의 프로젝트 정보 접근 지양
+- golden_code 로직 변경 불가
+- 프로덕션 DB 직접 조작 불가
+
+---
+
+*이 파일은 Problem Curator Agent 전용 컨텍스트입니다.*
