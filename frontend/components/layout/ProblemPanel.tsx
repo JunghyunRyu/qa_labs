@@ -169,9 +169,14 @@ function MarkdownContent({ content }: { content: string }) {
         components={{
           h2: () => null,
           h3: ({ children }) => (
-            <h3 className="text-sm font-semibold mt-3 mb-1.5 text-slate-200">
+            <h3 className="text-sm font-semibold mt-4 mb-2 pl-3 border-l-4 border-indigo-500 text-indigo-400">
               {children}
             </h3>
+          ),
+          h4: ({ children }) => (
+            <h4 className="text-xs font-semibold mt-3 mb-1.5 text-slate-200">
+              {children}
+            </h4>
           ),
           ul: ({ children }) => (
             <ul className="list-disc list-inside space-y-0.5 my-1.5 ml-1 text-sm">
@@ -196,6 +201,31 @@ function MarkdownContent({ content }: { content: string }) {
           strong: ({ children }) => (
             <strong className="font-semibold text-slate-100">{children}</strong>
           ),
+          table: ({ children }) => (
+            <div className="my-3 overflow-x-auto rounded-lg border border-slate-700">
+              <table className="w-full border-collapse text-xs">{children}</table>
+            </div>
+          ),
+          thead: ({ children }) => (
+            <thead className="bg-slate-800 text-slate-200">{children}</thead>
+          ),
+          tbody: ({ children }) => (
+            <tbody className="divide-y divide-slate-700/50">{children}</tbody>
+          ),
+          tr: ({ children }) => (
+            <tr className="hover:bg-slate-800/50 transition-colors">{children}</tr>
+          ),
+          th: ({ children }) => (
+            <th className="px-3 py-2 text-left font-medium text-slate-200 border-b border-slate-700">{children}</th>
+          ),
+          td: ({ children }) => (
+            <td className="px-3 py-2 text-slate-300">{children}</td>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote className="my-3 pl-4 pr-3 py-2 border-l-4 border-amber-500 bg-amber-900/10 rounded-r-lg text-slate-300 italic">
+              {children}
+            </blockquote>
+          ),
           code: ({ children, className, ...props }) => {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
@@ -219,7 +249,10 @@ function MarkdownContent({ content }: { content: string }) {
               );
             }
             return (
-              <code className="px-1 py-0.5 bg-slate-700 text-slate-200 rounded text-xs font-mono" {...props}>
+              <code
+                className="px-1.5 py-0.5 bg-slate-800 text-amber-200 rounded text-xs font-mono border border-slate-700/50"
+                {...props}
+              >
                 {children}
               </code>
             );
