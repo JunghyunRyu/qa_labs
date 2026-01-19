@@ -379,7 +379,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
   return (
     <div
       data-testid="problem-panel"
-      className="h-full flex flex-col bg-slate-900 border-r border-slate-700 overflow-hidden"
+      className="h-full flex flex-col bg-slate-900 border-r border-slate-700 overflow-hidden relative"
     >
       {/* ===== STICKY AREA ===== */}
       <div className="flex-shrink-0 sticky top-0 z-10 bg-slate-900">
@@ -528,9 +528,6 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               </div>
             )}
 
-            {/* AI Hint Panel */}
-            <HintPanel problemId={problem.id} />
-
             {/* 테스트 전략 아코디언 */}
             {accordionSections.length > 0 && (
               <div className="space-y-2">
@@ -586,12 +583,7 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               </div>
             )}
 
-            {/* M5-5: AI Hint Panel */}
-            <div className="p-3 pb-0">
-              <HintPanel problemId={problem.id} />
-            </div>
-
-            {/* Standard Library Notice - 힌트 하단 */}
+            {/* Standard Library Notice */}
             <div className="mx-3 mt-2 px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700">
               <p className="text-xs text-slate-400 flex items-center gap-1.5">
                 <Info className="w-3 h-3 flex-shrink-0" />
@@ -631,6 +623,11 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             )}
           </>
         )}
+      </div>
+
+      {/* ===== STICKY FOOTER - HintPanel ===== */}
+      <div className="flex-none z-10">
+        <HintPanel problemId={problem.id} isSticky />
       </div>
 
       {/* M5-4: Selection Action Menu */}

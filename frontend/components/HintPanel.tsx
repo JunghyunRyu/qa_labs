@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Lightbulb, Lock, Unlock, ChevronDown, ChevronUp, AlertTriangle, Clipboard, Check, Compass, Code } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHints, HINT_LEVELS } from "@/hooks/useHints";
@@ -139,28 +139,36 @@ function CodeBlock({ code }: { code: string }) {
   }, [code]);
 
   return (
-    <div className="relative group mt-2">
-      {/* 코드 컨테이너 - Github Dark Dimmed 스타일 */}
-      <div className="p-3 bg-[#0d1117] rounded-lg border border-amber-500/20 font-mono text-xs overflow-x-auto">
-        {highlightPythonSyntax(code)}
+    <div className="relative group mt-3 max-w-3xl">
+      {/* 코드 컨테이너 - High Contrast 스타일 + 너비 제한 */}
+      <div className="bg-black rounded-lg border border-amber-500/30 overflow-hidden">
+        {/* 언어 뱃지 */}
+        <div className="flex items-center justify-between bg-slate-800 px-3 py-1.5 border-b border-amber-500/20">
+          <span className="text-xs text-emerald-400 font-mono font-bold uppercase">
+            PYTHON
+          </span>
+          {/* 복사 버튼 */}
+          <button
+            onClick={handleCopy}
+            className="p-1 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white rounded transition-all"
+            title={copied ? "복사됨!" : "코드 복사"}
+          >
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Clipboard className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+        {/* 코드 본문 */}
+        <div className="p-3 font-mono text-xs overflow-x-auto">
+          {highlightPythonSyntax(code)}
+        </div>
       </div>
-
-      {/* 복사 버튼 (호버 시 등장) */}
-      <button
-        onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-md opacity-0 group-hover:opacity-100 transition-all border border-slate-700"
-        title={copied ? "복사됨!" : "코드 복사"}
-      >
-        {copied ? (
-          <Check className="w-4 h-4 text-green-400" />
-        ) : (
-          <Clipboard className="w-4 h-4" />
-        )}
-      </button>
 
       {/* 복사됨 툴팁 */}
       {copied && (
-        <span className="absolute top-2 right-10 px-2 py-1 bg-green-600 text-white text-xs rounded shadow-lg">
+        <span className="absolute top-1 right-12 px-2 py-1 bg-emerald-600 text-white text-xs rounded shadow-lg animate-pulse">
           복사됨!
         </span>
       )}
@@ -310,17 +318,17 @@ function renderMixedContent(content: string): React.ReactNode {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {segments.map((segment, idx) => (
         segment.type === 'code' ? (
           <div
             key={idx}
-            className="px-3 py-2 bg-[#0d1117] rounded-lg border border-amber-500/20 font-mono text-sm text-slate-300"
+            className="px-3 py-2.5 bg-black rounded-lg border border-amber-500/30 font-mono text-sm text-emerald-300 max-w-3xl"
           >
             {segment.content}
           </div>
         ) : (
-          <div key={idx} className="text-slate-300">
+          <div key={idx} className="text-slate-200">
             {highlightInlineCode(segment.content)}
           </div>
         )
@@ -367,15 +375,15 @@ function formatTextContent(content: string): React.ReactNode {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {items.map((item, idx) => (
-        <div key={idx} className={item.number ? "flex gap-2" : ""}>
+        <div key={idx} className={item.number ? "flex gap-2.5" : ""}>
           {item.number && (
-            <span className="font-semibold text-amber-500 shrink-0">
+            <span className="font-bold text-amber-400 shrink-0">
               {item.number}
             </span>
           )}
-          <span className={item.number ? "flex-1" : "block mb-2 font-medium text-slate-300"}>
+          <span className={item.number ? "flex-1 text-slate-200" : "block mb-2 font-medium text-slate-200"}>
             {highlightInlineCode(item.content.trim())}
           </span>
         </div>
@@ -385,7 +393,7 @@ function formatTextContent(content: string): React.ReactNode {
 }
 
 /**
- * 인라인 코드 하이라이팅 (backtick 감지)
+ * 인라인 코드 하이라이팅 (backtick 감지) - High Contrast
  */
 function highlightInlineCode(text: string): React.ReactNode {
   return text.split(/(`[^`]+`)/).map((part, i) => {
@@ -393,7 +401,7 @@ function highlightInlineCode(text: string): React.ReactNode {
       return (
         <code
           key={i}
-          className="px-1 py-0.5 mx-0.5 bg-slate-700/50 text-amber-300 rounded text-xs font-mono"
+          className="px-1.5 py-0.5 mx-0.5 bg-black text-emerald-300 rounded text-xs font-mono border border-amber-500/20"
         >
           {part.slice(1, -1)}
         </code>
@@ -422,9 +430,11 @@ function HintLevelIcon({ iconName, className = "" }: { iconName: string; classNa
 interface HintPanelProps {
   problemId: number;
   className?: string;
+  /** Sticky footer 모드 (하단 고정) */
+  isSticky?: boolean;
 }
 
-export default function HintPanel({ problemId, className = "" }: HintPanelProps) {
+export default function HintPanel({ problemId, className = "", isSticky = false }: HintPanelProps) {
   const [isHintPanelOpen, setIsHintPanelOpen] = useState(false);
   const [expandedLevel, setExpandedLevel] = useState<number | null>(null);
   const [confirmingLevel, setConfirmingLevel] = useState<number | null>(null);
@@ -441,18 +451,35 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
     isLevelViewed,
   } = useHints({ problemId });
 
+  // ESC 키로 힌트 패널 닫기
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isHintPanelOpen) {
+        setIsHintPanelOpen(false);
+      }
+    };
+
+    if (isHintPanelOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isHintPanelOpen]);
+
   // 힌트가 없는 문제
   if (!hintsAvailable) {
     return null;
   }
 
-  // 로딩 중
+  // 로딩 중 (Sticky 모드에서는 로딩 바 표시)
   if (isLoading && !hintData) {
     return (
-      <div className={`bg-slate-900 border-t border-slate-700 p-4 ${className}`}>
-        <div className="flex items-center gap-2 text-amber-500">
-          <Lightbulb className="w-4 h-4 animate-pulse" />
-          <span className="text-sm">힌트 로딩 중...</span>
+      <div className={`border-t border-amber-500/30 bg-slate-900 ${className}`}>
+        <div className="h-[50px] flex items-center gap-2 px-4 text-amber-400">
+          <Lightbulb className="w-5 h-5 animate-pulse" />
+          <span className="text-sm font-medium">힌트 로딩 중...</span>
         </div>
       </div>
     );
@@ -496,48 +523,38 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
 
   // 힌트 상태 요약 계산
   const viewedCount = HINT_LEVELS.filter(h => isLevelViewed(h.level)).length;
-  const hasAnyViewed = viewedCount > 0;
+  const availableCount = 3 - viewedCount;
 
   return (
-    <div className={`bg-slate-900 border-t border-slate-700 ${className}`}>
-      {/* 헤더: 심플한 Amber 포인트 */}
-      <button
-        onClick={() => setIsHintPanelOpen(!isHintPanelOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/50 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <Lightbulb className="w-4 h-4 text-amber-500" />
-          <span className="text-sm font-bold text-amber-500">
-            힌트 ({viewedCount}/3)
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          {maxPenalty > 0 && (
-            <span className="text-xs text-slate-500">
-              최대 {100 - maxPenalty}점 가능
-            </span>
-          )}
-          <motion.div
-            animate={{ rotate: isHintPanelOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="w-4 h-4 text-slate-500" />
-          </motion.div>
-        </div>
-      </button>
-
-      {/* 펼쳐지는 힌트 패널 */}
+    <div className={`border-t border-amber-500/30 bg-slate-900 relative ${className}`}>
+      {/* ===== Backdrop (바깥 클릭으로 닫기) ===== */}
       <AnimatePresence>
         {isHintPanelOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/30 z-10"
+            onClick={() => setIsHintPanelOpen(false)}
+            aria-label="힌트 패널 닫기"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ===== 펼쳐지는 힌트 콘텐츠 (위로 펼쳐짐 - absolute) ===== */}
+      <AnimatePresence>
+        {isHintPanelOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="absolute bottom-[50px] left-0 right-0 bg-slate-900 border-t border-amber-500/30 shadow-lg shadow-black/50 z-20"
+            style={{ maxHeight: "min(400px, 40vh)" }}
           >
-            {/* 힌트 레벨 버튼들 */}
-            <div className="px-4 pb-4 space-y-2">
+            {/* 내부 스크롤 영역 - 화면 높이에 비례 */}
+            <div className="overflow-y-auto px-4 py-3 space-y-2" style={{ maxHeight: "calc(min(400px, 40vh) - 16px)" }}>
               {HINT_LEVELS.map((hint) => {
                 const isViewed = isLevelViewed(hint.level);
                 const isLocked = isLevelLocked(hint.level);
@@ -546,51 +563,51 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
 
                 return (
                   <div key={hint.level}>
-                    {/* 레벨 버튼 - Flat & Clean 스타일 */}
+                    {/* 레벨 버튼 - High Contrast 스타일 */}
                     <button
                       onClick={() => handleLevelClick(hint.level)}
                       disabled={isLoading}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${
                         isExpanded && isViewed
-                          ? "bg-slate-800 border border-amber-500/30"
+                          ? "bg-amber-900/30 border-2 border-amber-500/50 shadow-lg shadow-amber-900/20"
                           : isViewed
-                          ? "bg-slate-800/50 border border-slate-700 hover:bg-slate-800"
+                          ? "bg-slate-800 border border-amber-500/20 hover:bg-slate-700 hover:border-amber-500/40"
                           : isLocked
-                          ? "bg-slate-800/30 border border-slate-700/50 text-slate-500"
-                          : "bg-slate-800/50 border border-slate-700 hover:bg-slate-800"
+                          ? "bg-slate-800/30 border border-slate-700/50 opacity-60 cursor-not-allowed"
+                          : "bg-slate-800 border border-slate-600 hover:bg-slate-700 hover:border-amber-500/30"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <HintLevelIcon
                           iconName={hint.iconName}
-                          className={`w-4 h-4 ${isExpanded && isViewed ? "text-amber-400" : isLocked ? "text-slate-600" : "text-slate-400"}`}
+                          className={`w-5 h-5 ${isExpanded && isViewed ? "text-amber-400" : isLocked ? "text-slate-600" : isViewed ? "text-amber-500" : "text-amber-400/70"}`}
                         />
-                        <span className={`text-sm ${isExpanded && isViewed ? "font-bold text-amber-400" : isLocked ? "text-slate-500" : "text-slate-300"}`}>
+                        <span className={`text-sm font-medium ${isExpanded && isViewed ? "text-amber-300" : isLocked ? "text-slate-500" : "text-slate-200"}`}>
                           {hint.label}
                         </span>
-                        {isLocked && <Lock className="w-3 h-3 text-slate-600" />}
+                        {isLocked && <Lock className="w-3.5 h-3.5 text-slate-500" />}
                       </div>
 
                       <div className="flex items-center gap-2">
                         {hint.penalty > 0 && isViewed && (
-                          <span className="text-xs text-red-400 bg-red-950/30 px-1.5 py-0.5 rounded border border-red-500/20">
-                            -{hint.penalty}점 적용됨
+                          <span className="text-xs text-red-300 bg-red-900/40 px-2 py-0.5 rounded font-medium">
+                            -{hint.penalty}점
                           </span>
                         )}
                         {hint.penalty > 0 && !isViewed && !isLocked && (
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-amber-400/70 bg-amber-900/20 px-2 py-0.5 rounded">
                             -{hint.penalty}점
                           </span>
                         )}
                         {isViewed ? (
-                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""} ${isExpanded ? "text-amber-400" : "text-slate-500"}`} />
+                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""} ${isExpanded ? "text-amber-400" : "text-amber-500/70"}`} />
                         ) : !isLocked ? (
-                          <Unlock className="w-4 h-4 text-slate-500" />
+                          <Unlock className="w-4 h-4 text-amber-400/60" />
                         ) : null}
                       </div>
                     </button>
 
-                    {/* 힌트 내용 - 열린 상태 */}
+                    {/* 힌트 내용 - High Contrast 스타일 */}
                     <AnimatePresence>
                       {isExpanded && isViewed && hintContent && (
                         <motion.div
@@ -600,7 +617,7 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="mt-1 p-3 bg-slate-800/80 rounded-b-lg text-sm text-slate-300 border border-t-0 border-amber-500/20 leading-relaxed">
+                          <div className="mt-1 p-4 bg-slate-950 rounded-lg text-sm text-slate-200 border border-amber-500/30 leading-relaxed shadow-inner">
                             {formatHintContent(hintContent)}
                           </div>
                         </motion.div>
@@ -676,6 +693,37 @@ export default function HintPanel({ problemId, className = "" }: HintPanelProps)
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ===== Teaser Header (항상 보임 - 50px 고정 바) ===== */}
+      <button
+        onClick={() => setIsHintPanelOpen(!isHintPanelOpen)}
+        className="w-full h-[50px] flex items-center justify-between px-4 hover:bg-slate-800/50 transition-colors group"
+      >
+        <div className="flex items-center gap-2">
+          <Lightbulb className="w-5 h-5 text-amber-400" />
+          <span className="text-sm font-bold text-amber-400">
+            {isHintPanelOpen ? '힌트 접기' : `힌트 열기 (${availableCount}개 가능)`}
+          </span>
+          {viewedCount > 0 && (
+            <span className="text-xs text-slate-500">
+              • {viewedCount}개 사용됨
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          {maxPenalty > 0 && (
+            <span className="text-xs text-red-400/80 bg-red-950/30 px-2 py-0.5 rounded">
+              현재 -{maxPenalty}점
+            </span>
+          )}
+          <motion.div
+            animate={{ rotate: isHintPanelOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronUp className="w-4 h-4 text-amber-500 group-hover:text-amber-400" />
+          </motion.div>
+        </div>
+      </button>
 
       {/* ConversionModal for hint feature */}
       <ConversionModal
