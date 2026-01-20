@@ -17,6 +17,7 @@ Subagent는 특정 역할에 특화된 독립적인 에이전트입니다. 각 �
 
 | Agent | 역할 | 사용 시점 |
 |-------|------|----------|
+| **project-manager** | 마일스톤 추적, 개발 사이클 관리 | `/dev-start` 스킬에서 자동 호출 |
 | **qa-engineer** | 테스트 케이스 작성, 버그 재현 | 기능 개발 후 테스트 필요 시 |
 | **docs-writer** | 문서 자동 업데이트 | 코드 변경 후 문서화 필요 시 |
 | **db-admin** | 스키마 관리, 쿼리 최적화 | DB 작업 시 |
@@ -60,6 +61,9 @@ claude에게: "@docs-writer --background API 변경사항 문서화해줘"
 .claude/agents/
 ├── README.md                    # 이 파일
 ├── _template/                   # Agent 템플릿
+│   ├── agent.md
+│   └── CONTEXT.md
+├── project-manager/             # Project Manager Agent
 │   ├── agent.md
 │   └── CONTEXT.md
 ├── qa-engineer/                 # QA Engineer Agent
@@ -117,4 +121,4 @@ Agent 전용 컨텍스트:
 
 ---
 
-*최종 업데이트: 2026-01-09*
+*최종 업데이트: 2026-01-21*

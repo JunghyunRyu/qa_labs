@@ -145,6 +145,7 @@ cd frontend && npm run dev  # 프론트엔드 (별도 터미널)
 | `/code-review` | 코드 변경사항 품질/보안 리뷰 |
 | `/daily-report` | EC2 일일 모니터링 리포트 |
 | `/daily-report --notify` | 리포트 + Discord 알림 |
+| `/dev-start` | 기능 개발 라이프사이클 자동화 (사양서/마일스톤 생성 → 개발/테스트 사이클 → 리포트/아카이브) |
 | `/docker-debug` | Docker 문제 진단 및 복구 |
 | `/ec2-deploy` | 안전한 EC2 배포 워크플로우 (9단계) |
 | `/pytest-problem-reviewer` | 문제 출제 검토 (채점 안정성) |
@@ -157,6 +158,7 @@ cd frontend && npm run dev  # 프론트엔드 (별도 터미널)
 
 | Agent | 역할 | 사용 시점 |
 |-------|------|----------|
+| **Project Manager** | 마일스톤 추적, 테스트 결과 검토, 개발 사이클 관리 | `/dev-start` 스킬에서 자동 호출 |
 | **QA Engineer** | 테스트 케이스 작성, 버그 재현, 회귀 테스트 | 기능 구현 후, PR 전 |
 | **DB Admin** | 스키마 관리, 쿼리 최적화, 마이그레이션 | 모델 변경, 성능 이슈 |
 | **Docs Writer** | 코드 변경 시 문서 자동 업데이트 | API/스키마 변경 후 |
@@ -165,10 +167,11 @@ cd frontend && npm run dev  # 프론트엔드 (별도 터미널)
 #### Agent 호출 방식
 ```
 Task 도구로 subagent_type 지정:
-- "QA Engineer Agent"
-- "Database Admin Agent"
-- "Docs Writer Agent"
-- "SRE/DevOps Agent"
+- "project-manager"
+- "qa-engineer"
+- "db-admin"
+- "docs-writer"
+- "sre-devops"
 ```
 
 ---
@@ -313,6 +316,7 @@ Serena의 read_memory 도구 사용:
 
 | 날짜 | 변경 내용 |
 |------|----------|
+| 2026-01-21 | `/dev-start` 스킬 및 Project Manager Agent 추가 (기능 개발 라이프사이클 자동화) |
 | 2026-01-18 | Next.js 16, React 19 버전 업데이트 반영 |
 | 2026-01-18 | M6 마일스톤 완료: Guest AI Conversion, 주말 챌린지, 일일 현상금 |
 | 2026-01-18 | SDET Career Path 랭크 시스템 추가 |
