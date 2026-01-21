@@ -177,12 +177,15 @@ export default function AICoachPanel({
       setMessages((prev) => [...prev, tempUserMessage]);
 
       try {
+        // M3: 에러 로그 및 테스트 결과 자동 포함
         const response = await sendAIMessage({
           problem_id: problemId,
           mode,
           message: content,
           code_context: codeContext,
           conversation_id: conversationId || undefined,
+          error_log: promptContext?.errorLog,
+          test_result: promptContext?.testResult,
         });
 
         // Update conversation ID for subsequent messages

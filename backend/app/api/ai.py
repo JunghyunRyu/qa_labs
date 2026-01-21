@@ -116,12 +116,15 @@ async def chat(
     )
     user_message = ai_repo.add_message(user_message)
 
+    # M3: 에러 로그와 테스트 결과 전달
     ai_response_text, token_estimate = ai_coach_service.generate_response(
         user_message=chat_request.message,
         conversation_messages=conversation_messages,
         problem=problem,
         code_context=chat_request.code_context,
         is_guest=is_guest,
+        error_log=getattr(chat_request, 'error_log', None),
+        test_result=getattr(chat_request, 'test_result', None),
     )
 
     ai_message = AIMessage(

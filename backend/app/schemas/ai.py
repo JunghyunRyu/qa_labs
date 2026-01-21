@@ -22,6 +22,9 @@ class AIChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=10000)
     code_context: Optional[str] = None
     conversation_id: Optional[UUID] = None  # None for new conversation
+    # M3: AI 코치 컨텍스트 강화
+    error_log: Optional[str] = Field(None, max_length=500, description="Test error log (max 500 chars)")
+    test_result: Optional[dict] = Field(None, description="Test result summary (passed, failed, errors)")
 
 
 class AIChatResponse(BaseModel):

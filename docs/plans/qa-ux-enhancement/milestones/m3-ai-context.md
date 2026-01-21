@@ -2,7 +2,7 @@
 
 > **프로젝트**: QA Arena UX 대폭 개선
 > **크기**: 소
-> **상태**: 대기
+> **상태**: 완료
 
 ---
 
@@ -30,10 +30,10 @@ AI 코치가 사용자의 현재 상황(에러 로그, 테스트 결과)을 자�
 
 | # | 태스크 | 파일 | 상태 |
 |---|-------|------|------|
-| 1 | PromptContext 타입에 에러 로그 필드 추가 | `types/ai.ts` | [ ] |
-| 2 | AICoachPanel에 에러 로그 자동 포함 로직 | `components/AICoachPanel.tsx` | [ ] |
-| 3 | Backend ai_coach_service에 에러 로그 처리 추가 | `app/services/ai_coach_service.py` | [ ] |
-| 4 | 빠른 질문 버튼 동적화 (에러 있을 때 "왜 실패했나요?") | `components/AICoachPanel.tsx` | [ ] |
+| 1 | PromptContext 타입에 에러 로그 필드 추가 | `types/ai.ts` | [x] |
+| 2 | AICoachPanel에 에러 로그 자동 포함 로직 | `components/AICoachPanel.tsx` | [x] |
+| 3 | Backend ai_coach_service에 에러 로그 처리 추가 | `app/services/ai_coach_service.py` | [x] |
+| 4 | 빠른 질문 버튼 동적화 (에러 있을 때 "왜 실패했나요?") | `components/AICoachPanel.tsx` | [x] |
 
 ---
 
@@ -163,11 +163,11 @@ const quickQuestions = useMemo(() => {
 
 ## 완료 조건
 
-- [ ] 로컬 테스트 에러 발생 시 AI 컨텍스트에 자동 포함
-- [ ] "왜 실패했나요?" 동적 버튼 표시
-- [ ] Kill Ratio 기반 동적 질문 표시
-- [ ] 기존 토큰 비용 유지 (과도한 컨텍스트 방지)
-- [ ] 기존 테스트 회귀 없음
+- [x] 로컬 테스트 에러 발생 시 AI 컨텍스트에 자동 포함
+- [x] "왜 실패했나요?" 동적 버튼 표시
+- [x] Kill Ratio 기반 동적 질문 표시
+- [x] 기존 토큰 비용 유지 (과도한 컨텍스트 방지)
+- [x] 기존 테스트 회귀 없음
 
 ---
 
@@ -188,7 +188,12 @@ const quickQuestions = useMemo(() => {
 
 | 시간 | 작업 | 결과 |
 |------|------|------|
-| - | 마일스톤 시작 | - |
+| 2026-01-21 | 마일스톤 시작 | Task 1-4 완료 |
+| 2026-01-21 | PromptContext 타입 확장 | errorLog, testResult, killRatio, lastAction 필드 추가 |
+| 2026-01-21 | 동적 빠른 질문 추가 | "왜 실패했나요?", "더 많은 버그 잡기" 버튼 구현 |
+| 2026-01-21 | Backend 서비스 업데이트 | ai_coach_service에 error_log, test_result 파라미터 추가 |
+| 2026-01-21 | Frontend 통합 | page.tsx에서 promptContext에 M3 필드 자동 채움 |
+| 2026-01-21 | 마일스톤 완료 | 모든 태스크 완료, 에러 로그 최대 500자 제한 적용 |
 
 ---
 

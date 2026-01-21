@@ -11,6 +11,13 @@ export interface AIChatRequest {
   message: string;
   code_context?: string;
   conversation_id?: string;
+  // M3: AI 코치 컨텍스트 강화
+  error_log?: string;
+  test_result?: {
+    passed: number;
+    failed: number;
+    errors: number;
+  };
 }
 
 export interface AIChatResponse {

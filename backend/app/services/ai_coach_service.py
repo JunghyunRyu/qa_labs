@@ -108,6 +108,8 @@ def generate_response(
     problem: Optional[Problem] = None,
     code_context: Optional[str] = None,
     is_guest: bool = False,
+    error_log: Optional[str] = None,
+    test_result: Optional[dict] = None,
 ) -> Tuple[str, int]:
     """
     Generate AI coach response.
@@ -118,6 +120,8 @@ def generate_response(
         problem: Problem context (optional)
         code_context: User's current code (optional)
         is_guest: Whether the user is a guest (for model routing)
+        error_log: Test error log (optional, M3)
+        test_result: Test result summary (optional, M3)
 
     Returns:
         Tuple of (AI response text, estimated token count)
@@ -134,14 +138,31 @@ def generate_response(
     context_messages = build_conversation_context(conversation_messages)
     messages.extend(context_messages)
 
-    # Add code context if provided
+    # Build context parts (M3: 에러 로그 우선)
+    context_parts = []
+
+    # Add error context first (highest priority)
+    if error_log:
+        truncated_error = error_log[:500]  # 최대 500자
+        error_context = f"""[최근 테스트 에러]
+```
+{truncated_error}
+```"""
+        if test_result:
+            error_context += f"""
+테스트 결과: 통과 {test_result.get('passed', 0)}개, 실패 {test_result.get('failed', 0)}개, 에러 {test_result.get('errors', 0)}개"""
+        context_parts.append(error_context)
+
+    # Add code context
     if code_context:
-        user_message_with_context = f"""현재 작성 중인 코드:
+        context_parts.append(f"""현재 작성 중인 코드:
 ```python
 {code_context}
-```
+```""")
 
-{user_message}"""
+    # Combine context with user message
+    if context_parts:
+        user_message_with_context = "\n\n".join(context_parts) + f"\n\n{user_message}"
     else:
         user_message_with_context = user_message
 

@@ -39,6 +39,7 @@ import FirstSuccessModal from "@/components/ai/FirstSuccessModal";
 import AIBugDiscoveryToast from "@/components/ai/AIBugDiscoveryToast";
 import ConfettiEffect from "@/components/tutorial/ConfettiEffect";
 import OnboardingModal from "@/components/OnboardingModal";
+import { PyodideStatusIndicator } from "@/components/PyodideStatusIndicator";
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -123,6 +124,7 @@ export default function ProblemDetailPage() {
   const {
     isReady: isPyodideReady,
     isRunning: isLocalTesting,
+    isInitializing: isPyodideInitializing,
     progress: pyodideProgress,
     initialize: initializePyodide,
     runTests,
@@ -130,6 +132,15 @@ export default function ProblemDetailPage() {
   } = useCodeRunner({
     autoInit: false,
   });
+
+  // M4: Pyodide 상태 (UI 인디케이터용)
+  const pyodideStatus = isPyodideReady
+    ? 'ready'
+    : isPyodideInitializing
+    ? 'loading'
+    : 'idle';
+  const pyodideProgressPercent = pyodideProgress?.percent || 0;
+  const pyodideProgressMessage = pyodideProgress?.message;
 
   // Initialize Pyodide when problem loads
   useEffect(() => {
@@ -835,6 +846,46 @@ export default function ProblemDetailPage() {
       ctx.logs = logParts.join('\n\n');
     }
 
+    // M3: 에러 로그 및 테스트 결과 추가
+    if (localTestResult?.output && localTestResult.output.includes('FAILED')) {
+      // pytest 출력에서 에러 부분만 추출 (최대 500자)
+      ctx.errorLog = localTestResult.output.slice(0, 500);
+    } else if (localTestError) {
+      ctx.errorLog = localTestError.slice(0, 500);
+    }
+
+    // 테스트 결과 요약 (pytest summary line에서 추출)
+    if (localTestResult?.summary) {
+      const summaryMatch = localTestResult.summary.match(/(\d+)\s*passed|(\d+)\s*failed|(\d+)\s*error/g);
+      if (summaryMatch) {
+        const passed = (localTestResult.summary.match(/(\d+)\s*passed/)?.[1]) || '0';
+        const failed = (localTestResult.summary.match(/(\d+)\s*failed/)?.[1]) || '0';
+        const errors = (localTestResult.summary.match(/(\d+)\s*error/)?.[1]) || '0';
+        ctx.testResult = {
+          passed: parseInt(passed, 10),
+          failed: parseInt(failed, 10),
+          errors: parseInt(errors, 10),
+        };
+      }
+    }
+
+    // Kill Ratio (제출 결과)
+    if (submission && submission.status === 'PASS') {
+      const killRatio = submission.mutants_killed && submission.total_mutants
+        ? Math.round((submission.mutants_killed / submission.total_mutants) * 100)
+        : undefined;
+      ctx.killRatio = killRatio;
+    }
+
+    // 마지막 액션
+    if (localTestResult || localTestError) {
+      ctx.lastAction = 'local_test';
+    } else if (submission) {
+      ctx.lastAction = 'submit';
+    } else {
+      ctx.lastAction = 'none';
+    }
+
     return ctx;
   }, [problem, submission, code, savedFeedback, localTestResult, localTestError]);
 
@@ -888,6 +939,14 @@ export default function ProblemDetailPage() {
         <GuestConversionBanner
           hasCodeChanged={hasCodeChanged}
           problemId={problem.slug}
+          className="mx-4 mt-2"
+        />
+
+        {/* M4: Pyodide 초기화 상태 인디케이터 */}
+        <PyodideStatusIndicator
+          status={pyodideStatus as 'idle' | 'loading' | 'ready' | 'error'}
+          progress={pyodideProgressPercent}
+          message={pyodideProgressMessage}
           className="mx-4 mt-2"
         />
 

@@ -25,6 +25,15 @@ export interface PromptContext {
     content: string;
   };
   logs?: string;
+  // M3: AI 코치 컨텍스트 강화
+  errorLog?: string;           // pytest 에러 메시지
+  testResult?: {
+    passed: number;
+    failed: number;
+    errors: number;
+  };
+  killRatio?: number;          // 채점 결과 Kill Ratio
+  lastAction?: 'local_test' | 'submit' | 'none';
 }
 
 export interface QuickPrompt {
@@ -35,11 +44,39 @@ export interface QuickPrompt {
   description: string;
   disabledReason?: string;
   template: string;
-  requiresContext: ('problem' | 'submission' | 'feedback' | 'logs')[];
+  requiresContext: ('problem' | 'submission' | 'feedback' | 'logs' | 'errorLog')[];
   isAvailable: (context: PromptContext) => boolean;
 }
 
 export const QUICK_PROMPTS: QuickPrompt[] = [
+  // M3: 에러 발생 시 최우선 표시
+  {
+    id: 'why-failed',
+    icon: '❓',
+    label: '왜 실패했나요?',
+    shortLabel: '왜?',
+    description: '테스트 실패 원인을 분석합니다',
+    disabledReason: '에러가 없습니다',
+    template: `내 테스트가 왜 실패했는지 설명해줘.
+
+**에러 로그:**
+\`\`\`
+{errorLog}
+\`\`\`
+
+**테스트 결과:**
+- 통과: {testPassed}개
+- 실패: {testFailed}개
+- 에러: {testErrors}개
+
+다음을 알려주세요:
+1. 이 에러의 원인은 무엇인가요?
+2. 어떻게 수정해야 하나요?
+3. 비슷한 에러를 방지하려면?`,
+    requiresContext: ['errorLog'],
+    isAvailable: (ctx) => !!(ctx.errorLog && ctx.errorLog.trim().length > 0),
+  },
+
   {
     id: 'spec-summary',
     icon: '📋',
@@ -137,6 +174,27 @@ export const QUICK_PROMPTS: QuickPrompt[] = [
     requiresContext: ['logs'],
     isAvailable: (ctx) => !!ctx.logs && ctx.logs.trim().length > 0,
   },
+
+  // M3: Kill Ratio 낮을 때 추가 버튼
+  {
+    id: 'more-bugs',
+    icon: '🐛',
+    label: '더 많은 버그 잡기',
+    shortLabel: '버그+',
+    description: 'Kill Ratio를 높이기 위한 추가 테스트 케이스를 제안합니다',
+    disabledReason: '제출 후 사용 가능',
+    template: `내 테스트의 Kill Ratio가 {killRatio}%로 낮습니다. 더 많은 버그를 잡으려면 어떤 테스트를 추가해야 할까요?
+
+**현재 점수:** {score}/100
+**Kill Ratio:** {killRatio}%
+
+다음을 알려주세요:
+1. 어떤 경계값이나 엣지 케이스를 더 테스트해야 하나요?
+2. 놓치기 쉬운 특수 상황은 무엇인가요?
+3. Kill Ratio를 높이기 위한 우선순위 제안`,
+    requiresContext: ['submission'],
+    isAvailable: (ctx) => !!(ctx.killRatio !== undefined && ctx.killRatio < 50),
+  },
 ];
 
 /**
@@ -167,6 +225,23 @@ export function fillPromptTemplate(template: string, context: PromptContext): st
   // Logs context
   if (context.logs) {
     result = result.replace(/{logs}/g, truncateText(context.logs, 2000, 'tail'));
+  }
+
+  // M3: 에러 로그 컨텍스트
+  if (context.errorLog) {
+    result = result.replace(/{errorLog}/g, truncateText(context.errorLog, 500));
+  }
+
+  // M3: 테스트 결과 컨텍스트
+  if (context.testResult) {
+    result = result.replace(/{testPassed}/g, String(context.testResult.passed));
+    result = result.replace(/{testFailed}/g, String(context.testResult.failed));
+    result = result.replace(/{testErrors}/g, String(context.testResult.errors));
+  }
+
+  // M3: Kill Ratio 컨텍스트
+  if (context.killRatio !== undefined) {
+    result = result.replace(/{killRatio}/g, String(context.killRatio));
   }
 
   return result;
