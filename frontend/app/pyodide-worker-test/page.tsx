@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react';
-import { useCodeRunner } from '@/hooks';
+import { useCodeRunner } from '@/hooks/useCodeRunner';
 import { ALL_TEST_PROBLEMS, type TestProblem } from '@/lib/pyodide/test-problems';
 import type { ProgressInfo } from '@/workers/pyodide-worker-types';
 
