@@ -4,10 +4,13 @@
 
 import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { isTutorialCompleted, syncTutorialStatus } from "@/lib/tutorialData";
 import { useTutorialStore } from "@/stores/tutorialStore";
-import TutorialWelcomeModal from "@/components/tutorial/TutorialWelcomeModal";
-import TutorialFullScreen from "@/components/tutorial/TutorialFullScreen";
+
+// Dynamic imports for tutorial components (not needed on initial render)
+const TutorialWelcomeModal = dynamic(() => import("@/components/tutorial/TutorialWelcomeModal"), { ssr: false });
+const TutorialFullScreen = dynamic(() => import("@/components/tutorial/TutorialFullScreen"), { ssr: false });
 import { getProblems, GetProblemsParams, getNextScheduledProblem, NextScheduledProblem } from "@/lib/api/problems";
 import { ApiError } from "@/lib/api";
 import type { ProblemListResponse, ProblemListItem } from "@/types/problem";

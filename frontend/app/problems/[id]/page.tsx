@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { getProblem } from "@/lib/api/problems";
 import { createSubmission, getSubmission } from "@/lib/api/submissions";
 import { ApiError } from "@/lib/api";
@@ -21,7 +22,7 @@ import { ChevronLeft, Sparkles } from "lucide-react";
 import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import ScoringMethodDrawer from "@/components/ScoringMethodDrawer";
-import { GuestConversionBanner, ConversionModal, useGuestConversion } from "@/components/conversion";
+import { GuestConversionBanner, useGuestConversion } from "@/components/conversion";
 import MobileNotice from "@/components/MobileNotice";
 import { generateTestTemplate, generateFallbackTemplate } from "@/lib/templateGenerator";
 import ResizableSplitPanel from "@/components/layout/ResizableSplitPanel";
@@ -35,11 +36,14 @@ import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { trackCodeSubmit, trackProblemView, trackLocalTest, trackAINudgeImpression, trackAINudgeClick, trackConversionModalTrigger, trackFirstSuccessModalOpen, trackFirstSuccessAIClick } from "@/lib/analytics";
-import FirstSuccessModal from "@/components/ai/FirstSuccessModal";
-import AIBugDiscoveryToast from "@/components/ai/AIBugDiscoveryToast";
-import ConfettiEffect from "@/components/tutorial/ConfettiEffect";
-import OnboardingModal from "@/components/OnboardingModal";
 import { PyodideStatusIndicator } from "@/components/PyodideStatusIndicator";
+
+// Dynamic imports for modals and heavy components (not needed on initial render)
+const ConversionModal = dynamic(() => import("@/components/conversion/ConversionModal"), { ssr: false });
+const FirstSuccessModal = dynamic(() => import("@/components/ai/FirstSuccessModal"), { ssr: false });
+const OnboardingModal = dynamic(() => import("@/components/OnboardingModal"), { ssr: false });
+const AIBugDiscoveryToast = dynamic(() => import("@/components/ai/AIBugDiscoveryToast"), { ssr: false });
+const ConfettiEffect = dynamic(() => import("@/components/tutorial/ConfettiEffect"), { ssr: false });
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -854,25 +858,19 @@ export default function ProblemDetailPage() {
       ctx.errorLog = localTestError.slice(0, 500);
     }
 
-    // 테스트 결과 요약 (pytest summary line에서 추출)
-    if (localTestResult?.summary) {
-      const summaryMatch = localTestResult.summary.match(/(\d+)\s*passed|(\d+)\s*failed|(\d+)\s*error/g);
-      if (summaryMatch) {
-        const passed = (localTestResult.summary.match(/(\d+)\s*passed/)?.[1]) || '0';
-        const failed = (localTestResult.summary.match(/(\d+)\s*failed/)?.[1]) || '0';
-        const errors = (localTestResult.summary.match(/(\d+)\s*error/)?.[1]) || '0';
-        ctx.testResult = {
-          passed: parseInt(passed, 10),
-          failed: parseInt(failed, 10),
-          errors: parseInt(errors, 10),
-        };
-      }
+    // 테스트 결과 요약 (PytestResult에서 직접 가져옴)
+    if (localTestResult) {
+      ctx.testResult = {
+        passed: localTestResult.passed,
+        failed: localTestResult.failed,
+        errors: localTestResult.errors,
+      };
     }
 
     // Kill Ratio (제출 결과)
-    if (submission && submission.status === 'PASS') {
-      const killRatio = submission.mutants_killed && submission.total_mutants
-        ? Math.round((submission.mutants_killed / submission.total_mutants) * 100)
+    if (submission && submission.status === 'SUCCESS') {
+      const killRatio = submission.killed_mutants && submission.total_mutants
+        ? Math.round((submission.killed_mutants / submission.total_mutants) * 100)
         : undefined;
       ctx.killRatio = killRatio;
     }
