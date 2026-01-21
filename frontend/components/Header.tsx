@@ -166,7 +166,7 @@ export default function Header() {
   // ========== APP PAGE HEADER ==========
   return (
     <header className="fixed top-0 z-50 w-full bg-slate-950 border-b border-slate-800">
-      <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-4">
+      <div className="flex h-14 w-full items-center px-4 lg:px-6">
         {/* Logo */}
         <Link href="/" className="mr-8 flex items-center space-x-2">
           <Image src="/favicon.svg" alt="QA Arena Logo" width={28} height={28} className="rounded-md" />
