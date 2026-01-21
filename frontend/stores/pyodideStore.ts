@@ -46,6 +46,9 @@ interface PyodideState {
   preload: () => void;
 }
 
+// 실행 타임아웃 (6초 - Worker 내부 타임아웃보다 1초 여유)
+const EXECUTION_TIMEOUT_MS = 6000;
+
 function generateRequestId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -136,8 +139,11 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
     }
   };
 
-  // 메시지 전송 헬퍼
-  const sendMessage = <T>(request: WorkerRequest): Promise<T> => {
+  // 메시지 전송 헬퍼 (타임아웃 포함)
+  const sendMessage = <T>(
+    request: WorkerRequest,
+    timeoutMs?: number
+  ): Promise<T> => {
     return new Promise((resolve, reject) => {
       const state = get();
       if (!state._worker) {
@@ -145,9 +151,40 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
         return;
       }
 
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      // 타임아웃 설정 (실행 요청인 경우에만)
+      if (
+        timeoutMs &&
+        (request.type === "runMutationTest" || request.type === "runPytest")
+      ) {
+        timeoutId = setTimeout(() => {
+          // pending request 제거
+          state._pendingRequests.delete(request.id);
+          // Worker 강제 종료 및 재생성
+          get().restart();
+          reject(
+            new Error(
+              `실행 시간 초과 (${timeoutMs / 1000}초). 무한 루프나 과도한 연산이 있는지 확인해주세요.`
+            )
+          );
+        }, timeoutMs);
+      }
+
+      // 원래의 resolve/reject를 감싸서 타임아웃을 클리어
+      const wrappedResolve = (value: unknown) => {
+        if (timeoutId) clearTimeout(timeoutId);
+        resolve(value as T);
+      };
+
+      const wrappedReject = (error: Error) => {
+        if (timeoutId) clearTimeout(timeoutId);
+        reject(error);
+      };
+
       state._pendingRequests.set(request.id, {
-        resolve: resolve as (value: unknown) => void,
-        reject,
+        resolve: wrappedResolve,
+        reject: wrappedReject,
       });
 
       state._worker.postMessage(request);
@@ -205,7 +242,7 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
       }
     },
 
-    // Run Mutation Test
+    // Run Mutation Test (타임아웃 적용)
     runMutationTest: async (testCode, goldenCode, buggyImplementations) => {
       const state = get();
 
@@ -221,10 +258,10 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
         payload: { testCode, goldenCode, buggyImplementations },
       };
 
-      return await sendMessage<MutationTestResult>(request);
+      return await sendMessage<MutationTestResult>(request, EXECUTION_TIMEOUT_MS);
     },
 
-    // Run pytest
+    // Run pytest (타임아웃 적용)
     runTests: async (testCode, targetCode) => {
       const state = get();
 
@@ -240,7 +277,7 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
         payload: { testCode, targetCode },
       };
 
-      return await sendMessage<PytestResult>(request);
+      return await sendMessage<PytestResult>(request, EXECUTION_TIMEOUT_MS);
     },
 
     // Cleanup
