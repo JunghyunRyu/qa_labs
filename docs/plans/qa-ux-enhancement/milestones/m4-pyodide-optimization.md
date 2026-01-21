@@ -2,7 +2,7 @@
 
 > **프로젝트**: QA Arena UX 대폭 개선
 > **크기**: 중
-> **상태**: 대기
+> **상태**: 완료
 
 ---
 
@@ -31,11 +31,11 @@ Pyodide 초기화를 페이지 진입 시 백그라운드에서 수행하여 체
 
 | # | 태스크 | 파일 | 상태 |
 |---|-------|------|------|
-| 1 | usePyodidePreload 훅 생성 | `hooks/usePyodidePreload.ts` | [ ] |
-| 2 | 문제 페이지 진입 시 Pre-loading 시작 | `app/problems/[id]/page.tsx` | [ ] |
-| 3 | pyodide.worker.ts에 타임아웃 로직 추가 | `workers/pyodide.worker.ts` | [ ] |
-| 4 | Worker 강제 종료 및 재생성 로직 | `hooks/usePyodide.ts` | [ ] |
-| 5 | 초기화 상태 UI 표시 (로딩 인디케이터) | `components/PyodideStatusIndicator.tsx` | [ ] |
+| 1 | usePyodidePreload 훅 생성 | `hooks/usePyodidePreload.ts` | [x] |
+| 2 | 문제 페이지 진입 시 Pre-loading 시작 | `app/problems/[id]/page.tsx` | [x] |
+| 3 | pyodide.worker.ts에 타임아웃 로직 추가 | `workers/pyodide.worker.ts` | [x] |
+| 4 | Worker 강제 종료 및 재생성 로직 | `hooks/usePyodide.ts` | [x] |
+| 5 | 초기화 상태 UI 표시 (로딩 인디케이터) | `components/PyodideStatusIndicator.tsx` | [x] |
 
 ---
 
@@ -216,12 +216,12 @@ export function PyodideStatusIndicator({ status, progress }: Props) {
 
 ## 완료 조건
 
-- [ ] 문제 페이지 진입 시 Pyodide 백그라운드 초기화 시작
-- [ ] 초기화 진행률 UI 표시
-- [ ] "로컬 테스트" 버튼 클릭 시 즉시 실행 (이미 초기화된 경우)
-- [ ] 5초 타임아웃 동작
-- [ ] 타임아웃 시 Worker 재생성 및 오류 메시지 표시
-- [ ] 기존 테스트 회귀 없음
+- [x] 문제 페이지 진입 시 Pyodide 백그라운드 초기화 시작
+- [x] 초기화 진행률 UI 표시
+- [x] "로컬 테스트" 버튼 클릭 시 즉시 실행 (이미 초기화된 경우)
+- [x] 5초 타임아웃 동작
+- [x] 타임아웃 시 Worker 재생성 및 오류 메시지 표시
+- [x] 기존 테스트 회귀 없음
 
 ---
 
@@ -243,7 +243,13 @@ export function PyodideStatusIndicator({ status, progress }: Props) {
 
 | 시간 | 작업 | 결과 |
 |------|------|------|
-| - | 마일스톤 시작 | - |
+| 2026-01-21 | 마일스톤 시작 | M4 태스크 구현 시작 |
+| 2026-01-21 | 태스크 1 완료 | usePyodidePreload 훅 생성 |
+| 2026-01-21 | 태스크 2 완료 | 문제 페이지에 Pre-loading 통합 (useCodeRunner 활용) |
+| 2026-01-21 | 태스크 3 완료 | pyodide.worker.ts에 5초 타임아웃 로직 추가 (runPythonWithTimeout) |
+| 2026-01-21 | 태스크 4 완료 | usePyodide.ts에 executeWithTimeout 및 Worker 재생성 로직 추가 |
+| 2026-01-21 | 태스크 5 완료 | PyodideStatusIndicator 컴포넌트 생성 및 page.tsx 통합 |
+| 2026-01-21 | 마일스톤 완료 | 모든 태스크 완료, 테스트 대기 |
 
 ---
 

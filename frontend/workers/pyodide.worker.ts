@@ -123,6 +123,35 @@ async function initializePyodide(id: string): Promise<void> {
 }
 
 /**
+ * 타임아웃 상수 (5초)
+ */
+const EXECUTION_TIMEOUT_MS = 5000;
+
+/**
+ * 타임아웃을 적용하여 Python 코드 실행
+ */
+async function runPythonWithTimeout(code: string, timeoutMs: number = EXECUTION_TIMEOUT_MS): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(
+        `실행 시간 초과 (${timeoutMs / 1000}초). 무한 루프나 과도한 연산이 있는지 확인해주세요.`
+      ));
+    }, timeoutMs);
+
+    // 실제 실행
+    pyodide!.runPythonAsync(code)
+      .then((result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
+/**
  * Python 코드 실행
  */
 async function runPython(id: string, code: string): Promise<void> {
@@ -156,7 +185,7 @@ finally:
 (_output, _error)
 `;
 
-    const result = pyodide.runPython(wrappedCode) as { toJs: () => [string, string] };
+    const result = await runPythonWithTimeout(wrappedCode) as { toJs: () => [string, string] };
     const [output, error] = result.toJs();
 
     const executionTime = performance.now() - startTime;
@@ -445,7 +474,7 @@ finally:
 (_output, exit_code)
 `;
 
-  const result = pyodide.runPython(pytestRunner) as { toJs: () => [string, number] };
+  const result = await runPythonWithTimeout(pytestRunner) as { toJs: () => [string, number] };
   const [output] = result.toJs();
 
   return parsePytestOutput(output);

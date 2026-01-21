@@ -355,6 +355,36 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
     workerRef.current = createWorker();
   }, [createWorker]);
 
+  // 타임아웃을 적용한 실행 wrapper (Worker 재생성 포함)
+  const executeWithTimeout = useCallback(
+    async <T>(
+      executeFunc: () => Promise<T>,
+      timeoutMs: number = 6000 // Worker 내부 타임아웃(5초)보다 1초 여유
+    ): Promise<T> => {
+      let timeoutId: NodeJS.Timeout | undefined;
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          // Worker 강제 종료 및 재생성
+          restart();
+          reject(
+            new Error('실행 시간 초과. Worker를 재시작했습니다.')
+          );
+        }, timeoutMs);
+      });
+
+      try {
+        const result = await Promise.race([executeFunc(), timeoutPromise]);
+        if (timeoutId) clearTimeout(timeoutId);
+        return result;
+      } catch (error) {
+        if (timeoutId) clearTimeout(timeoutId);
+        throw error;
+      }
+    },
+    [restart]
+  );
+
   return {
     status,
     isReady: status === 'ready',
@@ -369,6 +399,7 @@ export function usePyodide(options: UsePyodideOptions = {}): UsePyodideReturn {
     runMutationTest,
     cleanup,
     restart,
+    executeWithTimeout,
   };
 }
 
