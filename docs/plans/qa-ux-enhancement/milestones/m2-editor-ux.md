@@ -31,11 +31,11 @@
 
 | # | 태스크 | 파일 | 상태 |
 |---|-------|------|------|
-| 1 | FunctionSignatureHeader 컴포넌트 생성 | `components/FunctionSignatureHeader.tsx` | [ ] |
-| 2 | SaveStatusIndicator 컴포넌트 생성 | `components/SaveStatusIndicator.tsx` | [ ] |
-| 3 | ResetCodeButton 컴포넌트 생성 (확인 모달 포함) | `components/ResetCodeButton.tsx` | [ ] |
-| 4 | 에디터 영역 헤더 레이아웃 통합 | `app/problems/[id]/page.tsx` | [ ] |
-| 5 | useCodeDraft 훅 상태 연동 | `hooks/useCodeDraft.ts` | [ ] |
+| 1 | FunctionSignatureHeader 에디터 통합 | `components/layout/CodeEditorPanel.tsx` | [x] |
+| 2 | SaveStatusIndicator 컴포넌트 | `components/layout/CodeEditorPanel.tsx` | [x] (기존) |
+| 3 | ResetCodeButton 컴포넌트 | `components/layout/CodeEditorPanel.tsx` | [x] (기존) |
+| 4 | 에디터 영역 헤더 레이아웃 통합 | `app/problems/[id]/page.tsx` | [x] (기존) |
+| 5 | useCodeDraft 훅 상태 연동 | `hooks/useCodeDraft.ts` | [x] (기존) |
 
 ---
 

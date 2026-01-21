@@ -12,11 +12,13 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLayoutStore } from "@/stores/layoutStore";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Maximize2, Minimize2, ArrowRight } from "lucide-react";
 import LoginButton from "./LoginButton";
 import UserMenu from "./UserMenu";
 import TokenBalance from "./TokenBalance";
 import RankBadge from "./RankBadge";
+import MobileMenu from "./MobileMenu";
 
 // 홈(Landing) 메뉴 - 마케팅/소개 목적
 const homeNavItems = [
@@ -36,10 +38,12 @@ export default function Header() {
   const { isFocusMode, toggleFocusMode } = useLayoutStore();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { isMobile, isTablet } = useMediaQuery();
 
   const isHome = pathname === "/";
   const isProblemPage = pathname.startsWith("/problems/") && pathname !== "/problems";
   const showFocusMode = isProblemPage && isFocusMode;
+  const showMobileMenu = mounted && (isMobile || isTablet);
 
   useEffect(() => {
     setMounted(true);
@@ -94,8 +98,8 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Navigation - Marketing focused */}
-          <nav className="flex flex-1 items-center space-x-6 text-sm font-medium">
+          {/* Navigation - Marketing focused (Desktop only) */}
+          <nav className="hidden lg:flex flex-1 items-center space-x-6 text-sm font-medium">
             {homeNavItems.map((item) => (
               "isAI" in item && item.isAI ? (
                 <Link
@@ -122,9 +126,13 @@ export default function Header() {
             ))}
           </nav>
 
+          {/* Spacer for mobile */}
+          <div className="flex-1 lg:hidden" />
+
           {/* Right side - CTA focused */}
           <div className="flex items-center space-x-3">
-            {mounted && !isLoading && (
+            {/* Desktop Auth */}
+            {mounted && !isLoading && !showMobileMenu && (
               isAuthenticated ? (
                 <Link
                   href="/problems"
@@ -137,8 +145,17 @@ export default function Header() {
                 <LoginButton />
               )
             )}
-            {mounted && isLoading && (
+            {mounted && isLoading && !showMobileMenu && (
               <div className="w-24 h-9 rounded-lg bg-slate-800 animate-pulse" />
+            )}
+
+            {/* Mobile Menu */}
+            {showMobileMenu && (
+              <MobileMenu
+                isHome={isHome}
+                homeNavItems={homeNavItems}
+                appNavItems={appNavItems}
+              />
             )}
           </div>
         </div>
@@ -158,8 +175,8 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Navigation - Function focused */}
-        <nav className="flex flex-1 items-center space-x-6 text-sm font-medium h-full">
+        {/* Navigation - Function focused (Desktop only) */}
+        <nav className="hidden lg:flex flex-1 items-center space-x-6 text-sm font-medium h-full">
           {appNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
@@ -182,13 +199,16 @@ export default function Header() {
           })}
         </nav>
 
+        {/* Spacer for mobile */}
+        <div className="flex-1 lg:hidden" />
+
         {/* Divider */}
         <div className="h-5 w-px bg-slate-800 mx-4 hidden md:block" />
 
         {/* Right side - Utility focused */}
         <div className="flex items-center space-x-3">
           {/* Focus Mode Toggle (only on problem detail pages) */}
-          {isProblemPage && mounted && (
+          {isProblemPage && mounted && !showMobileMenu && (
             <button
               data-testid="btn-focus-mode"
               onClick={toggleFocusMode}
@@ -200,11 +220,11 @@ export default function Header() {
             </button>
           )}
 
-          {/* Token Balance */}
-          {mounted && !isLoading && isAuthenticated && <TokenBalance />}
+          {/* Token Balance (Desktop only) */}
+          {mounted && !isLoading && isAuthenticated && !showMobileMenu && <TokenBalance />}
 
-          {/* Rank Badge (compact) - 프로필 옆 명찰 */}
-          {mounted && !isLoading && isAuthenticated && user && (
+          {/* Rank Badge (compact) - 프로필 옆 명찰 (Desktop only) */}
+          {mounted && !isLoading && isAuthenticated && user && !showMobileMenu && (
             <RankBadge
               solvedCount={user.solved_count || 0}
               compact
@@ -212,12 +232,21 @@ export default function Header() {
             />
           )}
 
-          {/* Auth Section */}
-          {mounted && !isLoading && (
+          {/* Auth Section (Desktop only) */}
+          {mounted && !isLoading && !showMobileMenu && (
             isAuthenticated ? <UserMenu /> : <LoginButton />
           )}
-          {mounted && isLoading && (
+          {mounted && isLoading && !showMobileMenu && (
             <div className="w-8 h-8 rounded-full bg-slate-800 animate-pulse" />
+          )}
+
+          {/* Mobile Menu */}
+          {showMobileMenu && (
+            <MobileMenu
+              isHome={isHome}
+              homeNavItems={homeNavItems}
+              appNavItems={appNavItems}
+            />
           )}
         </div>
       </div>

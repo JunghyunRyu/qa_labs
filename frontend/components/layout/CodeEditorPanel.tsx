@@ -376,6 +376,24 @@ export default function CodeEditorPanel({
 
       {/* ===== 상단 영역: 에디터 ===== */}
       <div className="flex-1 min-h-0 flex flex-col">
+        {/* Function Signature Header (Sticky) */}
+        {problem?.function_signature && (
+          <div className="flex-shrink-0 px-3 py-2 border-b border-slate-700 bg-[#161b22] flex items-center justify-between">
+            <code className="text-sm font-mono text-[#e6edf3]">
+              {problem.function_signature}
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(problem.function_signature || "");
+              }}
+              className="px-2 py-1 text-xs text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 rounded transition-colors"
+              title="Copy signature"
+            >
+              Copy
+            </button>
+          </div>
+        )}
+
         {/* Header - VS Code 스타일 슬림 헤더 (h-12 = 48px) */}
         <div className="flex-shrink-0 px-2 h-12 border-b border-slate-700 bg-slate-950 flex items-center gap-2">
           {/* Left: File tab style - 에디터와 연결된 탭 */}

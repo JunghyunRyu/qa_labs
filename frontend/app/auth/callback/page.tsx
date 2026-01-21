@@ -37,11 +37,14 @@ function AuthCallbackContent() {
           setStatus("terms");
         } else {
           setStatus("success");
-          // 저장된 redirect URL로 이동 (없으면 메인)
-          const savedRedirect = sessionStorage.getItem("auth_redirect") || "/";
+          // 저장된 redirect URL로 이동
+          const savedRedirect = sessionStorage.getItem("auth_redirect");
           sessionStorage.removeItem("auth_redirect");
+
+          // redirect가 없으면 온보딩 문제로 이동 (Forced First Experience)
+          const destination = savedRedirect || "/problems/problem-ve03?onboarding=returning";
           setTimeout(() => {
-            router.push(savedRedirect);
+            router.push(destination);
           }, 500);
         }
       } catch (err) {
@@ -58,9 +61,9 @@ function AuthCallbackContent() {
     try {
       await acceptTerms();
       setStatus("success");
-      // 신규 가입자는 문제 목록으로 바로 이동 (온보딩 유도)
+      // 신규 가입자는 온보딩 문제로 바로 이동 (Forced First Experience)
       setTimeout(() => {
-        router.push("/problems?welcome=true");
+        router.push("/problems/problem-ve03?onboarding=new");
       }, 500);
     } catch (err) {
       setStatus("error");

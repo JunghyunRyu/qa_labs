@@ -34,7 +34,11 @@ import AICoachPanel from "@/components/AICoachPanel";
 import type { SavedFeedback } from "@/components/ai/SavedFeedbackDisplay";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { trackCodeSubmit, trackProblemView, trackLocalTest, trackAINudgeImpression, trackAINudgeClick, trackConversionModalTrigger } from "@/lib/analytics";
+import { trackCodeSubmit, trackProblemView, trackLocalTest, trackAINudgeImpression, trackAINudgeClick, trackConversionModalTrigger, trackFirstSuccessModalOpen, trackFirstSuccessAIClick } from "@/lib/analytics";
+import FirstSuccessModal from "@/components/ai/FirstSuccessModal";
+import AIBugDiscoveryToast from "@/components/ai/AIBugDiscoveryToast";
+import ConfettiEffect from "@/components/tutorial/ConfettiEffect";
+import OnboardingModal from "@/components/OnboardingModal";
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -43,7 +47,7 @@ export default function ProblemDetailPage() {
   // Support both numeric ID and slug
   const problemIdOrSlug = params.id as string;
   const { isDesktop } = useMediaQuery();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const {
     toggleProblemPanel,
     toggleAIChat,
@@ -56,6 +60,7 @@ export default function ProblemDetailPage() {
     toggleProblemPeek,
     setIsProblemPeekOpen,
     openProblemSearch,
+    openAIChatWithPrefill,
   } = useLayoutStore();
 
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -94,6 +99,17 @@ export default function ProblemDetailPage() {
   const lastActivityRef = useRef<number>(Date.now());
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // M7 AI 강제 경험: VE01 첫 성공 모달
+  const [showFirstSuccessModal, setShowFirstSuccessModal] = useState(false);
+  const firstSuccessShownRef = useRef(false);
+
+  // M7 AI 강제 경험: 자동 오답 토스트
+  const [showBugDiscoveryToast, setShowBugDiscoveryToast] = useState(false);
+
+  // 온보딩 모달 상태
+  const onboardingType = searchParams.get("onboarding") as "new" | "returning" | null;
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingMaxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
@@ -121,6 +137,26 @@ export default function ProblemDetailPage() {
       initializePyodide();
     }
   }, [problem, isPyodideReady, initializePyodide]);
+
+  // 온보딩 모달 표시 (문제 로드 후)
+  useEffect(() => {
+    if (problem && onboardingType && (onboardingType === "new" || onboardingType === "returning")) {
+      // 약간의 딜레이 후 모달 표시 (페이지 로딩 완료 느낌)
+      const timer = setTimeout(() => {
+        setShowOnboardingModal(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [problem, onboardingType]);
+
+  // 온보딩 모달 닫기 핸들러 (URL에서 쿼리 파라미터 제거)
+  const handleCloseOnboarding = useCallback(() => {
+    setShowOnboardingModal(false);
+    // URL에서 onboarding 파라미터 제거
+    const url = new URL(window.location.href);
+    url.searchParams.delete("onboarding");
+    window.history.replaceState({}, "", url.toString());
+  }, []);
 
   // Initialize code: either from saved submission or template
   // This single effect handles all code initialization to avoid race conditions
@@ -319,6 +355,80 @@ export default function ProblemDetailPage() {
       setShowAINudge(null);
     }
   }, [showAINudge, problem, setIsAIChatOpen]);
+
+  // M7 AI 강제 경험: VE01 첫 성공 시 모달 표시
+  useEffect(() => {
+    const isVE01 = problem?.slug === "problem-ve01";
+
+    if (
+      submission?.status === "SUCCESS" &&
+      isVE01 &&
+      !firstSuccessShownRef.current &&
+      !isAIChatOpen
+    ) {
+      firstSuccessShownRef.current = true;
+
+      // 결과 확인 후 1초 뒤 모달 표시
+      const timer = setTimeout(() => {
+        setShowFirstSuccessModal(true);
+        if (problem?.slug) {
+          trackFirstSuccessModalOpen({ problemSlug: problem.slug });
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [submission?.status, problem?.slug, isAIChatOpen]);
+
+  // M7 AI 강제 경험: FAILURE 시 자동 토스트
+  useEffect(() => {
+    if (submission?.status === "FAILURE" && !isAIChatOpen) {
+      const timer = setTimeout(() => {
+        setShowBugDiscoveryToast(true);
+        if (problem?.id) {
+          trackAINudgeImpression({
+            problemId: String(problem.id),
+            trigger: "auto_failure",
+          });
+        }
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+
+    // AI 채팅 열리면 토스트 숨기기
+    if (isAIChatOpen) {
+      setShowBugDiscoveryToast(false);
+    }
+  }, [submission?.status, isAIChatOpen, problem?.id]);
+
+  // M7: VE01 첫 성공 모달 → AI 클릭
+  const handleFirstSuccessAIClick = useCallback(() => {
+    if (problem) {
+      trackFirstSuccessAIClick({ problemSlug: problem.slug });
+      setShowFirstSuccessModal(false);
+      setIsAIChatOpen(true);
+      setAiMode("COACH");
+      openAIChatWithPrefill(
+        "방금 문제를 성공적으로 풀었습니다. 제 코드를 더 효율적으로 개선할 수 있는 방법이 있을까요?",
+        "첫 문제 성공 후 코드 개선 요청"
+      );
+    }
+  }, [problem, setIsAIChatOpen, openAIChatWithPrefill]);
+
+  // M7: 자동 오답 토스트 → AI 클릭
+  const handleBugDiscoveryClick = useCallback(() => {
+    if (problem) {
+      trackAINudgeClick({ problemId: String(problem.id), trigger: "auto_failure" });
+      setShowBugDiscoveryToast(false);
+      setIsAIChatOpen(true);
+      setAiMode("COACH");
+      openAIChatWithPrefill(
+        "테스트가 실패했습니다. 코드의 어떤 부분에 버그가 있는지 분석해주세요.",
+        "자동 오답 토스트 클릭"
+      );
+    }
+  }, [problem, setIsAIChatOpen, openAIChatWithPrefill]);
 
   // Generate initial test template using the template generator
   const getInitialTemplate = (problem: Problem): string => {
@@ -877,6 +987,35 @@ export default function ProblemDetailPage() {
           onClose={() => setShowConversionModal(false)}
           feature="history"
         />
+
+        {/* M7 AI 강제 경험: VE01 첫 성공 모달 */}
+        <FirstSuccessModal
+          isOpen={showFirstSuccessModal}
+          onClose={() => setShowFirstSuccessModal(false)}
+          onOpenAICoach={handleFirstSuccessAIClick}
+          score={submission?.score ?? 100}
+        />
+
+        {/* M7 AI 강제 경험: Confetti 효과 */}
+        <ConfettiEffect trigger={showFirstSuccessModal} duration={3000} />
+
+        {/* M7 AI 강제 경험: 자동 오답 토스트 */}
+        <AIBugDiscoveryToast
+          isVisible={showBugDiscoveryToast}
+          onOpenAICoach={handleBugDiscoveryClick}
+          onDismiss={() => setShowBugDiscoveryToast(false)}
+          isGuest={!user}
+        />
+
+        {/* 온보딩 모달 (로그인 직후) */}
+        {onboardingType && (
+          <OnboardingModal
+            isOpen={showOnboardingModal}
+            onClose={handleCloseOnboarding}
+            type={onboardingType}
+            problemTitle={problem.title}
+          />
+        )}
       </div>
     );
   }
@@ -983,6 +1122,35 @@ export default function ProblemDetailPage() {
         onClose={() => setShowConversionModal(false)}
         feature="history"
       />
+
+      {/* M7 AI 강제 경험: VE01 첫 성공 모달 */}
+      <FirstSuccessModal
+        isOpen={showFirstSuccessModal}
+        onClose={() => setShowFirstSuccessModal(false)}
+        onOpenAICoach={handleFirstSuccessAIClick}
+        score={submission?.score ?? 100}
+      />
+
+      {/* M7 AI 강제 경험: Confetti 효과 */}
+      <ConfettiEffect trigger={showFirstSuccessModal} duration={3000} />
+
+      {/* M7 AI 강제 경험: 자동 오답 토스트 */}
+      <AIBugDiscoveryToast
+        isVisible={showBugDiscoveryToast}
+        onOpenAICoach={handleBugDiscoveryClick}
+        onDismiss={() => setShowBugDiscoveryToast(false)}
+        isGuest={!user}
+      />
+
+      {/* 온보딩 모달 (로그인 직후) */}
+      {onboardingType && (
+        <OnboardingModal
+          isOpen={showOnboardingModal}
+          onClose={handleCloseOnboarding}
+          type={onboardingType}
+          problemTitle={problem.title}
+        />
+      )}
     </div>
   );
 }

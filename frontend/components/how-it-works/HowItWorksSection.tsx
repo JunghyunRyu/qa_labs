@@ -251,18 +251,20 @@ export default function HowItWorksSection() {
             </div>
 
             {/* Bottom: Step Indicator */}
-            <div className="flex justify-center gap-2 pb-4">
+            <div className="flex justify-center gap-1 pb-4">
               {steps.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => handleStepClick(i)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                  className="p-2 -m-1"
+                  aria-label={`Step ${i + 1}로 이동`}
+                >
+                  <span className={`block h-1.5 rounded-full transition-all duration-300 ${
                     i === activeStep
                       ? "bg-blue-500 w-8"
                       : "bg-slate-700 hover:bg-slate-600 w-1.5"
-                  }`}
-                  aria-label={`Step ${i + 1}로 이동`}
-                />
+                  }`} />
+                </button>
               ))}
             </div>
           </div>

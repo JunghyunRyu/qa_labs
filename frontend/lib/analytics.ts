@@ -259,7 +259,7 @@ export const trackGuestAIConversionClick = (params: {
  */
 export const trackAINudgeImpression = (params: {
   problemId: string;
-  trigger: "wrong_answer" | "inactivity";
+  trigger: "wrong_answer" | "inactivity" | "auto_failure";
 }) => {
   sendGAEvent("ai_nudge_impression", {
     problem_id: params.problemId,
@@ -272,7 +272,7 @@ export const trackAINudgeImpression = (params: {
  */
 export const trackAINudgeClick = (params: {
   problemId: string;
-  trigger: "wrong_answer" | "inactivity";
+  trigger: "wrong_answer" | "inactivity" | "auto_failure";
 }) => {
   sendGAEvent("ai_nudge_click", {
     problem_id: params.problemId,
@@ -292,5 +292,31 @@ export const trackAIAskFromError = (params: {
     problem_id: params.problemId,
     error_type: params.errorType,
     submission_status: params.submissionStatus,
+  });
+};
+
+// ============================================
+// M7 AI 강제 경험 트래킹 이벤트
+// ============================================
+
+/**
+ * M7: VE01 첫 성공 모달 오픈 이벤트
+ */
+export const trackFirstSuccessModalOpen = (params: {
+  problemSlug: string;
+}) => {
+  sendGAEvent("first_success_modal_open", {
+    problem_slug: params.problemSlug,
+  });
+};
+
+/**
+ * M7: VE01 첫 성공 모달에서 AI 클릭 이벤트
+ */
+export const trackFirstSuccessAIClick = (params: {
+  problemSlug: string;
+}) => {
+  sendGAEvent("first_success_ai_click", {
+    problem_slug: params.problemSlug,
   });
 };

@@ -237,6 +237,52 @@ def get_submission_stats(session, target_date: str = None) -> dict:
     }
 
 
+def get_member_submissions_detail(session, target_date: str = None) -> list:
+    """오늘 제출한 회원의 상세 정보 조회
+    
+    Returns:
+        [{"user_id", "username", "email", "problem_id", "slug", "title", "status", "created_at"}, ...]
+    """
+    date_start = get_date_start(target_date)
+    date_end = get_date_end(target_date)
+    
+    query = """
+        SELECT 
+            u.id as user_id,
+            u.username,
+            u.email,
+            sub.problem_id,
+            p.slug,
+            p.title,
+            sub.status,
+            sub.created_at
+        FROM submissions sub
+        JOIN users u ON sub.user_id = u.id
+        JOIN problems p ON sub.problem_id = p.id
+        WHERE sub.user_id IS NOT NULL
+          AND sub.created_at >= :date_start
+          AND sub.created_at <= :date_end
+        ORDER BY sub.created_at DESC
+    """
+    
+    result = session.execute(text(query), {"date_start": date_start, "date_end": date_end})
+    
+    submissions = []
+    for row in result:
+        submissions.append({
+            "user_id": row.user_id,
+            "username": row.username,
+            "email": row.email,
+            "problem_id": row.problem_id,
+            "slug": row.slug,
+            "title": row.title[:50] + "..." if len(row.title) > 50 else row.title,
+            "status": row.status,
+            "created_at": row.created_at.isoformat() if row.created_at else None
+        })
+    
+    return submissions
+
+
 def get_problem_stats_summary(session) -> tuple:
     """문제 통계 요약"""
     total = session.execute(text("SELECT COUNT(*) FROM problems")).scalar() or 0
@@ -840,6 +886,7 @@ def send_discord_notification(report: DailyReport) -> bool:
 def main():
     """메인 실행"""
     import argparse
+    from pathlib import Path
 
     parser = argparse.ArgumentParser(description="Daily Monitoring Report Generator")
     parser.add_argument(
@@ -859,14 +906,67 @@ def main():
         default=None,
         help="Target date in YYYY-MM-DD format (default: today)"
     )
+    parser.add_argument(
+        "--save",
+        action="store_true",
+        help="Save report to reports/ directory"
+    )
+    parser.add_argument(
+        "--details",
+        action="store_true",
+        help="Show detailed member submissions for today"
+    )
     args = parser.parse_args()
+
+    # 상세 조회 모드
+    if args.details:
+        session = get_db_session()
+        submissions = get_member_submissions_detail(session, args.date)
+        session.close()
+        
+        if args.output == "json":
+            print(json.dumps(submissions, ensure_ascii=False, indent=2))
+        else:
+            if not submissions:
+                print("오늘 회원 제출이 없습니다.")
+            else:
+                print(f"=== 회원 제출 상세 ({len(submissions)}건) ===\n")
+                for i, sub in enumerate(submissions, 1):
+                    print(f"{i}. {sub['username']} ({sub['email']})")
+                    print(f"   문제: {sub['slug']} - {sub['title']}")
+                    print(f"   상태: {sub['status']}")
+                    print(f"   시간: {sub['created_at']}")
+                    print()
+        return
 
     report = generate_report(args.date)
 
+    # 리포트 내용 생성
     if args.output == "json":
-        print(json.dumps(asdict(report), ensure_ascii=False, indent=2))
+        report_content = json.dumps(asdict(report), ensure_ascii=False, indent=2)
     else:
-        print(format_text_report(report))
+        report_content = format_text_report(report)
+
+    # 콘솔 출력
+    print(report_content)
+
+    # 파일 저장
+    if args.save:
+        # 프로젝트 루트의 reports 디렉토리
+        script_dir = Path(__file__).resolve().parent
+        project_root = script_dir.parent.parent
+        reports_dir = project_root / "reports"
+        reports_dir.mkdir(exist_ok=True)
+
+        # 파일명: daily_report_YYYY-MM-DD.json 또는 .txt
+        ext = "json" if args.output == "json" else "txt"
+        filename = f"daily_report_{report.report_date}.{ext}"
+        filepath = reports_dir / filename
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(report_content)
+
+        print(f"\n📁 리포트 저장됨: {filepath}", file=sys.stderr)
 
     # Discord 알림 전송
     if args.notify:

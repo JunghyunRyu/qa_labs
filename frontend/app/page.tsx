@@ -264,17 +264,17 @@ export default function Home() {
               </div>
 
               {/* Main Title */}
-              <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight break-keep">
-                <span className="block text-white mb-2">당신의 테스트 방패는</span>
+              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight break-keep">
+                <span className="block text-white mb-2">AI 튜터와 함께하는</span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">
-                  얼마나 촘촘합니까?
+                  실전 디버깅
                 </span>
               </h1>
 
               {/* Subtitle */}
-              <p className="text-lg lg:text-xl text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed mt-6">
-                코드에 <strong className="text-slate-200">수백 개의 인공 버그(Mutants)</strong>를 심어 빈틈을 파고듭니다.<br className="hidden lg:block" />
-                당신의 테스트가 이 공격을 막아낼 수 있는지 지금 검증하세요.
+              <p className="text-base sm:text-lg lg:text-xl text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed mt-4 sm:mt-6">
+                <strong className="text-slate-200">30초 만에 첫 버그를 잡아보세요.</strong><br className="hidden sm:block" />
+                pytest로 코드의 숨겨진 버그를 찾고, AI가 놓친 테스트 케이스를 알려드립니다.
               </p>
 
               {/* CTA Buttons */}
