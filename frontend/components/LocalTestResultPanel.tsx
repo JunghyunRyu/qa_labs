@@ -3,7 +3,7 @@
  */
 
 import { useState } from "react";
-import { CheckCircle, XCircle, AlertCircle, Loader2, Timer, Bug, Copy, Check, ArrowRight } from "lucide-react";
+import { CheckCircle, CheckCircle2, XCircle, AlertCircle, Loader2, Timer, Bug, Copy, Check, ArrowRight } from "lucide-react";
 import type { PytestResult } from "@/workers/pyodide-worker-types";
 
 interface LocalTestResultPanelProps {
@@ -188,10 +188,15 @@ export default function LocalTestResultPanel({
       {allPassed && (
         <div className="flex items-center justify-between gap-3 p-3 bg-green-900/30 rounded-lg text-sm border border-green-800/50">
           <div className="flex items-start gap-2 min-w-0">
-            <Bug className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-            <p className="text-green-300">
-              테스트가 정상 코드에서 통과했습니다. 버그 탐지 능력을 확인하세요!
-            </p>
+            <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-green-300 font-semibold mb-0.5">
+                ✅ Golden Code: Passed
+              </p>
+              <p className="text-green-400 text-xs">
+                테스트가 정상 코드에서 통과했습니다. 이제 숨겨진 버그들을 찾아보세요!
+              </p>
+            </div>
           </div>
           {onSubmit && (
             <button
