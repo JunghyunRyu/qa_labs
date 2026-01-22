@@ -296,3 +296,13 @@ class StreamingChunk(BaseModel):
     """Schema for streaming chunk."""
     content: Optional[str] = None
     error: Optional[str] = None
+
+
+# ============================================================
+# Judge Schemas (for client-side execution)
+# ============================================================
+
+class JudgeCodeResponse(BaseModel):
+    """Schema for judge code response (correct_code for client-side judging)."""
+    correct_code: str
+    comparison_config: Optional[ComparisonConfig] = None

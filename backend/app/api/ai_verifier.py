@@ -37,6 +37,7 @@ from app.schemas.ai_verifier import (
     HintResponse,
     AIChatRequest,
     ChatMessage,
+    JudgeCodeResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -158,6 +159,38 @@ async def get_challenge(
         )
 
     return challenge
+
+
+@router.get("/challenges/{challenge_id}/judge-code", response_model=JudgeCodeResponse)
+async def get_judge_code(
+    challenge_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """
+    Get correct_code for client-side judge execution.
+
+    This endpoint provides the correct code needed for Pyodide-based
+    client-side judging. The correct code is used to compare results
+    against the buggy code.
+
+    Note: In a production environment, consider implementing
+    server-side judging for enhanced security.
+    """
+    challenge = db.query(AIChallenge).filter(
+        AIChallenge.id == challenge_id,
+        AIChallenge.is_active == True,
+    ).first()
+
+    if not challenge:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found"
+        )
+
+    return JudgeCodeResponse(
+        correct_code=challenge.correct_code,
+        comparison_config=challenge.comparison_config,
+    )
 
 
 # ============================================================

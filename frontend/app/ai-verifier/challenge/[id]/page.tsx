@@ -23,6 +23,7 @@ export default function ChallengePage() {
   const params = useParams();
   const challengeId = params.id as string;
   const [challenge, setChallenge] = useState<AIChallenge | null>(null);
+  const [correctCode, setCorrectCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,36 +49,44 @@ export default function ChallengePage() {
 
   // 테스트 실행 핸들러
   const handleTestSubmit = async (userInput: string) => {
-    if (!challenge) return;
+    if (!challenge || !correctCode) return;
 
-    // 현재 에디터의 코드를 버그 코드로 사용
-    // 정답 코드는 서버에서만 접근 가능하므로, 클라이언트에서는 버그 코드를 두 번 사용
-    // 실제 구현에서는 서버에서 정답 코드를 제공받아야 함
-    // TODO: 서버 API를 통해 정답 코드를 안전하게 가져오거나, 서버사이드 검증 구현
-
-    // 임시: 버그 코드 템플릿을 정답으로 사용 (실제로는 서버에서 correct_code 제공 필요)
-    // 프론트엔드 테스트를 위해 buggy_code_template을 사용
-    await judge(userInput, currentCode, challenge.buggy_code_template);
+    // 현재 에디터의 코드 (버그 코드)와 서버에서 가져온 정답 코드로 비교
+    await judge(userInput, currentCode, correctCode);
   };
 
   useEffect(() => {
     async function fetchChallenge() {
       try {
-        const res = await fetch(`/api/v1/ai-verifier/challenges/${challengeId}`, {
-          credentials: 'include',
-        });
-        if (!res.ok) {
-          if (res.status === 404) {
+        // Fetch challenge and judge code in parallel
+        const [challengeRes, judgeCodeRes] = await Promise.all([
+          fetch(`/api/v1/ai-verifier/challenges/${challengeId}`, {
+            credentials: 'include',
+          }),
+          fetch(`/api/v1/ai-verifier/challenges/${challengeId}/judge-code`, {
+            credentials: 'include',
+          }),
+        ]);
+
+        if (!challengeRes.ok) {
+          if (challengeRes.status === 404) {
             setError('챌린지를 찾을 수 없습니다.');
           } else {
             setError('챌린지를 불러오는데 실패했습니다.');
           }
           return;
         }
-        const data: AIChallenge = await res.json();
+
+        const data: AIChallenge = await challengeRes.json();
         setChallenge(data);
         // 초기 코드 설정
         setCurrentCode(data.buggy_code_template);
+
+        // Judge code 설정
+        if (judgeCodeRes.ok) {
+          const judgeData = await judgeCodeRes.json();
+          setCorrectCode(judgeData.correct_code);
+        }
       } catch (err) {
         console.error('Failed to fetch challenge:', err);
         setError('네트워크 오류가 발생했습니다.');
@@ -193,7 +202,7 @@ export default function ChallengePage() {
             onSubmit={handleTestSubmit}
             isLoading={isJudging || isPyodideLoading}
             inputHint={challenge.input_hint}
-            disabled={!currentCode}
+            disabled={!currentCode || !correctCode}
           />
         </div>
       </div>

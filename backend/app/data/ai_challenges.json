@@ -1,0 +1,436 @@
+[
+  {
+    "title": "양수의 함정",
+    "description": "주어진 숫자가 양수인지 판별하는 함수입니다. 하지만 AI가 실수를 저질렀어요!",
+    "level": 1,
+    "category": "logic",
+    "function_name": "is_positive",
+    "bug_type": "logic",
+    "buggy_code_template": "def is_positive(n):\n    return n >= 0",
+    "correct_code": "def is_positive(n):\n    return n > 0",
+    "input_schema": {
+      "type": "single",
+      "args": [
+        {
+          "name": "n",
+          "type": "int",
+          "description": "판별할 숫자",
+          "example": 5
+        }
+      ]
+    },
+    "expected_output_type": "bool",
+    "comparison_config": {},
+    "test_cases": [
+      {"input": [5], "expected": true},
+      {"input": [-3], "expected": false}
+    ],
+    "bug_trigger_cases": [
+      {"input": [0], "expected": false, "description": "0은 양수가 아님"}
+    ],
+    "input_hint": "숫자를 입력하세요 (예: 5, -3, 0)",
+    "hints": [
+      "양수는 0보다 큰 수입니다. 0은 양수일까요?",
+      "0을 입력해보세요!"
+    ],
+    "bounty_points": 50,
+    "difficulty": "beginner",
+    "prescripted_responses": {
+      "code": "```python\ndef is_positive(n):\n    return n >= 0\n```\n\n양수인지 판별하는 함수를 만들었어요! 테스트 케이스를 입력해서 검증해보세요.",
+      "hint": "양수의 정의를 생각해보세요. 0은 양수일까요, 음수일까요?",
+      "default": "테스트 케이스를 입력해서 버그를 찾아보세요! 다양한 숫자를 시도해보면 좋아요."
+    }
+  },
+  {
+    "title": "짝수 홀수 혼동",
+    "description": "짝수인지 판별하는 함수입니다. AI가 간단한 실수를 했네요.",
+    "level": 1,
+    "category": "logic",
+    "function_name": "is_even",
+    "bug_type": "logic",
+    "buggy_code_template": "def is_even(n):\n    return n % 2 == 1",
+    "correct_code": "def is_even(n):\n    return n % 2 == 0",
+    "input_schema": {
+      "type": "single",
+      "args": [
+        {
+          "name": "n",
+          "type": "int",
+          "description": "판별할 정수",
+          "example": 4
+        }
+      ]
+    },
+    "expected_output_type": "bool",
+    "comparison_config": {},
+    "test_cases": [
+      {"input": [7], "expected": false}
+    ],
+    "bug_trigger_cases": [
+      {"input": [4], "expected": true, "description": "짝수가 홀수로 판정됨"},
+      {"input": [2], "expected": true, "description": "짝수가 홀수로 판정됨"}
+    ],
+    "input_hint": "정수를 입력하세요 (예: 4, 7, 0)",
+    "hints": [
+      "짝수는 2로 나누어떨어지는 수입니다.",
+      "4를 입력해보세요!"
+    ],
+    "bounty_points": 50,
+    "difficulty": "beginner",
+    "prescripted_responses": {
+      "code": "```python\ndef is_even(n):\n    return n % 2 == 1\n```\n\n짝수를 판별하는 함수예요! 테스트해보세요.",
+      "hint": "짝수는 2로 나누었을 때 나머지가 0인 수입니다.",
+      "default": "짝수와 홀수의 정의를 생각하면서 테스트해보세요!"
+    }
+  },
+  {
+    "title": "절댓값 함정",
+    "description": "숫자의 절댓값을 반환하는 함수입니다. 음수 처리에 문제가 있어요!",
+    "level": 2,
+    "category": "logic",
+    "function_name": "absolute",
+    "bug_type": "logic",
+    "buggy_code_template": "def absolute(n):\n    if n < 0:\n        return n\n    return n",
+    "correct_code": "def absolute(n):\n    if n < 0:\n        return -n\n    return n",
+    "input_schema": {
+      "type": "single",
+      "args": [
+        {
+          "name": "n",
+          "type": "int",
+          "description": "절댓값을 구할 숫자",
+          "example": -5
+        }
+      ]
+    },
+    "expected_output_type": "int",
+    "comparison_config": {},
+    "test_cases": [
+      {"input": [5], "expected": 5},
+      {"input": [0], "expected": 0}
+    ],
+    "bug_trigger_cases": [
+      {"input": [-5], "expected": 5, "description": "음수의 절댓값이 음수로 반환됨"},
+      {"input": [-1], "expected": 1, "description": "음수의 절댓값이 음수로 반환됨"}
+    ],
+    "input_hint": "정수를 입력하세요 (예: 5, -5, 0)",
+    "hints": [
+      "절댓값은 항상 0 이상이어야 합니다.",
+      "음수를 입력해보세요! -5의 절댓값은?"
+    ],
+    "bounty_points": 75,
+    "difficulty": "beginner",
+    "prescripted_responses": {
+      "code": "```python\ndef absolute(n):\n    if n < 0:\n        return n\n    return n\n```\n\n절댓값 함수를 만들었어요! 검증해보세요.",
+      "hint": "절댓값은 숫자의 부호를 없앤 값이에요. 음수의 절댓값은?",
+      "default": "양수와 음수 모두 테스트해보세요!"
+    }
+  },
+  {
+    "title": "빈 리스트의 최대값",
+    "description": "리스트에서 최대값을 찾는 함수입니다. 모든 경우를 처리했을까요?",
+    "level": 3,
+    "category": "boundary",
+    "function_name": "find_max",
+    "bug_type": "boundary",
+    "buggy_code_template": "def find_max(lst):\n    max_val = lst[0]\n    for x in lst:\n        if x > max_val:\n            max_val = x\n    return max_val",
+    "correct_code": "def find_max(lst):\n    if not lst:\n        return None\n    max_val = lst[0]\n    for x in lst:\n        if x > max_val:\n            max_val = x\n    return max_val",
+    "input_schema": {
+      "type": "single",
+      "args": [
+        {
+          "name": "lst",
+          "type": "list",
+          "description": "정수 리스트",
+          "example": [1, 2, 3]
+        }
+      ]
+    },
+    "expected_output_type": "any",
+    "comparison_config": {},
+    "test_cases": [
+      {"input": [[5, 3, 8]], "expected": 8},
+      {"input": [[1]], "expected": 1}
+    ],
+    "bug_trigger_cases": [
+      {"input": [[]], "expected": null, "description": "빈 리스트에서 IndexError 발생"}
+    ],
+    "input_hint": "리스트를 입력하세요 (예: [1, 2, 3] 또는 [])",
+    "hints": [
+      "리스트가 비어있다면 어떻게 될까요?",
+      "빈 리스트 []를 입력해보세요!"
+    ],
+    "bounty_points": 100,
+    "difficulty": "intermediate",
+    "prescripted_responses": {
+      "code": "```python\ndef find_max(lst):\n    max_val = lst[0]\n    for x in lst:\n        if x > max_val:\n            max_val = x\n    return max_val\n```\n\n리스트에서 최대값을 찾는 함수예요!",
+      "hint": "리스트가 비어있을 때는 어떻게 처리해야 할까요?",
+      "default": "다양한 리스트를 테스트해보세요. 특수한 경우도 생각해보세요!"
+    }
+  },
+  {
+    "title": "마지막 글자의 함정",
+    "description": "문자열의 마지막 글자를 반환하는 함수입니다.",
+    "level": 3,
+    "category": "boundary",
+    "function_name": "get_last_char",
+    "bug_type": "boundary",
+    "buggy_code_template": "def get_last_char(s):\n    return s[len(s)]",
+    "correct_code": "def get_last_char(s):\n    if not s:\n        return None\n    return s[len(s) - 1]",
+    "input_schema": {
+      "type": "single",
+      "args": [
+        {
+          "name": "s",
+          "type": "str",
+          "description": "문자열",
+          "example": "hello"
+        }
+      ]
+    },
+    "expected_output_type": "any",
+    "comparison_config": {
+      "case_sensitive": true
+    },
+    "test_cases": [
+      {"input": ["world"], "expected": "d"}
+    ],
+    "bug_trigger_cases": [
+      {"input": ["hello"], "expected": "o", "description": "인덱스 오류 (off-by-one)"},
+      {"input": [""], "expected": null, "description": "빈 문자열 처리 실패"}
+    ],
+    "input_hint": "문자열을 입력하세요 (예: \"hello\")",
+    "hints": [
+      "문자열 인덱스는 0부터 시작합니다.",
+      "len(s)는 마지막 인덱스가 아닙니다!"
+    ],
+    "bounty_points": 100,
+    "difficulty": "intermediate",
+    "prescripted_responses": {
+      "code": "```python\ndef get_last_char(s):\n    return s[len(s)]\n```\n\n마지막 글자를 반환하는 함수예요!",
+      "hint": "파이썬 인덱스는 0부터 시작해요. 길이가 5인 문자열의 마지막 인덱스는?",
+      "default": "다양한 문자열로 테스트해보세요!"
+    }
+  },
+  {
+    "title": "나눗셈의 함정",
+    "description": "두 숫자를 나누는 함수입니다. 0으로 나누면?",
+    "level": 4,
+    "category": "boundary",
+    "function_name": "divide",
+    "bug_type": "boundary",
+    "buggy_code_template": "def divide(a, b):\n    return a / b",
+    "correct_code": "def divide(a, b):\n    if b == 0:\n        return None\n    return a / b",
+    "input_schema": {
+      "type": "multiple",
+      "args": [
+        {
+          "name": "a",
+          "type": "float",
+          "description": "피제수",
+          "example": 10
+        },
+        {
+          "name": "b",
+          "type": "float",
+          "description": "제수",
+          "example": 2
+        }
+      ]
+    },
+    "expected_output_type": "any",
+    "comparison_config": {
+      "float_epsilon": 0.0001
+    },
+    "test_cases": [
+      {"input": [10, 2], "expected": 5.0},
+      {"input": [9, 3], "expected": 3.0}
+    ],
+    "bug_trigger_cases": [
+      {"input": [5, 0], "expected": null, "description": "0으로 나누면 ZeroDivisionError 발생"}
+    ],
+    "input_hint": "두 숫자를 입력하세요 (예: 10, 2)",
+    "hints": [
+      "0으로 나누면 어떻게 될까요?",
+      "두 번째 인자에 0을 넣어보세요!"
+    ],
+    "bounty_points": 100,
+    "difficulty": "intermediate"
+  },
+  {
+    "title": "숫자 더하기의 함정",
+    "description": "두 숫자를 더하는 함수입니다. 문자열이 들어오면?",
+    "level": 5,
+    "category": "type",
+    "function_name": "add_numbers",
+    "bug_type": "type",
+    "buggy_code_template": "def add_numbers(a, b):\n    return a + b",
+    "correct_code": "def add_numbers(a, b):\n    return int(a) + int(b)",
+    "input_schema": {
+      "type": "multiple",
+      "args": [
+        {
+          "name": "a",
+          "type": "any",
+          "description": "첫 번째 값",
+          "example": 5
+        },
+        {
+          "name": "b",
+          "type": "any",
+          "description": "두 번째 값",
+          "example": 3
+        }
+      ]
+    },
+    "expected_output_type": "int",
+    "comparison_config": {},
+    "test_cases": [
+      {"input": [5, 3], "expected": 8},
+      {"input": [10, 20], "expected": 30}
+    ],
+    "bug_trigger_cases": [
+      {"input": ["5", "3"], "expected": 8, "description": "문자열 연결 대신 덧셈 기대"}
+    ],
+    "input_hint": "두 값을 입력하세요 (예: 5, 3 또는 \"5\", \"3\")",
+    "hints": [
+      "파이썬에서 문자열끼리 + 연산을 하면?",
+      "\"5\" + \"3\"의 결과는 무엇일까요?"
+    ],
+    "bounty_points": 150,
+    "difficulty": "advanced"
+  },
+  {
+    "title": "리스트 평균의 함정",
+    "description": "리스트 원소들의 평균을 구하는 함수입니다.",
+    "level": 4,
+    "category": "boundary",
+    "function_name": "average",
+    "bug_type": "boundary",
+    "buggy_code_template": "def average(lst):\n    return sum(lst) / len(lst)",
+    "correct_code": "def average(lst):\n    if not lst:\n        return 0\n    return sum(lst) / len(lst)",
+    "input_schema": {
+      "type": "single",
+      "args": [
+        {
+          "name": "lst",
+          "type": "list",
+          "description": "숫자 리스트",
+          "example": [1, 2, 3, 4, 5]
+        }
+      ]
+    },
+    "expected_output_type": "float",
+    "comparison_config": {
+      "float_epsilon": 0.0001
+    },
+    "test_cases": [
+      {"input": [[1, 2, 3, 4, 5]], "expected": 3.0},
+      {"input": [[10]], "expected": 10.0}
+    ],
+    "bug_trigger_cases": [
+      {"input": [[]], "expected": 0, "description": "빈 리스트에서 ZeroDivisionError 발생"}
+    ],
+    "input_hint": "숫자 리스트를 입력하세요 (예: [1, 2, 3])",
+    "hints": [
+      "빈 리스트의 평균은 어떻게 계산할까요?",
+      "빈 리스트 []를 입력해보세요!"
+    ],
+    "bounty_points": 100,
+    "difficulty": "intermediate"
+  },
+  {
+    "title": "팰린드롬 검사기",
+    "description": "문자열이 팰린드롬(앞뒤가 같은 문자열)인지 검사합니다.",
+    "level": 5,
+    "category": "logic",
+    "function_name": "is_palindrome",
+    "bug_type": "logic",
+    "buggy_code_template": "def is_palindrome(s):\n    return s == s[::-1]",
+    "correct_code": "def is_palindrome(s):\n    s = s.lower().replace(' ', '')\n    return s == s[::-1]",
+    "input_schema": {
+      "type": "single",
+      "args": [
+        {
+          "name": "s",
+          "type": "str",
+          "description": "검사할 문자열",
+          "example": "level"
+        }
+      ]
+    },
+    "expected_output_type": "bool",
+    "comparison_config": {},
+    "test_cases": [
+      {"input": ["level"], "expected": true},
+      {"input": ["hello"], "expected": false}
+    ],
+    "bug_trigger_cases": [
+      {"input": ["Racecar"], "expected": true, "description": "대소문자 구분으로 팰린드롬 인식 실패"},
+      {"input": ["A man a plan a canal Panama"], "expected": true, "description": "공백과 대소문자 처리 실패"}
+    ],
+    "input_hint": "문자열을 입력하세요 (예: \"level\", \"Racecar\")",
+    "hints": [
+      "대소문자를 구분해야 할까요?",
+      "공백은 어떻게 처리해야 할까요?",
+      "\"Racecar\"를 테스트해보세요!"
+    ],
+    "bounty_points": 150,
+    "difficulty": "advanced"
+  },
+  {
+    "title": "범위 체크의 함정",
+    "description": "숫자가 특정 범위 내에 있는지 검사하는 함수입니다.",
+    "level": 2,
+    "category": "boundary",
+    "function_name": "in_range",
+    "bug_type": "boundary",
+    "buggy_code_template": "def in_range(n, low, high):\n    return n > low and n < high",
+    "correct_code": "def in_range(n, low, high):\n    return n >= low and n <= high",
+    "input_schema": {
+      "type": "multiple",
+      "args": [
+        {
+          "name": "n",
+          "type": "int",
+          "description": "검사할 숫자",
+          "example": 5
+        },
+        {
+          "name": "low",
+          "type": "int",
+          "description": "최소값",
+          "example": 1
+        },
+        {
+          "name": "high",
+          "type": "int",
+          "description": "최대값",
+          "example": 10
+        }
+      ]
+    },
+    "expected_output_type": "bool",
+    "comparison_config": {},
+    "test_cases": [
+      {"input": [5, 1, 10], "expected": true},
+      {"input": [0, 1, 10], "expected": false}
+    ],
+    "bug_trigger_cases": [
+      {"input": [1, 1, 10], "expected": true, "description": "경계값이 범위에서 제외됨"},
+      {"input": [10, 1, 10], "expected": true, "description": "경계값이 범위에서 제외됨"}
+    ],
+    "input_hint": "숫자와 범위를 입력하세요 (예: 5, 1, 10)",
+    "hints": [
+      "경계값(1과 10)도 범위에 포함되어야 하나요?",
+      "경계값을 직접 테스트해보세요!"
+    ],
+    "bounty_points": 75,
+    "difficulty": "beginner",
+    "prescripted_responses": {
+      "code": "```python\ndef in_range(n, low, high):\n    return n > low and n < high\n```\n\n범위 검사 함수를 만들었어요!",
+      "hint": "경계값도 범위에 포함되어야 할까요?",
+      "default": "경계값을 테스트해보세요!"
+    }
+  }
+]
