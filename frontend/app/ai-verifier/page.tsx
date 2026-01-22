@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AIChallengeListItem, AIChallengeListResponse, AIVerifierStats } from '@/types/ai-verifier';
+import { get } from '@/lib/api';
 
 const LEVELS = [
   { level: 1, name: 'Level 1', description: '기초 로직 버그', color: 'from-green-500 to-green-600' },
@@ -31,20 +32,16 @@ export default function AIVerifierHomePage() {
     async function fetchData() {
       try {
         // Fetch stats (will return default for unauthenticated users)
-        const statsRes = await fetch('/api/v1/ai-verifier/stats', {
-          credentials: 'include',
-        });
-        if (statsRes.ok) {
-          const statsData = await statsRes.json();
+        try {
+          const statsData = await get<AIVerifierStats>('/v1/ai-verifier/stats');
           setStats(statsData);
+        } catch {
+          // Stats may fail for unauthenticated users
         }
 
         // Fetch recent challenges
-        const challengesRes = await fetch('/api/v1/ai-verifier/challenges?page_size=5');
-        if (challengesRes.ok) {
-          const data: AIChallengeListResponse = await challengesRes.json();
-          setRecentChallenges(data.challenges);
-        }
+        const data = await get<AIChallengeListResponse>('/v1/ai-verifier/challenges?page_size=5');
+        setRecentChallenges(data.challenges);
       } catch (error) {
         console.error('Failed to fetch AI Verifier data:', error);
       } finally {

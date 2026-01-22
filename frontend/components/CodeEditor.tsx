@@ -122,7 +122,7 @@ export default function CodeEditor({
   return (
     <div
       ref={containerRef}
-      className="border border-[var(--card-border)] rounded-lg overflow-hidden transition-colors"
+      className="border border-[var(--card-border)] rounded-lg overflow-hidden transition-colors h-full"
     >
       <Editor
         height={actualHeight}

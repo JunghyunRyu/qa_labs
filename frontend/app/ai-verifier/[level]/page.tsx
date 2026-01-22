@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AIChallengeListItem, AIChallengeListResponse } from '@/types/ai-verifier';
+import { get } from '@/lib/api';
 
 const LEVEL_INFO: Record<number, { name: string; description: string; color: string }> = {
   1: { name: 'Level 1', description: '기초 로직 버그 - 간단한 조건문 오류를 찾아보세요', color: 'from-green-500 to-green-600' },
@@ -31,14 +32,11 @@ export default function LevelPage() {
     async function fetchChallenges() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/v1/ai-verifier/challenges?level=${level}&page=${page}&page_size=10`, {
-          credentials: 'include',
-        });
-        if (res.ok) {
-          const data: AIChallengeListResponse = await res.json();
-          setChallenges(data.challenges);
-          setTotalPages(data.total_pages);
-        }
+        const data = await get<AIChallengeListResponse>(
+          `/v1/ai-verifier/challenges?level=${level}&page=${page}&page_size=10`
+        );
+        setChallenges(data.challenges);
+        setTotalPages(data.total_pages);
       } catch (error) {
         console.error('Failed to fetch challenges:', error);
       } finally {

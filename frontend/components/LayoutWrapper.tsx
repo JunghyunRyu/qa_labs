@@ -8,7 +8,9 @@ import Footer from "./Footer";
 const NO_LAYOUT_PATHS = ["/auth/callback"];
 
 // IDE 몰입 모드: 헤더/푸터 숨김, 전체 화면 사용
-const IDE_MODE_PATTERN = /^\/problems\/\d+$/;
+// - /problems/{id}: 문제 풀이 페이지
+// - /ai-verifier/challenge/{id}: AI Verifier 챌린지 페이지
+const IDE_MODE_PATTERN = /^\/problems\/\d+$|^\/ai-verifier\/challenge\/[\w-]+$/;
 
 export default function LayoutWrapper({
   children,

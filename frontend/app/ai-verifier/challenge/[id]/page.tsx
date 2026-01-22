@@ -23,6 +23,7 @@ import {
   trackAIVerifierCodeApplied,
   trackAIVerifierTestSubmitted,
 } from '@/lib/analytics';
+import { get, post } from '@/lib/api';
 
 /**
  * AI Verifier Challenge Page
@@ -120,40 +121,39 @@ export default function ChallengePage() {
     }
 
     try {
-      const res = await fetch(`/api/v1/ai-verifier/challenges/${challengeId}/attempt`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ user_input: userInput, bug_found: bugFound }),
+      const result = await post<{
+        points_earned: number;
+        total_score: number;
+        new_rank?: NewRank;
+        newly_awarded_badges?: NewBadge[];
+      }>(`/v1/ai-verifier/challenges/${challengeId}/attempt`, {
+        user_input: userInput,
+        bug_found: bugFound,
       });
 
-      if (res.ok) {
-        const result = await res.json();
+      // Update gamification state
+      if (result.points_earned > 0) {
+        setPointsEarned(result.points_earned);
+        setTotalScore(result.total_score);
+        // Clear points animation after 3 seconds
+        setTimeout(() => setPointsEarned(0), 3000);
+      }
 
-        // Update gamification state
-        if (result.points_earned > 0) {
-          setPointsEarned(result.points_earned);
-          setTotalScore(result.total_score);
-          // Clear points animation after 3 seconds
-          setTimeout(() => setPointsEarned(0), 3000);
-        }
+      // Handle rank up
+      if (result.new_rank) {
+        setNewRank(result.new_rank);
+        setRank(result.new_rank);
+        // Track rank up analytics
+        trackAIVerifierRankUp({
+          oldRank: rank.name,
+          newRank: result.new_rank.name,
+          totalScore: result.total_score,
+        });
+      }
 
-        // Handle rank up
-        if (result.new_rank) {
-          setNewRank(result.new_rank);
-          setRank(result.new_rank);
-          // Track rank up analytics
-          trackAIVerifierRankUp({
-            oldRank: rank.name,
-            newRank: result.new_rank.name,
-            totalScore: result.total_score,
-          });
-        }
-
-        // Handle badges (queue them for sequential display)
-        if (result.newly_awarded_badges?.length > 0) {
-          setBadgeQueue((prev) => [...prev, ...result.newly_awarded_badges]);
-        }
+      // Handle badges (queue them for sequential display)
+      if (result.newly_awarded_badges?.length && result.newly_awarded_badges.length > 0) {
+        setBadgeQueue((prev) => [...prev, ...result.newly_awarded_badges!]);
       }
     } catch (err) {
       console.error('Failed to record attempt:', err);
@@ -183,25 +183,11 @@ export default function ChallengePage() {
     async function fetchChallenge() {
       try {
         // Fetch challenge and judge code in parallel
-        const [challengeRes, judgeCodeRes] = await Promise.all([
-          fetch(`/api/v1/ai-verifier/challenges/${challengeId}`, {
-            credentials: 'include',
-          }),
-          fetch(`/api/v1/ai-verifier/challenges/${challengeId}/judge-code`, {
-            credentials: 'include',
-          }),
+        const [data, judgeData] = await Promise.all([
+          get<AIChallenge>(`/v1/ai-verifier/challenges/${challengeId}`),
+          get<{ correct_code: string }>(`/v1/ai-verifier/challenges/${challengeId}/judge-code`),
         ]);
 
-        if (!challengeRes.ok) {
-          if (challengeRes.status === 404) {
-            setError('챌린지를 찾을 수 없습니다.');
-          } else {
-            setError('챌린지를 불러오는데 실패했습니다.');
-          }
-          return;
-        }
-
-        const data: AIChallenge = await challengeRes.json();
         setChallenge(data);
         // 초기 코드 설정
         setCurrentCode(data.buggy_code_template);
@@ -218,13 +204,14 @@ export default function ChallengePage() {
         attemptCountRef.current = 0;
 
         // Judge code 설정
-        if (judgeCodeRes.ok) {
-          const judgeData = await judgeCodeRes.json();
-          setCorrectCode(judgeData.correct_code);
-        }
+        setCorrectCode(judgeData.correct_code);
       } catch (err) {
         console.error('Failed to fetch challenge:', err);
-        setError('네트워크 오류가 발생했습니다.');
+        if (err instanceof Error && err.message.includes('404')) {
+          setError('챌린지를 찾을 수 없습니다.');
+        } else {
+          setError('네트워크 오류가 발생했습니다.');
+        }
       } finally {
         setLoading(false);
       }
