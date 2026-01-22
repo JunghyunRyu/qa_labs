@@ -402,6 +402,231 @@ finally:
 }
 
 /**
+ * AI Verifier Judge 실행
+ * 사용자 입력으로 버그 코드와 정답 코드를 실행하여 결과 비교
+ */
+async function runJudge(id, payload) {
+  if (!pyodide) {
+    sendError('Pyodide가 초기화되지 않았습니다.', id);
+    return;
+  }
+
+  const startTime = performance.now();
+  const { userInput, buggyCode, correctCode, functionName, expectedOutputType, comparisonConfig } = payload;
+
+  try {
+    sendProgress({ stage: 'judging', message: '입력값 파싱 중...' }, id);
+
+    // Python 코드로 입력 파싱 및 함수 실행
+    const judgeCode = `
+import json
+import sys
+from io import StringIO
+
+def parse_input(input_str):
+    """사용자 입력을 Python 값으로 파싱"""
+    input_str = input_str.strip()
+
+    # JSON 파싱 시도
+    try:
+        return json.loads(input_str)
+    except:
+        pass
+
+    # Python literal 평가 시도
+    try:
+        return eval(input_str)
+    except:
+        pass
+
+    # 문자열 그대로 반환
+    return input_str
+
+def compare_results(actual, expected, config):
+    """결과 비교"""
+    float_epsilon = config.get('float_epsilon', 1e-9)
+    list_order_matters = config.get('list_order_matters', True)
+    case_sensitive = config.get('case_sensitive', True)
+
+    # None 체크
+    if actual is None and expected is None:
+        return True
+    if actual is None or expected is None:
+        return False
+
+    # 타입이 다르면 False
+    if type(actual) != type(expected):
+        # float와 int는 허용
+        if not (isinstance(actual, (int, float)) and isinstance(expected, (int, float))):
+            return False
+
+    # 숫자 비교
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        if float_epsilon > 0:
+            return abs(actual - expected) < float_epsilon
+        return actual == expected
+
+    # 문자열 비교
+    if isinstance(actual, str) and isinstance(expected, str):
+        if case_sensitive:
+            return actual == expected
+        return actual.lower() == expected.lower()
+
+    # 리스트 비교
+    if isinstance(actual, list) and isinstance(expected, list):
+        if len(actual) != len(expected):
+            return False
+        if not list_order_matters:
+            try:
+                return sorted(actual) == sorted(expected)
+            except:
+                pass
+        return all(compare_results(a, e, config) for a, e in zip(actual, expected))
+
+    # 딕셔너리 비교
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        if set(actual.keys()) != set(expected.keys()):
+            return False
+        return all(compare_results(actual[k], expected[k], config) for k in actual.keys())
+
+    # 그 외
+    return actual == expected
+
+# 입력 파싱
+user_input_str = ${JSON.stringify(userInput)}
+parsed_input = parse_input(user_input_str)
+
+# 코드 실행을 위한 네임스페이스 설정
+buggy_ns = {}
+correct_ns = {}
+
+# 버그 코드 실행
+buggy_code = ${JSON.stringify(buggyCode)}
+correct_code = ${JSON.stringify(correctCode)}
+function_name = ${JSON.stringify(functionName)}
+comparison_config = ${JSON.stringify(comparisonConfig || {})}
+
+buggy_error = None
+correct_error = None
+buggy_result = None
+correct_result = None
+
+try:
+    exec(buggy_code, buggy_ns)
+except Exception as e:
+    buggy_error = str(e)
+
+try:
+    exec(correct_code, correct_ns)
+except Exception as e:
+    correct_error = str(e)
+
+# 함수 실행
+if buggy_error is None:
+    try:
+        buggy_func = buggy_ns.get(function_name)
+        if buggy_func is None:
+            buggy_error = f"함수 '{function_name}'을 찾을 수 없습니다."
+        else:
+            if isinstance(parsed_input, (list, tuple)):
+                buggy_result = buggy_func(*parsed_input)
+            else:
+                buggy_result = buggy_func(parsed_input)
+    except Exception as e:
+        buggy_error = str(e)
+
+if correct_error is None:
+    try:
+        correct_func = correct_ns.get(function_name)
+        if correct_func is None:
+            correct_error = f"함수 '{function_name}'을 찾을 수 없습니다."
+        else:
+            if isinstance(parsed_input, (list, tuple)):
+                correct_result = correct_func(*parsed_input)
+            else:
+                correct_result = correct_func(parsed_input)
+    except Exception as e:
+        correct_error = str(e)
+
+# 결과 비교
+results_match = False
+if buggy_error is None and correct_error is None:
+    results_match = compare_results(buggy_result, correct_result, comparison_config)
+
+# 버그 발견 여부: 결과가 다르거나 버그 코드에서 에러 발생
+bug_found = not results_match or (buggy_error is not None and correct_error is None)
+
+# 결과 반환
+result = {
+    'parsed_input': parsed_input,
+    'buggy_result': buggy_result,
+    'buggy_error': buggy_error,
+    'correct_result': correct_result,
+    'correct_error': correct_error,
+    'results_match': results_match,
+    'bug_found': bug_found,
+}
+
+json.dumps(result)
+`;
+
+    const resultJson = pyodide.runPython(judgeCode);
+    const resultObj = JSON.parse(resultJson);
+
+    const executionTime = performance.now() - startTime;
+
+    // 결과 구성
+    let errorType = null;
+    let errorMessage = null;
+    let userFriendlyMessage = '';
+
+    if (resultObj.buggy_error && !resultObj.correct_error) {
+      errorType = 'E_BUGGY_CODE';
+      errorMessage = resultObj.buggy_error;
+      userFriendlyMessage = '버그 코드에서 오류가 발생했습니다!';
+    } else if (resultObj.correct_error) {
+      errorType = 'E_CORRECT_CODE';
+      errorMessage = resultObj.correct_error;
+      userFriendlyMessage = '정답 코드에서 오류가 발생했습니다.';
+    } else if (resultObj.bug_found) {
+      userFriendlyMessage = '버그를 찾았습니다! 입력값 ' + userInput + '에서 버그 코드와 정답 코드의 결과가 다릅니다.';
+    } else {
+      userFriendlyMessage = '이 입력값에서는 버그를 찾지 못했습니다. 다른 입력값을 시도해보세요.';
+    }
+
+    const judgeResult = {
+      success: true,
+      bugFound: resultObj.bug_found,
+      userInput: userInput,
+      parsedInput: resultObj.parsed_input,
+      actualResult: resultObj.buggy_result,
+      expectedResult: resultObj.correct_result,
+      errorType: errorType,
+      errorMessage: errorMessage,
+      userFriendlyMessage: userFriendlyMessage,
+      executionTimeMs: executionTime,
+    };
+
+    sendResult(id, true, judgeResult, executionTime);
+  } catch (error) {
+    const executionTime = performance.now() - startTime;
+    const judgeResult = {
+      success: false,
+      bugFound: false,
+      userInput: userInput,
+      parsedInput: null,
+      actualResult: null,
+      expectedResult: null,
+      errorType: 'E_RUNTIME',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      userFriendlyMessage: '검증 중 오류가 발생했습니다.',
+      executionTimeMs: executionTime,
+    };
+    sendResult(id, false, judgeResult, executionTime);
+  }
+}
+
+/**
  * 파일시스템 정리
  */
 function cleanup(id) {
@@ -446,6 +671,10 @@ self.onmessage = async function(event) {
 
     case 'runMutationTest':
       await runMutationTest(id, payload.testCode, payload.goldenCode, payload.buggyImplementations);
+      break;
+
+    case 'runJudge':
+      await runJudge(id, payload);
       break;
 
     case 'cleanup':

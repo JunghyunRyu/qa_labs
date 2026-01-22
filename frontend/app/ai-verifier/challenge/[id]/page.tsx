@@ -12,6 +12,7 @@ import { BadgeEarned, RankUpModal, ScoreDisplay } from '@/components/ai-verifier
 import { OnboardingTutorial, useOnboarding } from '@/components/ai-verifier/Onboarding';
 import { useEditorAction } from '@/hooks/ai-verifier/useEditorAction';
 import { useJudge } from '@/hooks/ai-verifier/useJudge';
+import { usePyodideStore } from '@/stores/pyodideStore';
 import {
   trackAIVerifierChallengeView,
   trackAIVerifierBugFound,
@@ -71,6 +72,20 @@ export default function ChallengePage() {
 
   // useEditorAction 훅으로 Undo 스택 보존 적용
   const { applyCode, undoLastApply, lastApply } = useEditorAction(editorRef);
+
+  // Pyodide 미리 초기화 (페이지 로드 시)
+  const initializePyodide = usePyodideStore((state) => state.initialize);
+  const isPyodideInitialized = usePyodideStore((state) => state._isInitialized);
+  const isPyodideInitializing = usePyodideStore((state) => state._isInitializing);
+
+  useEffect(() => {
+    // 페이지 마운트 시 Pyodide 미리 초기화
+    if (!isPyodideInitialized && !isPyodideInitializing) {
+      initializePyodide().catch((err) => {
+        console.error('Failed to preload Pyodide:', err);
+      });
+    }
+  }, [initializePyodide, isPyodideInitialized, isPyodideInitializing]);
 
   // Judge Engine 훅 (challenge 로드 후 초기화)
   const judgeOptions = challenge ? {
