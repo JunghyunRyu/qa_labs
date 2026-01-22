@@ -6,13 +6,14 @@ import Link from 'next/link';
 import type { editor } from 'monaco-editor';
 import { AIChallenge } from '@/types/ai-verifier';
 import { VerifierEditor } from '@/components/ai-verifier/VerifierEditor';
+import { ChatPanel } from '@/components/ai-verifier/ChatPanel';
 import { useEditorAction } from '@/hooks/ai-verifier/useEditorAction';
 
 /**
  * AI Verifier Challenge Page
  *
  * M2: Monaco Editor 통합 완료
- * - M3: AI Chat interface (ChatPanel component) - TODO
+ * M3: AI Chat Interface 통합 완료
  * - M4: Judge Engine integration (TestCaseInput, JudgeResult components) - TODO
  */
 export default function ChallengePage() {
@@ -129,40 +130,16 @@ export default function ChallengePage() {
 
       {/* Main Content - 2-Panel Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Chat (Placeholder) */}
+        {/* Left Panel - Chat */}
         <div className="w-1/2 border-r border-gray-700 flex flex-col bg-gray-900">
-          <div className="flex-1 p-4 overflow-auto">
-            <div className="bg-gray-800 rounded-lg p-4 mb-4">
-              <h2 className="text-lg font-bold text-white mb-2">미션</h2>
-              <p className="text-gray-300">{challenge.description}</p>
-            </div>
-
-            <div className="bg-gray-800 rounded-lg p-4 mb-4">
-              <h3 className="text-md font-medium text-white mb-2">함수 정보</h3>
-              <p className="text-gray-400 text-sm">
-                함수명: <code className="bg-gray-700 px-1 rounded">{challenge.function_name}</code>
-              </p>
-              <p className="text-gray-400 text-sm mt-1">
-                버그 유형: <span className="text-orange-400">{challenge.bug_type}</span>
-              </p>
-            </div>
-
-            {/* Chat Panel Placeholder */}
-            <div className="bg-gray-800 rounded-lg p-4 text-center text-gray-500">
-              <p className="mb-2">💬 AI Chat Panel</p>
-              <p className="text-sm">(M3에서 구현 예정)</p>
-            </div>
-          </div>
-
-          {/* Chat Input Placeholder */}
-          <div className="p-4 border-t border-gray-700">
-            <input
-              type="text"
-              placeholder="AI에게 코드를 요청하세요..."
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white"
-              disabled
-            />
-          </div>
+          <ChatPanel
+            challengeId={challengeId}
+            challengeLevel={challenge.level}
+            onApplyCode={handleApplyAICode}
+            missionDescription={challenge.description}
+            functionName={challenge.function_name}
+            bugType={challenge.bug_type}
+          />
         </div>
 
         {/* Right Panel - Editor & Test */}

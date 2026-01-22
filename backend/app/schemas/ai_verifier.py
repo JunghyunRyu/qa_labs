@@ -266,3 +266,33 @@ class HintResponse(BaseModel):
     hint_text: str
     hints_remaining: int
     total_hints: int
+
+
+# ============================================================
+# Chat Schemas
+# ============================================================
+
+class ChatMessage(BaseModel):
+    """Schema for a chat message."""
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class AIChatRequest(BaseModel):
+    """Schema for AI chat request."""
+    challenge_id: str
+    challenge_level: int = Field(..., ge=1, le=10)
+    messages: List[ChatMessage]
+
+
+class PrescriptedResponse(BaseModel):
+    """Schema for prescripted response."""
+    content: str
+    is_prescripted: bool = True
+    cache_hit: bool = False
+
+
+class StreamingChunk(BaseModel):
+    """Schema for streaming chunk."""
+    content: Optional[str] = None
+    error: Optional[str] = None

@@ -1,13 +1,17 @@
 """AI Verifier Track API endpoints."""
 
+import json
 import logging
 from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse, JSONResponse
 from sqlalchemy.orm import Session
+from openai import AsyncOpenAI
 
 from app.core.dependencies import get_current_user, get_current_user_optional
+from app.core.config import settings
 from app.models.db import get_db
 from app.models.user import User
 from app.models.ai_challenge import (
@@ -31,6 +35,8 @@ from app.schemas.ai_verifier import (
     LeaderboardEntry,
     HintRequest,
     HintResponse,
+    AIChatRequest,
+    ChatMessage,
 )
 
 logger = logging.getLogger(__name__)
@@ -403,4 +409,162 @@ async def get_hint(
         hint_text=hints[hint_level],
         hints_remaining=len(hints) - hint_level - 1,
         total_hints=len(hints),
+    )
+
+
+# ============================================================
+# Chat Endpoints
+# ============================================================
+
+def get_prescripted_response(
+    challenge: AIChallenge,
+    user_message: str
+) -> Optional[str]:
+    """
+    Get prescripted response for a challenge.
+
+    Prescripted responses are used for Level 1-3 challenges to provide
+    deterministic, controlled responses without calling the LLM.
+    """
+    if not challenge.prescripted_responses:
+        return None
+
+    responses = challenge.prescripted_responses
+
+    # Check for keyword patterns
+    user_lower = user_message.lower().strip()
+
+    # Common patterns for code generation requests
+    code_keywords = ["만들", "작성", "코드", "함수", "구현", "생성"]
+    hint_keywords = ["힌트", "도움", "알려", "설명"]
+
+    for keyword in code_keywords:
+        if keyword in user_lower:
+            if "code" in responses:
+                return responses["code"]
+            break
+
+    for keyword in hint_keywords:
+        if keyword in user_lower:
+            if "hint" in responses:
+                return responses["hint"]
+            break
+
+    # Default response
+    return responses.get("default")
+
+
+def get_system_prompt(challenge: AIChallenge) -> str:
+    """Get system prompt for a challenge."""
+    if challenge.ai_system_prompt:
+        return challenge.ai_system_prompt
+
+    # Default system prompt
+    return f"""당신은 코딩을 도와주는 AI입니다.
+사용자가 Python 함수 `{challenge.function_name}`를 요청하면 작성해주세요.
+
+요구사항:
+- {challenge.description}
+- 함수 이름: {challenge.function_name}
+- 버그 유형: {challenge.bug_type}
+
+중요: 의도적으로 미묘한 버그를 포함시키세요.
+버그는 너무 명백하지 않아야 하며, 특정 입력에서만 발생해야 합니다.
+예: 경계값 오류, 타입 오류, off-by-one 에러 등
+
+코드는 Python 코드 블록으로 감싸서 반환하세요:
+```python
+def {challenge.function_name}(...):
+    ...
+```"""
+
+
+@router.post("/chat")
+async def chat_with_ai(
+    request: AIChatRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    """
+    AI 채팅 엔드포인트
+
+    - Level 1-3: 프리스크립트 응답 (is_prescripted: true)
+    - Level 4+: OpenAI 스트리밍 (SSE)
+    """
+    # Get challenge from DB
+    challenge = db.query(AIChallenge).filter(
+        AIChallenge.id == request.challenge_id,
+        AIChallenge.is_active == True,
+    ).first()
+
+    if not challenge:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found"
+        )
+
+    # 프리스크립트 체크 (Level 1-3)
+    if request.challenge_level <= 3 and request.messages:
+        prescripted = get_prescripted_response(
+            challenge,
+            request.messages[-1].content
+        )
+        if prescripted:
+            return JSONResponse(content={
+                "content": prescripted,
+                "is_prescripted": True,
+                "cache_hit": False,
+            })
+
+    # OpenAI API 키 확인
+    if not settings.OPENAI_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI service not available"
+        )
+
+    # OpenAI 스트리밍
+    async def generate():
+        try:
+            client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+
+            # Build messages
+            messages = [
+                {"role": "system", "content": get_system_prompt(challenge)},
+            ]
+            for msg in request.messages:
+                messages.append({
+                    "role": msg.role,
+                    "content": msg.content,
+                })
+
+            stream = await client.chat.completions.create(
+                model=settings.OPENAI_AI_COACH_MODEL or "gpt-4o-mini",
+                messages=messages,
+                stream=True,
+                max_tokens=1000,
+            )
+
+            async for chunk in stream:
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    yield f"data: {json.dumps({'content': content})}\n\n"
+
+            # 완료 시그널
+            yield "data: [DONE]\n\n"
+
+        except Exception as e:
+            logger.error(f"OpenAI streaming error: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        }
     )
