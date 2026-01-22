@@ -9,8 +9,20 @@ import { VerifierEditor } from '@/components/ai-verifier/VerifierEditor';
 import { ChatPanel } from '@/components/ai-verifier/ChatPanel';
 import { TestCaseInput, JudgeResultDisplay } from '@/components/ai-verifier/JudgePanel';
 import { BadgeEarned, RankUpModal, ScoreDisplay } from '@/components/ai-verifier/Gamification';
+import { OnboardingTutorial, useOnboarding } from '@/components/ai-verifier/Onboarding';
 import { useEditorAction } from '@/hooks/ai-verifier/useEditorAction';
 import { useJudge } from '@/hooks/ai-verifier/useJudge';
+import {
+  trackAIVerifierChallengeView,
+  trackAIVerifierBugFound,
+  trackAIVerifierBugNotFound,
+  trackAIVerifierBadgeEarned,
+  trackAIVerifierRankUp,
+  trackAIVerifierOnboardingStep,
+  trackAIVerifierOnboardingSkip,
+  trackAIVerifierCodeApplied,
+  trackAIVerifierTestSubmitted,
+} from '@/lib/analytics';
 
 /**
  * AI Verifier Challenge Page
@@ -28,6 +40,20 @@ export default function ChallengePage() {
   const [correctCode, setCorrectCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Onboarding
+  const {
+    showOnboarding,
+    onboardingType,
+    completeOnboarding,
+    skipOnboarding,
+    recordFailure,
+    recordSuccess,
+  } = useOnboarding();
+
+  // Track time spent for analytics
+  const startTimeRef = useRef<number>(Date.now());
+  const attemptCountRef = useRef<number>(0);
 
   // Gamification state
   const [totalScore, setTotalScore] = useState(0);
@@ -57,17 +83,42 @@ export default function ChallengePage() {
 
   const { judge, result: judgeResult, isJudging, isPyodideLoading } = useJudge(judgeOptions);
 
-  // Process badge queue
+  // Process badge queue and track analytics
   useEffect(() => {
     if (badgeQueue.length > 0 && !earnedBadge) {
       const [next, ...rest] = badgeQueue;
       setEarnedBadge(next);
       setBadgeQueue(rest);
+      // Track badge earned
+      trackAIVerifierBadgeEarned({
+        badgeId: next.id,
+        badgeName: next.name,
+      });
     }
   }, [badgeQueue, earnedBadge]);
 
   // Record attempt to server and handle gamification
   const recordAttempt = useCallback(async (userInput: string, bugFound: boolean) => {
+    attemptCountRef.current += 1;
+    const timeSpentSec = Math.floor((Date.now() - startTimeRef.current) / 1000);
+
+    // Track bug found/not found analytics
+    if (bugFound && challenge) {
+      trackAIVerifierBugFound({
+        challengeId,
+        level: challenge.level,
+        attempts: attemptCountRef.current,
+        timeSpentSec,
+      });
+      recordSuccess();
+    } else {
+      trackAIVerifierBugNotFound({
+        challengeId,
+        attempts: attemptCountRef.current,
+      });
+      recordFailure();
+    }
+
     try {
       const res = await fetch(`/api/v1/ai-verifier/challenges/${challengeId}/attempt`, {
         method: 'POST',
@@ -91,6 +142,12 @@ export default function ChallengePage() {
         if (result.new_rank) {
           setNewRank(result.new_rank);
           setRank(result.new_rank);
+          // Track rank up analytics
+          trackAIVerifierRankUp({
+            oldRank: rank.name,
+            newRank: result.new_rank.name,
+            totalScore: result.total_score,
+          });
         }
 
         // Handle badges (queue them for sequential display)
@@ -101,11 +158,17 @@ export default function ChallengePage() {
     } catch (err) {
       console.error('Failed to record attempt:', err);
     }
-  }, [challengeId]);
+  }, [challengeId, challenge, rank.name, recordSuccess, recordFailure]);
 
   // 테스트 실행 핸들러
   const handleTestSubmit = async (userInput: string) => {
     if (!challenge || !correctCode) return;
+
+    // Track test submission
+    trackAIVerifierTestSubmitted({
+      challengeId,
+      inputType: userInput.includes(',') ? 'multiple' : 'single',
+    });
 
     // 현재 에디터의 코드 (버그 코드)와 서버에서 가져온 정답 코드로 비교
     const result = await judge(userInput, currentCode, correctCode);
@@ -143,6 +206,17 @@ export default function ChallengePage() {
         // 초기 코드 설정
         setCurrentCode(data.buggy_code_template);
 
+        // Track challenge view
+        trackAIVerifierChallengeView({
+          challengeId,
+          level: data.level,
+          category: data.category,
+        });
+
+        // Reset timer for this challenge
+        startTimeRef.current = Date.now();
+        attemptCountRef.current = 0;
+
         // Judge code 설정
         if (judgeCodeRes.ok) {
           const judgeData = await judgeCodeRes.json();
@@ -167,10 +241,15 @@ export default function ChallengePage() {
   };
 
   // AI가 새 코드를 제안할 때 호출되는 함수 (M3에서 사용)
-  const handleApplyAICode = (newCode: string) => {
+  const handleApplyAICode = (newCode: string, isPrescripted = false) => {
     setPreviousCode(currentCode);
     setCurrentCode(newCode);
     applyCode(newCode);
+    // Track code application
+    trackAIVerifierCodeApplied({
+      challengeId,
+      isPrescripted,
+    });
   };
 
   // 되돌리기 핸들러
@@ -203,8 +282,30 @@ export default function ChallengePage() {
     );
   }
 
+  // Onboarding handlers with analytics
+  const handleOnboardingComplete = () => {
+    completeOnboarding();
+    trackAIVerifierOnboardingStep({
+      stepNumber: 5,
+      stepName: 'complete',
+    });
+  };
+
+  const handleOnboardingSkip = () => {
+    trackAIVerifierOnboardingSkip({ skippedAtStep: 1 });
+    skipOnboarding();
+  };
+
   return (
     <div className="h-screen flex flex-col">
+      {/* Onboarding Tutorial */}
+      {showOnboarding && onboardingType === 'full' && (
+        <OnboardingTutorial
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+
       {/* Gamification Modals */}
       <BadgeEarned badge={earnedBadge} onClose={() => setEarnedBadge(null)} />
       <RankUpModal rank={newRank} onClose={() => setNewRank(null)} />

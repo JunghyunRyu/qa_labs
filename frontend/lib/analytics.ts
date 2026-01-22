@@ -320,3 +320,165 @@ export const trackFirstSuccessAIClick = (params: {
     problem_slug: params.problemSlug,
   });
 };
+
+// ============================================
+// AI Verifier Track 트래킹 이벤트
+// ============================================
+
+/**
+ * AI Verifier 트랙 진입 이벤트
+ */
+export const trackAIVerifierStart = () => {
+  sendGAEvent("ai_verifier_start", {
+    referrer: typeof document !== "undefined" ? document.referrer : "",
+  });
+};
+
+/**
+ * AI Verifier 챌린지 조회 이벤트
+ */
+export const trackAIVerifierChallengeView = (params: {
+  challengeId: string;
+  level: number;
+  category: string;
+}) => {
+  sendGAEvent("ai_verifier_challenge_view", {
+    challenge_id: params.challengeId,
+    level: params.level,
+    category: params.category,
+  });
+};
+
+/**
+ * AI Verifier 채팅 메시지 전송 이벤트
+ */
+export const trackAIVerifierChatMessage = (params: {
+  challengeId: string;
+  messageType: "user" | "assistant";
+}) => {
+  sendGAEvent("ai_verifier_chat_message", {
+    challenge_id: params.challengeId,
+    message_type: params.messageType,
+  });
+};
+
+/**
+ * AI Verifier 코드 적용 이벤트
+ */
+export const trackAIVerifierCodeApplied = (params: {
+  challengeId: string;
+  isPrescripted: boolean;
+}) => {
+  sendGAEvent("ai_verifier_code_applied", {
+    challenge_id: params.challengeId,
+    is_prescripted: params.isPrescripted,
+  });
+};
+
+/**
+ * AI Verifier 테스트 제출 이벤트
+ */
+export const trackAIVerifierTestSubmitted = (params: {
+  challengeId: string;
+  inputType: string;
+}) => {
+  sendGAEvent("ai_verifier_test_submitted", {
+    challenge_id: params.challengeId,
+    input_type: params.inputType,
+  });
+};
+
+/**
+ * AI Verifier 버그 발견 이벤트
+ */
+export const trackAIVerifierBugFound = (params: {
+  challengeId: string;
+  level: number;
+  attempts: number;
+  timeSpentSec: number;
+}) => {
+  sendGAEvent("ai_verifier_bug_found", {
+    challenge_id: params.challengeId,
+    level: params.level,
+    attempts: params.attempts,
+    time_spent_sec: params.timeSpentSec,
+  });
+};
+
+/**
+ * AI Verifier 버그 미발견 이벤트
+ */
+export const trackAIVerifierBugNotFound = (params: {
+  challengeId: string;
+  attempts: number;
+}) => {
+  sendGAEvent("ai_verifier_bug_not_found", {
+    challenge_id: params.challengeId,
+    attempts: params.attempts,
+  });
+};
+
+/**
+ * AI Verifier 힌트 사용 이벤트
+ */
+export const trackAIVerifierHintUsed = (params: {
+  challengeId: string;
+  hintLevel: number;
+}) => {
+  sendGAEvent("ai_verifier_hint_used", {
+    challenge_id: params.challengeId,
+    hint_level: params.hintLevel,
+  });
+};
+
+/**
+ * AI Verifier 배지 획득 이벤트
+ */
+export const trackAIVerifierBadgeEarned = (params: {
+  badgeId: string;
+  badgeName: string;
+}) => {
+  sendGAEvent("ai_verifier_badge_earned", {
+    badge_id: params.badgeId,
+    badge_name: params.badgeName,
+  });
+};
+
+/**
+ * AI Verifier 랭크 업 이벤트
+ */
+export const trackAIVerifierRankUp = (params: {
+  oldRank: string;
+  newRank: string;
+  totalScore: number;
+}) => {
+  sendGAEvent("ai_verifier_rank_up", {
+    old_rank: params.oldRank,
+    new_rank: params.newRank,
+    total_score: params.totalScore,
+  });
+};
+
+/**
+ * AI Verifier 온보딩 단계 이벤트
+ */
+export const trackAIVerifierOnboardingStep = (params: {
+  stepNumber: number;
+  stepName: string;
+}) => {
+  sendGAEvent("ai_verifier_onboarding_step", {
+    step_number: params.stepNumber,
+    step_name: params.stepName,
+  });
+};
+
+/**
+ * AI Verifier 온보딩 스킵 이벤트
+ */
+export const trackAIVerifierOnboardingSkip = (params: {
+  skippedAtStep: number;
+}) => {
+  sendGAEvent("ai_verifier_onboarding_skip", {
+    skipped_at_step: params.skippedAtStep,
+  });
+};
