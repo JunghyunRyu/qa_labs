@@ -9,6 +9,9 @@
 
 import { useState, useCallback, useRef } from 'react';
 
+const API_BASE_URL =
+  (process.env.NEXT_PUBLIC_API_URL || '').trim() || '/api';
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -121,7 +124,7 @@ export function useAIChat({ challengeId, challengeLevel }: UseAIChatOptions) {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await fetch('/api/v1/ai-verifier/chat', {
+      const response = await fetch(`${API_BASE_URL}/v1/ai-verifier/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
