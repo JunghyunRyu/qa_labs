@@ -8,6 +8,7 @@ export type WorkerRequestType =
   | 'runPython'
   | 'runPytest'
   | 'runMutationTest'
+  | 'runJudge'
   | 'cleanup';
 
 // Worker에서 받는 응답 타입
@@ -79,12 +80,31 @@ export interface CleanupRequest {
   id: string;
 }
 
+// AI Verifier Judge 요청
+export interface RunJudgeRequest {
+  type: 'runJudge';
+  id: string;
+  payload: {
+    userInput: string;
+    buggyCode: string;
+    correctCode: string;
+    functionName: string;
+    expectedOutputType: string;
+    comparisonConfig: {
+      float_epsilon?: number;
+      list_order_matters?: boolean;
+      case_sensitive?: boolean;
+    };
+  };
+}
+
 // Worker 요청 유니온 타입
 export type WorkerRequest =
   | InitRequest
   | RunPythonRequest
   | RunPytestRequest
   | RunMutationTestRequest
+  | RunJudgeRequest
   | CleanupRequest;
 
 // 초기화 완료 응답
@@ -177,4 +197,27 @@ export interface MutationTestResult {
   totalExecutionTime: number;
   /** Golden 테스트 출력 (실패 시 에러 포함) - M6-2 */
   goldenTestOutput?: string;
+}
+
+// AI Verifier Judge 에러 타입
+export type JudgeErrorType =
+  | 'E_SYNTAX'
+  | 'E_RUNTIME'
+  | 'E_TIMEOUT'
+  | 'E_MEMORY'
+  | 'E_FORBIDDEN'
+  | 'E_INPUT';
+
+// AI Verifier Judge 결과
+export interface JudgeResult {
+  success: boolean;
+  bugFound: boolean;
+  userInput: string;
+  parsedInput: unknown;
+  actualResult: unknown;
+  expectedResult: unknown;
+  errorType?: JudgeErrorType;
+  errorMessage?: string;
+  userFriendlyMessage?: string;
+  executionTimeMs: number;
 }

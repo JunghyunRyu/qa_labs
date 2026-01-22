@@ -12,6 +12,8 @@ import type {
   ProgressInfo,
   MutationTestResult,
   PytestResult,
+  JudgeResult,
+  RunJudgeRequest,
 } from "../workers/pyodide-worker-types";
 
 type PyodideStatus = "idle" | "loading" | "ready" | "executing" | "error";
@@ -41,9 +43,14 @@ interface PyodideState {
     buggyImplementations: Array<{ id: string; code: string }>
   ) => Promise<MutationTestResult>;
   runTests: (testCode: string, targetCode: string) => Promise<PytestResult>;
+  runJudge: (payload: RunJudgeRequest['payload']) => Promise<JudgeResult>;
   cleanup: () => Promise<void>;
   restart: () => void;
   preload: () => void;
+
+  // Computed getters
+  isInitialized: boolean;
+  isInitializing: boolean;
 }
 
 // 실행 타임아웃 (6초 - Worker 내부 타임아웃보다 1초 여유)
@@ -203,6 +210,14 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
     _isInitialized: false,
     _isInitializing: false,
 
+    // Computed getters
+    get isInitialized() {
+      return get()._isInitialized;
+    },
+    get isInitializing() {
+      return get()._isInitializing;
+    },
+
     // Preload - Worker만 생성 (초기화는 나중에)
     preload: () => {
       const state = get();
@@ -278,6 +293,25 @@ export const usePyodideStore = create<PyodideState>()((set, get) => {
       };
 
       return await sendMessage<PytestResult>(request, EXECUTION_TIMEOUT_MS);
+    },
+
+    // Run AI Verifier Judge (타임아웃 적용)
+    runJudge: async (payload) => {
+      const state = get();
+
+      if (!state._isInitialized) {
+        throw new Error("Pyodide is not initialized");
+      }
+
+      set({ status: "executing", progress: null });
+
+      const request: WorkerRequest = {
+        type: "runJudge",
+        id: generateRequestId(),
+        payload,
+      };
+
+      return await sendMessage<JudgeResult>(request, EXECUTION_TIMEOUT_MS);
     },
 
     // Cleanup

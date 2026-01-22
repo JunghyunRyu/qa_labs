@@ -16,6 +16,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@sentry/nextjs": "^8.55.0",
+    "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.55.1",
@@ -38,6 +39,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",

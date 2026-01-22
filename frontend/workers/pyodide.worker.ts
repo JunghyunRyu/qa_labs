@@ -13,6 +13,9 @@ import type {
   CodeExecutionResult,
   PytestResult,
   MutationTestResult,
+  JudgeResult,
+  JudgeErrorType,
+  RunJudgeRequest,
 } from './pyodide-worker-types';
 
 // Web Worker 전역 함수 타입 선언
@@ -506,6 +509,217 @@ function cleanup(id: string): void {
   }
 }
 
+/**
+ * AI Verifier Judge: 에러 타입 분류
+ */
+function classifyJudgeError(error: Error): { type: JudgeErrorType; userMessage: string } {
+  const msg = error.message.toLowerCase();
+
+  if (msg.includes('syntaxerror') || msg.includes('syntax error')) {
+    return { type: 'E_SYNTAX', userMessage: '코드에 문법 오류가 있습니다.' };
+  }
+  if (msg.includes('e_timeout') || msg.includes('timeout') || msg.includes('시간 초과')) {
+    return { type: 'E_TIMEOUT', userMessage: '실행 시간이 초과되었습니다. (5초)' };
+  }
+  if (msg.includes('memory') || msg.includes('heap')) {
+    return { type: 'E_MEMORY', userMessage: '메모리 제한을 초과했습니다.' };
+  }
+  if (msg.includes('e_forbidden') || msg.includes('forbidden') || msg.includes('not allowed') || msg.includes('허용되지 않')) {
+    return { type: 'E_FORBIDDEN', userMessage: '허용되지 않는 코드 패턴입니다.' };
+  }
+  if (msg.includes('e_input') || msg.includes('파싱할 수 없')) {
+    return { type: 'E_INPUT', userMessage: '입력 형식이 올바르지 않습니다.' };
+  }
+  return { type: 'E_RUNTIME', userMessage: `실행 중 오류: ${error.message}` };
+}
+
+/**
+ * AI Verifier Judge: 결과 비교
+ */
+function compareJudgeResults(
+  actual: unknown,
+  expected: unknown,
+  expectedType: string,
+  config: RunJudgeRequest['payload']['comparisonConfig']
+): boolean {
+  // Float 엡실론 비교
+  if (expectedType === 'float') {
+    const epsilon = config.float_epsilon ?? 1e-6;
+    if (typeof actual === 'number' && typeof expected === 'number') {
+      return Math.abs(actual - expected) < epsilon;
+    }
+  }
+
+  // 리스트 순서
+  if (expectedType === 'list' && Array.isArray(actual) && Array.isArray(expected)) {
+    if (config.list_order_matters !== false) {
+      return JSON.stringify(actual) === JSON.stringify(expected);
+    }
+    return JSON.stringify([...actual].sort()) === JSON.stringify([...expected].sort());
+  }
+
+  // 문자열 대소문자
+  if (expectedType === 'str' && config.case_sensitive === false) {
+    return String(actual).toLowerCase() === String(expected).toLowerCase();
+  }
+
+  // 기본 비교
+  return JSON.stringify(actual) === JSON.stringify(expected);
+}
+
+/**
+ * AI Verifier Judge: 결과 포맷팅
+ */
+function formatJudgeResult(value: unknown): string {
+  if (value === null) return 'None';
+  if (value === undefined) return 'undefined';
+  if (typeof value === 'string') return `"${value}"`;
+  if (typeof value === 'boolean') return value ? 'True' : 'False';
+  if (Array.isArray(value)) return JSON.stringify(value);
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+/**
+ * AI Verifier Judge 실행
+ */
+async function runJudge(
+  id: string,
+  payload: RunJudgeRequest['payload']
+): Promise<void> {
+  if (!pyodide) {
+    sendError('Pyodide가 초기화되지 않았습니다.', id);
+    return;
+  }
+
+  const {
+    userInput,
+    buggyCode,
+    correctCode,
+    functionName,
+    expectedOutputType,
+    comparisonConfig,
+  } = payload;
+
+  const startTime = performance.now();
+
+  try {
+    sendProgress({ stage: 'executing', message: '입력값 파싱 중...' }, id);
+
+    // 1. 입력 파싱 (2-Phase: JSON → ast.literal_eval)
+    const parseCode = `
+import json
+import ast
+
+def _parse_input(raw):
+    raw = raw.strip()
+    # Phase 1: JSON
+    try:
+        return json.loads(raw)
+    except:
+        pass
+    # Phase 2: literal_eval
+    try:
+        return ast.literal_eval(raw)
+    except Exception as e:
+        raise ValueError(f"E_INPUT: 입력을 파싱할 수 없습니다 - {e}")
+
+_parsed_input = _parse_input(${JSON.stringify(userInput)})
+_parsed_input
+`;
+
+    const parseResult = await runPythonWithTimeout(parseCode);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const parsedInput = (parseResult as any)?.toJs ? (parseResult as any).toJs() : parseResult;
+
+    sendProgress({ stage: 'executing', message: '보안 검사 중...' }, id);
+
+    // 2. 보안 검사 (금지 패턴)
+    const securityCheckCode = `
+import re
+_FORBIDDEN_PATTERNS = [
+    r'\\bimport\\s+os\\b', r'\\bimport\\s+sys\\b', r'\\bimport\\s+subprocess\\b',
+    r'\\bopen\\s*\\(', r'\\beval\\s*\\(', r'\\bexec\\s*\\(',
+    r'\\b__import__\\s*\\(', r'\\bglobals\\s*\\(', r'\\blocals\\s*\\('
+]
+for _pattern in _FORBIDDEN_PATTERNS:
+    if re.search(_pattern, ${JSON.stringify(buggyCode)}) or re.search(_pattern, ${JSON.stringify(correctCode)}):
+        raise PermissionError("E_FORBIDDEN: 허용되지 않는 코드 패턴")
+True
+`;
+    await runPythonWithTimeout(securityCheckCode);
+
+    sendProgress({ stage: 'executing', message: '정답 코드 실행 중...' }, id);
+
+    // 3. 정답 코드 실행 (격리된 globals)
+    const correctExecCode = `
+_correct_globals = {'__builtins__': __builtins__}
+exec(${JSON.stringify(correctCode)}, _correct_globals)
+_correct_func = _correct_globals['${functionName}']
+_expected_result = _correct_func(_parsed_input)
+_expected_result
+`;
+    const expectedResultRaw = await runPythonWithTimeout(correctExecCode);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const expectedResult = (expectedResultRaw as any)?.toJs ? (expectedResultRaw as any).toJs() : expectedResultRaw;
+
+    sendProgress({ stage: 'executing', message: '버그 코드 실행 중...' }, id);
+
+    // 4. 버그 코드 실행 (별도 격리 globals)
+    const buggyExecCode = `
+_buggy_globals = {'__builtins__': __builtins__}
+exec(${JSON.stringify(buggyCode)}, _buggy_globals)
+_buggy_func = _buggy_globals['${functionName}']
+_actual_result = _buggy_func(_parsed_input)
+_actual_result
+`;
+    const actualResultRaw = await runPythonWithTimeout(buggyExecCode);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const actualResult = (actualResultRaw as any)?.toJs ? (actualResultRaw as any).toJs() : actualResultRaw;
+
+    // 5. 결과 비교 (타입별 규칙 적용)
+    const resultsMatch = compareJudgeResults(
+      actualResult,
+      expectedResult,
+      expectedOutputType,
+      comparisonConfig
+    );
+    const bugFound = !resultsMatch;
+
+    const executionTimeMs = Math.round(performance.now() - startTime);
+
+    const judgeResult: JudgeResult = {
+      success: true,
+      bugFound,
+      userInput,
+      parsedInput,
+      actualResult: formatJudgeResult(actualResult),
+      expectedResult: formatJudgeResult(expectedResult),
+      executionTimeMs,
+    };
+
+    sendResult(id, true, judgeResult, executionTimeMs);
+  } catch (error) {
+    const executionTimeMs = Math.round(performance.now() - startTime);
+    const { type, userMessage } = classifyJudgeError(error as Error);
+
+    const judgeResult: JudgeResult = {
+      success: false,
+      bugFound: false,
+      userInput,
+      parsedInput: null,
+      actualResult: null,
+      expectedResult: null,
+      errorType: type,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      userFriendlyMessage: userMessage,
+      executionTimeMs,
+    };
+
+    sendResult(id, false, judgeResult, executionTimeMs);
+  }
+}
+
 // 메시지 핸들러
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   const { type, id } = event.data;
@@ -534,6 +748,10 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         event.data.payload.goldenCode,
         event.data.payload.buggyImplementations
       );
+      break;
+
+    case 'runJudge':
+      await runJudge(id, (event.data as RunJudgeRequest).payload);
       break;
 
     case 'cleanup':

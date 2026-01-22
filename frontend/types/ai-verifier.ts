@@ -43,6 +43,7 @@ export interface AIChallenge {
   buggy_code_template: string;
   input_schema: InputSchema;
   expected_output_type: string;
+  comparison_config?: ComparisonConfig;
   input_hint: string;
   hints: string[];
   bounty_points: number;

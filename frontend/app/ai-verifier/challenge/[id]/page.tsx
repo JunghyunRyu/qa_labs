@@ -7,14 +7,17 @@ import type { editor } from 'monaco-editor';
 import { AIChallenge } from '@/types/ai-verifier';
 import { VerifierEditor } from '@/components/ai-verifier/VerifierEditor';
 import { ChatPanel } from '@/components/ai-verifier/ChatPanel';
+import { TestCaseInput, JudgeResultDisplay } from '@/components/ai-verifier/JudgePanel';
 import { useEditorAction } from '@/hooks/ai-verifier/useEditorAction';
+import { useJudge } from '@/hooks/ai-verifier/useJudge';
 
 /**
  * AI Verifier Challenge Page
  *
  * M2: Monaco Editor 통합 완료
  * M3: AI Chat Interface 통합 완료
- * - M4: Judge Engine integration (TestCaseInput, JudgeResult components) - TODO
+ * M4: Judge Engine 통합 완료
+ * - M5: Content and Level System - TODO
  */
 export default function ChallengePage() {
   const params = useParams();
@@ -30,6 +33,32 @@ export default function ChallengePage() {
 
   // useEditorAction 훅으로 Undo 스택 보존 적용
   const { applyCode, undoLastApply, lastApply } = useEditorAction(editorRef);
+
+  // Judge Engine 훅 (challenge 로드 후 초기화)
+  const judgeOptions = challenge ? {
+    functionName: challenge.function_name,
+    expectedOutputType: challenge.expected_output_type || 'any',
+    comparisonConfig: challenge.comparison_config || {},
+  } : {
+    functionName: '',
+    expectedOutputType: 'any',
+  };
+
+  const { judge, result: judgeResult, isJudging, isPyodideLoading } = useJudge(judgeOptions);
+
+  // 테스트 실행 핸들러
+  const handleTestSubmit = async (userInput: string) => {
+    if (!challenge) return;
+
+    // 현재 에디터의 코드를 버그 코드로 사용
+    // 정답 코드는 서버에서만 접근 가능하므로, 클라이언트에서는 버그 코드를 두 번 사용
+    // 실제 구현에서는 서버에서 정답 코드를 제공받아야 함
+    // TODO: 서버 API를 통해 정답 코드를 안전하게 가져오거나, 서버사이드 검증 구현
+
+    // 임시: 버그 코드 템플릿을 정답으로 사용 (실제로는 서버에서 correct_code 제공 필요)
+    // 프론트엔드 테스트를 위해 buggy_code_template을 사용
+    await judge(userInput, currentCode, challenge.buggy_code_template);
+  };
 
   useEffect(() => {
     async function fetchChallenge() {
@@ -156,28 +185,16 @@ export default function ChallengePage() {
             />
           </div>
 
-          {/* Test Input Placeholder */}
-          <div className="p-4 border-t border-gray-700">
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-white font-medium mb-2">테스트 입력</h3>
-              <p className="text-gray-500 text-sm mb-3">{challenge.input_hint}</p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="테스트할 입력값을 입력하세요..."
-                  className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded text-white"
-                  disabled
-                />
-                <button
-                  className="px-4 py-2 bg-green-600 text-white rounded opacity-50 cursor-not-allowed"
-                  disabled
-                >
-                  실행 & 검증
-                </button>
-              </div>
-              <p className="text-gray-500 text-xs mt-2">(M4에서 구현 예정)</p>
-            </div>
-          </div>
+          {/* Judge Result Display */}
+          <JudgeResultDisplay result={judgeResult} />
+
+          {/* Test Case Input */}
+          <TestCaseInput
+            onSubmit={handleTestSubmit}
+            isLoading={isJudging || isPyodideLoading}
+            inputHint={challenge.input_hint}
+            disabled={!currentCode}
+          />
         </div>
       </div>
     </div>
