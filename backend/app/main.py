@@ -16,7 +16,7 @@ from app.core.rate_limiter import limiter
 from app.core.logging import setup_logging
 from app.core.security_utils import sanitize_log_message, sanitize_url_path
 from app.core.sentry import init_sentry
-from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress, plans, tokens, feedback, daily_bounty
+from app.api import problems, submissions, admin, health, auth, users, ai, test_quality, progress, plans, tokens, feedback, daily_bounty, ai_verifier
 from app.middleware.anonymous import AnonymousIDMiddleware
 from app.middleware.request_context import RequestContextMiddleware, get_request_id
 
@@ -294,6 +294,12 @@ app.include_router(
     daily_bounty.router,
     prefix="/api/v1",
     tags=["daily-bounty"],
+)
+
+app.include_router(
+    ai_verifier.router,
+    prefix="/api/v1/ai-verifier",
+    tags=["ai-verifier"],
 )
 
 

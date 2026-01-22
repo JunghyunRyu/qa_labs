@@ -13,6 +13,16 @@ from app.models.token_transaction import TokenTransaction, ActionType, SourceTyp
 from app.models.feedback import Feedback, FeedbackType, FeedbackStatus
 from app.models.withdrawal_log import WithdrawalLog
 from app.models.daily_bounty import DailyBounty, DailyBountyCompletion
+from app.models.ai_challenge import (
+    AIChallenge,
+    AIChallengeAttempt,
+    AIVerifierStats,
+    AIVerifierBadge,
+    UserAIVerifierBadge,
+    BugType,
+    ErrorType,
+    Difficulty,
+)
 
 __all__ = [
     "Base",
@@ -35,4 +45,13 @@ __all__ = [
     "WithdrawalLog",
     "DailyBounty",
     "DailyBountyCompletion",
+    # AI Verifier Track
+    "AIChallenge",
+    "AIChallengeAttempt",
+    "AIVerifierStats",
+    "AIVerifierBadge",
+    "UserAIVerifierBadge",
+    "BugType",
+    "ErrorType",
+    "Difficulty",
 ]
