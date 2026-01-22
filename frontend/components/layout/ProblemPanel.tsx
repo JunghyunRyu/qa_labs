@@ -38,6 +38,7 @@ import { useTextSearch } from "@/hooks/useTextSearch";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { getCodeClassName } from "@/lib/codeHighlight";
 
 // Difficulty color mapping
 const difficultyColors: Record<string, string> = {
@@ -251,9 +252,11 @@ function MarkdownContent({ content }: { content: string }) {
                 </div>
               );
             }
+            // 인라인 코드 - 시맨틱 컬러링 적용
+            const content = String(children);
             return (
               <code
-                className="px-1.5 py-0.5 bg-slate-800 text-amber-200 rounded text-xs font-mono border border-slate-700/50"
+                className={getCodeClassName(content)}
                 {...props}
               >
                 {children}

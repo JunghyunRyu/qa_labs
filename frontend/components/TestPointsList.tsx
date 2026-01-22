@@ -11,6 +11,7 @@ import TestPointItem from "./TestPointItem";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { getCodeClassName } from "@/lib/codeHighlight";
 
 interface TestPointsListProps {
   content: string;
@@ -103,12 +104,15 @@ export default function TestPointsList({ content, className = "" }: TestPointsLi
               {children}
             </strong>
           ),
-          // 인라인 코드
-          code: ({ children }) => (
-            <code className="px-1 py-0.5 bg-slate-700 text-slate-200 rounded text-xs font-mono">
-              {children}
-            </code>
-          ),
+          // 인라인 코드 - 시맨틱 컬러링 적용
+          code: ({ children }) => {
+            const content = String(children);
+            return (
+              <code className={getCodeClassName(content)}>
+                {children}
+              </code>
+            );
+          },
           // 헤더는 숨김 (summary에서는 불필요)
           h1: () => null,
           h2: () => null,

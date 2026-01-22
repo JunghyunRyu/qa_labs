@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { applyTemplate } from "@/lib/promptTemplates";
 import ReactMarkdown from "react-markdown";
+import { getCodeClassName } from "@/lib/codeHighlight";
 
 interface TestPointItemProps {
   content: string;
@@ -54,12 +55,15 @@ export default function TestPointItem({ content, className = "" }: TestPointItem
       <div className="flex-1 text-sm text-slate-300 leading-relaxed [&>p]:inline [&>p]:m-0">
         <ReactMarkdown
           components={{
-            // 인라인 코드
-            code: ({ children }) => (
-              <code className="px-1 py-0.5 bg-slate-700 text-slate-200 rounded text-xs font-mono">
-                {children}
-              </code>
-            ),
+            // 인라인 코드 - 시맨틱 컬러링 적용
+            code: ({ children }) => {
+              const content = String(children);
+              return (
+                <code className={getCodeClassName(content)}>
+                  {children}
+                </code>
+              );
+            },
             // 볼드
             strong: ({ children }) => (
               <strong className="font-semibold text-slate-100">
