@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import type { editor } from 'monaco-editor';
 import { AIChallenge } from '@/types/ai-verifier';
+import { VerifierEditor } from '@/components/ai-verifier/VerifierEditor';
+import { useEditorAction } from '@/hooks/ai-verifier/useEditorAction';
 
 /**
  * AI Verifier Challenge Page
  *
- * This is a skeleton page for M1. The full implementation will be completed in:
- * - M2: Monaco Editor integration (VerifierEditor component)
- * - M3: AI Chat interface (ChatPanel component)
- * - M4: Judge Engine integration (TestCaseInput, JudgeResult components)
+ * M2: Monaco Editor 통합 완료
+ * - M3: AI Chat interface (ChatPanel component) - TODO
+ * - M4: Judge Engine integration (TestCaseInput, JudgeResult components) - TODO
  */
 export default function ChallengePage() {
   const params = useParams();
@@ -19,6 +21,14 @@ export default function ChallengePage() {
   const [challenge, setChallenge] = useState<AIChallenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Monaco Editor 상태
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const [currentCode, setCurrentCode] = useState<string>('');
+  const [previousCode, setPreviousCode] = useState<string | undefined>(undefined);
+
+  // useEditorAction 훅으로 Undo 스택 보존 적용
+  const { applyCode, undoLastApply, lastApply } = useEditorAction(editorRef);
 
   useEffect(() => {
     async function fetchChallenge() {
@@ -36,6 +46,8 @@ export default function ChallengePage() {
         }
         const data: AIChallenge = await res.json();
         setChallenge(data);
+        // 초기 코드 설정
+        setCurrentCode(data.buggy_code_template);
       } catch (err) {
         console.error('Failed to fetch challenge:', err);
         setError('네트워크 오류가 발생했습니다.');
@@ -48,6 +60,27 @@ export default function ChallengePage() {
       fetchChallenge();
     }
   }, [challengeId]);
+
+  // 에디터 준비 완료 핸들러
+  const handleEditorReady = (editor: editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+  };
+
+  // AI가 새 코드를 제안할 때 호출되는 함수 (M3에서 사용)
+  const handleApplyAICode = (newCode: string) => {
+    setPreviousCode(currentCode);
+    setCurrentCode(newCode);
+    applyCode(newCode);
+  };
+
+  // 되돌리기 핸들러
+  const handleUndo = () => {
+    undoLastApply();
+    if (lastApply) {
+      setCurrentCode(lastApply.beforeCode);
+      setPreviousCode(undefined);
+    }
+  };
 
   if (loading) {
     return (
@@ -134,19 +167,16 @@ export default function ChallengePage() {
 
         {/* Right Panel - Editor & Test */}
         <div className="w-1/2 flex flex-col bg-gray-900">
-          {/* Code Editor Placeholder */}
-          <div className="flex-1 p-4 overflow-auto">
-            <div className="bg-gray-800 rounded-lg h-full flex flex-col">
-              <div className="px-4 py-2 border-b border-gray-700 flex items-center justify-between">
-                <span className="text-white font-medium">Code Editor</span>
-                <span className="text-gray-500 text-sm">(M2에서 구현 예정)</span>
-              </div>
-              <div className="flex-1 p-4">
-                <pre className="text-gray-400 text-sm font-mono whitespace-pre-wrap">
-                  {challenge.buggy_code_template}
-                </pre>
-              </div>
-            </div>
+          {/* Code Editor - VerifierEditor */}
+          <div className="flex-1 p-4 overflow-hidden">
+            <VerifierEditor
+              code={currentCode}
+              previousCode={previousCode}
+              readOnly={true}
+              onEditorReady={handleEditorReady}
+              onUndo={previousCode ? handleUndo : undefined}
+              height="100%"
+            />
           </div>
 
           {/* Test Input Placeholder */}
