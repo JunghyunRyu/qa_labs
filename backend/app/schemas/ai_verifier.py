@@ -151,6 +151,21 @@ class AIChallengePublicResponse(BaseModel):
 class AttemptCreate(BaseModel):
     """Schema for creating an attempt."""
     user_input: str = Field(..., min_length=1)
+    bug_found: bool = False  # Result from client-side judge
+
+
+class NewBadge(BaseModel):
+    """Schema for newly earned badge."""
+    id: str
+    name: str
+    icon: str
+    description: Optional[str] = None
+
+
+class NewRank(BaseModel):
+    """Schema for new rank after level up."""
+    name: str
+    icon: str
 
 
 class AttemptResult(BaseModel):
@@ -167,6 +182,9 @@ class AttemptResult(BaseModel):
     execution_time_ms: Optional[int] = None
     points_earned: int = 0
     is_first_solve: bool = False
+    total_score: int = 0
+    new_rank: Optional[NewRank] = None
+    newly_awarded_badges: List[NewBadge] = []
 
 
 class AttemptResponse(BaseModel):

@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import type { editor } from 'monaco-editor';
-import { AIChallenge } from '@/types/ai-verifier';
+import { AIChallenge, NewBadge, NewRank } from '@/types/ai-verifier';
 import { VerifierEditor } from '@/components/ai-verifier/VerifierEditor';
 import { ChatPanel } from '@/components/ai-verifier/ChatPanel';
 import { TestCaseInput, JudgeResultDisplay } from '@/components/ai-verifier/JudgePanel';
+import { BadgeEarned, RankUpModal, ScoreDisplay } from '@/components/ai-verifier/Gamification';
 import { useEditorAction } from '@/hooks/ai-verifier/useEditorAction';
 import { useJudge } from '@/hooks/ai-verifier/useJudge';
 
@@ -17,7 +18,8 @@ import { useJudge } from '@/hooks/ai-verifier/useJudge';
  * M2: Monaco Editor 통합 완료
  * M3: AI Chat Interface 통합 완료
  * M4: Judge Engine 통합 완료
- * - M5: Content and Level System - TODO
+ * M5: Content and Level System 완료
+ * M6: Gamification 완료
  */
 export default function ChallengePage() {
   const params = useParams();
@@ -26,6 +28,14 @@ export default function ChallengePage() {
   const [correctCode, setCorrectCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Gamification state
+  const [totalScore, setTotalScore] = useState(0);
+  const [pointsEarned, setPointsEarned] = useState(0);
+  const [rank, setRank] = useState({ name: 'Rookie', icon: '🔰' });
+  const [newRank, setNewRank] = useState<NewRank | null>(null);
+  const [earnedBadge, setEarnedBadge] = useState<NewBadge | null>(null);
+  const [badgeQueue, setBadgeQueue] = useState<NewBadge[]>([]);
 
   // Monaco Editor 상태
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -47,12 +57,63 @@ export default function ChallengePage() {
 
   const { judge, result: judgeResult, isJudging, isPyodideLoading } = useJudge(judgeOptions);
 
+  // Process badge queue
+  useEffect(() => {
+    if (badgeQueue.length > 0 && !earnedBadge) {
+      const [next, ...rest] = badgeQueue;
+      setEarnedBadge(next);
+      setBadgeQueue(rest);
+    }
+  }, [badgeQueue, earnedBadge]);
+
+  // Record attempt to server and handle gamification
+  const recordAttempt = useCallback(async (userInput: string, bugFound: boolean) => {
+    try {
+      const res = await fetch(`/api/v1/ai-verifier/challenges/${challengeId}/attempt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ user_input: userInput, bug_found: bugFound }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+
+        // Update gamification state
+        if (result.points_earned > 0) {
+          setPointsEarned(result.points_earned);
+          setTotalScore(result.total_score);
+          // Clear points animation after 3 seconds
+          setTimeout(() => setPointsEarned(0), 3000);
+        }
+
+        // Handle rank up
+        if (result.new_rank) {
+          setNewRank(result.new_rank);
+          setRank(result.new_rank);
+        }
+
+        // Handle badges (queue them for sequential display)
+        if (result.newly_awarded_badges?.length > 0) {
+          setBadgeQueue((prev) => [...prev, ...result.newly_awarded_badges]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to record attempt:', err);
+    }
+  }, [challengeId]);
+
   // 테스트 실행 핸들러
   const handleTestSubmit = async (userInput: string) => {
     if (!challenge || !correctCode) return;
 
     // 현재 에디터의 코드 (버그 코드)와 서버에서 가져온 정답 코드로 비교
-    await judge(userInput, currentCode, correctCode);
+    const result = await judge(userInput, currentCode, correctCode);
+
+    // Record attempt to server for gamification
+    if (result) {
+      await recordAttempt(userInput, result.bugFound);
+    }
   };
 
   useEffect(() => {
@@ -144,6 +205,10 @@ export default function ChallengePage() {
 
   return (
     <div className="h-screen flex flex-col">
+      {/* Gamification Modals */}
+      <BadgeEarned badge={earnedBadge} onClose={() => setEarnedBadge(null)} />
+      <RankUpModal rank={newRank} onClose={() => setNewRank(null)} />
+
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 px-4 py-3">
         <div className="flex items-center justify-between">
@@ -154,6 +219,13 @@ export default function ChallengePage() {
             <h1 className="text-xl font-bold text-white">{challenge.title}</h1>
           </div>
           <div className="flex items-center gap-4">
+            {/* Score Display */}
+            <ScoreDisplay
+              score={totalScore}
+              pointsEarned={pointsEarned}
+              rank={rank}
+              compact
+            />
             <span className="text-green-400 font-bold">{challenge.bounty_points} pts</span>
             <span className={`px-2 py-1 rounded text-sm ${
               challenge.difficulty === 'beginner' ? 'bg-green-900 text-green-300' :

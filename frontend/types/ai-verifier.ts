@@ -79,6 +79,18 @@ export interface AttemptCreate {
   user_input: string;
 }
 
+export interface NewBadge {
+  id: string;
+  name: string;
+  icon: string;
+  description?: string;
+}
+
+export interface NewRank {
+  name: string;
+  icon: string;
+}
+
 export interface AttemptResult {
   success: boolean;
   bug_found: boolean;
@@ -92,6 +104,9 @@ export interface AttemptResult {
   execution_time_ms?: number;
   points_earned: number;
   is_first_solve: boolean;
+  total_score: number;
+  new_rank?: NewRank;
+  newly_awarded_badges: NewBadge[];
 }
 
 export interface AttemptResponse {

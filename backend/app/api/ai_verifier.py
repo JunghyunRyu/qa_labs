@@ -38,7 +38,10 @@ from app.schemas.ai_verifier import (
     AIChatRequest,
     ChatMessage,
     JudgeCodeResponse,
+    NewBadge,
+    NewRank,
 )
+from app.services.gamification_service import award_points, get_or_create_stats, calculate_rank
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -207,9 +210,8 @@ async def submit_attempt(
     """
     Submit an attempt to find a bug in the challenge.
 
-    This endpoint receives the user's test input and returns the judge result.
-    The actual judge execution happens on the client-side (Pyodide).
-    This endpoint is for recording attempts and awarding points.
+    This endpoint receives the user's test input and bug_found result from client-side judge.
+    It records the attempt and awards points/badges if applicable.
     """
     # Get challenge
     challenge = db.query(AIChallenge).filter(
@@ -223,21 +225,77 @@ async def submit_attempt(
             detail="Challenge not found"
         )
 
-    # For now, return a placeholder response
-    # The actual judge logic will be implemented in M4
+    # Record the attempt
+    attempt_record = AIChallengeAttempt(
+        user_id=current_user.id if current_user else None,
+        challenge_id=challenge_id,
+        user_input=attempt.user_input,
+        result="success" if attempt.bug_found else "fail",
+        bug_found=attempt.bug_found,
+        is_first_solve=False,  # Will be updated by gamification
+    )
+    db.add(attempt_record)
+    db.flush()
+
+    # Award points and check badges (if user is logged in and bug found)
+    gamification_result = {
+        "points_awarded": 0,
+        "is_first_solve": False,
+        "total_score": 0,
+        "new_rank": None,
+        "newly_awarded_badges": [],
+    }
+
+    if current_user and attempt.bug_found:
+        gamification_result = award_points(
+            db=db,
+            user_id=current_user.id,
+            challenge_id=challenge_id,
+            points=challenge.bounty_points,
+            bug_found=True,
+            category=challenge.category,
+        )
+
+        # Update attempt record
+        attempt_record.is_first_solve = gamification_result["is_first_solve"]
+        attempt_record.points_earned = gamification_result["points_awarded"]
+
+    db.commit()
+
+    # Build response
+    new_rank = None
+    if gamification_result["new_rank"]:
+        new_rank = NewRank(
+            name=gamification_result["new_rank"]["name"],
+            icon=gamification_result["new_rank"]["icon"],
+        )
+
+    newly_awarded_badges = [
+        NewBadge(
+            id=b["id"],
+            name=b["name"],
+            icon=b["icon"],
+            description=b.get("description"),
+        )
+        for b in gamification_result["newly_awarded_badges"]
+    ]
+
     return AttemptResult(
         success=True,
-        bug_found=False,
+        bug_found=attempt.bug_found,
         user_input=attempt.user_input,
         parsed_input=None,
         actual_output=None,
         expected_output=None,
         error_type=None,
         error_message=None,
-        user_friendly_message="Judge engine not yet implemented",
+        user_friendly_message="버그를 찾았습니다!" if attempt.bug_found else "버그가 아닙니다. 다시 시도해보세요.",
         execution_time_ms=0,
-        points_earned=0,
-        is_first_solve=False,
+        points_earned=gamification_result["points_awarded"],
+        is_first_solve=gamification_result["is_first_solve"],
+        total_score=gamification_result["total_score"],
+        new_rank=new_rank,
+        newly_awarded_badges=newly_awarded_badges,
     )
 
 
