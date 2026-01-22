@@ -255,6 +255,34 @@ docs/issues/resolved/{project-slug}/
 
 ---
 
+## Skills 자동 적용
+
+개발 중 다음 Skills가 상황에 따라 자동으로 참조됩니다:
+
+### Tier 1: 자동 적용 (코드 작성 시)
+
+| Skill | 적용 시점 |
+|-------|----------|
+| `vercel-react-best-practices` | React/Next.js 코드 작성 시 |
+| `input-sanitization` | 사용자 입력 처리 코드 작성 시 |
+| `authentication-patterns` | 인증/권한 관련 코드 작성 시 |
+| `code-splitting-patterns` | 번들 최적화, 동적 임포트 시 |
+
+### Tier 2: 명시적 호출
+
+| Skill | 사용 시점 |
+|-------|----------|
+| `/code-review` | 마일스톤 완료 후, 대규모 변경 시 |
+| `/submission-test` | 채점 시스템 변경 시 |
+
+### Tier 3: 요청 시 참조
+
+- `langchain-patterns`: AI/LLM 기능 구현 시 참조 요청
+- `caching-strategies`: 캐싱 구현 시 참조 요청
+- `api-rate-limiting`: API 제한 구현 시 참조 요청
+
+---
+
 ## 주의사항
 
 - **200줄 이상 변경 시** 사용자 확인 요청
@@ -264,4 +292,4 @@ docs/issues/resolved/{project-slug}/
 
 ---
 
-*dev-start v1.0 - QA Labs 기능 개발 라이프사이클 자동화*
+*dev-start v1.1 - QA Labs 기능 개발 라이프사이클 자동화 (Skills 연동 추가)*

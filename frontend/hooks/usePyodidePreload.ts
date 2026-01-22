@@ -107,7 +107,7 @@ export function usePyodidePreload(): UsePyodidePreloadReturn {
       // 초기화 메시지 전송
       worker.postMessage({
         type: 'init',
-        id: \,
+        id: 'preload-init',
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Worker 생성 실패';

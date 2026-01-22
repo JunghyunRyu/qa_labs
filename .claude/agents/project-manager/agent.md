@@ -285,4 +285,28 @@ Task 도구:
 
 ---
 
-*Project Manager Agent v1.0 - QA Labs 개발 사이클 관리*
+## Skills 자동 적용
+
+코드 작성 중 다음 Skills가 자동으로 참조됩니다:
+
+### 자동 적용 Skills (Tier 1)
+
+| Skill | 적용 조건 |
+|-------|----------|
+| `vercel-react-best-practices` | React/Next.js 컴포넌트 작성 시 |
+| `input-sanitization` | 사용자 입력 처리 시 |
+| `authentication-patterns` | 인증/권한 코드 작성 시 |
+| `code-splitting-patterns` | 동적 임포트, 번들 최적화 시 |
+
+### 마일스톤 완료 후 (Tier 2)
+
+- `/code-review`: 100줄 이상 변경 시 자동 호출
+- `/submission-test`: 채점 시스템 영향 시 검증
+
+### 참조 요청 시 (Tier 3)
+
+- `langchain-patterns`, `caching-strategies`, `api-rate-limiting` 등
+
+---
+
+*Project Manager Agent v1.1 - QA Labs 개발 사이클 관리 (Skills 연동 추가)*

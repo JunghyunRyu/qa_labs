@@ -1,6 +1,6 @@
 # QA Labs (QA Arena) 개발 가이드
 
-> **최종 업데이트**: 2026-01-18
+> **최종 업데이트**: 2026-01-22
 > **도메인**: https://qa-arena.qalabs.kr
 
 ---
@@ -176,6 +176,84 @@ Task 도구로 subagent_type 지정:
 
 ---
 
+## Skills 운영 가이드
+
+> **출처**: [SkillsCokac](https://skills.cokac.com/) - 코드깍는노인 Skills/Collections
+
+### 스킬 분류 체계
+
+```
+.claude/skills/
+├── 🏠 프로젝트 전용 (슬래시 커맨드로 호출)
+│   ├── dev-start/              # 개발 라이프사이클
+│   ├── ec2-deploy/             # 배포
+│   ├── daily-report/           # 모니터링
+│   ├── docker-debug/           # 트러블슈팅
+│   ├── code-review/            # 코드 리뷰
+│   ├── submission-test/        # 테스트
+│   └── pytest-problem-reviewer/ # 문제 품질
+│
+├── 🛡️ 보안/인증 (자동 적용)
+│   ├── input-sanitization/     # XSS, SQL 인젝션 방지
+│   ├── authentication-patterns/ # JWT, OAuth 패턴
+│   └── security-code-review/   # 보안 취약점 탐지
+│
+├── ⚡ 성능/최적화 (자동 적용)
+│   ├── code-splitting-patterns/ # 번들 최적화
+│   └── vercel-react-best-practices/ # React 성능 룰
+│
+├── 🤖 AI/LLM (명시적 요청 시)
+│   └── langchain-patterns/     # RAG, 체인, 에이전트
+│
+└── 📚 참고용 (필요시 참조)
+    ├── logging-best-practices/
+    ├── caching-strategies/
+    └── error-handling/
+```
+
+### 3-Tier 운영 전략
+
+| Tier | 적용 방식 | 스킬 예시 |
+|------|----------|----------|
+| **Tier 1: 자동 적용** | 코드 작성 시 자동 참조 | `vercel-react-best-practices`, `input-sanitization`, `authentication-patterns` |
+| **Tier 2: 슬래시 커맨드** | `/skill-name`으로 명시적 호출 | `/code-review`, `/ec2-deploy`, `/dev-start` |
+| **Tier 3: 참조용** | "OOO 패턴 적용해줘" 요청 시 | `langchain-patterns`, `caching-strategies` |
+
+### 상황별 권장 스킬 조합
+
+| 작업 | 권장 스킬 조합 |
+|------|--------------|
+| **새 기능 개발** | `/dev-start` → (자동: React/보안) → `/code-review` → `/submission-test` |
+| **성능 최적화** | `code-splitting-patterns` + `vercel-react-best-practices` |
+| **보안 강화** | `input-sanitization` + `authentication-patterns` + `security-code-review` |
+| **AI 기능 개선** | `langchain-patterns` 참조 요청 |
+| **배포** | `/code-review` → `/ec2-deploy` |
+| **장애 대응** | `/daily-report` → `/logs --error` → `/docker-debug` |
+
+### 스킬 사용 예시
+
+```bash
+# 자동 적용 (별도 호출 불필요)
+"React 컴포넌트 작성해줘"
+→ vercel-react-best-practices 자동 적용
+
+# 슬래시 커맨드
+"/code-review"
+→ 변경사항 보안/품질 리뷰
+
+# 명시적 패턴 요청
+"langchain-patterns 참고해서 RAG 구현해줘"
+→ LangChain 베스트 프랙티스 적용
+```
+
+### 월간 유지보수 체크리스트
+
+- [ ] 3개월 미사용 스킬 정리 검토
+- [ ] SkillsCokac에서 업데이트 확인
+- [ ] 프로젝트 전용 스킬 개선점 검토
+
+---
+
 ## 개발 워크플로우
 
 ### 기본 사이클
@@ -316,6 +394,7 @@ Serena의 read_memory 도구 사용:
 
 | 날짜 | 변경 내용 |
 |------|----------|
+| 2026-01-22 | Skills 운영 가이드 추가 (SkillsCokac 스킬 통합, 3-Tier 운영 전략) |
 | 2026-01-21 | `/dev-start` 스킬 및 Project Manager Agent 추가 (기능 개발 라이프사이클 자동화) |
 | 2026-01-18 | Next.js 16, React 19 버전 업데이트 반영 |
 | 2026-01-18 | M6 마일스톤 완료: Guest AI Conversion, 주말 챌린지, 일일 현상금 |

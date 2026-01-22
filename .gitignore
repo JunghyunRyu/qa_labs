@@ -107,3 +107,6 @@ reports/
 # Temp files
 tmpclaude-*
 nul
+
+.claude/
+docs/

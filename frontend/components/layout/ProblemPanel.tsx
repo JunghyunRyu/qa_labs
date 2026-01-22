@@ -20,16 +20,20 @@ import {
   Info,
   Code2,
   BookOpen,
-  Search,
   Sparkles,
+  ListChecks,
+  HelpCircle,
 } from "lucide-react";
 import { Problem } from "@/types/problem";
-import TagChips from "@/components/TagChips";
+// TagChips removed from header - 헤더 최소화
 import CopyButton from "@/components/CopyButton";
 import Accordion from "@/components/ui/Accordion";
 import ProblemSearchBar from "@/components/layout/ProblemSearchBar";
 import TestPointsList from "@/components/TestPointsList";
 import HintPanel from "@/components/HintPanel";
+import FunctionContractCard from "@/components/FunctionContractCard";
+import MutantStatusBoard from "@/components/MutantStatusBoard";
+import { filterSpoilersFromSummary } from "@/lib/testPointsFilter";
 import { useTextSearch } from "@/hooks/useTextSearch";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -127,11 +131,10 @@ function extractSummary(md: string): string {
 }
 
 // Get summary - prefer problem.summary field, fallback to extractSummary
+// Apply spoiler filter to remove bug descriptions
 function getSummary(problem: Problem): string {
-  if (problem.summary) {
-    return problem.summary;
-  }
-  return extractSummary(problem.description_md);
+  const rawSummary = problem.summary || extractSummary(problem.description_md);
+  return filterSpoilersFromSummary(rawSummary);
 }
 
 // Section config for icons and colors - unified slate/purple theme
@@ -379,30 +382,65 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
     [sessionOverrides, accordionDefaults]
   );
 
-  // Collapsed state - minimal vertical bar
+  // Collapsed state - VS Code style Vertical Icon Bar (Activity Bar)
   if (isProblemCollapsed) {
     return (
       <div
         data-testid="problem-panel-collapsed"
-        className="h-full bg-slate-900 border-r border-slate-700 flex flex-col items-center py-2"
+        className="w-12 h-full bg-slate-900 border-r border-slate-700 flex flex-col items-center py-2"
       >
-        <button
-          data-testid="btn-expand-problem"
-          onClick={toggleProblemPanel}
-          className="p-1.5 rounded-lg hover:bg-slate-700
-                     bg-slate-800 shadow-sm border border-slate-600
-                     transition-colors group"
-          aria-label="문제 패널 펼치기"
-          title="문제 패널 펼치기 (Ctrl+B)"
-        >
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-400" />
-        </button>
+        {/* 상단 아이콘 그룹 */}
+        <div className="flex flex-col items-center gap-1">
+          {/* 문제 설명 아이콘 */}
+          <button
+            data-testid="btn-expand-problem"
+            onClick={toggleProblemPanel}
+            className="p-2 rounded-lg text-slate-400 hover:text-sky-400 hover:bg-slate-800
+                       transition-colors group relative"
+            aria-label="문제 설명 보기"
+            title="문제 설명 보기 (Ctrl+B)"
+          >
+            <BookOpen className="w-5 h-5" />
+            {/* 왼쪽 액센트 바 (활성화 표시용) */}
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-sky-400 rounded-r opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
 
-        <div className="mt-3 flex flex-col items-center gap-1">
-          <FileText className="w-4 h-4 text-slate-500" />
-          <span className="text-[10px] text-slate-500 writing-mode-vertical whitespace-nowrap">
-            문제
-          </span>
+          {/* 요구사항 아이콘 */}
+          <button
+            onClick={toggleProblemPanel}
+            className="p-2 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800
+                       transition-colors group relative"
+            aria-label="테스트 요구사항 보기"
+            title="테스트 요구사항 보기"
+          >
+            <ListChecks className="w-5 h-5" />
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-emerald-400 rounded-r opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+
+          {/* 숨겨진 버그 아이콘 */}
+          <button
+            onClick={toggleProblemPanel}
+            className="p-2 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-800
+                       transition-colors group relative"
+            aria-label="숨겨진 버그 현황"
+            title="숨겨진 버그 현황"
+          >
+            <Target className="w-5 h-5" />
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-amber-400 rounded-r opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </div>
+
+        {/* 하단 아이콘 (도움말) - flex-grow로 밀어내기 */}
+        <div className="flex-1" />
+        <div className="flex flex-col items-center gap-1 pb-2">
+          <button
+            className="p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800
+                       transition-colors"
+            aria-label="단축키 안내"
+            title="Ctrl+B: 패널 열기/닫기&#10;Alt+P: 전체 문제 보기"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
         </div>
       </div>
     );
@@ -414,45 +452,21 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
       data-testid="problem-panel"
       className="h-full flex flex-col bg-slate-900 border-r border-slate-700 overflow-hidden relative"
     >
-      {/* ===== STICKY AREA ===== */}
+      {/* ===== STICKY AREA (Minimized Header) ===== */}
       <div className="flex-shrink-0 sticky top-0 z-10 bg-slate-900">
-        {/* Header with Back Link */}
-        <div className="px-3 py-2 border-b border-slate-700">
-          <div className="flex items-center justify-between mb-1">
+        {/* Compact Header - 한 줄로 통합 */}
+        <div ref={testPointsRef} className="px-3 py-2 border-b border-slate-700">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Back Link (작은 아이콘) */}
             <Link
               href="/problems"
-              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-sky-400 transition-colors"
+              className="p-1 rounded hover:bg-slate-800 transition-colors flex-shrink-0"
+              title="문제 목록으로 돌아가기"
             >
-              <ArrowLeft className="w-3 h-3" />
-              <span>문제 목록</span>
+              <ArrowLeft className="w-4 h-4 text-slate-400 hover:text-sky-400" />
             </Link>
-            <button
-              data-testid="btn-collapse-problem"
-              onClick={toggleProblemPanel}
-              className="p-1 rounded hover:bg-slate-800 transition-colors"
-              aria-label="문제 패널 접기"
-              title="문제 패널 접기 (Ctrl+B)"
-            >
-              <ChevronLeft className="w-4 h-4 text-slate-400" />
-            </button>
-          </div>
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-base font-bold text-white truncate flex-1">
-              {problem.title}
-            </h1>
-            <button
-              onClick={toggleProblemSearch}
-              className={`p-1 rounded transition-colors ${
-                isProblemSearchOpen
-                  ? "bg-sky-900/30 text-sky-400"
-                  : "text-slate-400 hover:text-slate-300 hover:bg-slate-800"
-              }`}
-              aria-label="문제 내 검색"
-              title="문제 내 검색 (Ctrl+F)"
-              data-testid="btn-problem-search"
-            >
-              <Search className="w-4 h-4" />
-            </button>
+
+            {/* Difficulty Badge */}
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
                 difficultyColors[problem.difficulty] || difficultyColors["Medium"]
@@ -460,52 +474,41 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             >
               {problem.difficulty}
             </span>
-          </div>
-          {problem.skills && problem.skills.length > 0 && (
-            <div className="mt-1">
-              <TagChips tags={problem.skills} maxVisible={3} size="sm" />
-            </div>
-          )}
-        </div>
 
-        {/* Search Bar - conditionally visible */}
-        {isProblemSearchOpen && (
-          <ProblemSearchBar
-            query={search.query}
-            onQueryChange={search.setQuery}
-            currentIndex={search.currentIndex}
-            totalCount={search.totalCount}
-            caseSensitive={search.caseSensitive}
-            onToggleCaseSensitive={search.toggleCaseSensitive}
-            onNext={search.goNext}
-            onPrev={search.goPrev}
-            onClose={handleSearchClose}
-          />
-        )}
+            {/* Title */}
+            <h1 className="text-sm font-semibold text-white truncate flex-1">
+              {problem.title}
+            </h1>
 
-        {/* 확장 모드 토글 버튼 */}
-        <div ref={testPointsRef} className="px-3 py-2 border-b border-slate-700">
-          <button
-            onClick={toggleProblemPeek}
-            className={`w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
-              isExpandedMode
-                ? "bg-purple-900/30 text-purple-400 border-purple-700 hover:bg-purple-900/40"
-                : "bg-sky-900/20 text-sky-400 border-sky-700 hover:bg-sky-900/30"
-            }`}
-            title={isExpandedMode ? "문제 접기 (Alt+P)" : "전체 문제 보기 (Alt+P)"}
-          >
-            {isExpandedMode ? (
-              <>
+            {/* 확장 모드 토글 (작은 아이콘) */}
+            <button
+              onClick={toggleProblemPeek}
+              className={`p-1 rounded transition-colors flex-shrink-0 ${
+                isExpandedMode
+                  ? "bg-purple-900/30 text-purple-400 hover:bg-purple-900/40"
+                  : "text-slate-400 hover:text-sky-400 hover:bg-slate-800"
+              }`}
+              title={isExpandedMode ? "문제 접기 (Alt+P)" : "전체 문제 보기 (Alt+P)"}
+              aria-label={isExpandedMode ? "문제 접기" : "전체 문제 보기"}
+            >
+              {isExpandedMode ? (
                 <ChevronUp className="w-4 h-4" />
-                문제 접기
-              </>
-            ) : (
-              <>
+              ) : (
                 <BookOpen className="w-4 h-4" />
-                전체 문제 보기
-              </>
-            )}
-          </button>
+              )}
+            </button>
+
+            {/* 패널 접기 버튼 */}
+            <button
+              data-testid="btn-collapse-problem"
+              onClick={toggleProblemPanel}
+              className="p-1 rounded hover:bg-slate-800 transition-colors flex-shrink-0"
+              aria-label="문제 패널 접기"
+              title="문제 패널 접기 (Ctrl+B)"
+            >
+              <ChevronLeft className="w-4 h-4 text-slate-400" />
+            </button>
+          </div>
         </div>
 
       </div>
@@ -602,16 +605,43 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
             </div>
           </div>
         ) : (
-          /* ===== 기본 모드: 요약 표시 ===== */
+          /* ===== 기본 모드: Test Design Centric UI ===== */
           <>
-            {/* 핵심 테스트 포인트 - 체크리스트 스타일 */}
+            {/* 1. Function Contract 카드 - 항상 상단에 표시 */}
+            {problem.function_signature && (
+              <div className="p-3 pb-0">
+                <FunctionContractCard signature={problem.function_signature} />
+              </div>
+            )}
+
+            {/* 2. 숨겨진 버그 현황판 - 블라인드 스타일 */}
+            {problem.buggy_implementations && problem.buggy_implementations.length > 0 && (
+              <div className="px-3 pt-2">
+                <MutantStatusBoard
+                  totalMutants={problem.buggy_implementations.length}
+                  compact
+                />
+              </div>
+            )}
+
+            {/* 3. 테스트 요구사항 체크리스트 */}
             {summary && (
               <div className="p-3 pb-0">
-                <div className="bg-sky-900/20 rounded-lg p-2.5 border border-sky-700">
-                  <TestPointsList
-                    content={summary.replace(/\s*•\s*/g, '\n• ')}
-                    className="text-xs text-slate-400 [&_strong]:text-slate-200 [&_strong]:font-semibold"
-                  />
+                <div className="bg-sky-900/20 rounded-lg overflow-hidden border border-sky-700">
+                  {/* 헤더 */}
+                  <div className="flex items-center gap-2 px-3 py-2 bg-sky-900/30 border-b border-sky-700/50">
+                    <Target className="w-4 h-4 text-sky-400" />
+                    <span className="text-xs font-semibold text-sky-300 uppercase tracking-wide">
+                      테스트 요구사항
+                    </span>
+                  </div>
+                  {/* 체크리스트 */}
+                  <div className="p-2.5">
+                    <TestPointsList
+                      content={summary.replace(/\s*•\s*/g, '\n• ')}
+                      className="text-xs text-slate-400 [&_strong]:text-slate-200 [&_strong]:font-semibold"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -624,36 +654,8 @@ export default function ProblemPanel({ problem }: ProblemPanelProps) {
               </p>
             </div>
 
-            {accordionSections.length > 0 && (
-              <div className="p-3 space-y-2">
-                {accordionSections.map((section, index) => {
-                  const config = getSectionConfig(section.type);
-                  const Icon = config.icon;
-                  const sectionId = `section-${section.type}-${index}`;
-
-                  const accordionType = (
-                    ['examples', 'hints', 'exceptions', 'function', 'strategy'].includes(section.type)
-                      ? section.type
-                      : 'other'
-                  ) as AccordionSectionType;
-
-                  return (
-                    <Accordion
-                      key={index}
-                      title={section.title}
-                      icon={Icon}
-                      iconColor={config.iconColor}
-                      bgColor={config.bgColor}
-                      sectionId={sectionId}
-                      isOpen={isAccordionOpen(sectionId, accordionType)}
-                      onToggle={() => handleAccordionToggle(sectionId, accordionType)}
-                    >
-                      <MarkdownContent content={section.content} />
-                    </Accordion>
-                  );
-                })}
-              </div>
-            )}
+            {/* 기본 모드에서 테스트 전략 아코디언 삭제됨 - UI 다이어트 */}
+            {/* 상세 정보는 "전체 문제 보기" 확장 모드에서 확인 가능 */}
           </>
         )}
       </div>

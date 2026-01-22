@@ -60,6 +60,11 @@ interface UsePyodideReturn {
   cleanup: () => Promise<void>;
   /** Worker 재시작 */
   restart: () => void;
+  /** 타임아웃을 적용한 실행 wrapper */
+  executeWithTimeout: <T>(
+    executeFunc: () => Promise<T>,
+    timeoutMs?: number
+  ) => Promise<T>;
 }
 
 // 요청 ID 생성
